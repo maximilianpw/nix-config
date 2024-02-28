@@ -56,6 +56,28 @@
     layout = "us";
     xkbVariant = "colemak";
   };
+  
+  #fonts
+  fonts = {
+    packages = with pkgs; [
+  noto-fonts
+  noto-fonts-cjk
+  noto-fonts-emoji
+  liberation_ttf
+  fira-code
+  fira-code-symbols
+  mplus-outline-fonts.githubRelease
+  dina-font
+  proggyfonts
+  ]
+  fontconfig = {
+      defaultFonts = {
+        serif = [ "FiraCode" ];
+        sansSerif = [ "FiraCode" ];
+        monospace = [ "FiraCode" ];
+      };
+  };
+  };
 
   # Enable CUPS to print documents.
   services.printing.enable = true;
@@ -123,5 +145,20 @@
   # this value at the release version of the first install of this system.
   # Before changing this value read the documentation for this option
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
   system.stateVersion = "23.11"; # Did you read the comment?
+
+  #unnatended auto upgrade of the system in the background
+  # https://nixos.wiki/wiki/Automatic_system_upgrades
+  system.autoUpgrade = {
+  enable = true;
+  flake = inputs.self.outPath;
+  flags = [
+    "--update-input"
+    "nixpkgs"
+    "-L" # print build logs
+  ];
+  dates = "02:00";
+  randomizedDelaySec = "45min";
+};
 }
