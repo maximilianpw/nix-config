@@ -8,7 +8,7 @@
 }: {
   imports = [
     # Include the results of the hardware scan.
-    ./hardware-configuration.nix
+    ../default/hardware-configuration.nix
   ];
 
   # Bootloader.
@@ -123,7 +123,9 @@
     gh
     neofetch
     rustup
+    alacritty    
   ];
+
 
   programs.neovim = {
     enable = true;
