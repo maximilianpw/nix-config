@@ -113,6 +113,7 @@
     git
     gh
     neofetch
+    rustup
   ];
 
   programs.neovim = {
