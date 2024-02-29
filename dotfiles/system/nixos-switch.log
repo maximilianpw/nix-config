@@ -1,27 +1,10 @@
-warning: updating lock file '/etc/nixos/flake.lock':
-• Added input 'home-manager':
-    'github:nix-community/home-manager/1d085ea4444d26aa52297758b333b449b2aa6fca' (2024-02-26)
-• Added input 'home-manager/nixpkgs':
-    follows 'nixpkgs'
-error:
-       … while calling the 'seq' builtin
-
-         at /nix/store/1gpgihsi21bni03hy6i5ccw9lfrhnbqi-source/lib/modules.nix:322:18:
-
-          321|         options = checked options;
-          322|         config = checked (removeAttrs config [ "_module" ]);
-             |                  ^
-          323|         _module = checked (config._module);
-
-       … while evaluating a branch condition
-
-         at /nix/store/1gpgihsi21bni03hy6i5ccw9lfrhnbqi-source/lib/modules.nix:261:9:
-
-          260|       checkUnmatched =
-          261|         if config._module.check && config._module.freeformType == null && merged.unmatchedDefns != [] then
-             |         ^
-          262|           let
-
-       (stack trace truncated; use '--show-trace' to show the full trace)
-
-       error: getting status of '/nix/store/iaf190rrc9pflip47yspin22g7djcfad-source/dotfiles': No such file or directory
+updating GRUB 2 menu...
+Warning: os-prober will be executed to detect other bootable partitions.
+Its output will be used to detect bootable binaries on them and create new boot entries.
+lsblk: /dev/mapper/no*[0-9]: not a block device
+lsblk: /dev/mapper/raid*[0-9]: not a block device
+lsblk: /dev/mapper/disks*[0-9]: not a block device
+activating the configuration...
+setting up /etc...
+reloading user units for maxpw...
+restarting sysinit-reactivation.target

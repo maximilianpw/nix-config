@@ -103,6 +103,15 @@
     ];
   };
 
+  #home manager setup
+  # home-manager = {
+  # also pass inputs to home-manager modules
+  # SpecialArgs = {inherit inputs;};
+  # users = {
+  # "maxpw" = import ./home.nix;
+  #};
+  #};
+
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
 
