@@ -1,10 +1,30 @@
-updating GRUB 2 menu...
-Warning: os-prober will be executed to detect other bootable partitions.
-Its output will be used to detect bootable binaries on them and create new boot entries.
-lsblk: /dev/mapper/no*[0-9]: not a block device
-lsblk: /dev/mapper/raid*[0-9]: not a block device
-lsblk: /dev/mapper/disks*[0-9]: not a block device
-activating the configuration...
-setting up /etc...
-reloading user units for maxpw...
-setting up tmpfiles
+warning: Git tree '/home/maxpw/Nix-Config' is dirty
+error:
+       … while calling the 'seq' builtin
+
+         at /nix/store/vbzcj4h7qbjn16qp4l6vrlz7pygysycp-source/lib/modules.nix:320:18:
+
+          319|         options = checked options;
+          320|         config = checked (removeAttrs config [ "_module" ]);
+             |                  ^
+          321|         _module = checked (config._module);
+
+       … while evaluating a branch condition
+
+         at /nix/store/vbzcj4h7qbjn16qp4l6vrlz7pygysycp-source/lib/modules.nix:261:9:
+
+          260|       checkUnmatched =
+          261|         if config._module.check && config._module.freeformType == null && merged.unmatchedDefns != [] then
+             |         ^
+          262|           let
+
+       (stack trace truncated; use '--show-trace' to show the full trace)
+
+       error: undefined variable 'inputs'
+
+       at /nix/store/f990bj3vd7j6g7mi2yy3rpcmz9bk3aig-source/hosts/default/configuration.nix:109:20:
+
+          108|     # also pass inputs to home-manager modules
+          109|     SpecialArgs = {inherit inputs;};
+             |                    ^
+          110|     users = {
