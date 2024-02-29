@@ -3,7 +3,7 @@
 set -e
 
 # cd to your config dir
-pushd ~/nixos-config/hosts/default
+pushd ~/Nix-Config/hosts/default
 
 # Edit your config
 $EDITOR configuration.nix

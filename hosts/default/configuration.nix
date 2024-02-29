@@ -123,9 +123,7 @@
     gh
     neofetch
     rustup
-    alacritty    
   ];
-
 
   programs.neovim = {
     enable = true;
