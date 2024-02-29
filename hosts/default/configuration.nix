@@ -1,14 +1,15 @@
 # Edit this configuration file to define what should be installed on
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
-
-{ config, pkgs, ... }:
-
 {
-  imports =
-    [ # Include the results of the hardware scan.
-      ./hardware-configuration.nix
-    ];
+  config,
+  pkgs,
+  ...
+}: {
+  imports = [
+    # Include the results of the hardware scan.
+    ../default/hardware-configuration.nix
+  ];
 
   # Bootloader.
   boot.loader.grub.enable = true;
@@ -52,12 +53,31 @@
 
   # Configure keymap in X11
   services.xserver = {
-    layout = "gb";
+    layout = "us";
     xkbVariant = "colemak";
   };
 
-  # Configure console keymap
-  console.keyMap = "uk";
+  #fonts
+  fonts = {
+    packages = with pkgs; [
+      noto-fonts
+      noto-fonts-cjk
+      noto-fonts-emoji
+      liberation_ttf
+      fira-code
+      fira-code-symbols
+      mplus-outline-fonts.githubRelease
+      dina-font
+      proggyfonts
+    ];
+    fontconfig = {
+      defaultFonts = {
+        serif = ["FiraCode"];
+        sansSerif = ["FiraCode"];
+        monospace = ["FiraCode"];
+      };
+    };
+  };
 
   # Enable CUPS to print documents.
   services.printing.enable = true;
@@ -71,26 +91,26 @@
     alsa.enable = true;
     alsa.support32Bit = true;
     pulse.enable = true;
-    # If you want to use JACK applications, uncomment this
-    #jack.enable = true;
-
-    # use the example session manager (no others are packaged yet so this is enabled by default,
-    # no need to redefine it in your config for now)
-    #media-session.enable = true;
   };
-
-  # Enable touchpad support (enabled default in most desktopManager).
-  # services.xserver.libinput.enable = true;
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.maxpw = {
     isNormalUser = true;
-    description = "Maximilian PINDER-WHITE";
-    extraGroups = [ "networkmanager" "wheel" ];
+    description = "Maximilian Pinder-White";
+    extraGroups = ["networkmanager" "wheel"];
     packages = with pkgs; [
       firefox
     ];
   };
+
+  #home manager setup
+  # home-manager = {
+  # also pass inputs to home-manager modules
+  # SpecialArgs = {inherit inputs;};
+  # users = {
+  # "maxpw" = import ./home.nix;
+  #};
+  #};
 
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
@@ -98,22 +118,17 @@
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
-     rustup
-     neofetch
-     vscode
-     git
-     gh
-     python3
-     nodejs_21
-     docker
+    alejandra
+    git
+    gh
+    neofetch
+    rustup
   ];
 
   programs.neovim = {
-     enable = true;
-     defaultEditor = true;
+    enable = true;
+    defaultEditor = true;
   };
-
-  virtualisation.docker.enable = true;
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
@@ -140,8 +155,6 @@
   # this value at the release version of the first install of this system.
   # Before changing this value read the documentation for this option
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
-  system.stateVersion = "23.11"; # Did you read the comment?
-
-  #adds flakes 
   nix.settings.experimental-features = ["nix-command" "flakes"];
+  system.stateVersion = "23.11"; # Did you read the comment?
 }
