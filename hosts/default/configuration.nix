@@ -1,12 +1,14 @@
 {
   config,
   pkgs,
+  inputs,
   ... /* other arguments */
 }: 
 {
   imports = [
     # Include the results of the hardware scan.
     ../default/hardware-configuration.nix
+    inputs.home-manager.nixosModules.default
   ];
 
   # Bootloader.
@@ -99,6 +101,13 @@
     packages = with pkgs; [
       firefox
     ];
+  };
+  
+  home-manager ={
+    extraSpecialArgs = { inherit inputs; };
+    users = {
+	"maxpw" = import ../../modules/home-manager/home.nix;
+    };
   };
 
   # Allow unfree packages
