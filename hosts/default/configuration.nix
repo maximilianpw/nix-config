@@ -1,14 +1,10 @@
+{ config, pkgs, inputs, ...}: 
+
 {
-  config,
-  pkgs,
-  ...
-  /*
-  other arguments
-  */
-}: {
   imports = [
     # Include the results of the hardware scan.
     ../default/hardware-configuration.nix
+    inputs.home-manager.nixosModules.default
   ];
 
   # Bootloader.
@@ -103,12 +99,12 @@
     ];
   };
 
-  #home-manager ={
-  # extraSpecialArgs = { inherit inputs; };
-  #users = {
-  #	"maxpw" = import ../../modules/home-manager/home.nix;
-  #   };
-  #};
+  home-manager = {
+    specialArgs = {inherit inputs;};
+    users = {
+      "maxpw" = import ../../modules/home-manager/home.nix;
+    };
+  };
 
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
