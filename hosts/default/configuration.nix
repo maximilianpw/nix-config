@@ -1,14 +1,14 @@
 {
   config,
   pkgs,
-  inputs,
-  ... /* other arguments */
-}: 
-{
+  ...
+  /*
+  other arguments
+  */
+}: {
   imports = [
     # Include the results of the hardware scan.
     ../default/hardware-configuration.nix
-    inputs.home-manager.nixosModules.default
   ];
 
   # Bootloader.
@@ -102,13 +102,13 @@
       firefox
     ];
   };
-  
-  home-manager ={
-    extraSpecialArgs = { inherit inputs; };
-    users = {
-	"maxpw" = import ../../modules/home-manager/home.nix;
-    };
-  };
+
+  #home-manager ={
+  # extraSpecialArgs = { inherit inputs; };
+  #users = {
+  #	"maxpw" = import ../../modules/home-manager/home.nix;
+  #   };
+  #};
 
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
@@ -156,4 +156,3 @@
   nix.settings.experimental-features = ["nix-command" "flakes"];
   system.stateVersion = "23.11"; # Did you read the comment?
 }
-
