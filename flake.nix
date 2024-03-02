@@ -28,3 +28,10 @@
     };
   };
 }
+
+  #home-manager = {
+   # specialArgs = {inherit inputs;};
+    #users = {
+     # "maxpw" = import ../../modules/home-manager/home.nix;
+    #};
+  #};
