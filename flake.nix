@@ -24,22 +24,16 @@
         specialArgs = {inherit inputs;};
         modules = [
           ./hosts/default/configuration.nix
-	  inputs.home-manager.nixosModules.default
+          inputs.home-manager.nixosModules.default
         ];
       };
       bigboy = nixpkgs.lib.nixosSystem {
         specialArgs = {inherit inputs;};
         modules = [
           ./hosts/bigboy/configuration.nix
+          inputs.home-manager.nixosModules.default
         ];
       };
     };
   };
 }
-#home-manager = {
-# specialArgs = {inherit inputs;};
-#users = {
-# "maxpw" = import ../../modules/home-manager/home.nix;
-#};
-#};
-
