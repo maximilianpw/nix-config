@@ -1,9 +1,12 @@
-{ config, pkgs, inputs, ...}: 
-
 {
+  config,
+  pkgs,
+  inputs,
+  ...
+}: {
   imports = [
     # Include the results of the hardware scan.
-    ../default/hardware-configuration.nix
+    ./hardware-configuration.nix
     inputs.home-manager.nixosModules.default
   ];
 
@@ -99,6 +102,12 @@
     ];
   };
 
+  home-manager = {
+    extraSpecialArgs = {inherit inputs;};
+    users = {
+       "maxpw" = import ./home.nix;
+    };
+  };
 
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
