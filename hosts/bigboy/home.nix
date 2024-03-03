@@ -17,6 +17,8 @@
     gh
     neofetch
     rustup
+
+    (writeShellScriptBin "rebuild" (builtins.readFile ../../scripts/nixos-rebuild.sh))
   ];
   programs.zsh = {
     enable = true;
