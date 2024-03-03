@@ -19,19 +19,26 @@
     system = "x86_64-linux";
     pkgs = nixpkgs.legacyPackages.${system};
   in {
-    nixosConfigurations.default = nixpkgs.lib.nixosSystem {
-      specialArgs = {inherit inputs;};
-      modules = [
-        ./hosts/default/configuration.nix
-        inputs.home-manager.nixosModules.default
-      ];
+    nixosConfiguration = {
+      default = nixpkgs.lib.nixosSystem {
+        specialArgs = {inherit inputs;};
+        modules = [
+          ./hosts/default/configuration.nix
+        ];
+      };
+      bigboy = nixpkgs.lib.nixosSystem {
+        specialArgs = {inherit inputs;};
+        modules = [
+          ./hosts/bigboy/configuration.nix
+        ];
+      };
     };
   };
 }
+#home-manager = {
+# specialArgs = {inherit inputs;};
+#users = {
+# "maxpw" = import ../../modules/home-manager/home.nix;
+#};
+#};
 
-  #home-manager = {
-   # specialArgs = {inherit inputs;};
-    #users = {
-     # "maxpw" = import ../../modules/home-manager/home.nix;
-    #};
-  #};
