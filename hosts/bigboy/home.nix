@@ -1,11 +1,13 @@
-{ config, pkgs, ... }:
-
 {
-  # necessary 
+  config,
+  pkgs,
+  ...
+}: {
+  # necessary
   home.username = "maxpw";
   home.homeDirectory = "/home/maxpw";
 
-  home.stateVersion = "23.11"; 
+  home.stateVersion = "23.11";
 
   # The home.packages option allows you to install Nix packages into your
   # environment.
@@ -16,15 +18,19 @@
     neofetch
     rustup
   ];
+  programs.zsh = {
+    enable = true;
+    enableCompletion = true;
+    enableAutosuggestions = true;
+    syntaxHighlighting.enable = true;
 
-    # # You can also create simple shell scripts directly inside your
-    # # configuration. For example, this adds a command 'my-hello' to your
-    # # environment:
-     (pkgs.writeShellScriptBin "my-hello" ''
-       echo "Hello, ${config.home.username}!"
-     '')
-  
-
+    shellAliases = {
+      ll = "ls -l";
+      update = "~/Nix-Config/scripts/nixos-rebuild.sh";
+    };
+    history.size = 10000;
+    history.path = "${config.xdg.dataHome}/zsh/history";
+  };
   # Home Manager is pretty good at managing dotfiles. The primary way to manage
   # plain files is through 'home.file'.
   home.file = {

@@ -105,7 +105,7 @@
   home-manager = {
     extraSpecialArgs = {inherit inputs;};
     users = {
-       "maxpw" = import ./home.nix;
+      "maxpw" = import ./home.nix;
     };
   };
 
