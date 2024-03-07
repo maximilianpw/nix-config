@@ -8,17 +8,12 @@
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
     inputs.home-manager.nixosModules.default
-    outputs.nixos-modules.nvidia
   ];
 
-  boot.loader.grub = {
-    enable = true;
-    efiSupport = true;
-    version = 2;
-    device = "nodev"; # Indicates not to install to a specific device, as it's UEFI
-    useOSProber = true; # To detect other OSes like Windows
-  };
-  boot.loader.efi.canTouchEfiVariables = true;
+  # Bootloader.
+  boot.loader.grub.enable = true;
+  boot.loader.grub.device = "/dev/sda";
+  boot.loader.grub.useOSProber = true;
 
   networking.hostName = "nixos"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
@@ -67,8 +62,35 @@
     driSupport32Bit = true;
   };
 
-  
-  
+#Nvidia settings for hybrid graphics(AMD video cores and Nvidia)
+ 
+  services.xserver.videoDrivers = ["nvidia"];
+
+  hardware.nvidia = {
+    #powerManagement = {
+    #enabled = true;
+    #finegrained = true; #maybe comment this out idk what it does
+    #};
+
+    #uses beta drivers
+    package = config.boot.kernelPackages.nvidiaPackages.beta;
+
+    #Fixes a glitch
+    nvidiaPersistenced = true;
+    #Required for amdgpu and nvidia gpu pairings
+    modesetting.enable = true;
+    prime = {
+      offload.enable = true;
+      #sync.enable = true;
+
+      amdgpuBusId = "PCI:8:0:0";
+
+      nvidiaBusId = "PCI:1:0:0";
+    };};
+    
+     
+
+
   #fonts
   fonts = {
     packages = with pkgs; [

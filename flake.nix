@@ -18,25 +18,15 @@
     ...
   } @ inputs: let
     # Supported systems for your flake packages, shell, etc.
-    systems = [
-      "aarch64-linux"
-      "i686-linux"
-      "x86_64-linux"
-      "aarch64-darwin"
-      "x86_64-darwin"
-    ];
-    # This is a function that generates an attribute by calling a function you
-    # pass to it, with each system as an argument
-    forAllSystems = nixpkgs.lib.genAttrs systems;
+    system = "x86_64-linux";
     pkgs = nixpkgs.legacyPackages.${system};
   in {
 
-    nixos-modules = import ./modules/nixos;
-    homeManagerModules = import ./modules/home-manager;
 
     nixosConfigurations = {
       default = nixpkgs.lib.nixosSystem {
-        specialArgs = {inherit inputs outputs;};
+        specialArgs = {inherit inputs ;};
+
         modules = [
           ./hosts/default/configuration.nix
           inputs.home-manager.nixosModules.default
