@@ -11,9 +11,14 @@
   ];
 
   # Bootloader.
-  boot.loader.grub.enable = true;
-  boot.loader.grub.device = "/dev/sda";
-  boot.loader.grub.useOSProber = true;
+boot.loader.grub = {
+    enable = true;
+    efiSupport = true;
+    version = 2;
+    device = "nodev"; # Indicates not to install to a specific device, as it's UEFI
+    useOSProber = true; # To detect other OSes like Windows
+  };
+  boot.loader.efi.canTouchEfiVariables = true;
 
   networking.hostName = "nixos"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
@@ -88,8 +93,6 @@
       nvidiaBusId = "PCI:1:0:0";
     };};
     
-     
-
 
   #fonts
   fonts = {
