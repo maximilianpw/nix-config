@@ -14,7 +14,6 @@
 boot.loader.grub = {
     enable = true;
     efiSupport = true;
-    version = 2;
     device = "nodev"; # Indicates not to install to a specific device, as it's UEFI
     useOSProber = true; # To detect other OSes like Windows
   };
@@ -137,6 +136,7 @@ boot.loader.grub = {
     extraGroups = ["networkmanager" "wheel"];
     packages = with pkgs; [
       firefox
+      discord
     ];
   };
 
@@ -158,6 +158,7 @@ boot.loader.grub = {
     gh
     neofetch
     rustup
+    vscode
   ];
 
   programs.neovim = {
