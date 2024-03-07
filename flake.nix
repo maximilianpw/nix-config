@@ -14,31 +14,12 @@
   outputs = {
     self,
     nixpkgs,
-    home-manager,
     ...
   } @ inputs: let
     # Supported systems for your flake packages, shell, etc.
     system = "x86_64-linux";
     pkgs = nixpkgs.legacyPackages.${system};
   in {
-
-
-    nixosConfigurations = {
-      default = nixpkgs.lib.nixosSystem {
-        specialArgs = {inherit inputs ;};
-
-        modules = [
-          ./hosts/default/configuration.nix
-          inputs.home-manager.nixosModules.default
-        ];
-      };
-      bigboy = nixpkgs.lib.nixosSystem {
-        specialArgs = {inherit inputs;};
-        modules = [
-          ./hosts/bigboy/configuration.nix
-          inputs.home-manager.nixosModules.default
-        ];
-      };
-    };
+    nixosConfigurations = import ./hosts inputs;
   };
 }

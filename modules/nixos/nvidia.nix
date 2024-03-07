@@ -1,12 +1,19 @@
-#Nvidia settings for hybrid graphics(AMD video cores and Nvidia)
-{
+{config, ...}: {
+  # Enable OpenGL
+  hardware.opengl = {
+    enable = true;
+    driSupport = true;
+    driSupport32Bit = true;
+  };
+  #Nvidia settings for hybrid graphics(AMD video cores and Nvidia)
+
   services.xserver.videoDrivers = ["nvidia"];
 
   hardware.nvidia = {
-    powerManagement = {
-    enabled = true;
+    #powerManagement = {
+    #enabled = true;
     #finegrained = true; #maybe comment this out idk what it does
-    };
+    #};
 
     #uses beta drivers
     package = config.boot.kernelPackages.nvidiaPackages.beta;
@@ -22,6 +29,6 @@
       amdgpuBusId = "PCI:8:0:0";
 
       nvidiaBusId = "PCI:1:0:0";
-    };};
-    
-    }
+    };
+  };
+}
