@@ -14,7 +14,12 @@ echo "Showing changes in Nix files..."
 git diff -U0 *.nix || true # Continue even if there's nothing to show
 
 echo "NixOS Rebuilding..."
-if ! sudo nixos-rebuild switch --flake "./#$1" >nixos-switch.log 2>&1; then
+if [ -z $1 ]; then
+    input='default'
+else
+    input=$1
+fi
+if ! sudo nixos-rebuild switch --flake "./#$input" >nixos-switch.log 2>&1; then
     echo "Rebuild failed, showing errors:"
     grep --color=always -E "error|warning" nixos-switch.log || true # Show errors if any
     popd >/dev/null

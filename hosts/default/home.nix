@@ -41,10 +41,16 @@
 
     shellAliases = {
       ll = "ls -l";
-      update = "~/Nix-Config/scripts/nixos-rebuild.sh";
+      update = "~/Nix-Config/scripts/nixos-rebuild.sh default";
     };
     history.size = 10000;
     history.path = "${config.xdg.dataHome}/zsh/history";
+
+    oh-my-zsh = {
+      enable = true;
+      plugins = ["git" "thefuck"];
+      theme = "robbyrussell";
+    };
   };
 
   # Home Manager is pretty good at managing dotfiles. The primary way to manage
