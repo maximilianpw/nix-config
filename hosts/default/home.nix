@@ -29,7 +29,7 @@
     gh
     neofetch
     rustup
-    nodejs_21
+    nodejs
     thefuck
     (writeShellScriptBin "rebuild" (builtins.readFile ../../scripts/nixos-rebuild.sh))
   ];
