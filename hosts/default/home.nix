@@ -29,7 +29,8 @@
     gh
     neofetch
     rustup
-
+    nodejs_21
+    thefuck
     (writeShellScriptBin "rebuild" (builtins.readFile ../../scripts/nixos-rebuild.sh))
   ];
 
@@ -41,7 +42,7 @@
 
     shellAliases = {
       ll = "ls -l";
-      update = "~/Nix-Config/scripts/nixos-rebuild.sh default";
+      update = "~/Nix-Config/scripts/nixos-rebuild.sh";
     };
     history.size = 10000;
     history.path = "${config.xdg.dataHome}/zsh/history";
