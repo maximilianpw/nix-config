@@ -10,6 +10,23 @@
     inputs.home-manager.nixosModules.default
   ];
 
+  # VMware Fusion specific configuration
+  virtualisation.vmware.guest.enable = true;
+  
+  # VMware services for better integration
+  services.vmware-guest = {
+    enable = true;
+    headless = false;  # Set to true if running headless
+  };
+  
+  # VMware Fusion ARM optimizations
+  boot.kernelParams = [
+    "elevator=noop"        # Better I/O scheduler for VMs
+    "transparent_hugepage=never"  # Better memory management in VMware
+    "clocksource=tsc"      # Better timekeeping in VMware
+    "nohz=off"            # Disable tickless kernel for better VMware performance
+  ];
+
   # Bootloader.
   boot.loader.grub = {
     enable = true;
@@ -28,6 +45,21 @@
 
   # Enable networking
   networking.networkmanager.enable = true;
+  
+  # VMware Fusion network optimizations
+  networking.interfaces = {
+    # VMware typically uses ens160 or similar
+    ens160.useDHCP = true;
+  };
+  
+  # Enable VMware shared folders (if needed)
+  fileSystems."/mnt/hgfs" = {
+    device = ".host:/";
+    fsType = "fuse./usr/bin/vmhgfs-fuse";
+    options = [ 
+      "umask=22,uid=1000,gid=1000,allow_other,auto_unmount,defaults"
+    ];
+  };
 
   # Set your time zone.
   time.timeZone = "Europe/Paris";
@@ -49,6 +81,14 @@
 
   # Enable the X11 windowing system.
   services.xserver.enable = true;
+  
+  # VMware Fusion optimized graphics
+  services.xserver.videoDrivers = ["vmware" "fbdev" "vesa"];
+  hardware.opengl = {
+    enable = true;
+    driSupport = true;
+    driSupport32Bit = true;
+  };
 
   # Enable the GNOME Desktop Environment.
   services.xserver.displayManager.gdm.enable = true;
@@ -129,6 +169,10 @@
     _1password_cli
     _1password-gui
     ghostty
+    # VMware Fusion specific tools
+    open-vm-tools
+    xf86-input-vmmouse
+    xf86-video-vmware
   ];
 
   programs.neovim = {

@@ -10,9 +10,17 @@
 }: {
   imports = [];
 
-  boot.initrd.availableKernelModules = ["ehci_pci" "ahci" "xhci_pci" "nvme" "usbhid" "sr_mod"];
-  boot.initrd.kernelModules = [];
-  boot.kernelModules = [];
+  boot.initrd.availableKernelModules = [
+    "ehci_pci" "ahci" "xhci_pci" "nvme" "usbhid" "sr_mod"
+    # VMware Fusion specific modules
+    "vmw_pvscsi" "vmw_vmci" "vmw_balloon" "vmwgfx" "vmw_vsock_vmci_transport"
+    "virtio_pci" "virtio_blk" "virtio_scsi" "virtio_net"
+  ];
+  boot.initrd.kernelModules = ["vmw_pvscsi"];
+  boot.kernelModules = [
+    "vmw_vmci" "vmw_balloon" "vmwgfx" "vmw_vsock_vmci_transport"
+    "kvm-arm64"  # ARM64 virtualization support
+  ];
   boot.extraModulePackages = [];
 
   fileSystems."/" = {

@@ -16,9 +16,8 @@
     nixpkgs,
     ...
   } @ inputs: let
-    # Supported systems for your flake packages, shell, etc.
-    system = "x86_64-linux";
-    pkgs = nixpkgs.legacyPackages.${system};
+    # Support multiple systems
+    systems = ["x86_64-linux" "aarch64-linux"];
   in {
     nixosConfigurations = import ./hosts inputs;
   };

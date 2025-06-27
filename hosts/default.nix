@@ -25,6 +25,7 @@ in {
     ];
   };
   mac = nixpkgs.lib.nixosSystem {
+    system = "aarch64-linux";  # Explicitly set ARM64 system
     specialArgs = {inherit inputs;};
     modules = [
       ./mac/configuration.nix
