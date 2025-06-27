@@ -78,27 +78,6 @@
     "go/pkg/.keep".text = "";
     "go/src/.keep".text = "";
     
-    # Ripgrep configuration
-    ".config/ripgrep/config".text = ''
-      # Don't search in git directories
-      --glob=!.git/*
-      
-      # Don't search in node_modules
-      --glob=!node_modules/*
-      
-      # Don't search in build directories
-      --glob=!build/*
-      --glob=!dist/*
-      --glob=!target/*
-      
-      # Use smart case
-      --smart-case
-      
-      # Show line numbers
-      --line-number
-      
-      # Show colors
-      --color=always
-    '';
+    # Note: Configuration files like ripgrep config are handled by dotfiles symlink
   };
 }

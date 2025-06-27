@@ -149,27 +149,30 @@ boot.kernelParams = [
 **Provides**:
 - Symlink: `~/dotfiles/.config` → `~/.config`
 - Symlink: `~/dotfiles/.zshrc` → `~/.zshrc`
+- Imports all specialized home-manager modules
 - **Note**: All shell and editor configuration is handled by dotfiles, not Nix
 
-#### `terminal.nix` (Available for optional import)
+#### `terminal.nix` (Automatically included via dotfiles.nix)
 **Provides**: Terminal tools without configuration
 - Shell utilities (ripgrep, fzf, eza, bat, etc.)
 - System tools (htop, neofetch, curl, etc.)
-- **Usage**: Add to imports in host-specific home.nix if needed
 
-#### `neovim.nix` (Available for optional import)
+#### `neovim.nix` (Automatically included via dotfiles.nix)
 **Provides**: Language servers and tools for Neovim
-- LSPs (clangd, gopls, pyright, rust-analyzer, etc.)
+- LSPs (clangd, gopls, pyright, etc.)
 - Formatters and linters
 - Tree-sitter parsers
-- **Usage**: Add to imports in host-specific home.nix if needed
+- **Note**: rust-analyzer provided by rustup to avoid conflicts
 
-#### `development.nix` (Available for optional import)
+#### `development.nix` (Automatically included via dotfiles.nix)
 **Provides**: Development tools and programming languages
-- Compilers (gcc, clang, rustc, etc.)
+- Language runtimes (nodejs, python, rustup, go, openjdk, etc.)
 - Package managers (npm, pip, cargo, etc.)
-- **Usage**: Add to imports in host-specific home.nix if needed
-- **Note**: May conflict with neovim.nix if both import compilers
+- Build tools moved to system packages to avoid conflicts
+- Development workspace directories
+
+#### `fonts.nix` (Automatically included via dotfiles.nix)
+**Provides**: Font packages for development and UI
 
 ## 🔧 Configuration Philosophy
 

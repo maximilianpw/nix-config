@@ -12,7 +12,6 @@
     clang-tools      # clangd
     gopls           # Go LSP
     pyright         # Python LSP  
-    rust-analyzer   # Rust LSP
     nodePackages.typescript-language-server  # ts_ls (TypeScript)
     dockerfile-language-server-nodejs        # dockerls
     tailwindcss-language-server              # tailwindcss
@@ -54,18 +53,15 @@
     
     # Extra packages needed at runtime
     extraPackages = with pkgs; [
-      # Language runtimes
+      # Language runtimes (avoid duplicating what's in development.nix)
       python3
       nodejs_20
-      rustc
-      cargo
+      # rustc, cargo provided by rustup in development.nix
       go
       openjdk
       
-      # Build tools
-      gcc
-      gnumake
-      cmake
+      # Build tools (moved to system packages in common.nix)
+      # gcc, gnumake, cmake now system packages
       
       # Utils
       curl
