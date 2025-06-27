@@ -76,9 +76,6 @@
     # No configuration here - dotfiles handle everything via .config symlink
   };
   
-  # Session variables for neovim
-  home.sessionVariables = {
-    EDITOR = "nvim";
-    VISUAL = "nvim";
-  };
+  # Session variables moved to dotfiles (handled by .zshrc symlink)
+  # EDITOR and VISUAL should be set in your dotfiles
 }

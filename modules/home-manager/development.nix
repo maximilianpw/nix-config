@@ -43,32 +43,9 @@
     gradle
   ];
 
-  # Development-specific session variables
-  home.sessionVariables = {
-    # Java setup
-    JAVA_HOME = "${pkgs.openjdk}";
-    
-    # Rust setup
-    CARGO_HOME = "$HOME/.cargo";
-    RUSTUP_HOME = "$HOME/.rustup";
-    
-    # Node.js setup
-    NODE_PATH = "${pkgs.nodejs_20}/lib/node_modules";
-    NODE_OPTIONS = "--max-old-space-size=4096";
-    
-    # Go setup
-    GOPATH = "$HOME/go";
-    GOBIN = "$HOME/go/bin";
-    
-    # Python setup
-    PYTHONPATH = "$HOME/.local/lib/python3.11/site-packages";
-    
-    # Development tools
-    BROWSER = "firefox";
-    
-    # Development PATH additions
-    PATH = "$PATH:$HOME/.cargo/bin:$HOME/go/bin:$HOME/.local/bin";
-  };
+  # Development-specific session variables moved to dotfiles
+  # All environment variables should be set in your .zshrc or shell config files
+  # This avoids conflicts with the .config symlink approach
   
   # Create useful development directories
   home.file = {

@@ -114,6 +114,7 @@ boot.kernelParams = [
 - Desktop environment (GNOME + GDM)
 - Audio (PipeWire)
 - Basic system packages
+- Build tools and compilers (gcc, clang, cmake, gnumake)
 - SSH server
 - Nix flakes support
 

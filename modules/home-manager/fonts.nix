@@ -51,9 +51,6 @@
     };
   };
 
-  # Font-related session variables
-  home.sessionVariables = {
-    # Font rendering settings
-    FREETYPE_PROPERTIES = "truetype:interpreter-version=40";
-  };
+  # Font-related session variables moved to dotfiles
+  # FREETYPE_PROPERTIES and other font settings should be in your shell config
 }
