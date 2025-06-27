@@ -3,6 +3,11 @@
   pkgs,
   ...
 }: {
+  # Import the global dotfiles configuration
+  imports = [
+    ../../modules/home-manager/dotfiles.nix
+  ];
+
   # necessary
   home.username = "maxpw";
   home.homeDirectory = "/home/maxpw";

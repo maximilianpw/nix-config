@@ -112,12 +112,15 @@
       mplus-outline-fonts.githubRelease
       dina-font
       proggyfonts
+      # Support Nerd Fonts from Home Manager
+      (nerdfonts.override {fonts = ["FiraCode" "JetBrainsMono" "Hack"];})
     ];
     fontconfig = {
+      enable = true;
       defaultFonts = {
         serif = ["FiraCode"];
         sansSerif = ["FiraCode"];
-        monospace = ["FiraCode"];
+        monospace = ["FiraCode Nerd Font"];
       };
     };
   };
@@ -173,7 +176,13 @@
     open-vm-tools
     xf86-input-vmmouse
     xf86-video-vmware
+    # Support for Home Manager dotfiles
+    zsh
   ];
+
+  # Enable zsh system-wide to support Home Manager zsh config
+  programs.zsh.enable = true;
+  users.defaultUserShell = pkgs.zsh;
 
   programs.neovim = {
     enable = true;

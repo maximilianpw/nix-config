@@ -66,6 +66,8 @@
     git = {
       enable = true;
       # Add global git aliases and config here
+      userName = "Maximilian NixOS";
+        userEmail = "mpinderwhite@proton.me"
       aliases = {
         st = "status";
         co = "checkout";

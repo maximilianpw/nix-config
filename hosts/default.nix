@@ -5,7 +5,7 @@
 }: let
   inherit (self) inputs;
   nvidia = ../modules/nixos/nvidia.nix;
-  dotfiles = ../modules/nixos/dotfiles.nix;
+  # Remove dotfiles from here since it's now a Home Manager module
 in {
   default = nixpkgs.lib.nixosSystem {
     specialArgs = {inherit inputs;};
@@ -30,7 +30,7 @@ in {
     modules = [
       ./mac/configuration.nix
       inputs.home-manager.nixosModules.default
-      dotfiles
+      # dotfiles is now imported in individual user configs
     ];
   };
 }
