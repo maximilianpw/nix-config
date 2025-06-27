@@ -3,119 +3,30 @@
   pkgs,
   ...
 }: {
-  # Global Home Manager configuration
-  # This can be imported by individual user configs
-
-  # The home.packages option allows you to install Nix packages into your environment.
-  home.packages = with pkgs; [
-    # Core system utilities (ARM64 compatible)
-    git
-    unzip
-    curl
-    wget
-
-    # Development tools - General (ARM64 compatible)
-    # neovim is configured in programs.neovim instead of packages to avoid conflicts
-    ripgrep
-    fd
-    fzf
-    tree-sitter
-
-    # Development tools - Languages and runtimes (ARM64 compatible)
-    nodejs_20
-    python3
-    python311Packages.pip
-    rustup
-    go
-    # Note: OpenJDK works well on ARM64
-    openjdk
-
-    # Development tools - Language servers and formatters (ARM64 compatible)
-    lua-language-server
-    typescript
-    nodePackages.typescript-language-server
-    nodePackages.prettier
-    nodePackages.eslint_d
-    nodePackages."@angular/cli"
-    black # Python formatter
-    isort # Python import sorter
-    stylua # Lua formatter
-
-    # Development tools - Build and Make (ARM64 compatible)
-    gnumake
-    cmake
-    gcc
-
-    # Nerd Fonts for terminal (ARM64 compatible)
-    (nerdfonts.override {fonts = ["FiraCode" "JetBrainsMono" "Hack"];})
-
-    # Additional utilities (ARM64 compatible)
-    lazygit
+  # Main dotfiles configuration - imports all specialized modules
+  # This provides a comprehensive development environment
+  
+  imports = [
+    ./neovim.nix      # Neovim editor configuration
+    ./terminal.nix    # Terminal and shell configuration  
+    ./development.nix # Programming languages and dev tools
+    ./fonts.nix       # Font management
   ];
 
-  # Global Home Manager session variables
-  home.sessionVariables = {
-    EDITOR = "nvim";
-    JAVA_HOME = "${pkgs.openjdk}";
-    # Add Rust to PATH
-    PATH = "$PATH:$HOME/.cargo/bin";
-  };
+  # Home Manager configuration
+  home.username = "maxpw";
+  home.homeDirectory = "/home/maxpw";
+  home.stateVersion = "24.05";
 
-  # Programs configuration
-  programs = {
-    # Git configuration (global defaults)
-    git = {
-      enable = true;
-      # Add global git aliases and config here
-      aliases = {
-        st = "status";
-        co = "checkout";
-        br = "branch";
-        ci = "commit";
-        df = "diff";
-        lg = "log --oneline --graph --all";
-      };
-    };
+  # Allow Home Manager to manage itself
+  programs.home-manager.enable = true;
 
-    # Zsh configuration
-    zsh = {
-      enable = true;
-      syntaxHighlighting.enable = true;
-      oh-my-zsh = {
-        enable = true;
-        theme = "robbyrussell";
-        plugins = ["git" "sudo" "docker" "kubectl"];
-      };
-    };
+  # Essential user packages
+  home.packages = with pkgs; [
+    # Rebuild script for convenience
+    (writeShellScriptBin "rebuild" (builtins.readFile ../../scripts/nixos-rebuild.sh))
+  ];
 
-    # Neovim configuration
-    neovim = {
-      enable = true;
-      viAlias = true;
-      vimAlias = true;
-      vimdiffAlias = true;
-    };
-
-    # Zoxide for better cd
-    zoxide = {
-      enable = true;
-      enableZshIntegration = true;
-    };
-
-    # Direnv for project-specific environments
-    direnv = {
-      enable = true;
-      enableZshIntegration = true;
-      nix-direnv.enable = true;
-    };
-
-    # Starship prompt
-    starship = {
-      enable = true;
-      enableZshIntegration = true;
-    };
-  };
-
-  # Fonts
-  fonts.fontconfig.enable = true;
+  # This file now serves as the main entry point that combines all modules
+  # Individual modules can be imported separately if needed
 }
