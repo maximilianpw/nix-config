@@ -25,19 +25,6 @@
 
     (writeShellScriptBin "rebuild" (builtins.readFile ../../scripts/nixos-rebuild.sh))
   ];
-  programs.zsh = {
-    enable = true;
-    enableCompletion = true;
-    enableAutosuggestions = true;
-    syntaxHighlighting.enable = true;
-
-    shellAliases = {
-      ll = "ls -l";
-      update = "~/Nix-Config/scripts/nixos-rebuild.sh";
-    };
-    history.size = 10000;
-    history.path = "${config.xdg.dataHome}/zsh/history";
-  };
   # Home Manager is pretty good at managing dotfiles. The primary way to manage
   # plain files is through 'home.file'.
   home.file = {

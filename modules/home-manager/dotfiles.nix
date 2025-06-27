@@ -13,11 +13,6 @@
     ./fonts.nix       # Font management
   ];
 
-  # Home Manager configuration
-  home.username = "maxpw";
-  home.homeDirectory = "/home/maxpw";
-  home.stateVersion = "24.05";
-
   # Allow Home Manager to manage itself
   programs.home-manager.enable = true;
 

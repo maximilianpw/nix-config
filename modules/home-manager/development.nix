@@ -5,6 +5,7 @@
 }: {
   # Development tools and programming languages module
   # This module provides compilers, runtimes, and development utilities
+  # Enhanced with packages from your .zshrc and nvim configuration
   
   home.packages = with pkgs; [
     # Programming language runtimes (ARM64 compatible)
@@ -14,12 +15,12 @@
     rustup
     go
     openjdk
-
-    # Node.js development tools
+    
+    # Node.js development tools (from your .zshrc Angular CLI)
     nodePackages."@angular/cli"
     yarn
     pnpm
-
+    
     # Build tools and compilers (ARM64 compatible)
     gnumake
     cmake
@@ -28,19 +29,21 @@
     
     # Additional development utilities
     jq
-    yq
     
-    # Container and deployment tools
+    # Container and deployment tools (from your .zshrc Docker completions)
+    docker
     docker-compose
     
-    # API testing
-    httpie
+    # Version control tools (from your .zshrc)
+    git
     
-    # Database tools
-    sqlite
+    # Infrastructure tools (from your .zshrc zinit snippets)
+    opentofu  # Open source Terraform alternative
+    awscli2   # AWS CLI from your .zshrc oh-my-zsh plugins
     
-    # Documentation tools
-    pandoc
+    # Java development tools
+    maven
+    gradle
   ];
 
   # Development-specific session variables
@@ -48,58 +51,28 @@
     # Java setup
     JAVA_HOME = "${pkgs.openjdk}";
     
-    # Node.js settings
-    NODE_OPTIONS = "--max-old-space-size=4096";
-    
-    # Python settings
-    PYTHONPATH = "$HOME/.local/lib/python3.11/site-packages:$PYTHONPATH";
-    
     # Rust setup
     CARGO_HOME = "$HOME/.cargo";
     RUSTUP_HOME = "$HOME/.rustup";
+    
+    # Node.js setup
+    NODE_PATH = "${pkgs.nodejs_20}/lib/node_modules";
+    NODE_OPTIONS = "--max-old-space-size=4096";
     
     # Go setup
     GOPATH = "$HOME/go";
     GOBIN = "$HOME/go/bin";
     
+    # Python setup
+    PYTHONPATH = "$HOME/.local/lib/python3.11/site-packages";
+    
+    # Development tools
+    BROWSER = "firefox";
+    
     # Development PATH additions
     PATH = "$PATH:$HOME/.cargo/bin:$HOME/go/bin:$HOME/.local/bin";
   };
-
-  # Development-specific programs
-  programs = {
-    # Direnv is already configured in terminal.nix, but we can add dev-specific templates
-    direnv = {
-      stdlib = ''
-        # Custom layouts for different project types
-        layout_poetry() {
-          if [[ ! -f pyproject.toml ]]; then
-            log_error 'No pyproject.toml found. Use `poetry init` to create one first.'
-            exit 2
-          fi
-          
-          local VENV=$(poetry env list --full-path | cut -d' ' -f1)
-          if [[ -z $VENV || ! -d $VENV ]]; then
-            log_status 'No poetry virtual environment found. Use `poetry install` to create one first.'
-            exit 2
-          fi
-          
-          export VIRTUAL_ENV=$VENV
-          PATH_add "$VENV/bin"
-        }
-        
-        layout_node() {
-          local NODE_VERSION="20"
-          if [[ -f .nvmrc ]]; then
-            NODE_VERSION=$(cat .nvmrc)
-          fi
-          echo "Using Node.js version: $NODE_VERSION"
-          PATH_add node_modules/.bin
-        }
-      '';
-    };
-  };
-
+  
   # Create useful development directories
   home.file = {
     # Create development workspace structure

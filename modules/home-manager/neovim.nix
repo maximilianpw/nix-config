@@ -4,89 +4,84 @@
   ...
 }: {
   # Neovim configuration module
-  # This module provides a comprehensive Neovim setup with plugins and LSP support
+  # This module only provides packages needed for your nvim configuration
+  # All configuration is handled by your dotfiles via the .config symlink
   
   home.packages = with pkgs; [
-    # Neovim and core editing tools
-    neovim
-    tree-sitter
-
-    # Language servers for Neovim
-    lua-language-server
-    typescript
-    nodePackages.typescript-language-server
+    # Language servers (from your LSP config in nvim/lua/plugins/lsp/init.lua)
+    clang-tools      # clangd
+    gopls           # Go LSP
+    pyright         # Python LSP  
+    rust-analyzer   # Rust LSP
+    nodePackages.typescript-language-server  # ts_ls (TypeScript)
+    dockerfile-language-server-nodejs        # dockerls
+    tailwindcss-language-server              # tailwindcss
+    lua-language-server                      # lua_ls
     
-    # Formatters for various languages
-    nodePackages.prettier
-    nodePackages.eslint_d
-    black # Python formatter
-    isort # Python import sorter
-    stylua # Lua formatter
+    # Formatters and linters (from mason-tool-installer config)
+    stylua          # Lua formatter
+    prettierd       # JavaScript/TypeScript formatter (faster prettier)
+    eslint_d        # Faster ESLint
+    
+    # Additional development tools
+    tree-sitter     # Syntax highlighting
+    ripgrep         # Required by telescope and other plugins
+    fd              # Required by telescope
+    git             # Required by git plugins
+    nodejs_20       # Required for many LSPs and tools
+    
+    # Debug adapters (for nvim-dap if you use debugging)
+    lldb            # For C/C++/Rust debugging
+    delve           # For Go debugging
+    
+    # Additional tools that might be needed
+    unzip           # For plugin installations
+    gcc             # For compiling tree-sitter parsers
+    gnumake         # Build tool
+    
+    # Java tooling (from your java plugins folder)
+    openjdk         # Java runtime
+    maven           # Java build tool
+    gradle          # Alternative Java build tool
   ];
 
-  # Programs configuration
-  programs = {
-    # Neovim configuration
-    neovim = {
-      enable = true;
-      viAlias = true;
-      vimAlias = true;
-      vimdiffAlias = true;
+  # Minimal neovim setup - let dotfiles handle configuration
+  programs.neovim = {
+    enable = true;
+    defaultEditor = true;
+    viAlias = true;
+    vimAlias = true;
+    vimdiffAlias = true;
+    
+    # Extra packages needed at runtime
+    extraPackages = with pkgs; [
+      # Language runtimes
+      python3
+      nodejs_20
+      rustc
+      cargo
+      go
+      openjdk
       
-      # Basic Neovim configuration
-      extraConfig = ''
-        " Basic settings
-        set number
-        set relativenumber
-        set tabstop=2
-        set shiftwidth=2
-        set expandtab
-        set smartindent
-        set wrap
-        set smartcase
-        set noswapfile
-        set nobackup
-        set undodir=~/.config/nvim/undodir
-        set undofile
-        set incsearch
-        set scrolloff=8
-        set signcolumn=yes
-        set updatetime=50
-        set colorcolumn=80
-      '';
+      # Build tools
+      gcc
+      gnumake
+      cmake
       
-      # Plugins can be added here
-      plugins = with pkgs.vimPlugins; [
-        # Essential plugins
-        plenary-nvim
-        telescope-nvim
-        
-        # LSP and completion
-        nvim-lspconfig
-        nvim-cmp
-        cmp-nvim-lsp
-        cmp-buffer
-        cmp-path
-        
-        # Syntax highlighting
-        nvim-treesitter
-        
-        # Git integration
-        gitsigns-nvim
-        
-        # File explorer
-        nvim-tree-lua
-        
-        # Status line
-        lualine-nvim
-        
-        # Color scheme
-        gruvbox-nvim
-      ];
-    };
+      # Utils
+      curl
+      wget
+      git
+      unzip
+      
+      # Tree-sitter CLI for custom parsers
+      tree-sitter
+    ];
+    
+    # No configuration here - dotfiles handle everything via .config symlink
   };
-
-  # Session variables for Neovim
+  
+  # Session variables for neovim
   home.sessionVariables = {
     EDITOR = "nvim";
     VISUAL = "nvim";
