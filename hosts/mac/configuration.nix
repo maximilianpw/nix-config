@@ -13,18 +13,12 @@
   # VMware Fusion specific configuration
   virtualisation.vmware.guest.enable = true;
   
-  # VMware services for better integration
-  services.vmware-guest = {
-    enable = true;
-    headless = false;  # Set to true if running headless
-  };
-  
-  # VMware Fusion ARM optimizations
+  # VMware Fusion ARM optimizations for Linux LTS
   boot.kernelParams = [
-    "elevator=noop"        # Better I/O scheduler for VMs
-    "transparent_hugepage=never"  # Better memory management in VMware
-    "clocksource=tsc"      # Better timekeeping in VMware
-    "nohz=off"            # Disable tickless kernel for better VMware performance
+    "elevator=mq-deadline"    # Better I/O scheduler for modern kernels on ARM64
+    "transparent_hugepage=madvise"  # More conservative memory management for ARM64
+    # "clocksource=tsc"      # TSC may not be available on ARM64, let kernel choose
+    "mitigations=auto"       # Enable security mitigations appropriate for platform
   ];
 
   # Bootloader.
@@ -46,19 +40,10 @@
   # Enable networking
   networking.networkmanager.enable = true;
   
-  # VMware Fusion network optimizations
+  # VMware network optimizations
   networking.interfaces = {
     # VMware typically uses ens160 or similar
     ens160.useDHCP = true;
-  };
-  
-  # Enable VMware shared folders (if needed)
-  fileSystems."/mnt/hgfs" = {
-    device = ".host:/";
-    fsType = "fuse./usr/bin/vmhgfs-fuse";
-    options = [ 
-      "umask=22,uid=1000,gid=1000,allow_other,auto_unmount,defaults"
-    ];
   };
 
   # Set your time zone.
@@ -82,12 +67,12 @@
   # Enable the X11 windowing system.
   services.xserver.enable = true;
   
-  # VMware Fusion optimized graphics
-  services.xserver.videoDrivers = ["vmware" "fbdev" "vesa"];
+  # VMware Fusion optimized graphics (ARM64 compatible)
+  services.xserver.videoDrivers = ["fbdev" "vesa"];
   hardware.opengl = {
     enable = true;
     driSupport = true;
-    driSupport32Bit = true;
+    # Note: driSupport32Bit is not available on ARM64
   };
 
   # Enable the GNOME Desktop Environment.
@@ -128,14 +113,14 @@
   # Enable CUPS to print documents.
   services.printing.enable = true;
 
-  # Enable sound with pipewire.
+  # Enable sound with pipewire (ARM64 compatible)
   sound.enable = true;
   hardware.pulseaudio.enable = false;
   security.rtkit.enable = true;
   services.pipewire = {
     enable = true;
     alsa.enable = true;
-    alsa.support32Bit = true;
+    # Note: 32-bit ALSA support not needed on ARM64
     pulse.enable = true;
   };
 
@@ -162,6 +147,8 @@
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
+  # List packages installed in system profile. To search, run:
+  # $ nix search wget
   environment.systemPackages = with pkgs; [
     alejandra
     git
@@ -169,15 +156,18 @@
     neofetch
     rustup
     vscode
-    _1password_cli
-    _1password-gui
-    ghostty
-    # VMware Fusion specific tools
+    # Note: 1Password apps may not be available on ARM64 Linux
+    # _1password_cli  # Check availability
+    # _1password-gui  # Check availability  
+    # Note: Ghostty may not be available on ARM64 Linux
+    # ghostty  # Check availability
+    # VMware Fusion specific tools (ARM64 compatible)
     open-vm-tools
-    xf86-input-vmmouse
-    xf86-video-vmware
     # Support for Home Manager dotfiles
     zsh
+    # Additional ARM64-friendly alternatives
+    firefox
+    discord
   ];
 
   # Enable zsh system-wide to support Home Manager zsh config

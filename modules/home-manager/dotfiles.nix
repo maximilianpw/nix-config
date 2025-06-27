@@ -8,28 +8,29 @@
   
   # The home.packages option allows you to install Nix packages into your environment.
   home.packages = with pkgs; [
-    # Core system utilities
+    # Core system utilities (ARM64 compatible)
     git
     unzip
     curl
     wget
     
-    # Development tools - General
+    # Development tools - General (ARM64 compatible)
     neovim
     ripgrep
     fd
     fzf
     tree-sitter
 
-    # Development tools - Languages and runtimes
+    # Development tools - Languages and runtimes (ARM64 compatible)
     nodejs_20
     python3
     python311Packages.pip
     rustup
     go
+    # Note: OpenJDK works well on ARM64
     openjdk
 
-    # Development tools - Language servers and formatters
+    # Development tools - Language servers and formatters (ARM64 compatible)
     lua-language-server
     typescript
     nodePackages.typescript-language-server
@@ -40,15 +41,15 @@
     isort # Python import sorter
     stylua # Lua formatter
 
-    # Development tools - Build and Make
+    # Development tools - Build and Make (ARM64 compatible)
     gnumake
     cmake
     gcc
 
-    # Nerd Fonts for terminal
+    # Nerd Fonts for terminal (ARM64 compatible)
     (nerdfonts.override {fonts = ["FiraCode" "JetBrainsMono" "Hack"];})
 
-    # Additional utilities
+    # Additional utilities (ARM64 compatible)
     lazygit
   ];
 
