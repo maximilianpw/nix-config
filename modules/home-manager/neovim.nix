@@ -31,13 +31,12 @@
     nodejs_20       # Required for many LSPs and tools
     
     # Debug adapters (for nvim-dap if you use debugging)
-    lldb            # For C/C++/Rust debugging
+    # lldb moved to system packages in common.nix
     delve           # For Go debugging
     
     # Additional tools that might be needed
     unzip           # For plugin installations
-    gcc             # For compiling tree-sitter parsers
-    gnumake         # Build tool
+    # gcc, gnumake moved to system packages in common.nix
     
     # Java tooling (from your java plugins folder)
     openjdk         # Java runtime

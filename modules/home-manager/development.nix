@@ -21,11 +21,8 @@
     yarn
     pnpm
     
-    # Build tools and compilers (ARM64 compatible)
-    gnumake
-    cmake
-    gcc
-    clang
+    # Build tools and compilers (moved to system-level common.nix)
+    # gcc, clang, gnumake, cmake are now system packages
     
     # Additional development utilities
     jq

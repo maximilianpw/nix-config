@@ -151,16 +151,25 @@ boot.kernelParams = [
 - Symlink: `~/dotfiles/.zshrc` → `~/.zshrc`
 - **Note**: All shell and editor configuration is handled by dotfiles, not Nix
 
-#### `terminal.nix` (Available but not currently used)
-**Would provide**: Terminal tools without configuration
+#### `terminal.nix` (Available for optional import)
+**Provides**: Terminal tools without configuration
 - Shell utilities (ripgrep, fzf, eza, bat, etc.)
 - System tools (htop, neofetch, curl, etc.)
+- **Usage**: Add to imports in host-specific home.nix if needed
 
-#### `neovim.nix` (Available but not currently used)
-**Would provide**: Language servers and tools for Neovim
+#### `neovim.nix` (Available for optional import)
+**Provides**: Language servers and tools for Neovim
 - LSPs (clangd, gopls, pyright, rust-analyzer, etc.)
 - Formatters and linters
 - Tree-sitter parsers
+- **Usage**: Add to imports in host-specific home.nix if needed
+
+#### `development.nix` (Available for optional import)
+**Provides**: Development tools and programming languages
+- Compilers (gcc, clang, rustc, etc.)
+- Package managers (npm, pip, cargo, etc.)
+- **Usage**: Add to imports in host-specific home.nix if needed
+- **Note**: May conflict with neovim.nix if both import compilers
 
 ## 🔧 Configuration Philosophy
 

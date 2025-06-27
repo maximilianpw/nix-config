@@ -3,7 +3,7 @@
   pkgs,
   ...
 }: {
-  # Import the global dotfiles configuration
+  # Import the global dotfiles configuration (includes all modules)
   imports = [
     ../../modules/home-manager/dotfiles.nix
   ];
