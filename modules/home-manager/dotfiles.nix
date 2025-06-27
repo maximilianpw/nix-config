@@ -5,7 +5,7 @@
 }: {
   # Global Home Manager configuration
   # This can be imported by individual user configs
-  
+
   # The home.packages option allows you to install Nix packages into your environment.
   home.packages = with pkgs; [
     # Core system utilities (ARM64 compatible)
@@ -13,9 +13,9 @@
     unzip
     curl
     wget
-    
+
     # Development tools - General (ARM64 compatible)
-    neovim
+    # neovim is configured in programs.neovim instead of packages to avoid conflicts
     ripgrep
     fd
     fzf
@@ -67,8 +67,6 @@
     git = {
       enable = true;
       # Add global git aliases and config here
-      userName = "Maximilian NixOS";
-        userEmail = "mpinderwhite@proton.me"
       aliases = {
         st = "status";
         co = "checkout";
@@ -82,12 +80,11 @@
     # Zsh configuration
     zsh = {
       enable = true;
-      autosuggestion.enable = true;
       syntaxHighlighting.enable = true;
       oh-my-zsh = {
         enable = true;
         theme = "robbyrussell";
-        plugins = [ "git" "sudo" "docker" "kubectl" ];
+        plugins = ["git" "sudo" "docker" "kubectl"];
       };
     };
 

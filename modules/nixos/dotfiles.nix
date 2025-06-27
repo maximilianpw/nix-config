@@ -5,7 +5,7 @@
 }: {
   # Global Home Manager configuration
   # This can be imported by individual user configs
-  
+
   # The home.packages option allows you to install Nix packages into your environment.
   home.packages = with pkgs; [
     # Core system utilities
@@ -13,7 +13,7 @@
     unzip
     curl
     wget
-    
+
     # Development tools - General
     neovim
     ripgrep
@@ -84,7 +84,7 @@
       oh-my-zsh = {
         enable = true;
         theme = "robbyrussell";
-        plugins = [ "git" "sudo" "docker" "kubectl" ];
+        plugins = ["git" "sudo" "docker" "kubectl"];
       };
     };
 

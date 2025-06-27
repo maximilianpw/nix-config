@@ -12,21 +12,27 @@
 
   boot.initrd.availableKernelModules = [
     # Standard ARM64 VM modules
-    "ehci_pci" "ahci" "xhci_pci" "nvme" "usbhid" "sr_mod"
-    # VMware Fusion ARM64 modules (some may not be available)
-    "vmw_balloon" "vmw_vmci"  # Core VMware modules that work on ARM64
+    "ehci_pci"
+    "ahci"
+    "xhci_pci"
+    "nvme"
+    "usbhid"
+    "sr_mod"
     # Virtio modules (more reliable on ARM64)
-    "virtio_pci" "virtio_blk" "virtio_scsi" "virtio_net"
+    "virtio_pci"
+    "virtio_blk"
+    "virtio_scsi"
+    "virtio_net"
   ];
   boot.initrd.kernelModules = [
-    # Essential for ARM64 VMs
-    "virtio_balloon" "virtio_console"
+    # Essential for ARM64 VMs - use virtio instead of VMware modules
+    "virtio_balloon"
+    "virtio_console"
   ];
   boot.kernelModules = [
     # ARM64 virtualization support
     "kvm-arm64"
-    # VMware modules that work on ARM64
-    "vmw_balloon" "vmw_vmci"
+    # Use virtio modules instead of VMware-specific ones for ARM64
   ];
   boot.extraModulePackages = [];
 

@@ -10,15 +10,16 @@
     inputs.home-manager.nixosModules.default
   ];
 
-  # VMware Fusion specific configuration
-  virtualisation.vmware.guest.enable = true;
-  
+  # VMware Fusion specific configuration for ARM64
+  # Note: Traditional VMware guest tools are not available on ARM64
+  # Using open-vm-tools package instead (defined in systemPackages)
+
   # VMware Fusion ARM optimizations for Linux LTS
   boot.kernelParams = [
-    "elevator=mq-deadline"    # Better I/O scheduler for modern kernels on ARM64
-    "transparent_hugepage=madvise"  # More conservative memory management for ARM64
+    "elevator=mq-deadline" # Better I/O scheduler for modern kernels on ARM64
+    "transparent_hugepage=madvise" # More conservative memory management for ARM64
     # "clocksource=tsc"      # TSC may not be available on ARM64, let kernel choose
-    "mitigations=auto"       # Enable security mitigations appropriate for platform
+    "mitigations=auto" # Enable security mitigations appropriate for platform
   ];
 
   # Bootloader.
@@ -39,7 +40,7 @@
 
   # Enable networking
   networking.networkmanager.enable = true;
-  
+
   # VMware network optimizations
   networking.interfaces = {
     # VMware typically uses ens160 or similar
@@ -66,7 +67,7 @@
 
   # Enable the X11 windowing system.
   services.xserver.enable = true;
-  
+
   # VMware Fusion optimized graphics (ARM64 compatible)
   services.xserver.videoDrivers = ["fbdev" "vesa"];
   hardware.opengl = {
@@ -131,7 +132,6 @@
     extraGroups = ["networkmanager" "wheel"];
     packages = with pkgs; [
       firefox
-      discord
     ];
   };
 
@@ -158,7 +158,7 @@
     vscode
     # Note: 1Password apps may not be available on ARM64 Linux
     # _1password_cli  # Check availability
-    # _1password-gui  # Check availability  
+    # _1password-gui  # Check availability
     # Note: Ghostty may not be available on ARM64 Linux
     # ghostty  # Check availability
     # VMware Fusion specific tools (ARM64 compatible)
@@ -167,7 +167,6 @@
     zsh
     # Additional ARM64-friendly alternatives
     firefox
-    discord
   ];
 
   # Enable zsh system-wide to support Home Manager zsh config
