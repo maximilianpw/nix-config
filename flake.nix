@@ -23,15 +23,17 @@
   } @ inputs: let
     # Support multiple systems with ARM64 priority
     systems = ["aarch64-linux" "x86_64-linux" "x86_64-darwin"];
-    
+
     # Helper function to create system configurations
     mkSystem = system: hostname: modules:
       nixpkgs.lib.nixosSystem {
         inherit system;
         specialArgs = {inherit inputs;};
-        modules = [
-          ./modules/nixos/common.nix
-        ] ++ modules;
+        modules =
+          [
+            ./modules/nixos/common.nix
+          ]
+          ++ modules;
       };
   in {
     nixosConfigurations = {
@@ -40,35 +42,36 @@
         ./hosts/default/configuration.nix
         ./modules/nixos/vm-common.nix
       ];
-      
+
       # High-performance VM with NVIDIA (x86_64)
       bigboy = mkSystem "x86_64-linux" "nixos-bigboy" [
         ./hosts/bigboy/configuration.nix
         ./modules/nixos/vm-common.nix
         ./modules/nixos/nvidia.nix
       ];
-      
+
       # ARM64 VM for Mac (VMware Fusion)
       mac = mkSystem "aarch64-linux" "nixos-mac" [
         ./hosts/mac/configuration.nix
         ./modules/nixos/vmware.nix
       ];
     };
-    
+
     # Development shell for managing the configuration
     devShells = nixpkgs.lib.genAttrs systems (system: let
       pkgs = nixpkgs.legacyPackages.${system};
-    in pkgs.mkShell {
-      buildInputs = with pkgs; [
-        alejandra
-        git
-        nixos-rebuild
-      ];
-      shellHook = ''
-        echo "NixOS Configuration Development Shell"
-        echo "Use 'alejandra .' to format Nix files"
-        echo "Use './scripts/nixos-rebuild.sh <host>' to rebuild"
-      '';
-    });
+    in
+      pkgs.mkShell {
+        buildInputs = with pkgs; [
+          alejandra
+          git
+          nixos-rebuild
+        ];
+        shellHook = ''
+          echo "NixOS Configuration Development Shell"
+          echo "Use 'alejandra .' to format Nix files"
+          echo "Use './scripts/nixos-rebuild.sh <host>' to rebuild"
+        '';
+      });
   };
 }

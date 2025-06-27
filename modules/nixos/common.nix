@@ -5,7 +5,7 @@
   ...
 }: {
   # Shared system configuration across all hosts
-  
+
   # Networking
   networking.networkmanager.enable = true;
 
@@ -75,16 +75,16 @@
     htop
     tree
     unzip
-    
+
     # Build tools and compilers (system-wide to avoid conflicts)
     gcc
     clang
     gnumake
     cmake
-    
+
     # Additional build dependencies
     pkg-config
-    lldb           # For debugging
+    lldb # For debugging
   ];
 
   # Enable the OpenSSH daemon
