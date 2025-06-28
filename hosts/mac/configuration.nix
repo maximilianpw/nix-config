@@ -9,7 +9,7 @@
     inputs.home-manager.nixosModules.default
     ../../modules/nixos/common.nix
     ../../modules/nixos/vm-common.nix
-    # ../../modules/nixos/vmware.nix  # Only if you have ARM64-safe tweaks
+    ../../modules/nixos/vmware.nix  # Only if you have ARM64-safe tweaks
   ];
 
   # VMware Fusion ARM64 kernel optimizations
@@ -53,5 +53,5 @@
   # VMware guest modules not available on ARM64
   virtualisation.vmware.guest.enable = false;
 
-  system.stateVersion = "24.05";
+  system.stateVersion = "25.05";
 }

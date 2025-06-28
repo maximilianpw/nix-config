@@ -11,11 +11,11 @@
 
   home.username = "maxpw";
   home.homeDirectory = "/home/maxpw";
-  home.stateVersion = "24.05";
+  home.stateVersion = "25.05";
 
   home.packages = with pkgs; [
     hello
-    _1password
+    _1password-cli
     _1password-gui
   ];
 
