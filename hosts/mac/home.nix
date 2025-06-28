@@ -13,7 +13,8 @@
 
   home.packages = with pkgs; [
     hello
-    _1password_cli
+    _1password
+    _1password-gui
   ];
 
   programs.home-manager.enable = true;
