@@ -19,5 +19,11 @@
     _1password-gui
   ];
 
+  programs.ssh.enable = true;
+  programs.ssh.extraConfig = ''
+    Host github.com
+      IdentityAgent "~/.1password/agent.sock"
+  '';
+
   nixpkgs.config.allowUnfree = true;
 }
