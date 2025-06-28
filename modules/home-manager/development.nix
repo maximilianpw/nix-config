@@ -33,6 +33,7 @@
 
     # Version control tools (from your .zshrc)
     git
+    gh
 
     # Infrastructure tools (from your .zshrc zinit snippets)
     opentofu # Open source Terraform alternative
