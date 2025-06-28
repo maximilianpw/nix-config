@@ -47,14 +47,4 @@
   # All environment variables should be set in your .zshrc or shell config files
   # This avoids conflicts with the .config symlink approach
 
-  # Create useful development directories
-  home.file = {
-    # Create development workspace structure
-    "Development/.keep".text = "";
-    "go/bin/.keep".text = "";
-    "go/pkg/.keep".text = "";
-    "go/src/.keep".text = "";
-
-    # Note: Configuration files like ripgrep config are handled by dotfiles symlink
-  };
 }

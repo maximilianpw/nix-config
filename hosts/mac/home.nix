@@ -4,8 +4,10 @@
   ...
 }: {
   imports = [
-    ../../modules/home-manager/dotfiles.nix
+#    ../../modules/home-manager/dotfiles.nix
   ];
+
+  programs.home-manager.enable = true;
 
   home.username = "maxpw";
   home.homeDirectory = "/home/maxpw";
@@ -18,6 +20,4 @@
   ];
 
   nixpkgs.config.allowUnfree = true;
-
-  programs.home-manager.enable = true;
 }

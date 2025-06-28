@@ -49,12 +49,12 @@
   programs.zsh.enable = true;
 
   # Create symlink from ~/dotfiles/.zshrc to ~/.zshrc
-  home.file.".zshrc" = {
-    source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/dotfiles/.zshrc";
-  };
+  # home.file.".zshrc" = {
+  # source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/dotfiles/.zshrc";
+  # };
 
   # Create symlink from ~/dotfiles/.config to ~/.config
-  home.file.".config" = {
-    source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/dotfiles/.config";
-  };
+  #home.file.".config" = {
+  # source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/dotfiles/.config";
+  # };
 }

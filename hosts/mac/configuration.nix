@@ -53,5 +53,5 @@
   # VMware guest modules not available on ARM64
   virtualisation.vmware.guest.enable = false;
 
-  system.stateVersion = "23.11";
+  system.stateVersion = "24.05";
 }

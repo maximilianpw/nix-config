@@ -13,9 +13,6 @@
     ./fonts.nix # Font packages
   ];
 
-  # Allow Home Manager to manage itself
-  programs.home-manager.enable = true;
-
   # Create symlinks to dotfiles
 #home.file = {
     # Symlink entire .config directory to dotfiles
