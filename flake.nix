@@ -2,7 +2,7 @@
   description = "NixOS configuration flake for VMs and development";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-24.05";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.05";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
 
     home-manager = {
@@ -51,7 +51,7 @@
       # ARM64 VM for Mac (VMware Fusion)
       mac = mkSystem "aarch64-linux" "nixos-mac" [
         ./hosts/mac/configuration.nix
-#       ./modules/nixos/vmware.nix
+       ./modules/nixos/vmware.nix
       ];
     };
 
