@@ -10,7 +10,7 @@
     ./terminal.nix # Terminal tools and utilities
     ./neovim.nix # Language servers and Neovim tools
     ./development.nix # Development tools and runtimes
-#    ./fonts.nix # Font packages
+    ./fonts.nix # Font packages
   ];
 
   # Create symlinks to dotfiles

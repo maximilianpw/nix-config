@@ -1,23 +1,12 @@
-{
-  config,
-  pkgs,
-  ...
-}: {
-  # Fonts and typography configuration module
-  # This module provides font management for development and general use
+{ config, pkgs, ... }:
 
+{
   home.packages = with pkgs; [
-    # Nerd Fonts for terminal and coding (ARM64 compatible)
-    (nerdfonts.override {
-      fonts = [
-        "FiraCode"
-        "JetBrainsMono"
-        "Hack"
-        "Iosevka"
-        "CascadiaCode"
-        "SourceCodePro"
-      ];
-    })
+    # Nerd Fonts — now using individual font packages
+    nerd-fonts.fira-code
+    nerd-fonts.jetbrains-mono
+    nerd-fonts.hack
+    nerd-fonts.iosevka
 
     # Additional useful fonts
     fira-code
@@ -29,7 +18,6 @@
     dejavu_fonts
   ];
 
-  # Font configuration
   fonts.fontconfig = {
     enable = true;
 
@@ -50,7 +38,4 @@
       ];
     };
   };
-
-  # Font-related session variables moved to dotfiles
-  # FREETYPE_PROPERTIES and other font settings should be in your shell config
 }
