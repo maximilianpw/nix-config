@@ -57,7 +57,7 @@ if [[ ! -d "$CONFIG_DIR" ]]; then
     exit 1
 fi
 
-cd "$CONFIG_DIR"
+pushd "$CONFIG_DIR"
 
 # Validate flake
 info "Validating flake configuration..."
