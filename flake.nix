@@ -2,7 +2,6 @@
   description = "NixOS configuration flake for VMs and development";
 
   inputs = {
-    # Use stable release (24.05 for better hardware support)
     nixpkgs.url = "github:nixos/nixpkgs/nixos-24.05";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
 
@@ -11,7 +10,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # Additional useful inputs
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
   };
 
@@ -19,9 +17,9 @@
     self,
     nixpkgs,
     nixos-hardware,
+    home-manager,
     ...
   } @ inputs: let
-    # Support multiple systems with ARM64 priority
     systems = ["aarch64-linux" "x86_64-linux" "x86_64-darwin"];
 
     # Helper function to create system configurations
