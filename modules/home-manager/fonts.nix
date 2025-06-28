@@ -7,9 +7,7 @@
     nerd-fonts.jetbrains-mono
     nerd-fonts.hack
     nerd-fonts.iosevka
-    nerd-fonts.cascadia-code
     nerd-fonts.ubuntu-mono
-    nerd-fonts.terminus
 
     # Additional useful fonts
     fira-code
@@ -17,7 +15,7 @@
     source-code-pro
     ibm-plex
     noto-fonts
-    noto-fonts-cjk
+    noto-fonts-cjk-sans
     noto-fonts-emoji
     roboto
     roboto-mono

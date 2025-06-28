@@ -8,6 +8,8 @@
   # All configuration is handled by your dotfiles
 
   home.packages = with pkgs; [
+    ghostty
+
     # Core terminal utilities
     ripgrep
     fd
