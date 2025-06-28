@@ -17,11 +17,11 @@
   programs.home-manager.enable = true;
 
   # Create symlinks to dotfiles
-  home.file = {
+#home.file = {
     # Symlink entire .config directory to dotfiles
-    ".config".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/dotfiles/.config";
+#   ".config".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/dotfiles/.config";
 
     # Symlink shell configuration
-    ".zshrc".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/dotfiles/.zshrc";
-  };
+#   ".zshrc".source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/dotfiles/.zshrc";
+# };
 }

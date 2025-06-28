@@ -47,7 +47,7 @@
     isNormalUser = true;
     description = lib.mkDefault "Max PW";
     extraGroups = ["networkmanager" "wheel"];
-    # Remove packages here if managed via Home Manager!
+    home = "/home/maxpw";
   };
 
   programs.firefox.enable = true;
