@@ -4,7 +4,7 @@
   ...
 }: {
   imports = [
-#    ../../modules/home-manager/dotfiles.nix
+    ../../modules/home-manager/dotfiles.nix
   ];
 
   programs.home-manager.enable = true;
