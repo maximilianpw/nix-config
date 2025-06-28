@@ -117,7 +117,7 @@ sudo nix-collect-garbage --delete-older-than 30d >/dev/null 2>&1 || warn "Garbag
 
 success "All done! System is ready."
 git add .
-git commit -m "NixOS configuration updated: $current" || echo "No changes to commit."
+git commit -m "NixOS configuration updated: $CURRENT_GEN" || echo "No changes to commit."
 
 # Back to where you were
 popd >/dev/null
