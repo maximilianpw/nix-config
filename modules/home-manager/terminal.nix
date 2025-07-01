@@ -1,14 +1,18 @@
 {
   config,
   pkgs,
+  inputs,
   ...
 }: {
   # Terminal and shell configuration module
   # This module only provides packages needed for your .zshrc configuration
   # All configuration is handled by your dotfiles
 
-  home.packages = with pkgs; [
-    ghostty
+  home.packages = 
+    [
+      inputs.ghostty.packages.${pkgs.stdenv.hostPlatform.system}.default
+    ]
+    ++ (with pkgs; [
 
     # Core terminal utilities
     ripgrep
@@ -45,7 +49,7 @@
 
     # OpenTofu (open source Terraform alternative)
     opentofu
-  ];
+  ]);
 
   # Enable zsh system-wide (minimal setup)
   programs.zsh.enable = true;

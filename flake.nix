@@ -10,6 +10,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    ghostty = { 
+      url = "github:ghostty-org/ghostty";
+    };
+
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
   };
 
@@ -17,6 +21,7 @@
     self,
     nixpkgs,
     nixos-hardware,
+    ghostty,
     home-manager,
     ...
   } @ inputs: let
@@ -51,7 +56,7 @@
       # ARM64 VM for Mac (VMware Fusion)
       mac = mkSystem "aarch64-linux" "nixos-mac" [
         ./hosts/mac/configuration.nix
-       ./modules/nixos/vmware.nix
+        ./modules/nixos/vmware.nix
       ];
     };
 
