@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
-# NixOS rebuild script with better error handling and validation
+# NixOS/Darwin rebuild script with better error handling and validation, auto-detecting host and platform
 set -euo pipefail
 
 # Configuration
+auto_username=$(whoami)
 CONFIG_DIR="$HOME/Nix-Config"
 LOG_FILE="$CONFIG_DIR/nixos-switch.log"
 
@@ -21,35 +22,63 @@ success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
 
 usage() {
     cat << EOF
-Usage: $0 <hostname>
+Usage: $0
 
-Available hosts:
-  - default: Standard VM configuration
-  - bigboy:  High-performance VM with NVIDIA
-  - mac:     ARM64 VM for Mac (VMware Fusion)
+Automatically detects username and platform.
 
-Examples:
-  $0 default
-  $0 bigboy
-  $0 mac
+Host mapping:
+  - max-vev: mac (darwin)
+  - default: default (nixos)
+  - bigboy: bigboy (nixos)
+  - Maximilians-MacBook-Pro: special darwin config
+
+On macOS, uses darwin-rebuild. On Linux, uses nixos-rebuild.
 EOF
 }
 
-# Check arguments
-if [[ $# -ne 1 ]]; then
-    error "Missing hostname argument"
-    usage
-    exit 1
+# Username to host mapping
+declare -A USER_HOST_MAP
+USER_HOST_MAP=(
+  ["max-vev"]="mac-darwin"
+  ["max-vm"]="max-vm"
+)
+
+HOSTNAME="${USER_HOST_MAP[$auto_username]:-default}"
+
+# Detect platform
+UNAME_OUT="$(uname -s)"
+if [[ "$UNAME_OUT" == "Darwin" ]]; then
+    PLATFORM="darwin"
+    REBUILD_CMD="darwin-rebuild"
+    SYSTEM_HOSTNAME=$(scutil --get ComputerName 2>/dev/null || hostname)
+    case "$SYSTEM_HOSTNAME" in
+        "max-vm")
+            FLAKE_ATTR="darwinConfigurations.mac-vm"
+            FLAKE_SWITCH_ATTR="mac-vm"
+            info "Detected max-vm, using darwinConfigurations.mac-vm."
+            ;;
+        "max-vev")
+            FLAKE_ATTR="darwinConfigurations.mac-darwin"
+            FLAKE_SWITCH_ATTR="mac-darwin"
+            info "Detected max-vev, using darwinConfigurations.mac-darwin."
+            ;;
+        *)
+            FLAKE_ATTR="darwinConfigurations.$HOSTNAME"
+            FLAKE_SWITCH_ATTR="$HOSTNAME"
+            ;;
+    esac
+else
+    PLATFORM="nixos"
+    REBUILD_CMD="nixos-rebuild"
+    FLAKE_ATTR="nixosConfigurations.$HOSTNAME.config.system.build.toplevel"
+    FLAKE_SWITCH_ATTR="$HOSTNAME"
 fi
 
-HOSTNAME="$1"
-VALID_HOSTS=("default" "bigboy" "mac")
-
-if [[ ! " ${VALID_HOSTS[*]} " =~ " ${HOSTNAME} " ]]; then
-    error "Invalid hostname: $HOSTNAME"
-    usage
-    exit 1
-fi
+info "Detected user: $auto_username"
+info "Selected host: $HOSTNAME"
+info "Platform: $PLATFORM"
+info "Rebuild command: $REBUILD_CMD"
+info "Flake attribute: $FLAKE_ATTR"
 
 # Change to config directory
 if [[ ! -d "$CONFIG_DIR" ]]; then
@@ -82,24 +111,43 @@ else
 fi
 
 # Build the configuration first
-info "Building NixOS configuration for host: $HOSTNAME"
-if ! nix build ".#nixosConfigurations.$HOSTNAME.config.system.build.toplevel" --no-link 2>&1 | tee "$LOG_FILE"; then
-    error "Build failed! Check the log above for details."
-    exit 1
+info "Building configuration for flake attribute: $FLAKE_ATTR"
+if [[ "$PLATFORM" == "darwin" ]]; then
+    if ! nix build ".#$FLAKE_ATTR" --no-link 2>&1 | tee "$LOG_FILE"; then
+        error "Build failed! Check the log above for details."
+        exit 1
+    fi
+else
+    if ! nix build ".#$FLAKE_ATTR" --no-link 2>&1 | tee "$LOG_FILE"; then
+        error "Build failed! Check the log above for details."
+        exit 1
+    fi
 fi
 
 # Apply the configuration
-info "Applying NixOS configuration..."
-if ! sudo nixos-rebuild switch --flake "./#$HOSTNAME" 2>&1 | tee -a "$LOG_FILE"; then
-    error "Rebuild failed! Check the log:"
-    grep --color=always -E "(error|Error|ERROR|warning|Warning|WARN)" "$LOG_FILE" || true
-    exit 1
+info "Applying configuration..."
+if [[ "$PLATFORM" == "darwin" ]]; then
+    if ! darwin-rebuild switch --flake ".#$FLAKE_SWITCH_ATTR" 2>&1 | tee -a "$LOG_FILE"; then
+        error "Rebuild failed! Check the log:"
+        grep --color=always -E "(error|Error|ERROR|warning|Warning|WARN)" "$LOG_FILE" || true
+        exit 1
+    fi
+else
+    if ! sudo nixos-rebuild switch --flake ".#$FLAKE_SWITCH_ATTR" 2>&1 | tee -a "$LOG_FILE"; then
+        error "Rebuild failed! Check the log:"
+        grep --color=always -E "(error|Error|ERROR|warning|Warning|WARN)" "$LOG_FILE" || true
+        exit 1
+    fi
 fi
 
 success "Rebuild completed successfully!"
 
 # Get current generation metadata
-CURRENT_GEN=$(sudo nix-env --list-generations --profile /nix/var/nix/profiles/system | grep current | awk '{print $2 " " $3 " " $4}')
+if [[ "$PLATFORM" == "darwin" ]]; then
+    CURRENT_GEN=$(nix-env --list-generations --profile "$HOME/.nix-profile" | grep current | awk '{print $2 " " $3 " " $4}')
+else
+    CURRENT_GEN=$(sudo nix-env --list-generations --profile /nix/var/nix/profiles/system | grep current | awk '{print $2 " " $3 " " $4}')
+fi
 info "Current generation: $CURRENT_GEN"
 
 # Commit changes if in a git repository
@@ -107,17 +155,18 @@ if git rev-parse --git-dir >/dev/null 2>&1; then
     if ! git diff --quiet HEAD -- '*.nix'; then
         info "Committing changes to git..."
         git add -A
-        git commit -m "NixOS rebuild: $HOSTNAME - Generation $CURRENT_GEN" || warn "Git commit failed"
+        git commit -m "NixOS/Darwin rebuild: $HOSTNAME - Generation $CURRENT_GEN" || warn "Git commit failed"
     fi
 fi
 
 # Clean up old generations (keep last 10)
 info "Cleaning up old generations..."
-sudo nix-collect-garbage --delete-older-than 30d >/dev/null 2>&1 || warn "Garbage collection failed"
+if [[ "$PLATFORM" == "darwin" ]]; then
+    nix-collect-garbage --delete-older-than 30d >/dev/null 2>&1 || warn "Garbage collection failed"
+else
+    sudo nix-collect-garbage --delete-older-than 30d >/dev/null 2>&1 || warn "Garbage collection failed"
+fi
 
 success "All done! System is ready."
 git add .
-git commit -m "NixOS configuration updated: $CURRENT_GEN" || echo "No changes to commit."
-
-# Back to where you were
-popd >/dev/null
+git commit -m "NixOS/Darwin configuration updated: $CURRENT_GEN" || echo "No changes to commit."
