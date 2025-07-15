@@ -1,6 +1,9 @@
-{ config, pkgs, lib, ... }:
-
 {
+  config,
+  pkgs,
+  lib,
+  ...
+}: {
   environment.systemPackages = with pkgs; [
     checkstyle
     mongosh
@@ -11,6 +14,7 @@
     vale
     jujutsu
     go
+    git
     gh
     lazygit
     stow
@@ -32,7 +36,7 @@
     asdf
   ];
 
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings.experimental-features = ["nix-command" "flakes"];
 
   nixpkgs.config.allowUnfree = true;
 

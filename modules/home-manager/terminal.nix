@@ -8,48 +8,47 @@
   # This module only provides packages needed for your .zshrc configuration
   # All configuration is handled by your dotfiles
 
-  home.packages = 
+  home.packages =
     [
       inputs.ghostty.packages.${pkgs.stdenv.hostPlatform.system}.default
     ]
     ++ (with pkgs; [
+      # Core terminal utilities
+      ripgrep
+      fd
+      fzf
+      curl
+      wget
+      unzip
 
-    # Core terminal utilities
-    ripgrep
-    fd
-    fzf
-    curl
-    wget
-    unzip
+      # Git and version control
+      git
+      lazygit
 
-    # Git and version control
-    git
-    lazygit
+      # Terminal utilities
+      tree
+      htop
+      btop
+      bat
 
-    # Terminal utilities
-    tree
-    htop
-    btop
-    bat
+      # Zsh plugins and tools (for your .zshrc)
+      zoxide # Better cd command
+      oh-my-posh # Prompt theme engine
 
-    # Zsh plugins and tools (for your .zshrc)
-    zoxide # Better cd command
-    oh-my-posh # Prompt theme engine
+      # Rust toolchain (from your .zshrc)
+      rustup
 
-    # Rust toolchain (from your .zshrc)
-    rustup
+      # Angular CLI (from your .zshrc completions)
+      nodejs_20
+      nodePackages."@angular/cli"
 
-    # Angular CLI (from your .zshrc completions)
-    nodejs_20
-    nodePackages."@angular/cli"
+      # Docker tools (from your .zshrc completions)
+      docker
+      docker-compose
 
-    # Docker tools (from your .zshrc completions)
-    docker
-    docker-compose
-
-    # OpenTofu (open source Terraform alternative)
-    opentofu
-  ]);
+      # OpenTofu (open source Terraform alternative)
+      opentofu
+    ]);
 
   # Enable zsh system-wide (minimal setup)
   programs.zsh.enable = true;

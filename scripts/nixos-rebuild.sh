@@ -86,7 +86,7 @@ if [[ ! -d "$CONFIG_DIR" ]]; then
     exit 1
 fi
 
-pushd "$CONFIG_DIR" >/dev/null
+pushd "$CONFIG_DIR"
 
 # Validate flake
 info "Validating flake configuration..."
@@ -96,8 +96,8 @@ fi
 
 # Format Nix files
 info "Formatting Nix files..."
-if command -v alejandra >/dev/null 2>&1; then
-    alejandra . >/dev/null 2>&1 || warn "Formatting failed"
+if command -v alejandra 2>&1; then
+    alejandra . 2>&1 || warn "Formatting failed"
 else
     warn "alejandra not found, skipping formatting"
 fi
@@ -146,7 +146,7 @@ fi
 info "Current generation: $CURRENT_GEN"
 
 # Commit changes if in a git repository
-if git rev-parse --git-dir >/dev/null 2>&1; then
+if git rev-parse --git-dir 2>&1; then
     if ! git diff --quiet HEAD -- '*.nix'; then
         info "Committing changes to git..."
         git add -A
@@ -157,9 +157,9 @@ fi
 # Clean up old generations (keep last 10)
 info "Cleaning up old generations..."
 if [[ "$PLATFORM" == "darwin" ]]; then
-    nix-collect-garbage --delete-older-than 30d >/dev/null 2>&1 || warn "Garbage collection failed"
+    nix-collect-garbage --delete-older-than 30d 2>&1 || warn "Garbage collection failed"
 else
-    sudo nix-collect-garbage --delete-older-than 30d >/dev/null 2>&1 || warn "Garbage collection failed"
+    sudo nix-collect-garbage --delete-older-than 30d 2>&1 || warn "Garbage collection failed"
 fi
 
 success "All done! System is ready."

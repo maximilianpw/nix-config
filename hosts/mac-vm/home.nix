@@ -36,5 +36,4 @@
     package = pkgs.hyprland;
     xwayland.enable = true;
   };
-
 }

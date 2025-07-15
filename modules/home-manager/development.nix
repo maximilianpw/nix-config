@@ -47,5 +47,4 @@
   # Development-specific session variables moved to dotfiles
   # All environment variables should be set in your .zshrc or shell config files
   # This avoids conflicts with the .config symlink approach
-
 }
