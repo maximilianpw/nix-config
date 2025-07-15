@@ -4,7 +4,7 @@ set -euo pipefail
 
 # Configuration
 auto_username=$(whoami)
-CONFIG_DIR="$HOME/Nix-Config"
+CONFIG_DIR="$HOME/nix-config"
 LOG_FILE="$CONFIG_DIR/nixos-switch.log"
 
 # Colors for output
@@ -40,7 +40,8 @@ EOF
 declare -A USER_HOST_MAP
 USER_HOST_MAP=(
   ["max-vev"]="mac-darwin"
-  ["max-vm"]="max-vm"
+  ["max-vm"]="mac-vm"
+  ["maxpw"]="mac-vm"
 )
 
 HOSTNAME="${USER_HOST_MAP[$auto_username]:-default}"
