@@ -15,7 +15,7 @@
     };
 
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
-    nix-darwin.url = "github:LnL7/nix-darwin/master";
+    nix-darwin.url = "github:nix-darwin/nix-darwin/nix-darwin-25.05";
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
   };
 

@@ -27,10 +27,9 @@ Usage: $0
 Automatically detects username and platform.
 
 Host mapping:
-  - max-vev: mac (darwin)
-  - default: default (nixos)
-  - bigboy: bigboy (nixos)
-  - Maximilians-MacBook-Pro: special darwin config
+  - max-vev: mac-darwin (darwin)
+  - max-vm: mac-vm (darwin)
+  - maxpw: mac-vm (darwin)
 
 On macOS, uses darwin-rebuild. On Linux, uses nixos-rebuild.
 EOF
@@ -87,7 +86,7 @@ if [[ ! -d "$CONFIG_DIR" ]]; then
     exit 1
 fi
 
-pushd "$CONFIG_DIR"
+pushd "$CONFIG_DIR" >/dev/null
 
 # Validate flake
 info "Validating flake configuration..."
@@ -111,14 +110,9 @@ else
     git diff --color=always -U2 '*.nix' || true
 fi
 
-# Build the configuration first
-info "Building configuration for flake attribute: $FLAKE_ATTR"
-if [[ "$PLATFORM" == "darwin" ]]; then
-    if ! nix build ".#$FLAKE_ATTR" --no-link 2>&1 | tee "$LOG_FILE"; then
-        error "Build failed! Check the log above for details."
-        exit 1
-    fi
-else
+# For Darwin, skip explicit nix build step; let darwin-rebuild handle everything
+if [[ "$PLATFORM" == "nixos" ]]; then
+    info "Building configuration for flake attribute: $FLAKE_ATTR"
     if ! nix build ".#$FLAKE_ATTR" --no-link 2>&1 | tee "$LOG_FILE"; then
         error "Build failed! Check the log above for details."
         exit 1
@@ -128,7 +122,7 @@ fi
 # Apply the configuration
 info "Applying configuration..."
 if [[ "$PLATFORM" == "darwin" ]]; then
-    if ! darwin-rebuild switch --flake ".#$FLAKE_SWITCH_ATTR" 2>&1 | tee -a "$LOG_FILE"; then
+    if ! sudo darwin-rebuild switch --flake ".#$FLAKE_SWITCH_ATTR" 2>&1 | tee -a "$LOG_FILE"; then
         error "Rebuild failed! Check the log:"
         grep --color=always -E "(error|Error|ERROR|warning|Warning|WARN)" "$LOG_FILE" || true
         exit 1
