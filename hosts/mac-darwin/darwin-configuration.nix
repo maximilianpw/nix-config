@@ -1,9 +1,14 @@
 {
+  inputs,
   config,
   pkgs,
   lib,
   ...
 }: {
+  imports = [
+    ./homebrew.nix
+  ];
+
   environment.systemPackages = with pkgs; [
     checkstyle
     mongosh

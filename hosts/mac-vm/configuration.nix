@@ -6,7 +6,7 @@
 }: {
   imports = [
     ./hardware-configuration.nix
-    inputs.home-manager.nixosModules.default
+    inputs.home-manager.nixosModules.mac-vm
     ../../modules/nixos/common.nix
     ../../modules/nixos/vm-common.nix
     ../../modules/nixos/vmware.nix # Only if you have ARM64-safe tweaks

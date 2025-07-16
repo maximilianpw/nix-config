@@ -52,11 +52,14 @@
       mac-vm = mkSystem "aarch64-linux" "nixos-mac" [
         ./hosts/mac-vm/configuration.nix
         ./modules/nixos/vmware.nix
+        home-manager.useGlobalPkgs = true;
+        home-manager.useUserPackages = true;
       ];
     };
 
     darwinConfigurations = {
       mac-darwin = mkDarwin "mac-darwin" [
+        inputs.home-manager.darwinModules.home-manager
         ./hosts/mac-darwin/darwin-configuration.nix
       ];
     };
