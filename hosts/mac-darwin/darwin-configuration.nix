@@ -9,34 +9,27 @@
     ./homebrew.nix
   ];
 
-  # system.primaryUser = "max-vev";
+  system.primaryUser = "max-vev";
+  users.users.max-vev.home = "/Users/max-vev/";
+  home-manager.users.max-vev = {
+    home.username = "max-vev";
+    home.homeDirectory = "/Users/max-vev/";
+    home.stateVersion = "25.05";
 
-home-manager.users.max-vev = {
-  home.username = "max-vev";
-  home.homeDirectory = "/Users/max-vev";
-  home.stateVersion = "25.05";
-
-  home.packages = with pkgs; [
-    appcleaner
-    arc-browser
-    chatgpt
-    discord
-    google-chrome
-    notion-app
-    postman
-    rectangle
-    slack
-    termius
-    the-unarchiver
-    vscode
-    jetbrains.idea-ultimate
-    jetbrains.webstorm
-    mongodb-compass
-    ngrok
-  ];
-
-  # More home-manager user config here!
-};
+    home.packages = with pkgs; [
+      chatgpt
+      discord
+      google-chrome
+      notion-app
+      postman
+      rectangle
+      slack
+      the-unarchiver
+      vscode
+      mongodb-compass
+      ngrok
+    ];
+  };
 
   environment.systemPackages = with pkgs; [
     checkstyle
@@ -70,14 +63,11 @@ home-manager.users.max-vev = {
     asdf
     alejandra
     zsh
-    angular-cli
     go
-    jsonlint
-    nodejs 
-    python3 
+    nodejs
+    python3
     zsh
   ];
-
 
   nix.settings.experimental-features = ["nix-command" "flakes"];
 

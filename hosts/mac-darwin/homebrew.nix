@@ -9,7 +9,8 @@
 
     brews = [
       "zsh"
-      "jandedobbeleer/oh-my-posh/oh-my-posh"
+      "angular-cli"
+      "jsonlint"
     ];
 
     casks = [
@@ -19,6 +20,9 @@
       "figma"
       "hiddenbar"
       "whatsapp"
+      "raycast"
+      "arc"
+      "appcleaner"
     ];
 
     onActivation = {
