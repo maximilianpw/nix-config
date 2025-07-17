@@ -9,7 +9,10 @@
     ./homebrew.nix
   ];
 
-  system.primaryUser = "max-vev";
+  system = {
+    primaryUser = "max-vev";
+  };
+
   users.users.max-vev.home = "/Users/max-vev/";
   home-manager.users.max-vev = {
     home.username = "max-vev";
@@ -17,16 +20,6 @@
     home.stateVersion = "25.05";
 
     home.packages = with pkgs; [
-      chatgpt
-      discord
-      google-chrome
-      notion-app
-      postman
-      rectangle
-      slack
-      the-unarchiver
-      vscode
-      mongodb-compass
       ngrok
     ];
   };

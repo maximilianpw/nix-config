@@ -36,7 +36,7 @@
         specialArgs = {inherit inputs;};
         modules =
           [
-            #./modules/nixos/nixos-common.nix
+            ./modules/nixos/nixos-common.nix
           ]
           ++ modules;
       };
