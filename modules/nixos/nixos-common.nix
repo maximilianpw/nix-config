@@ -67,6 +67,7 @@
     cmake
     pkg-config
     lldb
+    cowsay
   ];
 
   services.openssh.enable = true;

@@ -1,14 +1,25 @@
 {
   inputs,
-  config,
   pkgs,
   lib,
   ...
 }: {
-  environment.variables.HOMEBREW_NO_ANALYTICS = "1";
-
   homebrew = {
     enable = true;
+
+    brews = [
+      "zsh"
+      "jandedobbeleer/oh-my-posh/oh-my-posh"
+    ];
+
+    casks = [
+      "1password"
+      "1password-cli"
+      "rectangle"
+      "figma"
+      "hiddenbar"
+      "whatsapp"
+    ];
 
     onActivation = {
       autoUpdate = true;

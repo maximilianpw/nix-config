@@ -9,6 +9,35 @@
     ./homebrew.nix
   ];
 
+  # system.primaryUser = "max-vev";
+
+home-manager.users.max-vev = {
+  home.username = "max-vev";
+  home.homeDirectory = "/Users/max-vev";
+  home.stateVersion = "25.05";
+
+  home.packages = with pkgs; [
+    appcleaner
+    arc-browser
+    chatgpt
+    discord
+    google-chrome
+    notion-app
+    postman
+    rectangle
+    slack
+    termius
+    the-unarchiver
+    vscode
+    jetbrains.idea-ultimate
+    jetbrains.webstorm
+    mongodb-compass
+    ngrok
+  ];
+
+  # More home-manager user config here!
+};
+
   environment.systemPackages = with pkgs; [
     checkstyle
     mongosh
@@ -39,7 +68,16 @@
     neovim
     ripgrep
     asdf
+    alejandra
+    zsh
+    angular-cli
+    go
+    jsonlint
+    nodejs 
+    python3 
+    zsh
   ];
+
 
   nix.settings.experimental-features = ["nix-command" "flakes"];
 

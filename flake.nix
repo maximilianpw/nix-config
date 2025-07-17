@@ -36,7 +36,7 @@
         specialArgs = {inherit inputs;};
         modules =
           [
-            ./modules/nixos/common.nix
+              #./modules/nixos/nixos-common.nix
           ]
           ++ modules;
       };
@@ -52,14 +52,24 @@
       mac-vm = mkSystem "aarch64-linux" "nixos-mac" [
         ./hosts/mac-vm/configuration.nix
         ./modules/nixos/vmware.nix
-        home-manager.useGlobalPkgs = true;
-        home-manager.useUserPackages = true;
       ];
     };
 
     darwinConfigurations = {
       mac-darwin = mkDarwin "mac-darwin" [
         inputs.home-manager.darwinModules.home-manager
+          {users.users.max-vev.home = "/Users/max-vev/";
+
+    home-manager = {
+    useGlobalPkgs = true;
+    useUserPackages = true;
+users.max-vev = {
+  home.username = "max-vev";
+  home.homeDirectory = "/Users/max-vev";
+  home.stateVersion = "25.05";
+              };
+            };
+          }
         ./hosts/mac-darwin/darwin-configuration.nix
       ];
     };
