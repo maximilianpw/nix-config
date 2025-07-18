@@ -60,6 +60,8 @@
     nodejs
     python3
     zsh
+    zoxide
+    starship
   ];
 
   nix.settings.experimental-features = ["nix-command" "flakes"];

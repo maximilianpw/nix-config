@@ -26,6 +26,7 @@
     nixpkgs,
     nixos-hardware,
     home-manager,
+    ghostty,
     ...
   }: let
     systems = ["aarch64-linux" "x86_64-linux" "aarch64-darwin"];
@@ -44,7 +45,11 @@
     mkDarwin = hostname: modules:
       nix-darwin.lib.darwinSystem {
         system = "aarch64-darwin";
-        modules = modules;
+        modules =
+          [
+            # ghostty.packages.aarch64-darwin.default
+          ]
+          ++ modules;
         specialArgs = {inherit inputs;};
       };
   in {
