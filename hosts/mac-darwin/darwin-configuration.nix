@@ -21,8 +21,14 @@
 
     home.packages = with pkgs; [
       ngrok
+      devenv
     ];
   };
+
+  fonts.packages = with pkgs; [
+    pkgs."nerd-fonts".fira-code
+    pkgs."nerd-fonts".jetbrains-mono
+  ];
 
   environment.systemPackages = with pkgs; [
     checkstyle
@@ -59,9 +65,10 @@
     go
     nodejs
     python3
-    zsh
-    zoxide
     starship
+    direnv
+    ruby_3_4
+    rubyPackages_3_4.rails
   ];
 
   nix.settings.experimental-features = ["nix-command" "flakes"];

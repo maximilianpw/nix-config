@@ -36,8 +36,6 @@
       "proton-mail"
       "zen"
       "ghostty"
-      #"webstorm"
-      #"intellij-idea"
     ];
 
     masApps = {
