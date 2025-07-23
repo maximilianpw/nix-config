@@ -1,98 +1,80 @@
 {
-  description = "NixOS and nix-darwin configuration flake with devShell";
+  description = "NixOS & Nix-Darwin configuration by @maximilian-pinder-white";
 
   inputs = {
+    # Primary stable nixpkgs for system configurations
     nixpkgs.url = "github:nixos/nixpkgs/nixos-25.05";
+
+    # Unstable nixpkgs for bleeding-edge packages if needed
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
 
+    # Build a custom WSL installer
+    nixos-wsl.url = "github:nix-community/NixOS-WSL";
+    nixos-wsl.inputs.nixpkgs.follows = "nixpkgs";
+
+    # snapd
+    nix-snapd.url = "github:nix-community/nix-snapd";
+    nix-snapd.inputs.nixpkgs.follows = "nixpkgs";
+
+    # Home-Manager for per-user settings
     home-manager = {
       url = "github:nix-community/home-manager/release-25.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    ghostty = {
-      url = "github:ghostty-org/ghostty";
+    # Nix-Darwin for macOS configurations
+    nix-darwin = {
+      url = "github:nix-darwin/nix-darwin/nix-darwin-25.05";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    nixos-hardware.url = "github:NixOS/nixos-hardware/master";
-
-    nix-darwin.url = "github:nix-darwin/nix-darwin/nix-darwin-25.05";
-    nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
+    # Custom overlays (e.g., jujutsu)
+    jujutsu.url = "github:martinvonz/jj";
   };
 
-  outputs = inputs @ {
+  outputs = inputs@{
     self,
-    nix-darwin,
     nixpkgs,
-    nixos-hardware,
+    nixpkgs-unstable,
     home-manager,
-    ghostty,
+    nix-darwin,
     ...
   }: let
-    systems = ["aarch64-linux" "x86_64-linux" "aarch64-darwin"];
+    overlays = [
+      inputs.jujutsu.overlays.default
 
-    mkSystem = system: hostname: modules:
-      nixpkgs.lib.nixosSystem {
-        inherit system;
-        specialArgs = {inherit inputs;};
-        modules =
-          [
-            ./modules/nixos/nixos-common.nix
-          ]
-          ++ modules;
-      };
+      (final: prev: rec {
+        gh = inputs.nixpkgs-unstable.legacyPackages.${prev.system}.gh;
 
-    mkDarwin = hostname: modules:
-      nix-darwin.lib.darwinSystem {
-        system = "aarch64-darwin";
-        modules =
-          [
-            # ghostty.packages.aarch64-darwin.default
-          ]
-          ++ modules;
-        specialArgs = {inherit inputs;};
-      };
+        claude-code = inputs.nixpkgs-unstable.legacyPackages.${prev.system}.claude-code;
+        nushell = inputs.nixpkgs-unstable.legacyPackages.${prev.system}.nushell;
+      })
+    ];
+
+    mkSystem = import ./lib/mksystem.nix {
+      inherit overlays nixpkgs inputs;
+    };
   in {
-    nixosConfigurations = {
-      mac-vm = mkSystem "aarch64-linux" "nixos-mac" [
-        ./hosts/mac-vm/configuration.nix
-        ./modules/nixos/vmware.nix
-      ];
+    nixosConfigurations.vm-aarch64 = mkSystem "vm-aarch64" {
+      system = "aarch64-linux";
+      user = "maxpw";
     };
 
-    darwinConfigurations = {
-      mac-darwin = mkDarwin "mac-darwin" [
-        inputs.home-manager.darwinModules.home-manager
-        {
-          lib.mkDefault = "/Users/max-vev/";
-          home-manager = {
-            useGlobalPkgs = true;
-            useUserPackages = true;
-          };
-        }
-        ./hosts/mac-darwin/darwin-configuration.nix
-      ];
+    darwinConfigurations.macbook-pro-m1 = mkSystem "macbook-pro-m1" {
+      system = "aarch64-darwin";
+      user = "max-vev";
+      darwin = true;
     };
 
-    # DevShells with correct 'default' attribute per system
-    devShells = nixpkgs.lib.genAttrs systems (
-      system: let
-        pkgs = nixpkgs.legacyPackages.${system};
-      in {
-        default = pkgs.mkShell {
-          buildInputs = with pkgs; [
-            alejandra
-            git
-            nixos-rebuild
-          ];
-
-          shellHook = ''
-            echo "Nix Configuration Development Shell"
-            echo "Use 'alejandra .' to format Nix files"
-            echo "Use './scripts/nixos-rebuild.sh <host>' to rebuild"
-          '';
-        };
-      }
-    );
+    devShells = nixpkgs.lib.genAttrs ["aarch64-linux" "x86_64-linux" "aarch64-darwin"] (system: let
+      pkgs = nixpkgs.legacyPackages.${system};
+    in {
+      default = pkgs.mkShell {
+        buildInputs = with pkgs; [git nix];
+        shellHook = ''
+          echo "Welcome to the Nix dev shell for ${system}"
+        '';
+      };
+    });
   };
 }

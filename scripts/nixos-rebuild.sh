@@ -35,12 +35,11 @@ On macOS, uses darwin-rebuild. On Linux, uses nixos-rebuild.
 EOF
 }
 
-# Username to host mapping
+# Username to host mapping (map login -> flake config name)
 declare -A USER_HOST_MAP
 USER_HOST_MAP=(
-  ["max-vev"]="mac-darwin"
-  ["max-vm"]="mac-vm"
-  ["maxpw"]="mac-vm"
+  ["max-vev"]="macbook-pro-m1"
+  ["maxpw"]="vm-aarch64"
 )
 
 HOSTNAME="${USER_HOST_MAP[$auto_username]:-default}"
@@ -51,26 +50,17 @@ if [[ "$UNAME_OUT" == "Darwin" ]]; then
     PLATFORM="darwin"
     REBUILD_CMD="darwin-rebuild"
     SYSTEM_HOSTNAME=$(scutil --get ComputerName 2>/dev/null || hostname)
-    case "$SYSTEM_HOSTNAME" in
-        "max-vm")
-            FLAKE_ATTR="darwinConfigurations.mac-vm"
-            FLAKE_SWITCH_ATTR="mac-vm"
-            info "Detected max-vm, using darwinConfigurations.mac-vm."
-            ;;
-        "max-vev")
-            FLAKE_ATTR="darwinConfigurations.mac-darwin"
-            FLAKE_SWITCH_ATTR="mac-darwin"
-            info "Detected max-vev, using darwinConfigurations.mac-darwin."
-            ;;
-        *)
-            FLAKE_ATTR="darwinConfigurations.$HOSTNAME"
-            FLAKE_SWITCH_ATTR="$HOSTNAME"
-            ;;
-    esac
+    # Map current login or fallback to system name for Darwin
+    HOSTNAME="${USER_HOST_MAP[$auto_username]:-$SYSTEM_HOSTNAME}"
+    FLAKE_ATTR="darwinConfigurations.$HOSTNAME"
+    FLAKE_SWITCH_ATTR="$HOSTNAME"
+    info "Using Darwin flake config: $FLAKE_ATTR"
 else
     PLATFORM="nixos"
     REBUILD_CMD="nixos-rebuild"
-    FLAKE_ATTR="nixosConfigurations.$HOSTNAME.config.system.build.toplevel"
+    # Map current login or fallback to hostname for NixOS
+    HOSTNAME="${USER_HOST_MAP[$auto_username]:-$(hostname)}"
+    FLAKE_ATTR="nixosConfigurations.$HOSTNAME"
     FLAKE_SWITCH_ATTR="$HOSTNAME"
 fi
 
