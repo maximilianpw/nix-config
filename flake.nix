@@ -32,7 +32,7 @@
     jujutsu.url = "github:martinvonz/jj";
   };
 
-  outputs = inputs@{
+  outputs = inputs @ {
     self,
     nixpkgs,
     nixpkgs-unstable,

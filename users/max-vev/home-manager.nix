@@ -1,6 +1,14 @@
-{ isWSL, isDarwin, inputs, ... }:
-{ config, pkgs, lib, ... }:
-let
+{
+  isWSL,
+  isDarwin,
+  inputs,
+  ...
+}: {
+  config,
+  pkgs,
+  lib,
+  ...
+}: let
   isLinux = pkgs.stdenv.isLinux;
 
   shellAliases = {
@@ -69,7 +77,6 @@ in {
       rofi
       valgrind
     ]);
-
 
   programs.gpg.enable = !isDarwin;
 

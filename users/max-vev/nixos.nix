@@ -45,7 +45,7 @@
 
   users.users.maxpw = {
     isNormalUser = true;
-    description = lib.mkDefault "Max PW";
+    description = lib.mkDefault "Maximilian PINDER-WHITE";
     extraGroups = ["networkmanager" "wheel"];
     home = "/home/maxpw";
   };

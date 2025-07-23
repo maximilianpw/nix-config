@@ -27,30 +27,27 @@
 
     # Enable the Linux builder so we can run Linux builds on our Mac.
     # This can be debugged by running `sudo ssh linux-builder`
-    # linux-builder = {
-    #   enable = false;
-    #   ephemeral = true;
-    #   maxJobs = 4;
-    #   config = {pkgs, ...}: {
-    #     # Make our builder beefier since we're on a beefy machine.
-    #     virtualisation = {
-    #       cores = 6;
-    #       darwin-builder = {
-    #         diskSize = 100 * 1024; # 100GB
-    #         memorySize = 32 * 1024; # 32GB
-    #       };
-    #     };
-    #
-    #     # Add some common debugging tools we can see whats up.
-    #     environment.systemPackages = [
-    #       pkgs.htop
-    #     ];
-    #   };
-    # };
-    #
-    # public binary cache that I use for all my derivations. You can keep
-    # this, use your own, or toss it. Its typically safe to use a binary cache
-    # since the data inside is checksummed.
+    linux-builder = {
+      enable = false;
+      ephemeral = true;
+      maxJobs = 4;
+      config = {pkgs, ...}: {
+        # Make our builder beefier since we're on a beefy machine.
+        virtualisation = {
+          cores = 6;
+          darwin-builder = {
+            diskSize = 50 * 1024; # 50GB
+            memorySize = 16 * 1024; # 16GB
+          };
+        };
+
+        # Add some common debugging tools we can see whats up.
+        environment.systemPackages = [
+          pkgs.htop
+        ];
+      };
+    };
+
     settings = {
       # Required for the linux builder
       trusted-users = ["@admin"];
