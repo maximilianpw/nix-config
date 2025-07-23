@@ -67,8 +67,6 @@
     python3
     starship
     direnv
-    ruby_3_4
-    rubyPackages_3_4.rails
   ];
 
   nix.settings.experimental-features = ["nix-command" "flakes"];
