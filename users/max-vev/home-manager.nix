@@ -14,13 +14,13 @@
   shellAliases = {
     ga = "git add";
     gcm = "git commit";
+    gst = "git status";
     gco = "git checkout";
     gcp = "git cherry-pick";
     gd = "git diff";
     gl = "git prettylog";
     gp = "git push";
-    gs = "git status";
-    gt = "git tag";
+    v = "nvim";
 
     jd = "jj desc";
     jf = "jj git fetch";
@@ -68,19 +68,34 @@ in {
       go
       nodejs
       python3
-      nushell
       starship
     ]
-    ++ (lib.optionals isDarwin [
-      cachix
-    ])
     ++ (lib.optionals (isLinux && !isWSL) [
       chromium
       firefox
       rofi
-      valgrind
     ]);
 
+  xdg.configFile =
+    {
+      #"i3/config".text = builtins.readFile ./i3;
+      #"rofi/config.rasi".text = builtins.readFile ./rofi;
+    }
+    // (
+      if isDarwin
+      then {
+        # Rectangle.app. This has to be imported manually using the app.
+        "rectangle/RectangleConfig.json".text = builtins.readFile ./RectangleConfig.json;
+      }
+      else {}
+    )
+    // (
+      if isLinux
+      then {
+        "ghostty/config".text = builtins.readFile ./ghostty.linux;
+      }
+      else {}
+    );
   programs.gpg.enable = !isDarwin;
 
   programs.direnv = {
@@ -99,6 +114,12 @@ in {
       branch.autosetuprebase = "always";
       color.ui = true;
     };
+  };
+
+  programs.nushell = {
+    enable = true;
+    shellAliases = shellAliases;
+    configFile.source = ./config.nu;
   };
 
   programs.jujutsu = {

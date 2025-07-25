@@ -20,10 +20,8 @@
 $env.VISUAL = "nvim"
 $env.EDITOR = "nvim"
 $env.config.buffer_editor = "nvim"
-$env.config.show_banner = false
+#$env.config.show_banner = false
 $env.config.highlight_resolved_externals = true
-
-
 
 def rebuild-nix [...args: string] {
   ^bash $"($nu.home-path)/nix-config/scripts/nixos-rebuild.sh" ...$args
@@ -39,15 +37,7 @@ def lsg [] {
   ls | sort-by type name -i | grid -c | str trim
 }
 
-alias ga = git add
-alias gaa = git add .
-alias gst = git status
-alias gco = git checkout
-alias gcm = git commit -m
-alias gp = git push
-alias gl = git pull
 alias ll = lsg
-alias v = nvim
 
 # modules 
 use std/dirs

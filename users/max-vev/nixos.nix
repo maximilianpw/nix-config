@@ -53,23 +53,6 @@
   programs.firefox.enable = true;
   nixpkgs.config.allowUnfree = true;
 
-  environment.systemPackages = with pkgs; [
-    vim
-    wget
-    curl
-    git
-    htop
-    tree
-    unzip
-    gcc
-    clang
-    gnumake
-    cmake
-    pkg-config
-    lldb
-    cowsay
-  ];
-
   services.openssh.enable = true;
   nix.settings.experimental-features = ["nix-command" "flakes"];
   system.stateVersion = lib.mkDefault "24.05";
