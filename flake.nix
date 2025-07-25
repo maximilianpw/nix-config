@@ -29,7 +29,8 @@
     };
 
     # Custom overlays (e.g., jujutsu)
-    jujutsu.url = "github:martinvonz/jj";
+    # commented because of issues with gpg tests when building
+    # jujutsu.url = "github:jj-vcs/jj";
   };
 
   outputs = inputs @ {
@@ -41,7 +42,7 @@
     ...
   }: let
     overlays = [
-      inputs.jujutsu.overlays.default
+      #inputs.jujutsu.overlays.default
 
       (final: prev: rec {
         gh = inputs.nixpkgs-unstable.legacyPackages.${prev.system}.gh;

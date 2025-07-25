@@ -9,9 +9,6 @@
   # This makes it work with the Determinate Nix installer
   ids.gids.nixbld = 30000;
 
-  # We use proprietary software on this machine
-  nixpkgs.config.allowUnfree = true;
-
   # Keep in async with vm-shared.nix. (todo: pull this out into a file)
   nix = {
     # We use the determinate-nix installer which manages Nix for us,
@@ -20,7 +17,6 @@
 
     # We need to enable flakes
     extraOptions = ''
-      experimental-features = nix-command flakes
       keep-outputs = true
       keep-derivations = true
     '';
@@ -50,6 +46,7 @@
 
     settings = {
       # Required for the linux builder
+      experimental-features = ["nix-command" "flakes"];
       trusted-users = ["@admin"];
     };
   };
