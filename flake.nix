@@ -45,10 +45,14 @@
       #inputs.jujutsu.overlays.default
 
       (final: prev: rec {
-        gh = inputs.nixpkgs-unstable.legacyPackages.${prev.system}.gh;
+        unstable = import inputs.nixpkgs-unstable {
+          inherit (prev) system;
+          config.allowUnfree = true;
+        };
 
-        claude-code = inputs.nixpkgs-unstable.legacyPackages.${prev.system}.claude-code;
-        nushell = inputs.nixpkgs-unstable.legacyPackages.${prev.system}.nushell;
+        gh = unstable.gh;
+        claude-code = unstable.claude-code;
+        nushell = unstable.nushell;
       })
     ];
 

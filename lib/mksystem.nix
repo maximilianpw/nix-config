@@ -33,8 +33,8 @@ in
     inherit system;
 
     modules = [
-      {nixpkgs.overlays = overlays;}
       {nixpkgs.config.allowUnfree = true;}
+      {nixpkgs.overlays = overlays;}
       (
         if isWSL
         then inputs.nixos-wsl.nixosModules.wsl

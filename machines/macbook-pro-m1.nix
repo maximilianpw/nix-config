@@ -9,6 +9,8 @@
   # This makes it work with the Determinate Nix installer
   ids.gids.nixbld = 30000;
 
+  nixpkgs.config.allowUnfree = true;
+
   # Keep in async with vm-shared.nix. (todo: pull this out into a file)
   nix = {
     # We use the determinate-nix installer which manages Nix for us,
