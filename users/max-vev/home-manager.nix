@@ -29,8 +29,21 @@
     jp = "jj git push";
     js = "jj st";
   };
+  # For our MANPAGER env var
+  # https://github.com/sharkdp/bat/issues/1145
+  manpager = pkgs.writeShellScriptBin "manpager" (
+    if isDarwin
+    then ''
+      sh -c 'col -bx | bat -l man -p'
+    ''
+    else ''
+      cat "$1" | col -bx | bat --language man --style plain
+    ''
+  );
 in {
   home.stateVersion = "25.05";
+
+  xdg.enable = true;
 
   home.packages = with pkgs;
     [
@@ -62,7 +75,6 @@ in {
       neofetch
       openjdk
       awscli2
-      neovim
       ripgrep
       asdf
       alejandra
@@ -77,6 +89,21 @@ in {
       firefox
       rofi
     ]);
+
+  home.sessionVariables =
+    {
+      EDITOR = "nvim";
+      PAGER = "less -FirSwX";
+      MANPAGER = "${manpager}/bin/manpager";
+    }
+    // (
+      if isDarwin
+      then {
+        # See: https://github.com/NixOS/nixpkgs/issues/390751
+        DISPLAY = "nixpkgs-390751";
+      }
+      else {}
+    );
 
   xdg.configFile =
     {
@@ -98,6 +125,7 @@ in {
       }
       else {}
     );
+
   programs.gpg.enable = !isDarwin;
 
   programs.jujutsu = {
@@ -118,9 +146,15 @@ in {
       cleanup = "!git branch --merged | grep  -v '\\*\\|master\\|develop' | xargs -n 1 -r git branch -d";
       prettylog = "log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(r) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative";
     };
+    signing = {
+      key = "992CF94F12CF7405147D81FD4AB37B87F45FAC60";
+      signByDefault = true;
+    };
     extraConfig = {
       branch.autosetuprebase = "always";
       color.ui = true;
+      github.user = "MaxPW777";
+      init.defaultBranch = "main";
     };
   };
 
@@ -148,6 +182,19 @@ in {
       . "$HOME/.cargo/env"
     '';
     oh-my-zsh.enable = true;
+  };
+
+  programs.neovim = {
+    enable = true;
+  };
+
+  services.gpg-agent = {
+    enable = isLinux;
+    pinentry.package = pkgs.pinentry-tty;
+
+    # cache the keys forever so we don't get asked for a password
+    defaultCacheTtl = 31536000;
+    maxCacheTtl = 31536000;
   };
 
   # Make cursor not tiny on HiDPI screens
