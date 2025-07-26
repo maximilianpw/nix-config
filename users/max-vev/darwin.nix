@@ -15,6 +15,7 @@
       "zsh"
       "angular-cli"
       "jsonlint"
+      "gnupg"
     ];
 
     casks = [

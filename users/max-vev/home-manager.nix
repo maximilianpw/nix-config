@@ -13,6 +13,7 @@
 
   shellAliases = {
     ga = "git add";
+    gaa = "git add .";
     gcm = "git commit";
     gst = "git status";
     gco = "git checkout";
@@ -33,6 +34,7 @@ in {
 
   home.packages = with pkgs;
     [
+      gnupg
       chezmoi
       claude-code
       _1password-cli
@@ -64,8 +66,8 @@ in {
       ripgrep
       asdf
       alejandra
-      zsh
       go
+      oh-my-posh
       nodejs
       python3
       starship
@@ -98,6 +100,12 @@ in {
     );
   programs.gpg.enable = !isDarwin;
 
+  programs.jujutsu = {
+    enable = true;
+    # I don't use "settings" because the path is wrong on macOS at
+    # the time of writing this.
+  };
+
   programs.direnv = {
     enable = true;
   };
@@ -116,16 +124,30 @@ in {
     };
   };
 
+  programs.bash = {
+    enable = true;
+    shellAliases = shellAliases;
+    shellOptions = [];
+    historyControl = ["ignoredups" "ignorespace"];
+    profileExtra = ''
+      . "$HOME/.cargo/env"
+    '';
+  };
+
   programs.nushell = {
     enable = true;
     shellAliases = shellAliases;
     configFile.source = ./config.nu;
   };
 
-  programs.jujutsu = {
+  programs.zsh = {
     enable = true;
-    # I don't use "settings" because the path is wrong on macOS at
-    # the time of writing this.
+    shellAliases = shellAliases;
+    initContent = builtins.readFile ./zshrc;
+    envExtra = ''
+      . "$HOME/.cargo/env"
+    '';
+    oh-my-zsh.enable = true;
   };
 
   # Make cursor not tiny on HiDPI screens
