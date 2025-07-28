@@ -28,6 +28,12 @@
     jn = "jj new";
     jp = "jj git push";
     js = "jj st";
+
+    dcu = "docker compose up";
+    dcdn = "docker compose down";
+    dcub = "docker compose up --build";
+    dcb = "docker compose build";
+    dcbc = "docker compose build --no-cache";
   };
   # For our MANPAGER env var
   # https://github.com/sharkdp/bat/issues/1145

@@ -19,6 +19,7 @@
     ];
 
     casks = [
+      "orbstack"
       "1password"
       "rectangle"
       "figma"
