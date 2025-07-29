@@ -12,9 +12,11 @@
   isLinux = pkgs.stdenv.isLinux;
 
   shellAliases = {
+    z = "cd";
+
     ga = "git add";
     gaa = "git add .";
-    gcm = "git commit";
+    gcm = "git commit -m";
     gst = "git status";
     gco = "git checkout";
     gcp = "git cherry-pick";
@@ -65,8 +67,10 @@ in {
       sops
       vale
       go
+      prettierd
       gh
       lazygit
+      gitui
       stow
       tree
       deno
@@ -74,7 +78,6 @@ in {
       eslint
       btop
       terraform
-      fish
       cmatrix
       zoxide
       lua
@@ -188,6 +191,28 @@ in {
       . "$HOME/.cargo/env"
     '';
     oh-my-zsh.enable = true;
+  };
+
+  programs.fish = {
+    enable = true;
+    shellAliases = shellAliases;
+    interactiveShellInit = lib.strings.concatStrings (lib.strings.intersperse "\n" [
+      "source ${inputs.theme-bobthefish}/functions/fish_prompt.fish"
+      "source ${inputs.theme-bobthefish}/functions/fish_right_prompt.fish"
+      "source ${inputs.theme-bobthefish}/functions/fish_title.fish"
+      (builtins.readFile ./config.fish)
+      "set -g SHELL ${pkgs.fish}/bin/fish"
+    ]);
+
+    plugins =
+      map (n: {
+        name = n;
+        src = inputs.${n};
+      }) [
+        "fish-fzf"
+        "fish-foreign-env"
+        "theme-bobthefish"
+      ];
   };
 
   programs.neovim = {
