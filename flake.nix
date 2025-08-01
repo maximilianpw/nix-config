@@ -31,8 +31,6 @@
     # Custom overlays (e.g., jujutsu)
     # commented because of issues with gpg tests when building
     # jujutsu.url = "github:jj-vcs/jj";
-    theme-bobthefish.url = "github:oh-my-fish/theme-bobthefish/e3b4d4eafc23516e35f162686f08a42edf844e40";
-    theme-bobthefish.flake = false;
     fish-fzf.url = "github:jethrokuan/fzf/24f4739fc1dffafcc0da3ccfbbd14d9c7d31827a";
     fish-fzf.flake = false;
     fish-foreign-env.url = "github:oh-my-fish/plugin-foreign-env/dddd9213272a0ab848d474d0cbde12ad034e65bc";
