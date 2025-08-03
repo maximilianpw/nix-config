@@ -47,7 +47,6 @@
   }: let
     overlays = [
       #inputs.jujutsu.overlays.default
-
       (final: prev: rec {
         unstable = import inputs.nixpkgs-unstable {
           inherit (prev) system;

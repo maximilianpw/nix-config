@@ -8,6 +8,7 @@ macos-non-native-fullscreen = visible-menu
 macos-option-as-alt = left
 mouse-hide-while-typing = true
 
+keybind = shift+enter=text:\n
 keybind = super+c=copy_to_clipboard
 keybind = super+v=paste_from_clipboard
 keybind = super+shift+c=copy_to_clipboard

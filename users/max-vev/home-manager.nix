@@ -55,43 +55,49 @@ in {
 
   home.packages = with pkgs;
     [
-      gnupg
+      # environment
       chezmoi
-      claude-code
       _1password-cli
       ngrok
-      checkstyle
-      mongosh
+      stow
+      alejandra
+      nodejs
+      python3
+      go
       rustc
       rustup
-      sops
+      deno
+      lua
+      bat
+      # terminal dependencies
+      checkstyle
       vale
-      go
       prettierd
+      tree
+      fzf
+      eslint
+      zoxide
+      neofetch
+      openjdk
+      oh-my-posh
+      ripgrep
+      starship
+      # git
+      gnupg
       gh
       lazygit
       gitui
-      stow
-      tree
-      deno
-      fzf
-      eslint
+      # ai
+      ollama
+      claude-code
+      # dev packages
+      mongosh
+      sops
       btop
       terraform
       cmatrix
-      zoxide
-      lua
-      neofetch
-      openjdk
       awscli2
-      ripgrep
       asdf
-      alejandra
-      go
-      oh-my-posh
-      nodejs
-      python3
-      starship
     ]
     ++ (lib.optionals (isLinux && !isWSL) [
       chromium
