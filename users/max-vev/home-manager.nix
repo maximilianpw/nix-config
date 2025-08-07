@@ -82,13 +82,13 @@ in {
       oh-my-posh
       ripgrep
       starship
+      fd
       # git
       gnupg
       gh
       lazygit
       gitui
       # ai
-      ollama
       claude-code
       # dev packages
       mongosh
@@ -219,6 +219,10 @@ in {
   };
 
   programs.neovim = {
+    enable = true;
+  };
+
+  services.ollama = {
     enable = true;
   };
 
