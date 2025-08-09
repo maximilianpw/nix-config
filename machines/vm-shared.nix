@@ -6,9 +6,8 @@
   currentSystemName,
   ...
 }: {
-  imports = [
-    ../modules/desktop/hyprland.nix
-  ];
+  # Hyprland now imported in user-specific nixos.nix; keep imports empty here for base VM.
+  imports = [];
 
   # Be careful updating this.
   boot.kernelPackages = pkgs.linuxPackages_latest;

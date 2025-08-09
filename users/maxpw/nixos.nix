@@ -1,18 +1,12 @@
+{ config, pkgs, lib, ... }:
 {
-  config,
-  pkgs,
-  lib,
-  ...
-}: {
-  # Shared system configuration across all hosts
-
-  # Networking
+  imports = [ ../../modules/desktop/hyprland.nix ];
+  # --- Base (yours) ---
   networking.networkmanager.enable = true;
 
-  # Locale and timezone
-  time.timeZone = lib.mkDefault "America/New_York";
+  # Timezone (France)
+  time.timeZone = "Europe/Paris";
   i18n.defaultLocale = lib.mkDefault "en_US.UTF-8";
-
   i18n.extraLocaleSettings = lib.mkDefault {
     LC_ADDRESS = "en_US.UTF-8";
     LC_IDENTIFICATION = "en_US.UTF-8";
@@ -25,11 +19,19 @@
     LC_TIME = "en_US.UTF-8";
   };
 
-  # Hyprland replaces X11 GNOME stack; keep minimal XKB config via input method if needed.
-  services.xserver.enable = false;
-  services.printing.enable = false; # disable printing unless required
+  services.xserver.enable = false;        # no X11/GDM
+  # Provide XKB layout info (used by Wayland compositors like Hyprland)
+  services.xserver.xkb = {
+    layout = "us";
+    variant = "colemak"; # Colemak variant of US
+  };
+  services.printing.enable = false;
 
-  hardware.pulseaudio.enable = false;
+  # Updated (hardware.opengl.enable renamed to hardware.graphics.enable)
+  hardware.graphics.enable = true;
+
+  # Updated (hardware.pulseaudio renamed to services.pulseaudio)
+  services.pulseaudio.enable = false;
   security.rtkit.enable = true;
   services.pipewire = {
     enable = true;
@@ -41,15 +43,29 @@
   users.users.maxpw = {
     isNormalUser = true;
     description = lib.mkDefault "Maximilian PINDER-WHITE";
-    extraGroups = ["networkmanager" "wheel"];
-    hashedPassword = "$6$rkBFUGv5LjTDnhTx$kka47zG6AOyu51sDL/M6mg.vmsMqlto.OS.dond5N2o5.1LkLRENxQPcSSEsm0444YAE85BN.H/rzjutypgm2/";
+    extraGroups = [ "networkmanager" "wheel" ];
     home = "/home/maxpw";
+    hashedPassword = "$6$rkBFUGv5LjTDnhTx$kka47zG6AOyu51sDL/M6mg.vmsMqlto.OS.dond5N2o5.1LkLRENxQPcSSEsm0444YAE85BN.H/rzjutypgm2/";
   };
 
-  programs.firefox.enable = true; # Still available under Wayland (uses MOZ_ENABLE_WAYLAND=1 by default in recent builds)
+  programs.firefox.enable = true;
   nixpkgs.config.allowUnfree = true;
 
-  services.openssh.enable = true;
-  nix.settings.experimental-features = ["nix-command" "flakes"];
-  system.stateVersion = lib.mkDefault "25.05";
+  services.openssh = {
+    enable = true;
+    # If using keys, harden this:
+    # settings.PasswordAuthentication = false;
+    # settings.KbdInteractiveAuthentication = false;
+    # settings.PermitRootLogin = "no";
+  };
+
+  # Keep the stateVersion at the initial install release; don't bump later.
+  system.stateVersion = lib.mkDefault "24.05";
+
+  # Console (TTY) keymap for Colemak
+  console.keyMap = "colemak";
+
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+
+  # Desktop manager configuration moved to modules/desktop/hyprland.nix
 }

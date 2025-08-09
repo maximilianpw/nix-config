@@ -1,16 +1,19 @@
 { pkgs, lib, ... }:
 {
+  # Core compositor
   programs.hyprland = {
     enable = true;
     xwayland.enable = true;
   };
 
-  # Wayland portals
+  # Portals (prefer hyprland portal)
   xdg.portal = {
     enable = true;
-    extraPortals = [ pkgs.xdg-desktop-portal-wlr pkgs.xdg-desktop-portal-gtk ];
+    extraPortals = [ pkgs.xdg-desktop-portal-hyprland pkgs.xdg-desktop-portal-gtk ];
+    # config.common.default = [ "gtk" "hyprland" ]; # uncomment to force order
   };
 
+  # Desktop / Wayland tools
   environment.systemPackages = with pkgs; [
     hyprland
     waybar
@@ -20,17 +23,27 @@
     mako
   ];
 
-  # Enable seatd (if no full display manager)
+  # Session vars for Wayland friendliness
+  environment.sessionVariables = {
+    NIXOS_OZONE_WL = "1";
+    QT_QPA_PLATFORM = "wayland;xcb";
+    QT_WAYLAND_DISABLE_WINDOWDECORATION = "1";
+    XDG_SESSION_TYPE = "wayland";
+    XDG_CURRENT_DESKTOP = "Hyprland";
+    MOZ_ENABLE_WAYLAND = "1";
+  };
+
+  # Seat management & autologin/session start
+  services.seatd.enable = true;
   services.greetd = {
     enable = true;
     settings = {
       default_session = {
-        command = "Hyprland";
-        user = "maxpw";
+        command = "${pkgs.hyprland}/bin/Hyprland";
+        user = "maxpw"; # adjust if username changes
       };
     };
   };
 
-  # Input / pipewire (already enabled elsewhere but kept for clarity)
   security.polkit.enable = true;
 }

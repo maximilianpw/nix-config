@@ -138,6 +138,36 @@ in {
       if isLinux
       then {
         "ghostty/config".text = builtins.readFile ./ghostty.linux;
+        "hypr/hyprland.conf".text = lib.mkDefault ''
+          monitor=,preferred,auto,1
+          exec-once=waybar & mako &
+          input {
+            kb_layout = us
+            follow_mouse = 1
+          }
+          general {
+            gaps_in = 6
+            gaps_out = 12
+            border_size = 2
+            resize_on_border = true
+          }
+          decoration {
+            rounding = 6
+          }
+          animations { enabled = yes }
+          bind=SUPER,Return,exec,kitty
+          bind=SUPER,Q,killactive,
+          bind=SUPER,E,exec,rofi -show drun
+          bind=SUPER,L,exec,loginctl lock-session
+          bind=SUPER,SPACE,togglefloating,
+          bind=SUPER,F,fullscreen,
+          bind=SUPER,H,movefocus,l
+          bind=SUPER,J,movefocus,d
+          bind=SUPER,K,movefocus,u
+          bind=SUPER,L,movefocus,r
+          bind=SUPER,mouse:272,movewindow
+          bind=SUPER,mouse:273,resizewindow
+        '';
       }
       else {}
     );
