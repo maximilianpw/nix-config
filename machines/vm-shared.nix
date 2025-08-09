@@ -7,9 +7,7 @@
   ...
 }: {
   imports = [
-    ../modules/specialization/plasma.nix
-    ../modules/specialization/i3.nix
-    ../modules/specialization/gnome-ibus.nix
+    ../modules/desktop/hyprland.nix
   ];
 
   # Be careful updating this.
@@ -112,9 +110,8 @@
       gtkmm3
     ];
 
-  # Desktop environment is configured in user-level nixos module (users/<user>/nixos.nix).
-  # Leave this empty unless specialisation-specific logic is needed.
-  services.xserver = lib.mkIf (config.specialisation != {}) {};
+  # Disable legacy X11 desktop managers (Hyprland provides Wayland session)
+  services.xserver.enable = false;
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.

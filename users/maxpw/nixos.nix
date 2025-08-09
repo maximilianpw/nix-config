@@ -25,14 +25,9 @@
     LC_TIME = "en_US.UTF-8";
   };
 
-  services.xserver.enable = true;
-  services.xserver.displayManager.gdm.enable = true;
-  services.xserver.desktopManager.gnome.enable = true;
-  services.xserver.xkb = {
-    layout = lib.mkDefault "us";
-    variant = lib.mkDefault "";
-  };
-  services.printing.enable = true;
+  # Hyprland replaces X11 GNOME stack; keep minimal XKB config via input method if needed.
+  services.xserver.enable = false;
+  services.printing.enable = false; # disable printing unless required
 
   hardware.pulseaudio.enable = false;
   security.rtkit.enable = true;
@@ -51,10 +46,10 @@
     home = "/home/maxpw";
   };
 
-  programs.firefox.enable = true;
+  programs.firefox.enable = true; # Still available under Wayland (uses MOZ_ENABLE_WAYLAND=1 by default in recent builds)
   nixpkgs.config.allowUnfree = true;
 
   services.openssh.enable = true;
   nix.settings.experimental-features = ["nix-command" "flakes"];
-  system.stateVersion = lib.mkDefault "24.05";
+  system.stateVersion = lib.mkDefault "25.05";
 }
