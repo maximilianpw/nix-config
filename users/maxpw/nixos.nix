@@ -47,6 +47,7 @@
     isNormalUser = true;
     description = lib.mkDefault "Maximilian PINDER-WHITE";
     extraGroups = ["networkmanager" "wheel"];
+    initialPassword = lib.mkDefault "password";
     home = "/home/maxpw";
   };
 
