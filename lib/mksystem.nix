@@ -5,6 +5,10 @@
 }: name: {
   system,
   user,
+  # Optionally specify a different directory name that holds the user configs.
+  # This allows the on-system login/user name (e.g. "max-vev") to differ from
+  # the repository directory (e.g. "maxpw"). Defaults to the user name.
+  userDir ? user,
   darwin ? false,
   wsl ? false,
 }: let
@@ -13,12 +17,12 @@
 
   machineConfig = ../machines/${name}.nix;
   userOSConfig =
-    ../users/${user}/${
+    ../users/${userDir}/$${
       if darwin
       then "darwin"
       else "nixos"
     }.nix;
-  userHMConfig = ../users/${user}/home-manager.nix;
+  userHMConfig = ../users/${userDir}/home-manager.nix;
 
   systemFunc =
     if darwin
@@ -62,6 +66,7 @@ in
           currentSystem = system;
           currentSystemName = name;
           currentSystemUser = user;
+          currentSystemUserDir = userDir;
           isWSL = isWSL;
           inputs = inputs;
         };

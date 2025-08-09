@@ -55,6 +55,8 @@
   };
   # The user should already exist, but we need to set this up so Nix knows
   # what our home directory is (https://github.com/LnL7/nix-darwin/issues/423).
+  # macOS primary login user. We keep configs in users/maxpw but the on-system
+  # account remains max-vev. This indirection is handled via userDir in mksystem.nix.
   users.users.max-vev = {
     home = "/Users/max-vev";
     shell = pkgs.nushell;

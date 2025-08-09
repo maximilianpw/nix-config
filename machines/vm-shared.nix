@@ -112,13 +112,9 @@
       gtkmm3
     ];
 
-  # Our default non-specialised desktop environment.
-  services.xserver = lib.mkIf (config.specialisation != {}) {
-    enable = true;
-    xkb.layout = "us";
-    desktopManager.gnome.enable = true;
-    displayManager.gdm.enable = true;
-  };
+  # Desktop environment is configured in user-level nixos module (users/<user>/nixos.nix).
+  # Leave this empty unless specialisation-specific logic is needed.
+  services.xserver = lib.mkIf (config.specialisation != {}) {};
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
@@ -151,5 +147,5 @@
   # this value at the release version of the first install of this system.
   # Before changing this value read the documentation for this option
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
-  system.stateVersion = "20.09"; # Did you read the comment?
+  # system.stateVersion intentionally defined in user OS module to keep a single source of truth.
 }

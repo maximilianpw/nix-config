@@ -103,6 +103,7 @@ in {
       chromium
       firefox
       rofi
+      ghostty
     ]);
 
   home.sessionVariables =

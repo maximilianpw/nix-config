@@ -65,12 +65,14 @@
   in {
     nixosConfigurations.vm-aarch64 = mkSystem "vm-aarch64" {
       system = "aarch64-linux";
-      user = "maxpw";
+      user = "maxpw"; # login + repo dir align
     };
 
     darwinConfigurations.macbook-pro-m1 = mkSystem "macbook-pro-m1" {
       system = "aarch64-darwin";
+      # macOS login is max-vev but repo directory uses maxpw for shared configs
       user = "max-vev";
+      userDir = "maxpw";
       darwin = true;
     };
 
