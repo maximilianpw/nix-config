@@ -1,6 +1,6 @@
-# NixOS VM Configuration
+# Nix Configuration
 
-A comprehensive NixOS configuration for virtual machines with modular design and multi-platform support.
+Unified NixOS + macOS (nix-darwin) flake with a modular layout, Home Manager integration, and a VM target (`vm-aarch64`).
 
 ## 🏗️ Architecture
 
@@ -57,7 +57,7 @@ sudo nixos-rebuild switch --flake ./#<hostname>
 - ✅ **Modular Design**: Eliminated code duplication with shared modules
 - ✅ **Host-Specific Configs**: Each VM has minimal, focused configuration
 - ✅ **Modern NixOS**: Updated from 23.11 to 24.05 for better support
-- ✅ **Type Safety**: Better validation and error handling
+- ✅ **Option Assertions & Types**: Stronger validation and clearer errors
 
 ### VM Optimizations
 - ✅ **Performance Tuning**: VM-specific kernel parameters
@@ -79,7 +79,7 @@ sudo nixos-rebuild switch --flake ./#<hostname>
 
 ### VMware Integration (mac host)  
 - ✅ **ARM64 Optimizations**: Specific tuning for Apple Silicon
-- ✅ **Guest Tools**: Proper VMware tools integration
+- ✅ **Guest Tools**: Proper VMware tools integration (`open-vm-tools` service enabled)
 - ✅ **Network Optimization**: VMware-specific settings
 
 ## 📦 What's Included
@@ -91,7 +91,7 @@ sudo nixos-rebuild switch --flake ./#<hostname>
 - **Editor**: neovim as default editor
 
 ### Desktop Environment
-- **Display**: X11 with GNOME
+- **Display**: GNOME (Wayland by default; forced to Xorg if configured)
 - **Audio**: PipeWire for modern audio
 - **Fonts**: Comprehensive collection including Nerd Fonts
 - **Input**: Colemak keyboard layout
@@ -153,3 +153,86 @@ nix flake check
 ---
 
 **Previous command**: `sudo nixos-rebuild switch --flake ./#default` (still works but use the script instead)
+
+---
+
+## 🆕 New `vm-aarch64` VM Provisioning (One-Time Setup)
+
+> **Note:** If you use the **graphical NixOS installer (Calamares)**, it will partition, format, and mount automatically. In that case, you can skip steps 2–3 below and go straight to installing from your flake. These manual steps are for the **minimal CLI ISO**.
+
+You only perform the disk prep + `nixos-install` once. After first boot, just run the rebuild script (it builds implicitly). The explicit `nix build` of the toplevel derivation is optional.
+
+### 1. Boot Live ISO (ARM64)
+Attach the aarch64 NixOS minimal ISO in VMware Fusion (Apple Silicon) and boot.
+
+### 2. Partition & Format (Minimal ISO Only)
+Adjust device names (`/dev/sda`, `/dev/vda`, `/dev/nvme0n1`) as needed.
+```bash
+lsblk
+gdisk /dev/sda   # create EFI (type EF00) + root (type 8300)
+mkfs.vfat -F32 -n boot /dev/sda1
+mkfs.ext4 -L nixos /dev/sda2
+mount /dev/disk/by-label/nixos /mnt
+mkdir -p /mnt/boot
+mount /dev/disk/by-label/boot /mnt/boot
+```
+
+### 3. Fetch Config (Optional for Minimal ISO)
+If you want the repo present on first boot:
+```bash
+mkdir -p /mnt/home/maxpw
+cd /mnt/home/maxpw
+nix-shell -p git --command 'git clone https://github.com/<your-user>/nix-config'
+ln -s /home/maxpw/nix-config /mnt/etc/nixos
+```
+Otherwise, skip this and clone after your first boot.
+
+### 4. (Optional) Preflight Build
+```bash
+nix build /mnt/etc/nixos#nixosConfigurations.vm-aarch64.config.system.build.toplevel
+```
+Use this only if you want early feedback. `nixos-install` will build anyway.
+
+### 5. Install
+Local flake:
+```bash
+nixos-install --flake /mnt/etc/nixos#vm-aarch64
+```
+Remote flake:
+```bash
+nixos-install --flake github:<your-user>/nix-config#vm-aarch64
+```
+Then reboot.
+
+### 6. Routine Updates (After Reboot)
+```bash
+cd ~/nix-config
+./scripts/nixos-rebuild.sh
+```
+The script auto-detects user `maxpw` and selects `vm-aarch64`.
+
+### When To Use Which Command
+| Scenario | Command |
+|----------|---------|
+| One-time install (local) | nixos-install --flake /mnt/etc/nixos#vm-aarch64 |
+| One-time install (remote) | nixos-install --flake github:<you>/nix-config#vm-aarch64 |
+| Routine update | ./scripts/nixos-rebuild.sh |
+| Build only | nix build .#nixosConfigurations.vm-aarch64.config.system.build.toplevel |
+| Dry run | nixos-rebuild dry-run --flake .#vm-aarch64 |
+
+### VMware ARM64 Tips
+- Use `boot.loader.systemd-boot.enable = true;` and `boot.loader.efi.canTouchEfiVariables = true;`
+- Enable `services.open-vm-tools.enable = true;` for copy/paste, drag-and-drop, and guest features.
+- Device name may differ by disk type (`vda`, `sda`, or `nvme0n1`).
+
+### Troubleshooting
+```bash
+journalctl -b -xe | less
+journalctl -b -1 -xe
+nix flake metadata
+sudo nix-store --verify --check-contents
+```
+
+### FAQ
+Q: Should I run `nix build` every time before switching?  
+A: No. `nixos-rebuild switch --flake` (and the provided script) already builds the system derivation. Use `nix build` only for CI, debugging, or benchmarking.

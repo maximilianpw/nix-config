@@ -78,6 +78,18 @@ fi
 
 pushd "$CONFIG_DIR"
 
+# Ensure /etc/nixos points to this repo (optional override: set SKIP_ETC_NIXOS_LINK=1)
+if [[ "${SKIP_ETC_NIXOS_LINK:-0}" != "1" ]]; then
+    TARGET_REAL=$(readlink -f /etc/nixos 2>/dev/null || echo "")
+    if [[ -L /etc/nixos && "$TARGET_REAL" != "$CONFIG_DIR" ]]; then
+        warn "/etc/nixos symlink points elsewhere ($TARGET_REAL). Updating to $CONFIG_DIR" && sudo ln -sfn "$CONFIG_DIR" /etc/nixos || warn "Failed to update symlink"
+    elif [[ ! -e /etc/nixos ]]; then
+        info "Creating /etc/nixos -> $CONFIG_DIR symlink" && sudo ln -sfn "$CONFIG_DIR" /etc/nixos || warn "Failed to create symlink"
+    elif [[ -d /etc/nixos && ! -L /etc/nixos && "$TARGET_REAL" != "$CONFIG_DIR" ]]; then
+        warn "/etc/nixos is a real directory (not symlink); leaving it untouched. Set SKIP_ETC_NIXOS_LINK=1 to silence."
+    fi
+fi
+
 # Validate flake
 info "Validating flake configuration..."
 if ! nix flake check --no-build 2>/dev/null; then
@@ -102,8 +114,11 @@ fi
 
 # For Darwin, skip explicit nix build step; let darwin-rebuild handle everything
 if [[ "$PLATFORM" == "nixos" ]]; then
-    info "Building configuration for flake attribute: $FLAKE_ATTR"
-    if ! nix build ".#$FLAKE_ATTR" --no-link 2>&1 | tee "$LOG_FILE"; then
+    # The flake attribute (nixosConfigurations.<host>) is a set, not a derivation.
+    # We must build its system build output.
+    BUILD_ATTR="$FLAKE_ATTR.config.system.build.toplevel"
+    info "Building NixOS system derivation: $BUILD_ATTR"
+    if ! nix build ".#$BUILD_ATTR" --no-link 2>&1 | tee "$LOG_FILE"; then
         error "Build failed! Check the log above for details."
         exit 1
     fi
