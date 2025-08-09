@@ -17,7 +17,7 @@
 
   machineConfig = ../machines/${name}.nix;
   userOSConfig =
-    ../users/${userDir}/$${
+    ../users/${userDir}/${
       if darwin
       then "darwin"
       else "nixos"
