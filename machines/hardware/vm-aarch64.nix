@@ -15,15 +15,14 @@
   boot.kernelModules = [];
   boot.extraModulePackages = [];
 
-  fileSystems."/" = {
-    device = "/dev/disk/by-label/nixos";
-    fsType = "ext4";
-  };
-
-  fileSystems."/boot" = {
-    device = "/dev/disk/by-label/boot";
-    fsType = "vfat";
-  };
+fileSystems."/" = {
+  device = "/dev/disk/by-uuid/28ed4a68-80f3-413e-9002-b7740b77ff8f";
+  fsType = "ext4";
+};
+fileSystems."/boot" = {
+  device = "/dev/disk/by-uuid/3068-3A88";
+  fsType = "vfat";
+};
 
   swapDevices = [];
 }
