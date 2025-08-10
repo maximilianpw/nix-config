@@ -23,16 +23,22 @@
   virtualisation.vmware.guest.enable = true;
 
   # Share our host filesystem
+  # VMware shared folders via vmhgfs-fuse. Previous fsType was incorrect and caused boot failure.
+  # Make it non-fatal (nofail) & order after vmtoolsd so we don't drop to emergency mode if not ready.
   fileSystems."/host" = {
-    fsType = "fuse./run/current-system/sw/bin/vmhgfs-fuse";
     device = ".host:/";
+    fsType = "fuse.vmhgfs-fuse";
     options = [
-      "umask=22"
+      "allow_other"
       "uid=1000"
       "gid=1000"
-      "allow_other"
-      "auto_unmount"
+      "umask=022" # 022 not 22
       "defaults"
+      "nofail"
+      "x-systemd.after=vmtoolsd.service"
+      "x-systemd.requires=vmtoolsd.service"
+      "x-systemd.device-timeout=10s"
     ];
+    neededForBoot = false;
   };
 }
