@@ -1,34 +1,30 @@
 { pkgs, lib, ... }:
 {
-  # Minimal Hyprland compositor (no autologin, can be selected from GDM)
+  # Core Hyprland (selectable via existing DM, or start from TTY)
   programs.hyprland = {
     enable = true;
     xwayland.enable = true;
   };
 
-  # Basic portals for screen sharing / flatpak integration
-  xdg.portal = {
-    enable = true;
-    extraPortals = [ pkgs.xdg-desktop-portal-hyprland pkgs.xdg-desktop-portal-gtk ];
-  };
+  # Essential system services
+  services.dbus.enable = true;
+  security.polkit.enable = true;
 
-  # Minimal supporting tools; keep small to avoid bloat
-  environment.systemPackages = with pkgs; [
-    hyprland
-    kitty
-    wl-clipboard
-  ];
+  # Minimal portals (screen sharing / file picker)
+  xdg.portal.enable = true;
+  xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-hyprland pkgs.xdg-desktop-portal-gtk ];
 
-  # Wayland-friendly environment vars (kept minimal)
+  # Keep env vars lean; add only if necessary later
   environment.sessionVariables = {
-    XDG_SESSION_TYPE = lib.mkDefault "wayland";
-    XDG_CURRENT_DESKTOP = lib.mkDefault "Hyprland";
     MOZ_ENABLE_WAYLAND = "1";
   };
 
-  # Explicitly ensure we don't force seatd or greetd (GDM will handle session selection)
-  services.greetd.enable = lib.mkForce false;
-  services.seatd.enable = lib.mkForce false;
+  # Minimal supporting tools
+  environment.systemPackages = [
+    pkgs.wl-clipboard
+  ];
 
-  security.polkit.enable = true;
+  # Do not enforce any display manager or seat daemon here; leave to other modules
+  services.greetd.enable = lib.mkForce false;
+  services.seatd.enable  = lib.mkForce false;
 }
