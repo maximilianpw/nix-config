@@ -47,7 +47,7 @@
   users.users.maxpw = {
     isNormalUser = true;
     description = lib.mkDefault "Maximilian PINDER-WHITE";
-    extraGroups = ["networkmanager" "wheel"];
+    extraGroups = ["networkmanager" "wheel" "seat" "input" "video"];
     home = "/home/maxpw";
     hashedPassword = "$6$rkBFUGv5LjTDnhTx$kka47zG6AOyu51sDL/M6mg.vmsMqlto.OS.dond5N2o5.1LkLRENxQPcSSEsm0444YAE85BN.H/rzjutypgm2/";
   };

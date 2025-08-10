@@ -166,26 +166,29 @@ You only perform the disk prep + `nixos-install` once. After first boot, just ru
 Attach the aarch64 NixOS minimal ISO in VMware Fusion (Apple Silicon) and boot.
 
 ### 2. Partition & Format (Minimal ISO Only)
-Adjust device names (`/dev/sda`, `/dev/vda`, `/dev/nvme0n1`) as needed.
-```bash
-lsblk
 gdisk /dev/sda   # create EFI (type EF00) + root (type 8300)
-mkfs.vfat -F32 -n boot /dev/sda1
-mkfs.ext4 -L nixos /dev/sda2
-mount /dev/disk/by-label/nixos /mnt
+Adjust device names (`/dev/nvme0n1`, `/dev/sda`, `/dev/vda`) as needed. This repo’s hardware file expects labels: `boot` (FAT32) and `nixos-root` (ext4). Using a different label for root (like just `nixos`) will drop you to emergency mode unless you also change `machines/hardware/vm-aarch64.nix`.
+```bash
+lsblk -o NAME,SIZE,TYPE
+fdisk /dev/nvme0n1      # or your disk
+# g (GPT)
+# n (EFI) +512M
+# t -> 1 (EFI System)
+# n (root) remainder
+# w
+mkfs.vfat -F32 -n boot /dev/nvme0n1p1
+mkfs.ext4 -L nixos-root /dev/nvme0n1p2
+mount /dev/disk/by-label/nixos-root /mnt
 mkdir -p /mnt/boot
 mount /dev/disk/by-label/boot /mnt/boot
 ```
 
 ### 3. Fetch Config (Optional for Minimal ISO)
-If you want the repo present on first boot:
+Clone your flake directly into `/etc/nixos` (recommended for `nixos-install --flake`):
 ```bash
-mkdir -p /mnt/home/maxpw
-cd /mnt/home/maxpw
-nix-shell -p git --command 'git clone https://github.com/<your-user>/nix-config'
-ln -s /home/maxpw/nix-config /mnt/etc/nixos
+nix-shell -p git --command 'git clone https://github.com/MaxPW777/Nix-Config /mnt/etc/nixos'
 ```
-Otherwise, skip this and clone after your first boot.
+Or defer cloning until after the first boot and use the GitHub flake URL at install time.
 
 ### 4. (Optional) Preflight Build
 ```bash
@@ -194,13 +197,13 @@ nix build /mnt/etc/nixos#nixosConfigurations.vm-aarch64.config.system.build.topl
 Use this only if you want early feedback. `nixos-install` will build anyway.
 
 ### 5. Install
-Local flake:
+Local flake (already cloned):
 ```bash
 nixos-install --flake /mnt/etc/nixos#vm-aarch64
 ```
-Remote flake:
+Remote flake (no local clone):
 ```bash
-nixos-install --flake github:<your-user>/nix-config#vm-aarch64
+nixos-install --flake github:MaxPW777/Nix-Config#vm-aarch64
 ```
 Then reboot.
 
@@ -224,6 +227,104 @@ The script auto-detects user `maxpw` and selects `vm-aarch64`.
 - Use `boot.loader.systemd-boot.enable = true;` and `boot.loader.efi.canTouchEfiVariables = true;`
 - Enable `services.open-vm-tools.enable = true;` for copy/paste, drag-and-drop, and guest features.
 - Device name may differ by disk type (`vda`, `sda`, or `nvme0n1`).
+
+### 🔐 Adding SSH Authorized Keys (Declarative vs Manual)
+
+Declarative (preferred – add inside `users/maxpw/nixos.nix`):
+```nix
+users.users.maxpw.openssh.authorizedKeys.keys = [
+    "ssh-ed25519 AAAAC3Nz...yourLaptopKey"
+    # "ssh-ed25519 AAAAC3Nz...yourOtherKey"
+];
+```
+Rebuild after first boot:
+```bash
+sudo nixos-rebuild switch --flake /etc/nixos#vm-aarch64
+```
+
+Manual (during install, before `nixos-install`):
+```bash
+mkdir -p /mnt/home/maxpw/.ssh
+echo 'ssh-ed25519 AAAAC3Nz...yourLaptopKey' > /mnt/home/maxpw/.ssh/authorized_keys
+chmod 700 /mnt/home/maxpw/.ssh
+chmod 600 /mnt/home/maxpw/.ssh/authorized_keys
+```
+Ownership (UID/GID) will be adjusted automatically at first boot; if needed later: `sudo chown -R maxpw:users ~/.ssh`.
+
+After verifying key auth you can harden SSH:
+```nix
+services.openssh.settings = {
+    PasswordAuthentication = false;
+    KbdInteractiveAuthentication = false;
+    PermitRootLogin = "no";
+};
+```
+
+### 📁 VMware Shared Folder /host Mount
+
+Configuration (in `machines/vm-aarch64.nix`):
+```nix
+fileSystems."/host" = {
+    device = ".host:/";
+    fsType = "fuse.vmhgfs-fuse";
+    options = [
+        "allow_other" "uid=1000" "gid=1000" "umask=022" "defaults" "nofail"
+        "x-systemd.after=vmtoolsd.service" "x-systemd.requires=vmtoolsd.service"
+    ];
+    neededForBoot = false;
+};
+```
+If it is not mounted yet after boot:
+```bash
+sudo systemctl restart vmtoolsd.service
+sudo mount /host
+```
+Check reasons for failure:
+```bash
+journalctl -u systemd-mount -g host -n 50 --no-pager
+```
+
+### 🛑 Emergency Mode (Most Common Causes & Fixes)
+
+1. Root FS label mismatch
+     - Error: `Cannot find /dev/disk/by-label/nixos-root`
+     - Fix: `e2label /dev/<root-partition> nixos-root` (or adjust hardware file & rebuild).
+2. Boot partition label mismatch
+     - Fix: `fatlabel /dev/<boot-partition> boot` (install `dosfstools` if needed).
+3. Wrong device path after disk reordering
+     - Prefer labels (already used) instead of `/dev/sdX`.
+4. Interrupted /host mount (should not block now due to `nofail`).
+
+Quick rescue from ISO:
+```bash
+mount /dev/disk/by-label/nixos-root /mnt
+mount /dev/disk/by-label/boot /mnt/boot
+nixos-enter --root /mnt
+nixos-rebuild switch --flake /etc/nixos#vm-aarch64 --install-bootloader
+exit
+reboot
+```
+
+### 🔁 Routine Rebuild After First Boot
+```bash
+cd /etc/nixos   # or wherever you cloned
+sudo nixos-rebuild switch --flake .#vm-aarch64
+```
+
+### 🧪 Verification Checklist Post-Install
+```bash
+ip -4 addr show ens160          # Network up
+systemctl status sshd           # SSH running
+systemctl status vmtoolsd       # VMware tools running
+mount | grep host || true       # Shared folder (non-fatal if absent)
+grep root= /boot/loader/entries/*.conf
+```
+
+### 🧹 Optional Cleanups
+- Remove unused generations: `sudo nix-collect-garbage -d`
+- Update inputs: `nix flake update` then `sudo nixos-rebuild switch --flake .#vm-aarch64`
+
+---
 
 ### Troubleshooting
 ```bash
