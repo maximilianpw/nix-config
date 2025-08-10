@@ -1,6 +1,10 @@
-{ config, pkgs, lib, ... }:
 {
-  imports = [ ../../modules/desktop/hyprland.nix ];
+  config,
+  pkgs,
+  lib,
+  ...
+}: {
+  imports = [../../modules/desktop/hyprland.nix];
   # --- Base (yours) ---
   networking.networkmanager.enable = true;
 
@@ -19,7 +23,7 @@
     LC_TIME = "en_US.UTF-8";
   };
 
-  services.xserver.enable = false;        # no X11/GDM
+  services.xserver.enable = false; # no X11/GDM
   # Provide XKB layout info (used by Wayland compositors like Hyprland)
   services.xserver.xkb = {
     layout = "us";
@@ -43,7 +47,7 @@
   users.users.maxpw = {
     isNormalUser = true;
     description = lib.mkDefault "Maximilian PINDER-WHITE";
-    extraGroups = [ "networkmanager" "wheel" ];
+    extraGroups = ["networkmanager" "wheel"];
     home = "/home/maxpw";
     hashedPassword = "$6$rkBFUGv5LjTDnhTx$kka47zG6AOyu51sDL/M6mg.vmsMqlto.OS.dond5N2o5.1LkLRENxQPcSSEsm0444YAE85BN.H/rzjutypgm2/";
   };
@@ -65,7 +69,6 @@
   # Console (TTY) keymap for Colemak
   console.keyMap = "colemak";
 
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
-
-  # Desktop manager configuration moved to modules/desktop/hyprland.nix
+  nix.settings.experimental-features = ["nix-command" "flakes"];
 }
+
