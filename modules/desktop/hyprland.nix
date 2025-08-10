@@ -22,6 +22,9 @@
   # Minimal supporting tools
   environment.systemPackages = [
     pkgs.wl-clipboard
+    pkgs.kitty
+    pkgs.dolphin
+    pkgs.wofi
   ];
 
   # Do not enforce any display manager or seat daemon here; leave to other modules
