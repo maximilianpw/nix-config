@@ -1,49 +1,34 @@
 { pkgs, lib, ... }:
 {
-  # Core compositor
+  # Minimal Hyprland compositor (no autologin, can be selected from GDM)
   programs.hyprland = {
     enable = true;
     xwayland.enable = true;
   };
 
-  # Portals (prefer hyprland portal)
+  # Basic portals for screen sharing / flatpak integration
   xdg.portal = {
     enable = true;
     extraPortals = [ pkgs.xdg-desktop-portal-hyprland pkgs.xdg-desktop-portal-gtk ];
-    # config.common.default = [ "gtk" "hyprland" ]; # uncomment to force order
   };
 
-  # Desktop / Wayland tools
+  # Minimal supporting tools; keep small to avoid bloat
   environment.systemPackages = with pkgs; [
     hyprland
-    waybar
-    rofi-wayland
     kitty
-    grim slurp wl-clipboard
-    mako
+    wl-clipboard
   ];
 
-  # Session vars for Wayland friendliness
+  # Wayland-friendly environment vars (kept minimal)
   environment.sessionVariables = {
-    NIXOS_OZONE_WL = "1";
-    QT_QPA_PLATFORM = "wayland;xcb";
-    QT_WAYLAND_DISABLE_WINDOWDECORATION = "1";
-    XDG_SESSION_TYPE = "wayland";
-    XDG_CURRENT_DESKTOP = "Hyprland";
+    XDG_SESSION_TYPE = lib.mkDefault "wayland";
+    XDG_CURRENT_DESKTOP = lib.mkDefault "Hyprland";
     MOZ_ENABLE_WAYLAND = "1";
   };
 
-  # Seat management & autologin/session start
-  services.seatd.enable = true;
-  services.greetd = {
-    enable = true;
-    settings = {
-      default_session = {
-        command = "${pkgs.hyprland}/bin/Hyprland";
-        user = "maxpw"; # adjust if username changes
-      };
-    };
-  };
+  # Explicitly ensure we don't force seatd or greetd (GDM will handle session selection)
+  services.greetd.enable = lib.mkForce false;
+  services.seatd.enable = lib.mkForce false;
 
   security.polkit.enable = true;
 }
