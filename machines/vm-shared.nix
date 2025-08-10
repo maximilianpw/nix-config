@@ -110,7 +110,8 @@
     ];
 
   # Disable legacy X11 desktop managers (Hyprland provides Wayland session)
-  services.xserver.enable = false;
+  # Provide a default of disabling legacy X server unless a desktop module (e.g. GNOME) enables it.
+  services.xserver.enable = lib.mkDefault false;
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
