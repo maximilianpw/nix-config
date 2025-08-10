@@ -23,7 +23,8 @@
     LC_TIME = "en_US.UTF-8";
   };
 
-  services.xserver.enable = false; # no X11/GDM
+  # Default to disabling X if no desktop module overrides; GNOME module will set true.
+  services.xserver.enable = lib.mkDefault false; # no X11 unless desktop enables it
   # Provide XKB layout info (used by Wayland compositors like Hyprland)
   services.xserver.xkb = {
     layout = "us";
