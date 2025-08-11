@@ -28,6 +28,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    hyprland.url = "github:hyprwm/Hyprland";
+
     # Custom overlays (e.g., jujutsu)
     # commented because of issues with gpg tests when building
     # jujutsu.url = "github:jj-vcs/jj";

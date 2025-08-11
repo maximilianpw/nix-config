@@ -1,24 +1,19 @@
-{ pkgs, lib, ... }:
 {
+  inputs,
+  pkgs,
+  lib,
+  ...
+}: {
   # Core Hyprland (selectable via existing DM, or start from TTY)
   programs.hyprland = {
     enable = true;
-    xwayland.enable = true;
+    package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
+    portalPackage = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
   };
-
-  # Essential system services
-  services.dbus.enable = true;
-  security.polkit.enable = true;
-
-  # Minimal portals (screen sharing / file picker)
-  xdg.portal.enable = true;
-  xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-hyprland pkgs.xdg-desktop-portal-gtk ];
 
   # Minimal supporting tools
   environment.systemPackages = [
-    pkgs.wl-clipboard
     pkgs.kitty
-    pkgs.kdePackages.dolphin
-    pkgs.wofi
   ];
 }
+
