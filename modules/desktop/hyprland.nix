@@ -27,11 +27,12 @@
     pkgs.wofi
   ];
 
-  # Do not enforce any display manager or seat daemon here; leave to other modules
-  services.greetd.enable = true;
-  services.greetd.settings.default_session = {
-    command = "${pkgs.hyprland}/bin/Hyprland";
-    user = "maxpw";
-  };  
-  services.seatd.enable  = lib.mkForce false;
-}
+  services.seatd.enable = true;             # provide a seat when no “big” DM is used
+  services.greetd = {
+    enable = true;
+    package = pkgs.greetd.tuigreet;
+    settings.default_session = {
+      command = "tuigreet --time --remember --cmd 'dbus-run-session Hyprland'";
+      user = "maxpw";
+    };
+  };}
