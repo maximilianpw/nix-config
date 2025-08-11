@@ -23,7 +23,7 @@
   environment.systemPackages = [
     pkgs.wl-clipboard
     pkgs.kitty
-    pkgs.dolphin
+    pkgs.kdePackages.dolphin
     pkgs.wofi
   ];
 

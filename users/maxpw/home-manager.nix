@@ -138,6 +138,7 @@ in {
       if isLinux
       then {
         "ghostty/config".text = builtins.readFile ./ghostty.linux;
+        "hypr/hyprland.conf".text = builtins.readFile ./config.hyprland;
       }
       else {}
     );
