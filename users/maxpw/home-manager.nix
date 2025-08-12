@@ -9,6 +9,8 @@
   lib,
   ...
 }: let
+  imports = ["./fonts.nix"];
+
   isLinux = pkgs.stdenv.isLinux;
 
   shellAliases = {

@@ -16,4 +16,3 @@
     pkgs.kitty
   ];
 }
-

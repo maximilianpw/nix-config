@@ -1,5 +1,8 @@
-{ pkgs, lib, ... }:
 {
+  pkgs,
+  lib,
+  ...
+}: {
   # Enable GNOME (Wayland by default via GDM)
   services.xserver = {
     enable = true;
@@ -26,7 +29,7 @@
   # XDG portals for GNOME
   xdg.portal = {
     enable = true;
-    extraPortals = [ pkgs.xdg-desktop-portal-gnome pkgs.xdg-desktop-portal-gtk ];
+    extraPortals = [pkgs.xdg-desktop-portal-gnome pkgs.xdg-desktop-portal-gtk];
   };
 
   # Ensure any previous greetd/seatd settings (Hyprland) are disabled
