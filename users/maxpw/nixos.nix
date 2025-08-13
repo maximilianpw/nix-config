@@ -4,7 +4,7 @@
   lib,
   ...
 }: {
-  imports = [../../modules/desktop/gnome.nix];
+  imports = [../../modules/desktop/hyprland.nix];
   # --- Base (yours) ---
   networking.networkmanager.enable = true;
 
