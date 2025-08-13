@@ -11,9 +11,11 @@
   imports = [];
 
   boot.initrd.availableKernelModules = ["uhci_hcd" "ahci" "xhci_pci" "nvme" "usbhid" "sr_mod"];
-  boot.initrd.kernelModules = [];
+  boot.initrd.kernelModules = ["vmwgfx"];
   boot.kernelModules = [];
   boot.extraModulePackages = [];
+
+  services.xserver.videoDrivers = ["vmware"];
 
   fileSystems."/" = {
     device = "/dev/disk/by-label/nixos-root";

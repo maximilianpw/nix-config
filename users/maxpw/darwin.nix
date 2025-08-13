@@ -42,6 +42,8 @@
       "zen"
       "ghostty"
       "webstorm"
+      "zed"
+      "proton-vpn"
     ];
 
     masApps = {

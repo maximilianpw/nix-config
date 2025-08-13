@@ -21,6 +21,7 @@
     gcm = "git commit -m";
     gst = "git status";
     gco = "git checkout";
+    gcob = "git checkout -b";
     gcp = "git cherry-pick";
     gd = "git diff";
     gl = "git prettylog";
@@ -175,6 +176,7 @@ in {
       github.user = "MaxPW777";
       init.defaultBranch = "main";
       push.autoSetupRemote = true;
+      pull.rebase = false;
     };
   };
 
