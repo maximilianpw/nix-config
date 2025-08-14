@@ -17,12 +17,6 @@
     pkgs.kitty
   ];
 
-  # If lspci shows VMware SVGA (vmwgfx), use this instead:
-  boot.initrd.kernelModules = ["vmwgfx"];
-  services.xserver.videoDrivers = ["vmware"];
-
-  hardware.graphics.enable = true;
-
   # Wayland/wlroots friendly env in a VM
   environment.sessionVariables = {
     WLR_RENDERER_ALLOW_SOFTWARE = "1";
@@ -34,14 +28,4 @@
   # XDG portals (not required to boot, but fixes app dialogs/screensharing later)
   xdg.portal.enable = true;
   xdg.portal.extraPortals = [pkgs.xdg-desktop-portal-gtk];
-  # If you want to launch straight to Hyprland without GDM,
-  # greetd is the simplest. (Comment this out if you’ll use GDM.)
-  services.greetd = {
-    enable = true;
-    settings.default_session = {
-      # Start Hyprland under a dbus session
-      command = "${pkgs.dbus}/bin/dbus-run-session Hyprland";
-      user = "maxpw";
-    };
-  };
 }
