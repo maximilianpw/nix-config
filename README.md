@@ -1,339 +1,153 @@
-# Nix Configuration
+# Nix-Config
 
-Unified NixOS + macOS (nix-darwin) flake with a modular layout, Home Manager integration, and a VM target (`vm-aarch64`).
+Unified NixOS + macOS (nix-darwin) flake with Home Manager, Hyprland/GNOME modules, and a smart rebuild script.
 
-## 🏗️ Architecture
-
-This configuration uses a modular approach with shared common modules and host-specific configurations:
+## Repository layout
 
 ```
-├── flake.nix                    # Main flake configuration
-├── hosts/                      # Host-specific configurations
-│   ├── default/                # Standard x86_64 VM
-│   ├── bigboy/                 # High-performance VM with NVIDIA
-│   └── mac/                    # ARM64 VM for VMware Fusion
+.
+├── flake.nix                # Main flake: inputs, overlays, and outputs
+├── flake.lock
+├── lib/
+│   └── mksystem.nix         # mkSystem builder (NixOS & Darwin + Home Manager)
+├── machines/
+│   ├── macbook-pro-m1.nix   # macOS (nix-darwin) host
+│   ├── vm-aarch64.nix       # NixOS VM (aarch64, VMware Fusion)
+│   ├── vm-shared.nix        # Shared base for VMs (system pkgs, services)
+│   ├── wsl.nix              # NixOS-WSL base (not exported via flake outputs)
+│   └── hardware/
+│       ├── vm-aarch64.nix   # Hardware profile for aarch64 VMware guest
+│       └── vm-intel.nix     # Hardware profile for Intel VM
 ├── modules/
-│   ├── nixos/                  # System-level modules
-│   │   ├── common.nix          # Shared system configuration
-│   │   ├── vm-common.nix       # VM-specific optimizations
-│   │   ├── vmware.nix          # VMware Fusion optimizations
-│   │   └── nvidia.nix          # NVIDIA graphics configuration
-│   └── home-manager/           # User-level modules
-│       ├── dotfiles.nix        # Main entry point
-│       ├── development.nix     # Programming tools
-│       ├── terminal.nix        # Shell and terminal setup
-│       ├── neovim.nix          # Neovim configuration
-│       └── fonts.nix           # Font management
-└── scripts/
-    └── nixos-rebuild.sh        # Intelligent rebuild script
+│   └── desktop/
+│       ├── gnome.nix        # GNOME on Wayland via GDM (+extensions, portals)
+│       └── hyprland.nix     # Hyprland from upstream flake (+portals, env)
+├── scripts/
+│   └── nixos-rebuild.sh     # Smart rebuild script (Darwin/NixOS autodetect)
+├── users/
+│   └── maxpw/
+│       ├── home-manager.nix # Main Home Manager config (Linux & macOS)
+│       ├── nixos.nix        # NixOS user/system module for vm-aarch64
+│       ├── darwin.nix       # nix-darwin user/system module for macbook-pro-m1
+│       ├── fonts.nix        # Fonts (Nerd Fonts + defaults, fontconfig)
+│       ├── zshrc            # zsh init (zinit + plugins)
+│       ├── config.fish      # fish init (ssh-agent, Homebrew, starship)
+│       ├── config.nu        # nushell init (env, direnv hook, helpers)
+│       ├── ghostty.linux    # Ghostty config (Linux); linked by HM
+│       ├── RectangleConfig.json # Rectangle.app settings (macOS); linked by HM
+│       ├── hyprland.conf    # Hyprland example config (Linux, optional)
+│       └── config.hyprland  # Hyprland example config (Linux, optional)
+├── INTEGRATION_SUMMARY.md   # High-level integration notes (may be older)
+├── nixos-switch.log         # Last rebuild log (script output)
+└── "vscode config.code-profile" # VS Code profile export (settings/extensions)
 ```
 
-## 🚀 Quick Start
+## Flake overview
 
-### 1. Choose Your Host Configuration
+- Inputs: nixpkgs 25.05, nixpkgs-unstable (select pkgs), home-manager 25.05, nix-darwin 25.05, Hyprland, nix-snapd, NixOS-WSL.
+- Overlay: exposes `unstable` and selects newer packages (gh, claude-code, nushell).
+- mkSystem (`lib/mksystem.nix`):
+  - Picks nixosSystem or darwinSystem.
+  - Adds nix-snapd on Linux; NixOS-WSL when `wsl = true`.
+  - Integrates Home Manager at `home-manager.users.<user>` using `users/<userDir>/home-manager.nix`.
+  - Injects convenience args: `currentSystem*`, `isWSL`, `inputs`.
+- Outputs:
+  - `nixosConfigurations.vm-aarch64` (aarch64-linux; user: `maxpw`).
+  - `darwinConfigurations.macbook-pro-m1` (aarch64-darwin; login `max-vev`, userDir `maxpw`).
+  - `devShells` for aarch64/x86_64 Linux and aarch64 Darwin.
 
-- **default**: Standard VM for general use
-- **bigboy**: High-performance VM with NVIDIA support
-- **mac**: ARM64 VM optimized for VMware Fusion on Mac
+## What each file/module does
 
-### 2. Rebuild Your System
+- lib/mksystem.nix
+  - Chooses NixOS or Darwin system function, wires Home Manager, optional WSL & snapd, passes `currentSystem*` args.
+
+- machines/macbook-pro-m1.nix (nix-darwin)
+  - stateVersion = 6; leaves Nix daemon to Determinate installer (`nix.enable = false`).
+  - Optional Linux builder (currently disabled); zsh program enable; basic tools (e.g., cachix).
+
+- machines/vm-aarch64.nix (NixOS VM)
+  - Imports `hardware/vm-aarch64.nix` + `vm-shared.nix`.
+  - Enables binfmt for x86_64 emulation; VMware guest tools; shared `/host` mount via vmhgfs-fuse with safe ordering and `nofail`.
+  - DHCP on `ens160` for VMware on Apple Silicon.
+
+- machines/vm-shared.nix (shared NixOS base for VMs)
+  - Latest kernel; modern Nix settings; optional insecure package pin (mupdf for k2pdfopt).
+  - SSH enabled; Flatpak & Snap enabled; firewall disabled (VM convenience).
+  - Base packages and fonts; disables legacy X11 by default (desktop modules decide).
+
+- machines/wsl.nix (NixOS-WSL)
+  - Enables WSL module, sets default user, Nix settings; stateVersion 23.05. Not exported in flake outputs yet.
+
+- machines/hardware/*.nix
+  - vm-aarch64: uses labels `nixos-root` and `boot`, VMware video drivers; generated by nixos-generate-config and tweaked.
+  - vm-intel: legacy Intel VM example (root labeled `nixos`).
+
+- modules/desktop/gnome.nix
+  - GDM (Wayland), GNOME desktop, popular extensions, portals; forces GNOME session vars, disables greetd/seatd.
+
+- modules/desktop/hyprland.nix
+  - Hyprland from upstream input, xdg-desktop-portal-hyprland, Xwayland, wlroots-friendly env, GTK portal.
+
+- users/maxpw/home-manager.nix
+  - Shared HM config for Linux/macOS; imports `./fonts.nix`.
+  - Installs shells, CLIs, dev tools, AI tooling; on Linux adds browsers, rofi, ghostty.
+  - Sets EDITOR/PAGER/MANPAGER; links macOS Rectangle config and Linux Ghostty config.
+  - Configures git (signing key, aliases), direnv, neovim, bash/zsh/fish/nushell; enables Ollama; Linux gpg-agent; large cursor on HiDPI Linux.
+
+- users/maxpw/nixos.nix (NixOS user/system)
+  - Imports Hyprland desktop module; sets timezone/locale; US Colemak xkb; PipeWire; user `maxpw` in useful groups; Firefox; stateVersion 24.05.
+
+- users/maxpw/darwin.nix (nix-darwin user/system)
+  - Homebrew brews & casks (1Password, Rectangle, browsers, IDEs, VPN, Docker Desktop, etc.).
+  - Nerd Fonts; declares `users.users.max-vev` and `system.primaryUser`.
+
+- users/maxpw/fonts.nix (Home Manager)
+  - Installs Nerd Fonts and common font families; enables fontconfig and defaults.
+
+- users/maxpw/zshrc, config.fish, config.nu
+  - Shell startup files (zinit for zsh; ssh-agent/Homebrew/starship for fish; direnv/starship for nushell).
+
+- users/maxpw/ghostty.linux
+  - Ghostty terminal config for Linux; written to `~/.config/ghostty/config` by Home Manager on Linux.
+
+- users/maxpw/RectangleConfig.json
+  - Rectangle.app settings; written by Home Manager on macOS.
+
+- users/maxpw/hyprland.conf, users/maxpw/config.hyprland
+  - Example Hyprland configs for Linux; not auto-linked by default.
+
+- scripts/nixos-rebuild.sh
+  - Autodetects Darwin vs NixOS and host from user; validates flake, formats with alejandra, shows diffs, builds/applies, commits, runs GC.
+  - Uses `darwin-rebuild` on macOS and `nixos-rebuild` on NixOS.
+
+- "vscode config.code-profile"
+  - VS Code profile export (settings, extensions, snippets). Import via VS Code Profiles > Import Profile.
+
+## Using this flake
+
+Suggested clone path: `~/nix-config` (the rebuild script assumes this).
+
+- macOS (Apple Silicon)
+  - Apply: `sudo darwin-rebuild switch --flake .#macbook-pro-m1`
+  - Or run: `./scripts/nixos-rebuild.sh`
+
+- NixOS VM (aarch64)
+  - Apply: `sudo nixos-rebuild switch --flake .#vm-aarch64`
+  - Or run: `./scripts/nixos-rebuild.sh`
+
+Optional checks
 
 ```bash
-# Using the improved rebuild script (recommended)
-./scripts/nixos-rebuild.sh <hostname>
-
-# Or manually:
-sudo nixos-rebuild switch --flake ./#<hostname>
-
-# Examples:
-./scripts/nixos-rebuild.sh default
-./scripts/nixos-rebuild.sh bigboy  
-./scripts/nixos-rebuild.sh mac
+nix flake check       # validate
+nix develop           # enter dev shell
 ```
 
-## 🎯 Key Improvements Made
+## Notes
 
-### System Architecture
-- ✅ **Modular Design**: Eliminated code duplication with shared modules
-- ✅ **Host-Specific Configs**: Each VM has minimal, focused configuration
-- ✅ **Modern NixOS**: Updated from 23.11 to 24.05 for better support
-- ✅ **Option Assertions & Types**: Stronger validation and clearer errors
+- INTEGRATION_SUMMARY.md describes an older hosts/modules layout; the canonical structure is this README.
+- Hyprland comes from the upstream flake input to ensure recent builds on aarch64.
+- On macOS, Nix is managed by the Determinate installer; nix-darwin’s `nix.enable` is disabled accordingly.
 
-### VM Optimizations
-- ✅ **Performance Tuning**: VM-specific kernel parameters
-- ✅ **Resource Management**: Intelligent memory and I/O scheduling  
-- ✅ **Boot Optimization**: Faster boot times
-- ✅ **Network Tuning**: Proper VM network interface handling
+## License
 
-### Development Experience
-- ✅ **Enhanced Rebuild Script**: Better error handling and validation
-- ✅ **Git Integration**: Automatic commits on successful builds
-- ✅ **Garbage Collection**: Automatic cleanup of old generations
-- ✅ **Development Shell**: Easy environment for config development
-
-### NVIDIA Configuration (bigboy host)
-- ✅ **Stable Drivers**: Switched from beta to stable drivers
-- ✅ **Better Power Management**: Configurable options
-- ✅ **Offload Commands**: Easy NVIDIA offloading
-- ✅ **Gaming Support**: Steam integration
-
-### VMware Integration (mac host)  
-- ✅ **ARM64 Optimizations**: Specific tuning for Apple Silicon
-- ✅ **Guest Tools**: Proper VMware tools integration (`open-vm-tools` service enabled)
-- ✅ **Network Optimization**: VMware-specific settings
-
-## 📦 What's Included
-
-### System Packages
-- **Core Tools**: git, curl, wget, vim, neofetch
-- **Development**: rustup, nodejs, python3, go, openjdk  
-- **Shell**: zsh with advanced configuration
-- **Editor**: neovim as default editor
-
-### Desktop Environment
-- **Display**: GNOME (Wayland by default; forced to Xorg if configured)
-- **Audio**: PipeWire for modern audio
-- **Fonts**: Comprehensive collection including Nerd Fonts
-- **Input**: Colemak keyboard layout
-
-## 🛠️ Usage
-
-### Rebuild Your System
-```bash
-# Use the improved script (recommended)
-./scripts/nixos-rebuild.sh default
-
-# The script will:
-# 1. Validate your flake configuration
-# 2. Format Nix files with alejandra
-# 3. Show what changed
-# 4. Build and apply the configuration
-# 5. Commit changes to git
-# 6. Clean up old generations
-```
-
-### Manual Commands
-```bash
-# Check flake validity
-nix flake check
-
-# Build without applying
-nixos-rebuild dry-run --flake ./#hostname
-
-# Apply configuration
-sudo nixos-rebuild switch --flake ./#hostname
-```
-
-## 🔧 Customization
-
-### Adding New Hosts
-1. Create directory in `hosts/`
-2. Add minimal configuration.nix 
-3. Update flake.nix
-4. Use shared modules for common functionality
-
-### Modifying Configuration
-- **System-wide**: Edit `modules/nixos/common.nix`
-- **User-level**: Edit `modules/home-manager/` files
-- **VM-specific**: Modify `modules/nixos/vm-common.nix`
-
-## 🐛 Troubleshooting
-
-```bash
-# Check system logs
-journalctl -xe
-
-# View rebuild logs  
-tail -f ~/Nix-Config/nixos-switch.log
-
-# Test configuration
-nix flake check
-```
-
----
-
-**Previous command**: `sudo nixos-rebuild switch --flake ./#default` (still works but use the script instead)
-
----
-
-## 🆕 New `vm-aarch64` VM Provisioning (One-Time Setup)
-
-> **Note:** If you use the **graphical NixOS installer (Calamares)**, it will partition, format, and mount automatically. In that case, you can skip steps 2–3 below and go straight to installing from your flake. These manual steps are for the **minimal CLI ISO**.
-
-You only perform the disk prep + `nixos-install` once. After first boot, just run the rebuild script (it builds implicitly). The explicit `nix build` of the toplevel derivation is optional.
-
-### 1. Boot Live ISO (ARM64)
-Attach the aarch64 NixOS minimal ISO in VMware Fusion (Apple Silicon) and boot.
-
-### 2. Partition & Format (Minimal ISO Only)
-gdisk /dev/sda   # create EFI (type EF00) + root (type 8300)
-Adjust device names (`/dev/nvme0n1`, `/dev/sda`, `/dev/vda`) as needed. This repo’s hardware file expects labels: `boot` (FAT32) and `nixos-root` (ext4). Using a different label for root (like just `nixos`) will drop you to emergency mode unless you also change `machines/hardware/vm-aarch64.nix`.
-```bash
-lsblk -o NAME,SIZE,TYPE
-fdisk /dev/nvme0n1      # or your disk
-# g (GPT)
-# n (EFI) +512M
-# t -> 1 (EFI System)
-# n (root) remainder
-# w
-mkfs.vfat -F32 -n boot /dev/nvme0n1p1
-mkfs.ext4 -L nixos-root /dev/nvme0n1p2
-mount /dev/disk/by-label/nixos-root /mnt
-mkdir -p /mnt/boot
-mount /dev/disk/by-label/boot /mnt/boot
-```
-
-### 3. Fetch Config (Optional for Minimal ISO)
-Clone your flake directly into `/etc/nixos` (recommended for `nixos-install --flake`):
-```bash
-nix-shell -p git --command 'git clone https://github.com/MaxPW777/Nix-Config /mnt/etc/nixos'
-```
-Or defer cloning until after the first boot and use the GitHub flake URL at install time.
-
-### 4. (Optional) Preflight Build
-```bash
-nix build /mnt/etc/nixos#nixosConfigurations.vm-aarch64.config.system.build.toplevel
-```
-Use this only if you want early feedback. `nixos-install` will build anyway.
-
-### 5. Install
-Local flake (already cloned):
-```bash
-nixos-install --flake /mnt/etc/nixos#vm-aarch64
-```
-Remote flake (no local clone):
-```bash
-nixos-install --flake github:MaxPW777/Nix-Config#vm-aarch64
-```
-Then reboot.
-
-### 6. Routine Updates (After Reboot)
-```bash
-cd ~/nix-config
-./scripts/nixos-rebuild.sh
-```
-The script auto-detects user `maxpw` and selects `vm-aarch64`.
-
-### When To Use Which Command
-| Scenario | Command |
-|----------|---------|
-| One-time install (local) | nixos-install --flake /mnt/etc/nixos#vm-aarch64 |
-| One-time install (remote) | nixos-install --flake github:<you>/nix-config#vm-aarch64 |
-| Routine update | ./scripts/nixos-rebuild.sh |
-| Build only | nix build .#nixosConfigurations.vm-aarch64.config.system.build.toplevel |
-| Dry run | nixos-rebuild dry-run --flake .#vm-aarch64 |
-
-### VMware ARM64 Tips
-- Use `boot.loader.systemd-boot.enable = true;` and `boot.loader.efi.canTouchEfiVariables = true;`
-- Enable `services.open-vm-tools.enable = true;` for copy/paste, drag-and-drop, and guest features.
-- Device name may differ by disk type (`vda`, `sda`, or `nvme0n1`).
-
-### 🔐 Adding SSH Authorized Keys (Declarative vs Manual)
-
-Declarative (preferred – add inside `users/maxpw/nixos.nix`):
-```nix
-users.users.maxpw.openssh.authorizedKeys.keys = [
-    "ssh-ed25519 AAAAC3Nz...yourLaptopKey"
-    # "ssh-ed25519 AAAAC3Nz...yourOtherKey"
-];
-```
-Rebuild after first boot:
-```bash
-sudo nixos-rebuild switch --flake /etc/nixos#vm-aarch64
-```
-
-Manual (during install, before `nixos-install`):
-```bash
-mkdir -p /mnt/home/maxpw/.ssh
-echo 'ssh-ed25519 AAAAC3Nz...yourLaptopKey' > /mnt/home/maxpw/.ssh/authorized_keys
-chmod 700 /mnt/home/maxpw/.ssh
-chmod 600 /mnt/home/maxpw/.ssh/authorized_keys
-```
-Ownership (UID/GID) will be adjusted automatically at first boot; if needed later: `sudo chown -R maxpw:users ~/.ssh`.
-
-After verifying key auth you can harden SSH:
-```nix
-services.openssh.settings = {
-    PasswordAuthentication = false;
-    KbdInteractiveAuthentication = false;
-    PermitRootLogin = "no";
-};
-```
-
-### 📁 VMware Shared Folder /host Mount
-
-Configuration (in `machines/vm-aarch64.nix`):
-```nix
-fileSystems."/host" = {
-    device = ".host:/";
-    fsType = "fuse.vmhgfs-fuse";
-    options = [
-        "allow_other" "uid=1000" "gid=1000" "umask=022" "defaults" "nofail"
-        "x-systemd.after=vmtoolsd.service" "x-systemd.requires=vmtoolsd.service"
-    ];
-    neededForBoot = false;
-};
-```
-If it is not mounted yet after boot:
-```bash
-sudo systemctl restart vmtoolsd.service
-sudo mount /host
-```
-Check reasons for failure:
-```bash
-journalctl -u systemd-mount -g host -n 50 --no-pager
-```
-
-### 🛑 Emergency Mode (Most Common Causes & Fixes)
-
-1. Root FS label mismatch
-     - Error: `Cannot find /dev/disk/by-label/nixos-root`
-     - Fix: `e2label /dev/<root-partition> nixos-root` (or adjust hardware file & rebuild).
-2. Boot partition label mismatch
-     - Fix: `fatlabel /dev/<boot-partition> boot` (install `dosfstools` if needed).
-3. Wrong device path after disk reordering
-     - Prefer labels (already used) instead of `/dev/sdX`.
-4. Interrupted /host mount (should not block now due to `nofail`).
-
-Quick rescue from ISO:
-```bash
-mount /dev/disk/by-label/nixos-root /mnt
-mount /dev/disk/by-label/boot /mnt/boot
-nixos-enter --root /mnt
-nixos-rebuild switch --flake /etc/nixos#vm-aarch64 --install-bootloader
-exit
-reboot
-```
-
-### 🔁 Routine Rebuild After First Boot
-```bash
-cd /etc/nixos   # or wherever you cloned
-sudo nixos-rebuild switch --flake .#vm-aarch64
-```
-
-### 🧪 Verification Checklist Post-Install
-```bash
-ip -4 addr show ens160          # Network up
-systemctl status sshd           # SSH running
-systemctl status vmtoolsd       # VMware tools running
-mount | grep host || true       # Shared folder (non-fatal if absent)
-grep root= /boot/loader/entries/*.conf
-```
-
-### 🧹 Optional Cleanups
-- Remove unused generations: `sudo nix-collect-garbage -d`
-- Update inputs: `nix flake update` then `sudo nixos-rebuild switch --flake .#vm-aarch64`
-
----
-
-### Troubleshooting
-```bash
-journalctl -b -xe | less
-journalctl -b -1 -xe
-nix flake metadata
-sudo nix-store --verify --check-contents
-```
-
-### FAQ
-Q: Should I run `nix build` every time before switching?  
-A: No. `nixos-rebuild switch --flake` (and the provided script) already builds the system derivation. Use `nix build` only for CI, debugging, or benchmarking.
+Personal configuration; reuse at your own risk.

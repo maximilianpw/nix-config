@@ -19,7 +19,6 @@
     ];
 
     casks = [
-      "orbstack"
       "1password"
       "rectangle"
       "figma"
@@ -42,8 +41,10 @@
       "zen"
       "ghostty"
       "webstorm"
-      "zed"
       "protonvpn"
+      "docker-desktop"
+      "utm"
+      "aws-vpn-client"
     ];
 
     masApps = {

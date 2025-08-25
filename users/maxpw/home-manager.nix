@@ -101,6 +101,7 @@ in {
       cmatrix
       awscli2
       asdf
+      oxlint
     ]
     ++ (lib.optionals (isLinux && !isWSL) [
       chromium
