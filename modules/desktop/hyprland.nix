@@ -12,17 +12,19 @@
     xwayland.enable = true; # not required to boot, but usually desired
   };
 
-  # Minimal supporting tools
-  environment.systemPackages = [
-    pkgs.kitty
-  ];
+  # Polkit (needed for privilege prompts)
+  services.polkit.enable = true;
 
-  # Wayland/wlroots friendly env in a VM
-  environment.sessionVariables = {
-    WLR_RENDERER_ALLOW_SOFTWARE = "1";
-    WLR_NO_HARDWARE_CURSORS = "1";
-    GBM_BACKENDS_PATH = "/run/opengl-driver/lib/gbm";
-    NIXOS_OZONE_WL = "1";
+  # Login manager for Wayland sessions (TTY-friendly)
+  services.greetd = {
+    enable = true;
+    settings = {
+      default_session = {
+        # Text greeter that launches Hyprland
+        command = "${pkgs.greetd.tuigreet}/bin/tuigreet --time --remember --cmd Hyprland";
+        user = "greeter";
+      };
+    };
   };
 
   # XDG portals (not required to boot, but fixes app dialogs/screensharing later)

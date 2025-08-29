@@ -16,6 +16,7 @@
       "angular-cli"
       "jsonlint"
       "gnupg"
+      "codex"
     ];
 
     casks = [
@@ -42,9 +43,9 @@
       "ghostty"
       "webstorm"
       "protonvpn"
-      "docker-desktop"
       "utm"
       "aws-vpn-client"
+      "orbstack"
     ];
 
     masApps = {

@@ -106,8 +106,20 @@ in {
     ++ (lib.optionals (isLinux && !isWSL) [
       chromium
       firefox
-      rofi
+      rofi-wayland
       ghostty
+      # Wayland desktop essentials
+      waybar
+      mako
+      wl-clipboard
+      cliphist
+      grim
+      slurp
+      swww
+      hyprlock
+      hypridle
+      polkit_gnome
+      thunar
     ]);
 
   home.sessionVariables =
@@ -142,6 +154,7 @@ in {
       if isLinux
       then {
         "ghostty/config".text = builtins.readFile ./ghostty.linux;
+        "hypr/hyprland.conf".text = builtins.readFile ./hyprland.conf;
       }
       else {}
     );

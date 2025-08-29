@@ -88,6 +88,14 @@
     ];
   };
 
+  # Wayland/wlroots friendly env for VMs
+  environment.sessionVariables = {
+    WLR_RENDERER_ALLOW_SOFTWARE = "1";
+    WLR_NO_HARDWARE_CURSORS = "1";
+    GBM_BACKENDS_PATH = "/run/opengl-driver/lib/gbm";
+    NIXOS_OZONE_WL = "1";
+  };
+
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs;
