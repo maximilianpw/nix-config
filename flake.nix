@@ -30,6 +30,12 @@
 
     hyprland.url = "github:hyprwm/Hyprland";
 
+    # Declarative disk partitioning/formatting
+    disko = {
+      url = "github:nix-community/disko";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # Custom overlays (e.g., jujutsu)
     # commented because of issues with gpg tests when building
     # jujutsu.url = "github:jj-vcs/jj";
