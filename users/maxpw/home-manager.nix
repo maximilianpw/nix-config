@@ -42,15 +42,13 @@
   };
   # For our MANPAGER env var
   # https://github.com/sharkdp/bat/issues/1145
-  manpager = pkgs.writeShellScriptBin "manpager" (
-    if isDarwin
-    then ''
-      sh -c 'col -bx | bat -l man -p'
-    ''
-    else ''
-      cat "$1" | col -bx | bat --language man --style plain
-    ''
-  );
+  manpager = pkgs.writeShellScriptBin "manpager" ''
+    # Read from stdin, clean overstrikes, then send to bat
+    # -l man : syntax highlighting for manpages
+    # -p     : plain; no extra decorations
+    # --paging=always : ensure paging when run in a terminal
+    col -bx | ${pkgs.bat}/bin/bat -l man -p --paging=always
+  '';
 in {
   home.stateVersion = "25.05";
 
@@ -127,6 +125,7 @@ in {
       EDITOR = "nvim";
       PAGER = "less -FirSwX";
       MANPAGER = "${manpager}/bin/manpager";
+      MANROFFOPT = "-c";
     }
     // (
       if isDarwin
