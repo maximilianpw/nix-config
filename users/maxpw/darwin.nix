@@ -20,6 +20,7 @@
     ];
 
     casks = [
+      "colemak-dh"
       "1password"
       "rectangle"
       "figma"

@@ -13,7 +13,7 @@
   };
 
   # Polkit (needed for privilege prompts)
-  services.polkit.enable = true;
+  security.polkit.enable = true;
 
   # Login manager for Wayland sessions (TTY-friendly)
   services.greetd = {

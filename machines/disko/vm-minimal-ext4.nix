@@ -11,7 +11,7 @@
         partitions = {
           boot = {
             priority = 1;
-            size = "512MiB";
+            size = "2G";
             type = "ef00"; # EFI System Partition
             content = {
               type = "filesystem";
