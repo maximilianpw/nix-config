@@ -47,6 +47,7 @@
       "utm"
       "aws-vpn-client"
       "orbstack"
+      "container"
     ];
 
     masApps = {

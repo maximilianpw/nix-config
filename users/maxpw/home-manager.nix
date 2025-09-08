@@ -246,10 +246,6 @@ in {
     enable = true;
   };
 
-  services.ollama = {
-    enable = true;
-  };
-
   services.gpg-agent = {
     enable = isLinux;
     pinentry.package = pkgs.pinentry-tty;
