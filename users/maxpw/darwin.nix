@@ -13,7 +13,6 @@
 
     brews = [
       "zsh"
-      "angular-cli"
       "jsonlint"
       "gnupg"
       "codex"
@@ -44,7 +43,6 @@
       "ghostty"
       "webstorm"
       "protonvpn"
-      "utm"
       "aws-vpn-client"
       "orbstack"
       "container"

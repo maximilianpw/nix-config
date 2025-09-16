@@ -93,9 +93,6 @@ eval "$(zoxide init --cmd cd zsh)"
 # launches oh my posh config
 eval "$(oh-my-posh init zsh --config $HOME/.config/ohmyposh/catpuccin-macchiato.json)"
 
-# Load Angular CLI autocompletion.
-source <(ng completion script)
-
 # jj completions
 source <(jj util completion zsh)
 

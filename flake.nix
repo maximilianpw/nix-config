@@ -36,6 +36,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    neovim-nightly-overlay.url = "github:nix-community/neovim-nightly-overlay";
+
     # Custom overlays (e.g., jujutsu)
     # commented because of issues with gpg tests when building
     # jujutsu.url = "github:jj-vcs/jj";
@@ -65,6 +67,7 @@
         claude-code = unstable.claude-code;
         nushell = unstable.nushell;
       })
+      inputs.neovim-nightly-overlay.overlays.default
     ];
 
     mkSystem = import ./lib/mksystem.nix {
