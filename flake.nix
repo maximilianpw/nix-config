@@ -79,6 +79,11 @@
       user = "maxpw"; # login + repo dir align
     };
 
+    nixosConfigurations.main-pc = mkSystem "main-pc" {
+      system = "x86_64-linux";
+      user = "maxpw";
+    };
+
     darwinConfigurations.macbook-pro-m1 = mkSystem "macbook-pro-m1" {
       system = "aarch64-darwin";
       # macOS login is max-vev but repo directory uses maxpw for shared configs

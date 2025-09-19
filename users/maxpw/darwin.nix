@@ -45,7 +45,7 @@
       "protonvpn"
       "aws-vpn-client"
       "orbstack"
-      "container"
+      "termius"
     ];
 
     masApps = {
