@@ -31,6 +31,11 @@ in {
   boot = {
     kernelPackages = pkgs.linuxPackages_zen;
     kernelParams = ["amd_pstate=guided"];
+    loader = {
+      systemd-boot.enable = lib.mkDefault true;
+      efi.canTouchEfiVariables = lib.mkDefault true;
+      grub.enable = lib.mkDefault false;
+    };
   };
 
   # Hardware enablement for a desktop workstation
