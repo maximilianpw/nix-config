@@ -4,12 +4,14 @@
   lib,
   ...
 }: let
-  withOptional = pkg: if pkg == null then [] else [pkg];
-  optionalPkg = attrPath:
-    let
-      pkg = lib.attrsets.attrByPath attrPath null pkgs;
-    in
-      withOptional pkg;
+  withOptional = pkg:
+    if pkg == null
+    then []
+    else [pkg];
+  optionalPkg = attrPath: let
+    pkg = lib.attrsets.attrByPath attrPath null pkgs;
+  in
+    withOptional pkg;
   optionalTopLevel = name:
     optionalPkg [name];
   optionalNested = attrPath:
@@ -55,30 +57,29 @@ in {
 
   # System-scoped packages mirroring software managed by Homebrew on macOS.
   # Each package is added only if it exists in the pinned nixpkgs to keep evaluation stable.
-  environment.systemPackages =
-    let
-      base = with pkgs; [
-        cachix
-        lm_sensors
-        pciutils
-        usbutils
-      ];
-    in
-      base
-      ++ optionalTopLevel "_1password-gui"
-      ++ optionalTopLevel "google-chrome"
-      ++ optionalTopLevel "discord"
-      ++ optionalTopLevel "postman"
-      ++ optionalTopLevel "slack"
-      ++ optionalTopLevel "mongodb-compass"
-      ++ optionalTopLevel "ghostty"
-      ++ optionalTopLevel "vscode"
-      ++ optionalTopLevel "protonmail-bridge"
-      ++ optionalTopLevel "protonvpn-gui"
-      ++ optionalTopLevel "aws-vpn-client"
-      ++ optionalTopLevel "termius"
-      ++ optionalTopLevel "whatsapp-for-linux"
-      ++ optionalTopLevel "figma-linux"
-      ++ optionalTopLevel "zen-browser"
-      ++ optionalNested ["jetbrains" "webstorm"];
+  environment.systemPackages = let
+    base = with pkgs; [
+      cachix
+      lm_sensors
+      pciutils
+      usbutils
+    ];
+  in
+    base
+    ++ optionalTopLevel "_1password-gui"
+    ++ optionalTopLevel "google-chrome"
+    ++ optionalTopLevel "discord"
+    ++ optionalTopLevel "postman"
+    ++ optionalTopLevel "slack"
+    ++ optionalTopLevel "mongodb-compass"
+    ++ optionalTopLevel "ghostty"
+    ++ optionalTopLevel "vscode"
+    ++ optionalTopLevel "protonmail-bridge"
+    ++ optionalTopLevel "protonvpn-gui"
+    ++ optionalTopLevel "aws-vpn-client"
+    ++ optionalTopLevel "termius"
+    ++ optionalTopLevel "whatsapp-for-linux"
+    ++ optionalTopLevel "figma-linux"
+    ++ optionalTopLevel "zen-browser"
+    ++ optionalNested ["jetbrains" "webstorm"];
 }

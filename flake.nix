@@ -30,12 +30,6 @@
 
     hyprland.url = "github:hyprwm/Hyprland";
 
-    # Declarative disk partitioning/formatting
-    disko = {
-      url = "github:nix-community/disko";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     neovim-nightly-overlay.url = "github:nix-community/neovim-nightly-overlay";
 
     # Custom overlays (e.g., jujutsu)
@@ -74,11 +68,6 @@
       inherit overlays nixpkgs inputs;
     };
   in {
-    nixosConfigurations.vm-aarch64 = mkSystem "vm-aarch64" {
-      system = "aarch64-linux";
-      user = "maxpw"; # login + repo dir align
-    };
-
     nixosConfigurations.main-pc = mkSystem "main-pc" {
       system = "x86_64-linux";
       user = "maxpw";

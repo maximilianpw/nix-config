@@ -27,9 +27,8 @@ Usage: $0
 Automatically detects username and platform.
 
 Host mapping:
-  - max-vev: mac-darwin (darwin)
-  - max-vm: mac-vm (darwin)
-  - maxpw: mac-vm (darwin)
+  - max-vev: macbook-pro-m1 (darwin)
+  - maxpw: main-pc (nixos)
 
 On macOS, uses darwin-rebuild. On Linux, uses nixos-rebuild.
 EOF
@@ -39,7 +38,7 @@ EOF
 declare -A USER_HOST_MAP
 USER_HOST_MAP=(
   ["max-vev"]="macbook-pro-m1"
-  ["maxpw"]="vm-aarch64"
+  ["maxpw"]="main-pc"
 )
 
 HOSTNAME="${USER_HOST_MAP[$auto_username]:-default}"

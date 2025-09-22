@@ -6,8 +6,12 @@
 }: {
   imports = [../../modules/desktop/hyprland.nix];
   # --- Base (yours) ---
-  networking.networkmanager.enable = true;
-
+  networking.networkmanager = {
+    enable = true;
+    plugins = with pkgs; [
+      networkmanager-openvpn
+    ];
+  };
   # Timezone (France)
   time.timeZone = "Europe/Paris";
   i18n.defaultLocale = lib.mkDefault "en_US.UTF-8";
@@ -28,14 +32,12 @@
   # Provide XKB layout info (used by Wayland compositors like Hyprland)
   services.xserver.xkb = {
     layout = "us";
-    variant = "colemak"; # Colemak variant of US
+    variant = "colemak_dh"; # Colemak variant of US
   };
   services.printing.enable = false;
 
-  # Updated (hardware.opengl.enable renamed to hardware.graphics.enable)
   hardware.graphics.enable = true;
 
-  # Updated (hardware.pulseaudio renamed to services.pulseaudio)
   services.pulseaudio.enable = false;
   security.rtkit.enable = true;
   services.pipewire = {
@@ -68,7 +70,15 @@
   system.stateVersion = lib.mkDefault "24.05";
 
   # Console (TTY) keymap for Colemak
-  console.keyMap = "colemak";
+  console.keyMap = "colemak_dh";
+
+  services.dbus.enable = true;
+  xdg.portal = {
+    enable = true;
+    extraPortals = [pkgs.xdg-desktop-portal-gtk];
+    config.common.default = ["hyprland" "gtk"];
+  };
+  environment.sessionVariables.NIXOS_OZONE_WL = "1";
 
   nix.settings.experimental-features = ["nix-command" "flakes"];
 }

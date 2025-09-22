@@ -26,8 +26,4 @@
       };
     };
   };
-
-  # XDG portals (not required to boot, but fixes app dialogs/screensharing later)
-  xdg.portal.enable = true;
-  xdg.portal.extraPortals = [pkgs.xdg-desktop-portal-gtk];
 }

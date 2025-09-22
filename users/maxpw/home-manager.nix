@@ -70,6 +70,7 @@ in {
       deno
       lua
       bat
+      direnv
       # terminal dependencies
       gcc
       checkstyle
@@ -103,22 +104,24 @@ in {
       oxlint
     ]
     ++ (lib.optionals (isLinux && !isWSL) [
-      chromium
-      firefox
+      # App launcher (Wayland fork of rofi)
       rofi-wayland
+
+      # Terminal emulator (GPU accelerated, written in Rust)
       ghostty
-      colemak-dh
-      # Wayland desktop essentials
-      waybar
-      mako
-      wl-clipboard
-      cliphist
-      grim
-      slurp
-      swww
-      hyprlock
-      hypridle
-      polkit_gnome
+
+      # ---- Wayland desktop essentials ----
+      waybar # status bar / system info bar
+      mako # lightweight Wayland notification daemon
+      wl-clipboard # clipboard tools: wl-copy / wl-paste
+      cliphist # clipboard history manager (pairs well with wl-clipboard)
+      grim # screenshot tool (grab images from Wayland surfaces)
+      slurp # region selector (usually used with grim for area screenshots)
+      swww # wallpaper daemon (Wayland equivalent of feh/nitrogen)
+      hyprlock # screen locker (for Hyprland sessions)
+      hypridle # idle daemon (triggers lock/sleep on inactivity)
+
+      # ---- GUI / desktop apps ----
       kdePackages.dolphin
       discord
       google-chrome
@@ -127,9 +130,11 @@ in {
       protonmail-desktop
       jetbrains.webstorm
       protonvpn-gui
+
+      # ---- Developer helpers ----
       nodePackages.jsonlint
       codex
-      pavucontrol
+      pavucontrol # PulseAudio volume control
     ]);
 
   home.sessionVariables =
@@ -175,10 +180,6 @@ in {
     enable = true;
     # I don't use "settings" because the path is wrong on macOS at
     # the time of writing this.
-  };
-
-  programs.direnv = {
-    enable = true;
   };
 
   programs.git = {
@@ -260,11 +261,24 @@ in {
 
   services.gpg-agent = {
     enable = isLinux;
-    pinentry.package = pkgs.pinentry-tty;
+    pinentry.package = pkgs.pinentry-gnome3;
 
     # cache the keys forever so we don't get asked for a password
     defaultCacheTtl = 31536000;
     maxCacheTtl = 31536000;
+  };
+
+  systemd.user.services.polkit-gnome = lib.mkIf (isLinux && !isWSL) {
+    Unit = {
+      Description = "polkit-gnome Authentication Agent";
+      After = ["graphical-session.target"];
+      PartOf = ["graphical-session.target"];
+    };
+    Service = {
+      ExecStart = "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1";
+      Restart = "on-failure";
+    };
+    Install = {WantedBy = ["graphical-session.target"];};
   };
 
   # Make cursor not tiny on HiDPI screens

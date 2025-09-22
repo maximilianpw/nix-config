@@ -4,31 +4,27 @@
   ...
 }: {
   home.packages = with pkgs; [
-    # Nerd Fonts — now using individual font packages
-    nerd-fonts.fira-code
+    # Nerd/symbols (terminal, waybar, icons)
     nerd-fonts.jetbrains-mono
-    nerd-fonts.hack
-    nerd-fonts.iosevka
-    nerd-fonts.ubuntu-mono
+    nerd-fonts.fira-code
+    nerd-fonts.symbols-only
 
-    # Additional useful fonts
-    fira-code
-    jetbrains-mono
-    source-code-pro
-    ibm-plex
+    # Non-nerd system stacks & coverage
     noto-fonts
     noto-fonts-cjk-sans
     noto-fonts-emoji
+    liberation_ttf
+    dejavu_fonts
+    unifont
+
+    # Optional extras (keep if you really use them)
+    ibm-plex
     roboto
     roboto-mono
     ubuntu_font_family
     cantarell-fonts
-
-    # System fonts
-    liberation_ttf
-    dejavu_fonts
-    unifont
-    dina-font
+    # source-code-pro   # usually redundant if you already picked a mono
+    # dina-font         # bitmap look; keep only if you like it
   ];
 
   fonts.fontconfig = {
@@ -36,18 +32,25 @@
 
     defaultFonts = {
       monospace = [
-        "FiraCode Nerd Font"
         "JetBrainsMono Nerd Font"
-        "Hack Nerd Font"
-        "Source Code Pro"
+        "FiraCode Nerd Font"
+        "Hack Nerd Font" # only if you keep nerd-fonts.hack
+        "Noto Sans Mono" # non-nerd fallback
+        "Symbols Nerd Font" # icons/glyphs fallback
+        "Noto Color Emoji"
       ];
       sansSerif = [
+        "Noto Sans"
         "Liberation Sans"
         "DejaVu Sans"
+        "Noto Sans CJK SC" # or JP/KR/TC as needed
+        "Noto Color Emoji"
       ];
       serif = [
+        "Noto Serif"
         "Liberation Serif"
         "DejaVu Serif"
+        "Noto Color Emoji"
       ];
     };
   };
