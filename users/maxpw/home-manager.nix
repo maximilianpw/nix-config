@@ -170,7 +170,8 @@ in {
         "ghostty/config".text = builtins.readFile ./ghostty.linux;
         "hypr/hyprland.conf".text = builtins.readFile ./hyprland.conf;
         "rofi/config.rasi".text = builtins.readFile ./rofi;
-        "waybar".text = builtins.readDir ./waybar;
+        "waybar".source = ./waybar;
+        "waybar".recursive = true;
       }
       else {}
     );
