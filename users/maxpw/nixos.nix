@@ -32,7 +32,7 @@
   # Provide XKB layout info (used by Wayland compositors like Hyprland)
   services.xserver.xkb = {
     layout = "us";
-    variant = "colemak_dh"; # Colemak variant of US
+    variant = "colemak"; # Colemak variant of US
   };
   services.printing.enable = false;
 
@@ -70,7 +70,7 @@
   system.stateVersion = lib.mkDefault "24.05";
 
   # Console (TTY) keymap for Colemak
-  console.keyMap = "colemak_dh";
+  console.keyMap = "colemak";
 
   services.dbus.enable = true;
   xdg.portal = {
