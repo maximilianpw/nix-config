@@ -36,4 +36,4 @@ configuration {
     
     // Enable sidebar mode for switching modes
     sidebar-mode: true;
-}extbox { background-color: transparent; foreground: @subtext; }
+}
