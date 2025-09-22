@@ -16,11 +16,6 @@ configuration {
   sort: true;
   cycle: true;
 
-  kb-accept-entry: "Return,KP_Enter";
-  kb-row-up: "Up,Control+k";
-  kb-row-down: "Down,Control+j";
-  kb-remove-char-back: "BackSpace,Control+h";
-
   drun-display-format: "{name} <span weight='light' size='small' alpha='70%'>({generic})</span>";
 }
 

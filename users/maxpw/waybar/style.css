@@ -1,59 +1,51 @@
-/* Catppuccin Mocha-ish, aligns with your Rofi */
-@define-color bg0 #1e1e2e;
-@define-color bg1 #313244;
-@define-color bg2 #45475a;
-@define-color line #585b70;
-@define-color text #cdd6f4;
-@define-color subtext #a6adc8;
+/* --- Color Palette (lighter Catppuccin variant) --- */
+@define-color bg0 #2e3440; /* main bar background */
+@define-color bg1 #3b4252; /* module background */
+@define-color bg2 #434c5e; /* hover/active background */
+@define-color line #88c0d0; /* accent border */
+@define-color text #eceff4; /* primary text */
+@define-color subtext #d8dee9; /* secondary text */
 
-@define-color accent #cba6f7;
-@define-color warn   #f38ba8;
-@define-color info   #94e2d5;
+@define-color accent #81a1c1; /* blue highlight */
+@define-color warn   #bf616a; /* red */
+@define-color info   #a3be8c; /* green */
 
-@define-color accent-weak #2f2740;
-@define-color warn-weak   #3a222d;
-@define-color info-weak   #23323b;
-
+/* --- General --- */
 * {
-  border: none;
-  min-height: 0;
-  font-family:
-    'JetBrainsMono Nerd Font', 'JetBrainsMono Nerd Font Mono', 'Symbols Nerd Font', 'Symbols Nerd Font Mono',
-    'Font Awesome 6 Free', 'Font Awesome 6 Brands', 'Noto Color Emoji', sans-serif;
+  font-family: 'JetBrainsMono Nerd Font', 'Symbols Nerd Font', 'Noto Color Emoji', sans-serif;
   font-size: 12pt;
+  min-height: 0;
+  border: none;
 }
 
+/* --- Bar container --- */
 window#waybar {
-  background: alpha(@bg0, 0.7);
-  color: @text;
+  background: alpha(@bg0, 0.9);
   border: 1px solid @line;
-  border-radius: 14px;
+  border-radius: 12px;
   padding: 6px 10px;
+  color: @text;
 }
 
+/* --- Workspaces --- */
 #workspaces button {
   padding: 0 8px;
+  margin: 0 3px;
   color: @subtext;
   background: transparent;
-  border-radius: 10px;
+  border-radius: 8px;
 }
-
 #workspaces button.active {
-  color: @text;
-  background: @accent-weak;
-  border: 1px solid @accent;
+  background: @accent;
+  color: @bg0;
+  font-weight: bold;
 }
-
 #workspaces button.urgent {
-  color: @text;
-  background: @warn-weak;
-  border: 1px solid @warn;
-}
-
-#window {
+  background: @warn;
   color: @text;
 }
 
+/* --- Modules --- */
 #clock,
 #tray,
 #battery,
@@ -68,40 +60,35 @@ window#waybar {
 #custom-notify,
 #custom-power {
   background: @bg1;
-  color: @subtext;
-  border: 1px solid @line;
-  border-radius: 10px;
+  color: @text;
+  border: 1px solid @bg2;
+  border-radius: 8px;
   padding: 4px 10px;
   margin: 0 4px;
 }
 
+#clock {
+  background: @accent;
+  color: @bg0;
+  border-color: @accent;
+}
+
 #pulseaudio.muted {
-  color: @subtext;
   opacity: 0.7;
 }
 #battery.critical {
-  color: @warn;
+  background: @warn;
+  color: @bg0;
 }
 #network.disconnected {
   opacity: 0.6;
 }
 
-#clock {
-  color: @text;
-  border-color: @accent;
-}
-#custom-power {
-  color: @text;
-  background: @accent-weak;
-  border-color: @accent;
-}
-#custom-notify {
-  border-color: @info;
-}
-
+/* --- Tooltips --- */
 tooltip {
-  background: @bg2;
-  color: @text;
+  background: @bg1;
   border: 1px solid @line;
-  border-radius: 10px;
+  border-radius: 8px;
+  color: @text;
+  padding: 6px 8px;
 }
