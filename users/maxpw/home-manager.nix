@@ -71,6 +71,7 @@ in {
       lua
       bat
       # terminal dependencies
+      gcc
       checkstyle
       vale
       prettierd
@@ -106,6 +107,7 @@ in {
       firefox
       rofi-wayland
       ghostty
+      colemak-dh
       # Wayland desktop essentials
       waybar
       mako
@@ -117,7 +119,17 @@ in {
       hyprlock
       hypridle
       polkit_gnome
-      thunar
+      kdePackages.dolphin
+      discord
+      google-chrome
+      postman
+      mongodb-compass
+      protonmail-desktop
+      jetbrains.webstorm
+      protonvpn-gui
+      nodePackages.jsonlint
+      codex
+      pavucontrol
     ]);
 
   home.sessionVariables =
@@ -138,8 +150,6 @@ in {
 
   xdg.configFile =
     {
-      #"i3/config".text = builtins.readFile ./i3;
-      #"rofi/config.rasi".text = builtins.readFile ./rofi;
     }
     // (
       if isDarwin
@@ -154,6 +164,7 @@ in {
       then {
         "ghostty/config".text = builtins.readFile ./ghostty.linux;
         "hypr/hyprland.conf".text = builtins.readFile ./hyprland.conf;
+        "rofi/config.rasi".text = builtins.readFile ./rofi;
       }
       else {}
     );
