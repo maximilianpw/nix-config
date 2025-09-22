@@ -169,7 +169,8 @@ in {
       then {
         "ghostty/config".text = builtins.readFile ./ghostty.linux;
         "hypr/hyprland.conf".text = builtins.readFile ./hyprland.conf;
-        "rofi/config.rasi".text = builtins.readFile ./rofi;
+        "rofi".source = ./rofi;
+        "rofi".recursive = true;
         "waybar".source = ./waybar;
         "waybar".recursive = true;
       }

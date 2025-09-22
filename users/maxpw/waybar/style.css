@@ -1,94 +1,402 @@
-/* --- Color Palette (lighter Catppuccin variant) --- */
-@define-color bg0 #2e3440; /* main bar background */
-@define-color bg1 #3b4252; /* module background */
-@define-color bg2 #434c5e; /* hover/active background */
-@define-color line #88c0d0; /* accent border */
-@define-color text #eceff4; /* primary text */
-@define-color subtext #d8dee9; /* secondary text */
+/* =============================================================================
+*
+* Waybar configuration - Modern Style (Simplified)
+*
+* Configuration reference: https://github.com/Alexays/Waybar/wiki/Configuration
+*
+* =========================================================================== */
 
-@define-color accent #81a1c1; /* blue highlight */
-@define-color warn   #bf616a; /* red */
-@define-color info   #a3be8c; /* green */
+@import 'themes/kanagawa.css';
 
-/* --- General --- */
+/* -----------------------------------------------------------------------------
+* Base styles
+* -------------------------------------------------------------------------- */
+
 * {
-  font-family: 'JetBrainsMono Nerd Font', 'Symbols Nerd Font', 'Noto Color Emoji', sans-serif;
-  font-size: 12pt;
-  min-height: 0;
   border: none;
+  border-radius: 0;
+  font-family: 'JetBrains Mono', 'Hack Nerd Font', 'UbuntuMono', monospace;
+  font-size: 14px;
+  font-weight: 600;
+  min-height: 0;
+  padding: 0;
+  margin: 0;
 }
 
-/* --- Bar container --- */
 window#waybar {
-  background: alpha(@bg0, 0.9);
-  border: 1px solid @line;
+  background: rgba(15, 15, 20, 0.3);
+  border-bottom: 1px solid rgba(149, 127, 184, 0.3);
+}
+
+/* -----------------------------------------------------------------------------
+* Tooltips
+* -------------------------------------------------------------------------- */
+
+tooltip {
+  background: @background-primary;
+  color: @text;
+  border: 1px solid @border-color;
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+tooltip label {
+  color: @text;
+  font-size: 12px;
+}
+
+/* -----------------------------------------------------------------------------
+* Workspaces
+* -------------------------------------------------------------------------- */
+
+#workspaces {
+  background: @background-primary;
+  padding: 4px;
+  margin: 6px 2px;
   border-radius: 12px;
-  padding: 6px 10px;
-  color: @text;
+  border: 2px solid @border-color;
 }
 
-/* --- Workspaces --- */
 #workspaces button {
-  padding: 0 8px;
-  margin: 0 3px;
-  color: @subtext;
-  background: transparent;
+  padding: 6px 10px;
+  margin: 0 2px;
+  background: @background-primary;
+  color: @subtext0;
   border-radius: 8px;
-}
-#workspaces button.active {
-  background: @accent;
-  color: @bg0;
   font-weight: bold;
-}
-#workspaces button.urgent {
-  background: @warn;
-  color: @text;
+  border: 1px solid @border-color;
 }
 
-/* --- Modules --- */
-#clock,
-#tray,
-#battery,
-#cpu,
-#memory,
-#temperature,
-#network,
-#pulseaudio,
-#backlight,
-#mpd,
-#custom-playerctl,
-#custom-notify,
-#custom-power {
-  background: @bg1;
-  color: @text;
-  border: 1px solid @bg2;
-  border-radius: 8px;
-  padding: 4px 10px;
-  margin: 0 4px;
+#workspaces button:hover {
+  background: @background-hover;
+  color: @lavender;
+  border-color: @mauve;
 }
+
+#workspaces button.active,
+#workspaces button.focused {
+  background: @mauve;
+  color: @base;
+  font-weight: bold;
+  opacity: 1;
+  border-color: @pink;
+}
+
+#workspaces button.empty {
+  opacity: 0.3;
+  background: @background-secondary;
+}
+
+#workspaces button.urgent {
+  background: @error;
+  color: @base;
+  border-color: @maroon;
+}
+
+/* -----------------------------------------------------------------------------
+* Window title
+* -------------------------------------------------------------------------- */
+
+#window {
+  background: @background-secondary;
+  color: @text;
+  padding: 8px 16px;
+  border-radius: 12px;
+  border: 1px solid @border-color;
+  font-weight: 500;
+}
+
+/* -----------------------------------------------------------------------------
+* Clock
+* -------------------------------------------------------------------------- */
 
 #clock {
-  background: @accent;
-  color: @bg0;
-  border-color: @accent;
+  background: @blue;
+  color: @base;
+  font-weight: bold;
+  margin: 6px 2px 6px 2px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-size: 15px;
+}
+
+/* -----------------------------------------------------------------------------
+* System monitoring modules
+* -------------------------------------------------------------------------- */
+
+#memory {
+  background: @background-primary;
+  color: @green;
+  border-left: 4px solid @green;
+  border-radius: 12px 0 0 12px;
+  margin: 6px 0;
+  padding: 8px 12px;
+}
+
+#cpu {
+  background: @background-primary;
+  color: @blue;
+  border-left: 4px solid @blue;
+  margin: 6px 0px 6px 0;
+  padding: 8px 12px;
+}
+
+#temperature {
+  background: @background-primary;
+  color: @teal;
+  border-left: 4px solid @teal;
+  border-radius: 0 12px 12px 0;
+  margin: 6px 2px 6px 0;
+  padding: 8px 12px;
+}
+
+#temperature.critical {
+  background: @error;
+  color: @base;
+  border-left: 4px solid @maroon;
+}
+
+/* -----------------------------------------------------------------------------
+* Battery
+* -------------------------------------------------------------------------- */
+
+#battery {
+  background: @background-primary;
+  color: @green;
+  border-left: 4px solid @green;
+  margin: 6px 2px;
+  padding: 8px 12px;
+  border-radius: 12px;
+}
+
+#battery.charging {
+  color: @yellow;
+  border-left: 4px solid @yellow;
+}
+
+#battery.warning {
+  background: @warning;
+  color: @base;
+  border-left: 4px solid @peach;
+}
+
+#battery.critical:not(.charging) {
+  background: @error;
+  color: @base;
+  border-left: 4px solid @maroon;
+}
+
+/* -----------------------------------------------------------------------------
+* Audio and Backlight
+* -------------------------------------------------------------------------- */
+
+#backlight {
+  background: @background-primary;
+  color: @yellow;
+  border-left: 4px solid @yellow;
+  border-radius: 12px 0 0 12px;
+  margin: 6px 0 6px 2px;
+  padding: 8px 12px;
+}
+
+#pulseaudio {
+  background: @background-primary;
+  color: @yellow;
+  border-left: 4px solid @yellow;
+  border-radius: 0 12px 12px 0;
+  margin: 6px 2px 6px 0;
+  padding: 8px 12px;
 }
 
 #pulseaudio.muted {
-  opacity: 0.7;
-}
-#battery.critical {
-  background: @warn;
-  color: @bg0;
-}
-#network.disconnected {
-  opacity: 0.6;
+  color: @subtext0;
+  border-left: 4px solid @subtext0;
 }
 
-/* --- Tooltips --- */
-tooltip {
-  background: @bg1;
-  border: 1px solid @line;
-  border-radius: 8px;
-  color: @text;
-  padding: 6px 8px;
+/* -----------------------------------------------------------------------------
+* Network
+* -------------------------------------------------------------------------- */
+
+#network {
+  background: @background-primary;
+  color: @green;
+  border-left: 4px solid @green;
+  margin: 6px 2px;
+  padding: 8px 12px;
+  border-radius: 12px;
+}
+
+#network.disconnected {
+  color: @error;
+  border-left: 4px solid @error;
+}
+
+#network.disabled {
+  color: @subtext0;
+  border-left: 4px solid @subtext0;
+}
+
+/* -----------------------------------------------------------------------------
+* Language
+* -------------------------------------------------------------------------- */
+
+#language {
+  background: @background-primary;
+  color: @mauve;
+  border-left: 4px solid @mauve;
+  margin: 6px 0 6px 2px;
+  padding: 8px 12px;
+  border-radius: 12px 0 0 12px;
+}
+
+#keyboard-state {
+  background: @background-primary;
+  color: @mauve;
+  border-left: 4px solid @mauve;
+  margin: 6px 2px 6px 0;
+  padding: 8px 12px;
+  border-radius: 0 12px 12px 0;
+}
+
+/* -----------------------------------------------------------------------------
+* Custom modules
+* -------------------------------------------------------------------------- */
+
+#custom-launcher {
+  background: @mauve;
+  color: @base;
+  font-size: 16px;
+  font-weight: bold;
+  margin: 6px 2px 6px 8px;
+  padding: 8px 14px 8px 10px;
+  border-radius: 12px;
+  border: 2px solid @pink;
+}
+
+#custom-weather {
+  background: @background-primary;
+  color: @blue;
+  border-left: 4px solid @blue;
+  margin: 6px 2px;
+  padding: 8px 12px;
+  border-radius: 12px;
+}
+
+#custom-updates {
+  background: @background-primary;
+  color: @yellow;
+  border-left: 4px solid @yellow;
+  margin: 6px 2px;
+  padding: 8px 12px;
+  border-radius: 12px;
+}
+
+#custom-updates.has-updates {
+  background: @warning;
+  color: @base;
+  border-left: 4px solid @peach;
+}
+
+#custom-vpn {
+  background: @background-primary;
+  color: @teal;
+  border-left: 4px solid @teal;
+  margin: 6px 2px;
+  padding: 8px 12px;
+  border-radius: 12px;
+}
+
+#custom-vpn.connected {
+  color: @success;
+  border-left: 4px solid @success;
+}
+
+#custom-notification {
+  background: @background-primary;
+  color: @lavender;
+  border-left: 4px solid @lavender;
+  margin: 6px 2px;
+  padding: 8px 12px;
+  border-radius: 12px;
+}
+
+#custom-cava {
+  background: @background-primary;
+  color: @green;
+  border-left: 4px solid @green;
+  margin: 6px 2px;
+  padding: 8px 12px;
+  border-radius: 12px;
+}
+
+/* -----------------------------------------------------------------------------
+* Tray
+* -------------------------------------------------------------------------- */
+
+#tray {
+  background: @background-secondary;
+  padding: 6px 10px;
+  margin: 6px 8px 6px 2px;
+  border-radius: 12px;
+  border: 1px solid @border-color;
+}
+
+#tray > .passive {
+  opacity: 0.7;
+}
+
+#tray > .needs-attention {
+  background-color: @error;
+  border-radius: 6px;
+  color: @base;
+}
+
+/* -----------------------------------------------------------------------------
+* Idle inhibitor
+* -------------------------------------------------------------------------- */
+
+#idle_inhibitor {
+  background: @background-primary;
+  color: @yellow;
+  border-left: 4px solid @yellow;
+  margin: 6px 2px;
+  padding: 8px 12px;
+  border-radius: 12px;
+}
+
+#idle_inhibitor.activated {
+  background: @yellow;
+  border-left: 4px solid @background-primary;
+  color: @base;
+}
+
+#mode {
+  background: @warning;
+  color: @base;
+  font-weight: bold;
+  padding: 8px 16px;
+  margin: 6px 8px;
+  border-radius: 12px;
+}
+
+/* -----------------------------------------------------------------------------
+* Hover effects
+* -------------------------------------------------------------------------- */
+
+#clock:hover,
+#battery:hover,
+#cpu:hover,
+#memory:hover,
+#temperature:hover,
+#backlight:hover,
+#network:hover,
+#pulseaudio:hover,
+#custom-launcher:hover,
+#custom-notification:hover,
+#custom-weather:hover,
+#custom-updates:hover,
+#custom-vpn:hover,
+#language:hover,
+#custom-cava:hover {
+  opacity: 0.8;
 }
