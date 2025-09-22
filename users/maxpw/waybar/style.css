@@ -15,10 +15,12 @@
 @define-color info-weak   #23323b;
 
 * {
-  font-family: 'JetBrainsMono Nerd Font', monospace;
-  font-size: 12pt;
   border: none;
   min-height: 0;
+  font-family:
+    'JetBrainsMono Nerd Font', 'JetBrainsMono Nerd Font Mono', 'Symbols Nerd Font', 'Symbols Nerd Font Mono',
+    'Font Awesome 6 Free', 'Font Awesome 6 Brands', 'Noto Color Emoji', sans-serif;
+  font-size: 12pt;
 }
 
 window#waybar {

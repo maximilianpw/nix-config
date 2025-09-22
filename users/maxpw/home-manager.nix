@@ -9,8 +9,6 @@
   lib,
   ...
 }: let
-  imports = ["./fonts.nix"];
-
   isLinux = pkgs.stdenv.isLinux;
 
   shellAliases = {
@@ -50,6 +48,8 @@
     col -bx | ${pkgs.bat}/bin/bat -l man -p --paging=always
   '';
 in {
+  imports = [./fonts.nix];
+
   home.stateVersion = "25.05";
 
   xdg.enable = true;
