@@ -1,0 +1,105 @@
+/* Catppuccin Mocha-ish, aligns with your Rofi */
+@define-color bg0 #1e1e2e;
+@define-color bg1 #313244;
+@define-color bg2 #45475a;
+@define-color line #585b70;
+@define-color text #cdd6f4;
+@define-color subtext #a6adc8;
+
+@define-color accent #cba6f7;
+@define-color warn   #f38ba8;
+@define-color info   #94e2d5;
+
+@define-color accent-weak #2f2740;
+@define-color warn-weak   #3a222d;
+@define-color info-weak   #23323b;
+
+* {
+  font-family: 'JetBrainsMono Nerd Font', monospace;
+  font-size: 12pt;
+  border: none;
+  min-height: 0;
+}
+
+window#waybar {
+  background: alpha(@bg0, 0.7);
+  color: @text;
+  border: 1px solid @line;
+  border-radius: 14px;
+  padding: 6px 10px;
+}
+
+#workspaces button {
+  padding: 0 8px;
+  color: @subtext;
+  background: transparent;
+  border-radius: 10px;
+}
+
+#workspaces button.active {
+  color: @text;
+  background: @accent-weak;
+  border: 1px solid @accent;
+}
+
+#workspaces button.urgent {
+  color: @text;
+  background: @warn-weak;
+  border: 1px solid @warn;
+}
+
+#window {
+  color: @text;
+}
+
+#clock,
+#tray,
+#battery,
+#cpu,
+#memory,
+#temperature,
+#network,
+#pulseaudio,
+#backlight,
+#mpd,
+#custom-playerctl,
+#custom-notify,
+#custom-power {
+  background: @bg1;
+  color: @subtext;
+  border: 1px solid @line;
+  border-radius: 10px;
+  padding: 4px 10px;
+  margin: 0 4px;
+}
+
+#pulseaudio.muted {
+  color: @subtext;
+  opacity: 0.7;
+}
+#battery.critical {
+  color: @warn;
+}
+#network.disconnected {
+  opacity: 0.6;
+}
+
+#clock {
+  color: @text;
+  border-color: @accent;
+}
+#custom-power {
+  color: @text;
+  background: @accent-weak;
+  border-color: @accent;
+}
+#custom-notify {
+  border-color: @info;
+}
+
+tooltip {
+  background: @bg2;
+  color: @text;
+  border: 1px solid @line;
+  border-radius: 10px;
+}

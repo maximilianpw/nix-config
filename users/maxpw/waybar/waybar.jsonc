@@ -1,0 +1,160 @@
+{
+  // Waybar config (Hyprland)
+  "layer": "top",
+  "position": "top",
+  "height": 34,
+  "margin": "6 6 0 6",
+  "gtk-layer-shell": true,
+
+  "modules-left": ["hyprland/workspaces", "hyprland/window"],
+  "modules-center": ["clock"],
+  "modules-right": [
+    "mpd",
+    "custom/playerctl",
+    "backlight",
+    "pulseaudio",
+    "network",
+    "battery",
+    "temperature",
+    "cpu",
+    "memory",
+    "tray",
+    "custom/notify",
+    "custom/power",
+  ],
+
+  // --- Left ---
+  "hyprland/workspaces": {
+    "all-outputs": true,
+    "format": "{icon}",
+    "format-icons": {
+      "default": "",
+      "active": "",
+      "urgent": "",
+    },
+  },
+  "hyprland/window": {
+    "separate-outputs": true,
+    "max-length": 60,
+    "rewrite": {
+      "^(.*) — .*": "$1", // shorten Electron titles
+    },
+    "format": "  {title}",
+  },
+
+  // --- Center ---
+  "clock": {
+    "format": "  {:%a %d %b  %H:%M}",
+    "tooltip-format": "{:%A, %d %B %Y}\nWeek %V",
+    "interval": 1,
+    "calendar": {
+      "mode": "year",
+      "format": {
+        "today": "<span weight='bold'>{}</span>",
+      },
+    },
+  },
+
+  // --- Right ---
+  "mpd": {
+    "format": "{stateIcon} {artist} - {title}",
+    "format-stopped": "",
+    "state-icons": { "paused": "", "playing": "" },
+    "interval": 2,
+    "tooltip": true,
+  },
+
+  "custom/playerctl": {
+    "exec": "playerctl metadata --format '{{status}}: {{artist}} - {{title}}' | head -c 80",
+    "interval": 2,
+    "format": "  {}",
+    "on-click": "playerctl play-pause",
+    "on-scroll-up": "playerctl next",
+    "on-scroll-down": "playerctl previous",
+    "tooltip": true,
+  },
+
+  "backlight": {
+    "format": "  {percent}%",
+    "format-icons": [""],
+    "on-scroll-up": "brightnessctl set +5%",
+    "on-scroll-down": "brightnessctl set 5%-",
+  },
+
+  "pulseaudio": {
+    "format": "{icon} {volume}%",
+    "format-bluetooth": " {volume}%",
+    "format-muted": "",
+    "format-icons": {
+      "headphones": "",
+      "default": ["", "", ""],
+    },
+    "on-click": "pamixer -t",
+    "on-scroll-up": "pamixer -i 5",
+    "on-scroll-down": "pamixer -d 5",
+    "tooltip": true,
+  },
+
+  "network": {
+    "interval": 3,
+    "format-wifi": "  {essid} {signalStrength}%",
+    "format-ethernet": "  {ipaddr}",
+    "format-disconnected": "",
+    "tooltip-format": "{ifname} {ipaddr}\nUp {bandwidthUpBits} / Down {bandwidthDownBits}",
+  },
+
+  "battery": {
+    "format": "{icon}  {capacity}%",
+    "format-charging": " {capacity}%",
+    "format-full": "  100%",
+    "format-icons": ["", "", "", "", ""],
+    "states": {
+      "warning": 25,
+      "critical": 12,
+    },
+  },
+
+  "temperature": {
+    "critical-threshold": 80,
+    "format": "  {temperatureC}°C",
+    "interval": 5,
+    "hwmon-path": "/sys/class/thermal/thermal_zone0/temp",
+  },
+
+  "cpu": {
+    "format": "  {usage}%",
+    "interval": 3,
+  },
+
+  "memory": {
+    "format": "  {used:0.1f}G",
+    "interval": 5,
+  },
+
+  "tray": {
+    "icon-size": 16,
+    "spacing": 8,
+  },
+
+  // Custom modules
+  "custom/notify": {
+    "format": "",
+    "tooltip": true,
+    "exec": "dunstctl is-paused | grep -q 'true' && echo 'paused' || echo 'on'",
+    "interval": 5,
+    "on-click": "dunstctl set-paused toggle",
+    "return-type": "text",
+    "format-icons": {
+      "paused": "",
+      "on": "",
+    },
+  },
+
+  "custom/power": {
+    "format": "",
+    "tooltip": true,
+    "tooltip-format": "power",
+    "on-click": "rofi -modi drun -show drun", // quick app menu
+    "on-click-right": "~/.config/waybar/scripts/powermenu", // holds shutdown/suspend/lock
+  },
+}

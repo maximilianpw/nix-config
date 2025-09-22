@@ -1,22 +1,32 @@
 configuration {
   modi: "combi,drun,run,window,ssh";
   combi-modes: "drun,run,window";
+  combi-hide-mode-prefix: true;
+
   show-icons: true;
   icon-theme: "Papirus-Dark";
-  font: "JetBrainsMono Nerd Font 12";
-  display-drun: " apps";
-  display-run:  " run";
+
+  display-drun:   " apps";
+  display-run:    " run";
   display-window: " win";
-  display-ssh: " ssh";
+  display-ssh:    " ssh";
+
   matching: "fuzzy";
   case-sensitive: false;
   sort: true;
   cycle: true;
+
   kb-accept-entry: "Return,KP_Enter";
+  kb-row-up: "Up,Control+k";
+  kb-row-down: "Down,Control+j";
+  kb-remove-char-back: "BackSpace,Control+h";
+
+  drun-display-format: "{name} <span weight='light' size='small' alpha='70%'>({generic})</span>";
 }
 
 /* -------- THEME -------- */
 * {
+  /* Catppuccin Mocha-ish palette */
   bg0: #1e1e2e;
   bg1: #313244;
   bg2: #45475a;
@@ -25,22 +35,32 @@ configuration {
   subtext: #a6adc8;
 
   accent: #cba6f7;   /* highlight */
-  warn: #f38ba8;
-  info: #94e2d5;
+  warn:   #f38ba8;
+  info:   #94e2d5;
+
+  /* Derived tints/lines for consistent selected states */
+  accent-weak: #2f2740;
+  warn-weak:   #3a222d;
+  info-weak:   #23323b;
+
+  accent-line: #5f4d78;
+  warn-line:   #6b3647;
+  info-line:   #4d6078;
 
   font: "JetBrainsMono Nerd Font 12";
+
   border-col: @line;
-  highlight: @accent;
-  spacing: 8;
-  width: 40%;
+  highlight:  @accent;
+
+  spacing: 6;
+  width: 38%;        /* responsive; drop fixed window width */
 }
 
 window {
-  background-color: #1e1e2e;
+  background-color: @bg0;
   location: center;
   anchor: center;
   fullscreen: false;
-  width: 900;
   border: 1;
   border-radius: 16;
   border-color: @line;
@@ -73,15 +93,18 @@ prompt {
 entry {
   background-color: transparent;
   foreground: @text;
+  placeholder: "Type to search…";
+  placeholder-color: @subtext;
 }
 
 listview {
   background-color: transparent;
   padding: 6 0 0 0;
   columns: 1;
-  lines: 10;
+  lines: 12;
   scrollbar: true;
   fixed-height: false;
+  alternate: false;
 }
 
 scrollbar {
@@ -89,6 +112,7 @@ scrollbar {
   handle-width: 6;
   border-radius: 3;
   background-color: transparent;
+  padding: 0;
 }
 
 element {
@@ -103,21 +127,21 @@ element normal.urgent { foreground: @warn; }
 element normal.active { foreground: @info; }
 
 element selected.normal {
-  background-color: #382e4a;     /* hardcoded darker mauve */
+  background-color: @accent-weak;
   foreground: @text;
   border: 1;
-  border-color: #5f4d78;         /* mauve border */
+  border-color: @accent-line;
 }
 element selected.urgent {
-  background-color: #3f2530;     /* hardcoded darker red */
+  background-color: @warn-weak;
   border: 1;
-  border-color: #6b3647;         /* red border */
+  border-color: @warn-line;
   foreground: @text;
 }
 element selected.active {
-  background-color: #2e3a4a;     /* hardcoded bluish highlight */
+  background-color: @info-weak;
   border: 1;
-  border-color: #4d6078;
+  border-color: @info-line;
   foreground: @text;
 }
 
@@ -135,24 +159,25 @@ button {
   foreground: @subtext;
 }
 button selected {
-  background-color: #382e4a;
+  background-color: @accent-weak;
   border: 1;
-  border-color: #5f4d78;
+  border-color: @accent-line;
   foreground: @text;
 }
 
-message { background-color: transparent; border: 0; padding: 0 2; }
+message {
+  background-color: transparent;
+  border: 0;
+  padding: 0 2;
+}
 
 error-message {
-  background-color: #3f2530;
+  background-color: @warn-weak;
   foreground: @text;
   border: 1;
-  border-color: #6b3647;
+  border-color: @warn-line;
   border-radius: 10;
   padding: 8 10;
 }
 
 textbox { background-color: transparent; foreground: @subtext; }
-
-listview { alternate: false; }
-
