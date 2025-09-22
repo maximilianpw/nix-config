@@ -120,6 +120,8 @@ in {
       swww # wallpaper daemon (Wayland equivalent of feh/nitrogen)
       hyprlock # screen locker (for Hyprland sessions)
       hypridle # idle daemon (triggers lock/sleep on inactivity)
+      hyprpaper
+      wlogout
 
       # ---- GUI / desktop apps ----
       kdePackages.dolphin
@@ -168,7 +170,8 @@ in {
       if isLinux
       then {
         "ghostty/config".text = builtins.readFile ./ghostty.linux;
-        "hypr/hyprland.conf".text = builtins.readFile ./hyprland.conf;
+        "hypr".source = ./hyprland;
+        "hypr".recursive = true;
         "rofi".source = ./rofi;
         "rofi".recursive = true;
         "waybar".source = ./waybar;
