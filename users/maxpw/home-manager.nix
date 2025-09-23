@@ -124,6 +124,8 @@ in {
       wlogout
 
       # ---- GUI / desktop apps ----
+      xfce.xfconf
+      xfce.xfce4-settings
       xfce.thunar
       discord
       google-chrome
