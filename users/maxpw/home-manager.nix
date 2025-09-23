@@ -11,6 +11,13 @@
 }: let
   isLinux = pkgs.stdenv.isLinux;
 
+  # Helper function to automatically symlink all files in a directory
+  symlinkDir = dir: prefix:
+    lib.mapAttrs' (name: type: {
+      name = "${prefix}/${name}";
+      value = {source = "${dir}/${name}";};
+    }) (builtins.readDir dir);
+
   shellAliases = {
     z = "cd";
 
@@ -169,27 +176,21 @@ in {
     )
     // (
       if isLinux
-      then {
-        "ghostty/config".text = builtins.readFile ./ghostty.linux;
-        # Hyprland main configs
-        "hypr/hyprland.conf".source = ./hyprland/hyprland.conf;
-        "hypr/hyprpaper.conf".source = ./hyprland/hyprpaper.conf;
-        "hypr/hypridle.conf".source = ./hyprland/hypridle.conf;
-        "hypr/hyprlock.conf".source = ./hyprland/hyprlock.conf;
-        # Hyprland modular configs
-        "hypr/conf/monitors.conf".source = ./hyprland/conf/monitors.conf;
-        "hypr/conf/environment.conf".source = ./hyprland/conf/environment.conf;
-        "hypr/conf/configuration.conf".source = ./hyprland/conf/configuration.conf;
-        "hypr/conf/animations.conf".source = ./hyprland/conf/animations.conf;
-        "hypr/conf/autostart.conf".source = ./hyprland/conf/autostart.conf;
-        "hypr/conf/keybinds.conf".source = ./hyprland/conf/keybinds.conf;
-        "hypr/conf/windowrules.conf".source = ./hyprland/conf/windowrules.conf;
-        "hypr/conf/input.conf".source = ./hyprland/conf/input.conf;
-        "rofi".source = ./rofi;
-        "rofi".recursive = true;
-        "waybar".source = ./waybar;
-        "waybar".recursive = true;
-      }
+      then
+        {
+          "ghostty/config".text = builtins.readFile ./ghostty.linux;
+          # Hyprland main configs
+          "hypr/hyprland.conf".source = ./hyprland/hyprland.conf;
+          "hypr/hyprpaper.conf".source = ./hyprland/hyprpaper.conf;
+          "hypr/hypridle.conf".source = ./hyprland/hypridle.conf;
+          "hypr/hyprlock.conf".source = ./hyprland/hyprlock.conf;
+          # Other configs
+          "rofi".source = ./rofi;
+          "rofi".recursive = true;
+          "waybar".source = ./waybar;
+          "waybar".recursive = true;
+        }
+        // (symlinkDir ./hyprland/conf "hypr/conf")
       else {}
     );
 
