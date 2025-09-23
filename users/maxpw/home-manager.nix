@@ -124,9 +124,8 @@ in {
       wlogout
 
       # ---- GUI / desktop apps ----
-      xfce.xfconf
-      xfce.xfce4-settings
-      xfce.thunar
+      ranger
+      nautilus
       discord
       google-chrome
       postman
