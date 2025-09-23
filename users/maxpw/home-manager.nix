@@ -124,7 +124,7 @@ in {
       wlogout
 
       # ---- GUI / desktop apps ----
-      kdePackages.dolphin
+      xfce.thunar
       discord
       google-chrome
       postman
