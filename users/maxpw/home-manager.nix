@@ -109,6 +109,7 @@ in {
       awscli2
       asdf
       oxlint
+      ranger
     ]
     ++ (lib.optionals (isLinux && !isWSL) [
       # App launcher (Wayland fork of rofi)
@@ -131,7 +132,6 @@ in {
       wlogout
 
       # ---- GUI / desktop apps ----
-      ranger
       nautilus
       discord
       google-chrome
@@ -165,6 +165,8 @@ in {
 
   xdg.configFile =
     {
+      "ranger".source = ./ranger;
+      "ranger".recursive = true;
     }
     // (
       if isDarwin
