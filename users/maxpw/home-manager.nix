@@ -93,6 +93,7 @@ in {
       ripgrep
       starship
       fd
+      xdg-utils
       # git
       gnupg
       gh
