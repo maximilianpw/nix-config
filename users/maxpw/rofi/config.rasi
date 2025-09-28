@@ -1,39 +1,29 @@
-/************************************************
- * ROFI Color theme and Configuration
- * User: Zilero
- * Copyright: None, feel free to use and modify
- * Based on Catppuccin Mocha color scheme
- ***********************************************/
-
-
-/* ---- Load colors ---- */
-@theme "~/.config/rofi/colors.rasi"
-
-/* ---- Configuration ---- */
-configuration {
-    // Available modes
-    modi: "run,drun,window";
-    
-    // Font settings
-    font: "JetBrainsMono Nerd Font 18";
-    
-    // Icon settings
-    show-icons: true;
+configuration{
+    modi: ["drun", "window", "run"];
     icon-theme: "Papirus-Dark";
-    
-    // Basic settings
+    show-icons: true;
     terminal: "alacritty";
     drun-display-format: "{icon} {name}";
-    location: 0;                              // Center position
+    location: 0;
     disable-history: false;
-    hide-scrollbar: false;
+    sidebar-mode: false;
+    display-drun: " ";
+    display-run: " ";
+    display-window: " ";
     
-    // Mode display names with Nerd Font icons
-    display-drun: " Apps";                    // Apps mode
-    display-run: " Run";                      // Run mode
-    display-window: " Window";                // Window switcher
-    display-Network: " 󰤨 Network";            // Network mode
-    
-    // Enable sidebar mode for switching modes
-    sidebar-mode: true;
+    //adding vim keybindings
+    kb-row-up: "Up,Control+k";
+    kb-row-left: "Left,Control+h";
+    kb-row-right: "Right,Control+l";
+    kb-row-down: "Down,Control+j";
+
+    kb-accept-entry: "Control+z,Control+y,Return,KP_Enter";
+
+    //fixing up
+    kb-remove-to-eol: "";
+    kb-move-char-back: "Control+b";
+    kb-remove-char-back: "BackSpace";
+    kb-move-char-forward: "Control+f";
+    kb-mode-complete: "Control+o";
 }
+@theme "tokyonight.rasi"
