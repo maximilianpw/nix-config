@@ -94,6 +94,7 @@ in {
       starship
       fd
       xdg-utils
+      cava
       # git
       gnupg
       gh
