@@ -23,9 +23,10 @@
 	"script-fail-notify": true,
 	"text-empty": "Nothing here",
 	"widgets": [
+		"title",
+		"dnd", 
 		"buttons-grid",
 		"volume",
-		"backlight",
 		"mpris"
 	],
 	"widget-config": {
@@ -61,6 +62,26 @@
 				{
 					"label": "󰂯",
 					"command": "blueman-manager"
+				},
+				{
+					"label": "󰈀",
+					"command": "nm-connection-editor"
+				},
+				{
+					"label": "󰒓",
+					"command": "neohtop"
+				},
+				{
+					"label": "󰋊",
+					"command": "nautilus"
+				},
+				{
+					"label": "󰅖",
+					"command": "hyprctl dispatch exit"
+				},
+				{
+					"label": "󰜉",
+					"command": "systemctl reboot"
 				}
 			]
 		}
