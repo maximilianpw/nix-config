@@ -94,7 +94,6 @@ in {
       starship
       fd
       xdg-utils
-      cava
       # git
       gnupg
       gh
@@ -131,6 +130,8 @@ in {
       hyprlock # screen locker (for Hyprland sessions)
       hypridle # idle daemon (triggers lock/sleep on inactivity)
       hyprpaper
+      cava
+      swaynotificationcenter
       wlogout
 
       # ---- GUI / desktop apps ----
@@ -193,6 +194,8 @@ in {
           "rofi".recursive = true;
           "waybar".source = ./waybar;
           "waybar".recursive = true;
+          "swaync".source = ./swaync;
+          "swaync".recursive = true;
         }
         // (symlinkDir ./hyprland/conf "hypr/conf")
       else {}
