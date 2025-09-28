@@ -1,1 +1,16 @@
-/nix/store/1wqb9c1lcm65qb4ndasr9yczd42agpf0-home-manager-files/.config/waybar/config.jsonc
+{
+  "style": "~/.config/waybar/style.css",
+
+  "layer": "top",
+  "position": "top",
+  "height": 45,
+  "spacing": 8,
+
+  "modules-left": ["custom/launcher", "hyprland/workspaces", "custom/cava"],
+
+  "modules-center": ["memory", "cpu", "temperature", "disk"],
+
+  "modules-right": ["idle_inhibitor", "pulseaudio", "network", "custom/notification", "clock", "power", "tray"],
+
+  "include": "~/.config/waybar/modules.jsonc",
+}
