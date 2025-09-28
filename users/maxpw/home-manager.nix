@@ -132,6 +132,7 @@ in {
       hyprpaper
       cava
       swaynotificationcenter
+      redshift
       wlogout
 
       # ---- GUI / desktop apps ----
@@ -184,6 +185,7 @@ in {
       then
         {
           "ghostty/config".text = builtins.readFile ./ghostty.linux;
+          "redshift/redshift.conf".text = builtins.readFile ./config.redshift;
           # Hyprland main configs
           "hypr/hyprland.conf".source = ./hyprland/hyprland.conf;
           "hypr/hyprpaper.conf".source = ./hyprland/hyprpaper.conf;
@@ -196,6 +198,8 @@ in {
           "waybar".recursive = true;
           "swaync".source = ./swaync;
           "swaync".recursive = true;
+          "wlogout".source = ./wlogout;
+          "wlogout".recursive = true;
         }
         // (symlinkDir ./hyprland/conf "hypr/conf")
       else {}
