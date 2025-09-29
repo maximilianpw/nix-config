@@ -71,15 +71,9 @@ in {
     ++ optionalTopLevel "discord"
     ++ optionalTopLevel "postman"
     ++ optionalTopLevel "slack"
-    ++ optionalTopLevel "mongodb-compass"
     ++ optionalTopLevel "ghostty"
     ++ optionalTopLevel "vscode"
     ++ optionalTopLevel "protonmail-bridge"
-    ++ optionalTopLevel "protonvpn-gui"
-    ++ optionalTopLevel "aws-vpn-client"
     ++ optionalTopLevel "termius"
-    ++ optionalTopLevel "whatsapp-for-linux"
-    ++ optionalTopLevel "figma-linux"
-    ++ optionalTopLevel "zen-browser"
     ++ optionalNested ["jetbrains" "webstorm"];
 }
