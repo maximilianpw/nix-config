@@ -78,6 +78,7 @@ in {
       lua
       bat
       direnv
+      tflint
       # terminal dependencies
       gcc
       checkstyle
