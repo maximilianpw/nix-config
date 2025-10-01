@@ -95,6 +95,8 @@ in {
       starship
       fd
       xdg-utils
+      zip
+      unzip
       # git
       gnupg
       gh
