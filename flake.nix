@@ -30,7 +30,7 @@
 
     hyprland.url = "github:hyprwm/Hyprland";
 
-    neovim-nightly-overlay.url = "github:nix-community/neovim-nightly-overlay";
+    # neovim-nightly-overlay.url = "github:nix-community/neovim-nightly-overlay";
 
     # Custom overlays (e.g., jujutsu)
     # commented because of issues with gpg tests when building
@@ -61,7 +61,7 @@
         claude-code = unstable.claude-code;
         nushell = unstable.nushell;
       })
-      inputs.neovim-nightly-overlay.overlays.default
+      # inputs.neovim-nightly-overlay.overlays.default
     ];
 
     mkSystem = import ./lib/mksystem.nix {
