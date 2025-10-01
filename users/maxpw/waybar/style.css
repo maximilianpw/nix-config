@@ -280,6 +280,17 @@ tooltip label {
   font-size: 16px;
 }
 
+#custom-power {
+  background: @red;
+  color: @base;
+  font-size: 18px;
+  font-weight: bold;
+  margin: 8px 4px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  border: 2px solid @maroon;
+}
+
 /* -----------------------------------------------------------------------------
 * Tray
 * -------------------------------------------------------------------------- */
@@ -326,16 +337,16 @@ tooltip label {
 * -------------------------------------------------------------------------- */
 
 #clock:hover,
-#battery:hover,
 #cpu:hover,
 #memory:hover,
 #temperature:hover,
-#backlight:hover,
 #network:hover,
 #pulseaudio:hover,
 #custom-launcher:hover,
 #language:hover,
-#custom-cava:hover {
+#custom-cava:hover,
+#custom-notification:hover,
+#custom-power:hover {
   opacity: 0.8;
 }
 

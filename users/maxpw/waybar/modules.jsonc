@@ -142,6 +142,14 @@
     "escape": true
   },
 
+  // Power/Logout
+  "custom/power": {
+    "format": "⏻",
+    "tooltip": "Power Menu",
+    "on-click": "wlogout -p layer-shell",
+    "on-click-right": "wlogout -p layer-shell"
+  },
+
   // Clock
   "clock": {
     "format": "  {:%H:%M %a}",
