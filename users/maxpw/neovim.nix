@@ -8,22 +8,6 @@
   ...
 }: {
   programs.neovim = {
-    enable = true;
-    defaultEditor = true;
-    viAlias = true;
-    vimAlias = true;
-    vimdiffAlias = true;
-
-    # Use latest stable Neovim
-    package = pkgs.neovim-unwrapped;
-
-    # Environment variables for Neovim
-    extraLuaConfig = ''
-      -- This runs before your init.lua
-      -- Add any NixOS-specific configuration here if needed
-    '';
-
-    # Additional packages available to Neovim
     extraPackages = with pkgs; [
       # === Core Tools ===
       # Note: gcc, git, curl, wget, ripgrep, fd already in home.packages
@@ -46,9 +30,6 @@
       gopls
       delve # Go debugger
       golangci-lint # Go linter
-
-      # GraphQL
-      nodePackages.graphql-language-service-cli
 
       # JavaScript/TypeScript (handled by typescript-tools.nvim)
       # nodePackages.typescript-language-server  # Not needed with typescript-tools

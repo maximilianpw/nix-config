@@ -57,7 +57,6 @@
 in {
   imports = [
     ./fonts.nix
-    ./neovim.nix
   ];
 
   home.stateVersion = "25.05";
@@ -321,4 +320,17 @@ in {
     size = 128;
     x11.enable = true;
   };
+
+  programs.neovim = lib.mkMerge [
+    {
+      enable = true;
+      defaultEditor = true;
+      viAlias = true;
+      vimAlias = true;
+      vimdiffAlias = true;
+    }
+    (lib.mkIf (isLinux && !isWSL) {
+      extraPackages = (import ./neovim.nix {inherit config pkgs lib;}).programs.neovim.extraPackages;
+    })
+  ];
 }
