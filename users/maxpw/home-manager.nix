@@ -55,7 +55,10 @@
     col -bx | ${pkgs.bat}/bin/bat -l man -p --paging=always
   '';
 in {
-  imports = [./fonts.nix];
+  imports = [
+    ./fonts.nix
+    ./neovim.nix
+  ];
 
   home.stateVersion = "25.05";
 
@@ -157,6 +160,7 @@ in {
   home.sessionVariables =
     {
       EDITOR = "nvim";
+      VISUAL = "nvim";
       PAGER = "less -FirSwX";
       MANPAGER = "${manpager}/bin/manpager";
       MANROFFOPT = "-c";
@@ -286,11 +290,6 @@ in {
         "fish-fzf"
         "fish-foreign-env"
       ];
-  };
-
-  programs.neovim = {
-    enable = true;
-    # package = inputs.neovim-nightly-overlay.packages.${pkgs.system}.default;
   };
 
   services.gpg-agent = {
