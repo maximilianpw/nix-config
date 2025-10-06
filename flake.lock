@@ -248,11 +248,11 @@
         "xdph": "xdph"
       },
       "locked": {
-        "lastModified": 1759530922,
-        "narHash": "sha256-9NgZKpibALekGTPDc2O8lP8vFealQSZkXe+L+S7MMZU=",
+        "lastModified": 1759749604,
+        "narHash": "sha256-IF5RWz8v+L+YD0oaX3SHWeSOQ5rzC5wBQUtp9cw0wEE=",
         "owner": "hyprwm",
         "repo": "Hyprland",
-        "rev": "76d998743ac10e712238c1016db4d8e8d16f1049",
+        "rev": "17e77e0407bebd5d24521012ee1d04b156d6b9f4",
         "type": "github"
       },
       "original": {
@@ -440,16 +440,15 @@
         ]
       },
       "locked": {
-        "lastModified": 1759509947,
-        "narHash": "sha256-4XifSIHfpJKcCf5bZZRhj8C4aCpjNBaE3kXr02s4rHU=",
-        "owner": "nix-darwin",
+        "lastModified": 1758805352,
+        "narHash": "sha256-BHdc43Lkayd+72W/NXRKHzX5AZ+28F3xaUs3a88/Uew=",
+        "owner": "lnl7",
         "repo": "nix-darwin",
-        "rev": "000eadb231812ad6ea6aebd7526974aaf4e79355",
+        "rev": "c48e963a5558eb1c3827d59d21c5193622a1477c",
         "type": "github"
       },
       "original": {
-        "owner": "nix-darwin",
-        "ref": "nix-darwin-25.05",
+        "owner": "lnl7",
         "repo": "nix-darwin",
         "type": "github"
       }

@@ -2,39 +2,23 @@
   description = "NixOS & Nix-Darwin configuration by @maximilian-pinder-white";
 
   inputs = {
-    # Primary stable nixpkgs for system configurations
     nixpkgs.url = "github:nixos/nixpkgs/nixos-25.05";
-
-    # Unstable nixpkgs for bleeding-edge packages if needed
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
 
-    # Build a custom WSL installer
     nixos-wsl.url = "github:nix-community/NixOS-WSL";
     nixos-wsl.inputs.nixpkgs.follows = "nixpkgs";
 
-    # snapd
     nix-snapd.url = "github:nix-community/nix-snapd";
     nix-snapd.inputs.nixpkgs.follows = "nixpkgs";
 
-    # Home-Manager for per-user settings
-    home-manager = {
-      url = "github:nix-community/home-manager/release-25.05";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    home-manager.url = "github:nix-community/home-manager/release-25.05";
+    home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
-    # Nix-Darwin for macOS configurations
-    nix-darwin = {
-      url = "github:nix-darwin/nix-darwin/nix-darwin-25.05";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    nix-darwin.url = "github:lnl7/nix-darwin";
+    nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
 
     hyprland.url = "github:hyprwm/Hyprland";
 
-    # neovim-nightly-overlay.url = "github:nix-community/neovim-nightly-overlay";
-
-    # Custom overlays (e.g., jujutsu)
-    # commented because of issues with gpg tests when building
-    # jujutsu.url = "github:jj-vcs/jj";
     fish-fzf.url = "github:jethrokuan/fzf/24f4739fc1dffafcc0da3ccfbbd14d9c7d31827a";
     fish-fzf.flake = false;
     fish-foreign-env.url = "github:oh-my-fish/plugin-foreign-env/dddd9213272a0ab848d474d0cbde12ad034e65bc";
@@ -50,18 +34,16 @@
     ...
   }: let
     overlays = [
-      #inputs.jujutsu.overlays.default
-      (final: prev: rec {
+      (final: prev: {
         unstable = import inputs.nixpkgs-unstable {
           inherit (prev) system;
           config.allowUnfree = true;
         };
 
-        gh = unstable.gh;
-        claude-code = unstable.claude-code;
-        nushell = unstable.nushell;
+        gh = final.unstable.gh;
+        claude-code = final.unstable.claude-code;
+        nushell = final.unstable.nushell;
       })
-      # inputs.neovim-nightly-overlay.overlays.default
     ];
 
     mkSystem = import ./lib/mksystem.nix {

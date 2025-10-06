@@ -38,24 +38,24 @@
   "memory": {
     "format": " {: >3}%",
     "tooltip-format": "Memory: {used:0.1f}GB / {total:0.1f}GB",
-    "on-click": "neohtop"
+    "on-click": "btop"
   },
   "cpu": {
     "format": "󰘚 {usage: >3}%",
     "tooltip-format": "Load: {load}",
-    "on-click": "neohtop"
+    "on-click": "btop"
   },
   "temperature": {
     "critical-threshold": 80,
     "format": "  {temperatureC}°C",
     "tooltip-format": "Temperature: {temperatureC}°C",
-    "on-click": "neohtop"
+    "on-click": "btop"
   },
   "disk": {
     "format": "󰋊 {percentage_used: >3}%",
     "path": "/",
     "tooltip-format": "Disk Usage: {used} / {total} ({percentage_used}%)",
-    "on-click": "neohtop"
+    "on-click": "btop"
   },
 
   // Idle inhibitor

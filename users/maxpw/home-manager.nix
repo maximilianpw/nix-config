@@ -204,8 +204,13 @@ in {
           "waybar".recursive = true;
           "swaync".source = ./swaync;
           "swaync".recursive = true;
-          "wlogout".source = ./wlogout;
-          "wlogout".recursive = true;
+          "wlogout/layout".source = ./wlogout/layout;
+          "wlogout/colors.css".source = ./wlogout/colors.css;
+          "wlogout/style.css".text =
+            builtins.replaceStrings
+            ["@WLOGOUT_ICONS@"]
+            ["${pkgs.wlogout}/share/wlogout/icons"]
+            (builtins.readFile ./wlogout/style.css);
         }
         // (symlinkDir ./hyprland/conf "hypr/conf")
       else {}

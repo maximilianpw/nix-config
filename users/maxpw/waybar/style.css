@@ -152,36 +152,6 @@ tooltip label {
 }
 
 /* -----------------------------------------------------------------------------
-* Battery
-* -------------------------------------------------------------------------- */
-
-#battery {
-  background: @background-primary;
-  color: @green;
-  border-left: 4px solid @green;
-  margin: 6px 2px;
-  padding: 8px 12px;
-  border-radius: 12px;
-}
-
-#battery.charging {
-  color: @yellow;
-  border-left: 4px solid @yellow;
-}
-
-#battery.warning {
-  background: @warning;
-  color: @base;
-  border-left: 4px solid @peach;
-}
-
-#battery.critical:not(.charging) {
-  background: @error;
-  color: @base;
-  border-left: 4px solid @maroon;
-}
-
-/* -----------------------------------------------------------------------------
 * Audio
 * -------------------------------------------------------------------------- */
 
@@ -281,14 +251,14 @@ tooltip label {
 }
 
 #custom-power {
-  background: @red;
-  color: @base;
+  background: @background-primary;
+  color: @red;
+  border-left: 4px solid @red;
   font-size: 18px;
   font-weight: bold;
   margin: 8px 4px;
   padding: 10px 14px;
   border-radius: 14px;
-  border: 2px solid @maroon;
 }
 
 /* -----------------------------------------------------------------------------

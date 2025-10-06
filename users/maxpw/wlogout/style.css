@@ -61,30 +61,36 @@ button span {
 #lock {
   margin: 10px;
   border-radius: 20px;
+  background-image: image(url("@WLOGOUT_ICONS@/lock.png"));
 }
 
 #logout {
   margin: 10px;
   border-radius: 20px;
+  background-image: image(url("@WLOGOUT_ICONS@/logout.png"));
 }
 
 #suspend {
   margin: 10px;
   border-radius: 20px;
+  background-image: image(url("@WLOGOUT_ICONS@/suspend.png"));
 }
 
 #hibernate {
   margin: 10px;
   border-radius: 20px;
+  background-image: image(url("@WLOGOUT_ICONS@/hibernate.png"));
 }
 
 #shutdown {
   margin: 10px;
   border-radius: 20px;
+  background-image: image(url("@WLOGOUT_ICONS@/shutdown.png"));
 }
 
 #reboot {
   margin: 10px;
   border-radius: 20px;
+  background-image: image(url("@WLOGOUT_ICONS@/reboot.png"));
 }
 

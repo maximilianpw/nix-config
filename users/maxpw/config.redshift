@@ -29,7 +29,6 @@ dusk-time=18:35-20:15   ; Sunset period
 
 ; Transition control settings
 fade=1              ; Enable temperature fade
-speed=20            ; Fade speed (default is 20)
 elevation-high=3    ; Sun elevation: high (day)
 elevation-low=-6    ; Sun elevation: low (night)
 

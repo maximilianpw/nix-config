@@ -81,4 +81,7 @@
   environment.sessionVariables.NIXOS_OZONE_WL = "1";
 
   nix.settings.experimental-features = ["nix-command" "flakes"];
+
+  # Disable command-not-found (doesn't work with flakes)
+  programs.command-not-found.enable = false;
 }
