@@ -24,8 +24,8 @@ location-provider=manual  ; 'manual' for manual coordinates
 adjustment-method=randr  ; randr - for X11 systems
 
 ; Sunrise and sunset custom times
-dawn-time=6:00-7:45     ; Sunrise period
-dusk-time=18:35-20:15   ; Sunset period
+dawn-time=6:00-7:45
+dusk-time=18:35-20:15
 
 ; Transition control settings
 fade=1              ; Enable temperature fade

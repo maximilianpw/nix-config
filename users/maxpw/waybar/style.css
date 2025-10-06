@@ -251,7 +251,7 @@ tooltip label {
 }
 
 #custom-power {
-  background: @background-primary;
+  background: @mantle;
   color: @red;
   border-left: 4px solid @red;
   font-size: 18px;
