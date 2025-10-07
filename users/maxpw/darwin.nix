@@ -46,6 +46,7 @@
       "aws-vpn-client"
       "orbstack"
       "termius"
+      "claude"
     ];
 
     masApps = {
