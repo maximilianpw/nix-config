@@ -47,6 +47,7 @@
       "orbstack"
       "termius"
       "claude"
+      "helium-browser"
     ];
 
     masApps = {
