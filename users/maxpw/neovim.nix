@@ -42,7 +42,6 @@
 
       # Nix
       nil # Nix LSP
-      nixd # Alternative Nix LSP (you can choose one)
       nixpkgs-fmt # Nix formatter
 
       # Prisma

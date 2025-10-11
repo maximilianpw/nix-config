@@ -74,7 +74,6 @@ in {
       nodejs
       python3
       go
-      rustc
       rustup
       deno
       lua
@@ -229,7 +228,7 @@ in {
     userName = "Maximilian PINDER-WHITE";
     userEmail = "mpinderwhite@proton.me";
     aliases = {
-      cleanup = "!git branch --merged | grep  -v '\\*\\|master\\|develop' | xargs -n 1 -r git branch -d";
+      cleanup = "!git branch --merged | grep -E -v '\\*|master|develop' | xargs -n 1 -r git branch -d";
       prettylog = "log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(r) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative";
     };
     signing = {

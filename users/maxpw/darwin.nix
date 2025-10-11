@@ -33,7 +33,6 @@
       "google-chrome"
       "notion"
       "postman"
-      "rectangle"
       "slack"
       "the-unarchiver"
       "visual-studio-code"

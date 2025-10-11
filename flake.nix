@@ -1,5 +1,5 @@
 {
-  description = "NixOS & Nix-Darwin configuration by @maximilian-pinder-white";
+  description = "NixOS & Nix-Darwin configuration by @maximilianpw";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-25.05";
@@ -43,6 +43,7 @@
         gh = final.unstable.gh;
         claude-code = final.unstable.claude-code;
         nushell = final.unstable.nushell;
+        helium = final.callPackage ./packages/helium.nix {};
       })
     ];
 
