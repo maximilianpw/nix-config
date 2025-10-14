@@ -252,7 +252,7 @@ tooltip label {
 
 #custom-power {
   background: @background-primary;
-  color: @base;
+  color: @red;
   border-left: 4px solid @maroon;
   font-size: 18px;
   font-weight: bold;
@@ -327,4 +327,3 @@ tooltip label {
 #workspaces button {
   transition: all 0.2s ease-in-out;
 }
-
