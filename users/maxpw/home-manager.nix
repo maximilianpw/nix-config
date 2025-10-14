@@ -20,6 +20,7 @@
 
   shellAliases = {
     z = "cd";
+    ls = "eza";
 
     ga = "git add";
     gaa = "git add .";
@@ -80,6 +81,7 @@ in {
       bat
       direnv
       tflint
+      eza
       # terminal dependencies
       gcc
       checkstyle
