@@ -8,8 +8,8 @@ pkgs.appimageTools.wrapType2 {
   version = "0.5.5.2";
 
   src = fetchurl {
-    url = "https://github.com/imputnet/helium-linux/releases/download/0.5.5.2/helium-0.5.5.2-arm64.AppImage";
-    sha256 = "4a55b06c399e16ff552bc162e974b360e11d4f5fda105bae06abafcd7ee028bd";
+    url = "https://github.com/imputnet/helium-linux/releases/download/0.5.5.2/helium-0.5.5.2-x86_64.AppImage";
+    sha256 = "d9ffef79779432bfdc861d184812c3f3ada7bf946d272e6a95a03b7e1bab5a80";
   };
 
   extraPkgs = pkgs:
