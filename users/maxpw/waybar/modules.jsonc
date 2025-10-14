@@ -102,8 +102,8 @@
       "default": ["", ""]
     },
     "on-click": "pavucontrol",
-    "on-scroll-up": "pamixer -ui 2",
-    "on-scroll-down": "pamixer -ud 2"
+    "on-scroll-up": "wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 2%+",
+    "on-scroll-down": "wpctl set-volume @DEFAULT_AUDIO_SINK@ 2%-"
   },
 
   // Network

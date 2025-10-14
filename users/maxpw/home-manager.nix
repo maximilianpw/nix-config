@@ -155,6 +155,8 @@ in {
       nodePackages.jsonlint
       codex
       pavucontrol # PulseAudio volume control
+      brightnessctl # brightness control for media keys
+      playerctl # media player control
     ]);
 
   home.sessionVariables =
