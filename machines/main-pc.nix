@@ -32,13 +32,31 @@ in {
   # Modern kernel & AMD tuning
   boot = {
     kernelPackages = pkgs.linuxPackages_zen;
-    kernelParams = ["amd_pstate=guided"];
+    kernelParams = [
+      "amd_pstate=guided"
+      "mem_sleep_default=deep" # Force S3 deep sleep instead of s2idle
+    ];
     loader = {
       systemd-boot.enable = lib.mkDefault true;
       efi.canTouchEfiVariables = lib.mkDefault true;
       grub.enable = lib.mkDefault false;
     };
   };
+
+  # Sleep/suspend configuration
+  systemd.sleep.extraConfig = ''
+    AllowSuspend=yes
+    AllowHibernation=yes
+    AllowHybridSleep=yes
+    SuspendMode=suspend
+    SuspendState=mem
+  '';
+
+  # Disable USB wakeup to prevent immediate wake from sleep
+  services.udev.extraRules = ''
+    # Disable USB wake for specific controllers that cause issues
+    ACTION=="add", SUBSYSTEM=="pci", DRIVER=="xhci_hcd", ATTR{power/wakeup}="disabled"
+  '';
 
   # Hardware enablement for a desktop workstation
   services = {
