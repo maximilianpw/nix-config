@@ -82,6 +82,8 @@ in {
       direnv
       tflint
       eza
+      dotnet-sdk
+      netcoredbg
       # terminal dependencies
       gcc
       checkstyle
@@ -126,15 +128,15 @@ in {
       ghostty
 
       # ---- Wayland desktop essentials ----
-      waybar # status bar / system info bar
-      mako # lightweight Wayland notification daemon
-      wl-clipboard # clipboard tools: wl-copy / wl-paste
-      cliphist # clipboard history manager (pairs well with wl-clipboard)
-      grim # screenshot tool (grab images from Wayland surfaces)
-      slurp # region selector (usually used with grim for area screenshots)
-      swww # wallpaper daemon (Wayland equivalent of feh/nitrogen)
-      hyprlock # screen locker (for Hyprland sessions)
-      hypridle # idle daemon (triggers lock/sleep on inactivity)
+      waybar
+      mako
+      wl-clipboard
+      cliphist
+      grim
+      slurp
+      swww
+      hyprlock
+      hypridle
       hyprpaper
       cava
       swaynotificationcenter
