@@ -18,6 +18,7 @@
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
 
     hyprland.url = "github:hyprwm/Hyprland";
+    jujutsu.url = "github:jj-vcs/jj";
 
     fish-fzf.url = "github:jethrokuan/fzf/24f4739fc1dffafcc0da3ccfbbd14d9c7d31827a";
     fish-fzf.flake = false;
@@ -34,6 +35,7 @@
     ...
   }: let
     overlays = [
+      inputs.jujutsu.overlays.default
       (final: prev: {
         unstable = import inputs.nixpkgs-unstable {
           inherit (prev) system;
