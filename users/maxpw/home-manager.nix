@@ -106,7 +106,7 @@ in {
       gnupg
       gh
       lazygit
-      gitui
+      lazydocker
       # ai
       claude-code
       # dev packages
