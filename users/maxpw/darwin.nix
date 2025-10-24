@@ -47,6 +47,7 @@
       "termius"
       "claude"
       "helium-browser"
+      "bruno"
     ];
 
     masApps = {

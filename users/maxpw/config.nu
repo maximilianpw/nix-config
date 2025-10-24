@@ -82,7 +82,3 @@ if ('/opt/homebrew' | path type) == 'dir' {
 if (is-terminal --stdin) {
   $env.GPG_TTY = (tty)
 }
-
-# Override some commands to use 1password
-alias amp = op run -- amp
-alias codex = op run -- codex
