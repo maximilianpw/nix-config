@@ -47,6 +47,9 @@
     dcb = "docker compose build";
     dcbc = "docker compose build --no-cache";
 
+    chcd = "chezmoi cd";
+    chap = "chezmoi apply";
+
     # Shortcut to setup a nix-shell with fish. This lets you do something like
     # `fnix -p go` to get an environment with Go but use the fish shell along
     # with it.
