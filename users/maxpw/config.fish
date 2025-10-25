@@ -94,8 +94,4 @@ direnv hook fish | source
 #-------------------------------------------------------------------------------
 # Functions
 #-------------------------------------------------------------------------------
-# Shortcut to setup a nix-shell with fish. This lets you do something like
-# `fnix -p go` to get an environment with Go but use the fish shell along
-# with it.
-alias fnix "nix-shell --run fish"
 alias rebuild-nix "~/nix-config/scripts/nixos-rebuild.sh"

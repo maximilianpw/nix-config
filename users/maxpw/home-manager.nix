@@ -35,6 +35,7 @@
     v = "nvim";
 
     jd = "jj desc";
+    jc = "jj commit";
     jf = "jj git fetch";
     jn = "jj new";
     jp = "jj git push";
@@ -45,6 +46,11 @@
     dcub = "docker compose up --build";
     dcb = "docker compose build";
     dcbc = "docker compose build --no-cache";
+
+    # Shortcut to setup a nix-shell with fish. This lets you do something like
+    # `fnix -p go` to get an environment with Go but use the fish shell along
+    # with it.
+    fnix = "nix-shell --run fish";
   };
   # For our MANPAGER env var
   # https://github.com/sharkdp/bat/issues/1145
@@ -146,8 +152,6 @@ in {
       # ---- GUI / desktop apps ----
       nautilus
       discord
-      google-chrome
-      postman
       mongodb-compass
       protonmail-desktop
       jetbrains.webstorm
@@ -156,6 +160,7 @@ in {
       # ---- Developer helpers ----
       nodePackages.jsonlint
       codex
+      bruno
       pavucontrol # PulseAudio volume control
       brightnessctl # brightness control for media keys
       playerctl # media player control
@@ -198,10 +203,10 @@ in {
           "ghostty/config".text = builtins.readFile ./ghostty.linux;
           "redshift/redshift.conf".text = builtins.readFile ./config.redshift;
           # Hyprland main configs
-          "hypr/hyprland.conf".source = ./hyprland/hyprland.conf;
-          "hypr/hyprpaper.conf".source = ./hyprland/hyprpaper.conf;
-          "hypr/hypridle.conf".source = ./hyprland/hypridle.conf;
-          "hypr/hyprlock.conf".source = ./hyprland/hyprlock.conf;
+          # "hypr/hyprland.conf".source = ./hyprland/hyprland.conf;
+          # "hypr/hyprpaper.conf".source = ./hyprland/hyprpaper.conf;
+          # "hypr/hypridle.conf".source = ./hyprland/hypridle.conf;
+          # "hypr/hyprlock.conf".source = ./hyprland/hyprlock.conf;
           # Other configs
           "rofi".source = ./rofi;
           "rofi".recursive = true;
@@ -217,7 +222,7 @@ in {
             ["${pkgs.wlogout}/share/wlogout/icons"]
             (builtins.readFile ./wlogout/style.css);
         }
-        // (symlinkDir ./hyprland/conf "hypr/conf")
+        // (symlinkDir ./hyprland "hypr")
       else {}
     );
 
@@ -244,7 +249,7 @@ in {
     extraConfig = {
       branch.autosetuprebase = "always";
       color.ui = true;
-      github.user = "MaxPW777";
+      github.user = "maximilianpw";
       init.defaultBranch = "main";
       push.autoSetupRemote = true;
       pull.rebase = false;
