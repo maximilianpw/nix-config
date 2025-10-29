@@ -23,6 +23,13 @@
   margin: 0;
 }
 
+/* Force all modules to have no minimum height */
+.modules-left > *,
+.modules-center > *,
+.modules-right > * {
+  min-height: 0;
+}
+
 window#waybar {
   background: rgba(31, 31, 40, 0.85);
   border-bottom: 1px solid rgba(149, 127, 184, 0.4);
@@ -51,18 +58,18 @@ tooltip label {
 
 #workspaces {
   background: @background-primary;
-  padding: 6px;
-  margin: 8px 4px;
-  border-radius: 14px;
+  padding: 3px;
+  margin: 4px 4px;
+  border-radius: 10px;
   border: 2px solid @border-color;
 }
 
 #workspaces button {
-  padding: 8px 12px;
-  margin: 0 3px;
+  padding: 4px 10px;
+  margin: 0 2px;
   background: @background-primary;
   color: @subtext0;
-  border-radius: 10px;
+  border-radius: 8px;
   font-weight: bold;
   border: 1px solid @border-color;
   transition: all 0.2s ease-in-out;
@@ -101,10 +108,10 @@ tooltip label {
   background: @blue;
   color: @base;
   font-weight: bold;
-  margin: 8px 4px;
-  padding: 10px 16px;
-  border-radius: 14px;
-  font-size: 15px;
+  margin: 8px 2px;
+  padding: 0px 8px;
+  border-radius: 6px;
+  font-size: 18px;
 }
 
 /* -----------------------------------------------------------------------------
@@ -114,41 +121,45 @@ tooltip label {
 #memory {
   background: @background-primary;
   color: @green;
-  border-left: 4px solid @green;
-  border-radius: 14px 0 0 14px;
+  border-left: 2px solid @green;
+  border-radius: 6px 0 0 6px;
   margin: 8px 0;
-  padding: 10px 14px;
+  padding: 0px 8px;
+  font-size: 18px;
 }
 
 #cpu {
   background: @background-primary;
   color: @blue;
-  border-left: 4px solid @blue;
+  border-left: 2px solid @blue;
   margin: 8px 0;
-  padding: 10px 14px;
+  padding: 0px 8px;
+  font-size: 18px;
 }
 
 #temperature {
   background: @background-primary;
   color: @teal;
-  border-left: 4px solid @teal;
+  border-left: 2px solid @teal;
   margin: 8px 0;
-  padding: 10px 14px;
+  padding: 0px 8px;
+  font-size: 18px;
 }
 
 #disk {
   background: @background-primary;
   color: @yellow;
-  border-left: 4px solid @yellow;
-  border-radius: 0 14px 14px 0;
-  margin: 8px 4px 8px 0;
-  padding: 10px 14px;
+  border-left: 2px solid @yellow;
+  border-radius: 0 6px 6px 0;
+  margin: 8px 2px 8px 0;
+  padding: 0px 8px;
+  font-size: 18px;
 }
 
 #temperature.critical {
   background: @error;
   color: @base;
-  border-left: 4px solid @maroon;
+  border-left: 2px solid @maroon;
 }
 
 /* -----------------------------------------------------------------------------
@@ -158,15 +169,16 @@ tooltip label {
 #pulseaudio {
   background: @background-primary;
   color: @yellow;
-  border-left: 4px solid @yellow;
-  border-radius: 14px;
-  margin: 8px 4px;
-  padding: 10px 14px;
+  border-left: 2px solid @yellow;
+  border-radius: 6px;
+  margin: 8px 2px;
+  padding: 0px 8px;
+  font-size: 18px;
 }
 
 #pulseaudio.muted {
   color: @subtext0;
-  border-left: 4px solid @subtext0;
+  border-left: 2px solid @subtext0;
 }
 
 /* -----------------------------------------------------------------------------
@@ -176,42 +188,35 @@ tooltip label {
 #network {
   background: @background-primary;
   color: @green;
-  border-left: 4px solid @green;
-  margin: 6px 2px;
-  padding: 8px 12px;
-  border-radius: 12px;
+  border-left: 2px solid @green;
+  margin: 8px 2px;
+  padding: 0px 8px;
+  border-radius: 6px;
+  font-size: 18px;
 }
 
 #network.disconnected {
   color: @error;
-  border-left: 4px solid @error;
+  border-left: 2px solid @error;
 }
 
 #network.disabled {
   color: @subtext0;
-  border-left: 4px solid @subtext0;
+  border-left: 2px solid @subtext0;
 }
 
 /* -----------------------------------------------------------------------------
-* Language and Keyboard
+* Language
 * -------------------------------------------------------------------------- */
 
 #language {
   background: @background-primary;
   color: @mauve;
-  border-left: 4px solid @mauve;
-  margin: 8px 0 8px 4px;
-  padding: 10px 14px;
-  border-radius: 14px 0 0 14px;
-}
-
-#keyboard-state {
-  background: @background-primary;
-  color: @mauve;
-  border-left: 4px solid @mauve;
-  margin: 8px 4px 8px 0;
-  padding: 10px 14px;
-  border-radius: 0 14px 14px 0;
+  border-left: 2px solid @mauve;
+  margin: 8px 2px;
+  padding: 0px 8px;
+  border-radius: 6px;
+  font-size: 18px;
 }
 
 /* -----------------------------------------------------------------------------
@@ -221,44 +226,47 @@ tooltip label {
 #custom-launcher {
   background: @mauve;
   color: @base;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: bold;
-  margin: 8px 4px 8px 10px;
-  padding: 10px 16px;
-  border-radius: 14px;
+  margin: 4px 4px 4px 6px;
+  padding: 6px 12px;
+  border-radius: 10px;
   border: 2px solid @pink;
 }
 
-#custom-cava {
+/* -----------------------------------------------------------------------------
+* Window
+* -------------------------------------------------------------------------- */
+
+#window {
   background: @background-primary;
-  color: @green;
-  border-left: 4px solid @green;
-  margin: 8px 4px;
-  padding: 10px 14px;
-  border-radius: 14px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
+  color: @text;
+  margin: 4px 4px;
+  padding: 6px 16px;
+  border-radius: 10px;
+  font-weight: bold;
+  font-size: 18px;
 }
 
 #custom-notification {
   background: @background-primary;
   color: @lavender;
-  border-left: 4px solid @lavender;
-  margin: 8px 4px;
-  padding: 10px 14px;
-  border-radius: 14px;
-  font-size: 16px;
+  border-left: 2px solid @lavender;
+  margin: 8px 2px;
+  padding: 0px 8px;
+  border-radius: 6px;
+  font-size: 18px;
 }
 
 #custom-power {
   background: @background-primary;
   color: @red;
-  border-left: 4px solid @maroon;
+  border-left: 2px solid @maroon;
   font-size: 18px;
   font-weight: bold;
-  margin: 8px 4px;
-  padding: 10px 14px;
-  border-radius: 14px;
+  margin: 8px 2px;
+  padding: 0px 8px;
+  border-radius: 6px;
 }
 
 /* -----------------------------------------------------------------------------
@@ -267,9 +275,9 @@ tooltip label {
 
 #tray {
   background: @background-secondary;
-  padding: 8px 12px;
-  margin: 8px 10px 8px 4px;
-  border-radius: 14px;
+  padding: 0px 8px;
+  margin: 8px 6px 8px 2px;
+  border-radius: 6px;
   border: 1px solid @border-color;
 }
 
@@ -280,25 +288,6 @@ tooltip label {
 #tray > .needs-attention {
   background-color: @error;
   border-radius: 6px;
-  color: @base;
-}
-
-/* -----------------------------------------------------------------------------
-* Idle inhibitor
-* -------------------------------------------------------------------------- */
-
-#idle_inhibitor {
-  background: @background-primary;
-  color: @yellow;
-  border-left: 4px solid @yellow;
-  margin: 8px 4px;
-  padding: 10px 14px;
-  border-radius: 14px;
-}
-
-#idle_inhibitor.activated {
-  background: @yellow;
-  border-left: 4px solid @background-primary;
   color: @base;
 }
 
@@ -314,7 +303,7 @@ tooltip label {
 #pulseaudio:hover,
 #custom-launcher:hover,
 #language:hover,
-#custom-cava:hover,
+#window:hover,
 #custom-notification:hover,
 #custom-power:hover {
   opacity: 0.8;

@@ -1,26 +1,16 @@
 {
-  "style": "~/.config/waybar/style.css",
+  "style": "./style.css",
 
   "layer": "top",
   "position": "top",
-  "height": 45,
-  "spacing": 8,
+  "height": 32,
+  "spacing": 5,
 
-  "modules-left": ["custom/launcher", "hyprland/workspaces", "custom/cava"],
+  "modules-left": ["custom/launcher", "hyprland/workspaces", "memory", "cpu", "temperature", "disk"],
 
-  "modules-center": ["memory", "cpu", "temperature", "disk"],
+  "modules-center": ["hyprland/window"],
 
-  "modules-right": [
-    "idle_inhibitor",
-    "hyprland/language", 
-    "keyboard-state",
-    "pulseaudio",
-    "network",
-    "custom/notification",
-    "clock",
-    "custom/power",
-    "tray"
-  ],
+  "modules-right": ["pulseaudio", "network", "custom/notification", "clock", "custom/power", "tray"],
 
-  "include": "~/.config/waybar/modules.jsonc"
+  "include": "./modules.jsonc",
 }
