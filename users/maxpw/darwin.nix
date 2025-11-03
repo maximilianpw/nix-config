@@ -48,6 +48,7 @@
       "claude"
       "helium-browser"
       "bruno"
+      "yaak"
     ];
 
     masApps = {
