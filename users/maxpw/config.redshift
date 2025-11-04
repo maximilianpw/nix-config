@@ -18,14 +18,11 @@ gamma=0.9:0.9:0.9    ; Values for red:green:blue channels
                      ; Less than 1.0 - darker, more than 1.0 - brighter
 
 ; Location provider settings
-location-provider=manual  ; 'manual' for manual coordinates
+; 'manual' for manual coordinates
+location-provider=manual
 
 ; Screen adjustment method
-adjustment-method=randr  ; randr - for X11 systems
-
-; Sunrise and sunset custom times
-dawn-time=6:00-7:45
-dusk-time=18:35-20:15
+adjustment-method=randr
 
 ; Transition control settings
 fade=1              ; Enable temperature fade
@@ -33,9 +30,11 @@ elevation-high=3    ; Sun elevation: high (day)
 elevation-low=-6    ; Sun elevation: low (night)
 
 [manual]
-; Your city coordinates (example for Moscow)
-lat=55.7    ; Latitude (positive - north, negative - south)
-lon=37.6    ; Longitude (positive - east, negative - west)
+; Your city coordinates (Nice, France)
+; Latitude (positive - north, negative - south)
+lat=43.7
+; Longitude (positive - east, negative - west)
+lon=7.3
 
 [randr]
 ; Monitor-specific settings
