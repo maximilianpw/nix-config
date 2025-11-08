@@ -91,7 +91,7 @@ in {
       direnv
       tflint
       eza
-      dotnet-sdk
+      dotnet-sdk_9
       netcoredbg
       # terminal dependencies
       gcc
