@@ -38,6 +38,22 @@
 
   hardware.graphics.enable = true;
 
+  # to download binaries that usually download to /bin
+  programs.nix-ld = {
+    enable = true;
+    libraries = with pkgs; [
+      # Common libraries that bun/node tools often need
+      stdenv.cc.cc
+      zlib
+      fuse3
+      icu
+      nss
+      openssl
+      curl
+      expat
+    ];
+  };
+
   services.pulseaudio.enable = false;
   security.rtkit.enable = true;
   services.pipewire = {
