@@ -34,21 +34,18 @@
       "notion"
       "postman"
       "slack"
-      "the-unarchiver"
       "visual-studio-code"
       "mongodb-compass"
       "proton-mail"
-      "zen"
       "ghostty"
       "webstorm"
       "protonvpn"
       "aws-vpn-client"
       "orbstack"
-      "termius"
       "claude"
       "helium-browser"
-      "bruno"
       "yaak"
+      "github"
     ];
 
     masApps = {
