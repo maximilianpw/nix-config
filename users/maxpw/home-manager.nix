@@ -81,7 +81,7 @@ in {
       ngrok
       stow
       alejandra
-      nodejs
+      nodejs_24
       python3
       go
       rustup
