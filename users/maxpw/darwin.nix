@@ -46,6 +46,7 @@
       "helium-browser"
       "yaak"
       "github"
+      "logi-options+"
     ];
 
     masApps = {
