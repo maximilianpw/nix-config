@@ -67,6 +67,7 @@
 in {
   imports = [
     ./fonts.nix
+    inputs.try.homeModules.default
   ];
 
   home.stateVersion = "25.05";
@@ -118,6 +119,7 @@ in {
       lazydocker
       # ai
       claude-code
+      gemini-cli
       # dev packages
       mongosh
       sops
@@ -126,8 +128,8 @@ in {
       cmatrix
       awscli2
       asdf
-      oxlint
       ranger
+      try
     ]
     ++ (lib.optionals (isLinux && !isWSL) [
       # App launcher (Wayland fork of rofi)
@@ -276,6 +278,20 @@ in {
     enable = true;
     shellAliases = shellAliases;
     configFile.source = ./config.nu;
+  };
+
+  programs.try = {
+    enable = true;
+    package = inputs.try.packages.${pkgs.system}.default.overrideAttrs (old: {
+      patches =
+        (old.patches or [])
+        ++ [
+          (pkgs.fetchpatch {
+            url = "https://patch-diff.githubusercontent.com/raw/tobi/try/pull/39.diff";
+            sha256 = "sha256-wZdZskcfBD3Z5xlyozO70O3v87Dx8hKb8+kX8eCE9Zw=";
+          })
+        ];
+    });
   };
 
   programs.zsh = {
