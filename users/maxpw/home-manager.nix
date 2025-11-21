@@ -67,7 +67,7 @@
 in {
   imports = [
     ./fonts.nix
-    inputs.try.homeModules.default
+    inputs.try.homeManagerModules.default
   ];
 
   home.stateVersion = "25.05";
@@ -282,16 +282,6 @@ in {
 
   programs.try = {
     enable = true;
-    package = inputs.try.packages.${pkgs.system}.default.overrideAttrs (old: {
-      patches =
-        (old.patches or [])
-        ++ [
-          (pkgs.fetchpatch {
-            url = "https://patch-diff.githubusercontent.com/raw/tobi/try/pull/39.diff";
-            sha256 = "sha256-wZdZskcfBD3Z5xlyozO70O3v87Dx8hKb8+kX8eCE9Zw=";
-          })
-        ];
-    });
   };
 
   programs.zsh = {
