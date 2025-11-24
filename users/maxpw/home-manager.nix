@@ -67,7 +67,6 @@
 in {
   imports = [
     ./fonts.nix
-    inputs.try.homeManagerModules.default
   ];
 
   home.stateVersion = "25.05";
@@ -129,7 +128,6 @@ in {
       awscli2
       asdf
       ranger
-      try
     ]
     ++ (lib.optionals (isLinux && !isWSL) [
       # App launcher (Wayland fork of rofi)
@@ -278,10 +276,6 @@ in {
     enable = true;
     shellAliases = shellAliases;
     configFile.source = ./config.nu;
-  };
-
-  programs.try = {
-    enable = true;
   };
 
   programs.zsh = {

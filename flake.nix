@@ -19,7 +19,6 @@
 
     hyprland.url = "github:hyprwm/Hyprland";
     jujutsu.url = "github:jj-vcs/jj";
-    try.url = "github:tobi/try";
 
     fish-fzf.url = "github:jethrokuan/fzf/24f4739fc1dffafcc0da3ccfbbd14d9c7d31827a";
     fish-fzf.flake = false;
@@ -38,7 +37,6 @@
     overlays = [
       inputs.jujutsu.overlays.default
       (final: prev: {
-        try = inputs.try.packages.${prev.system}.default;
         unstable = import inputs.nixpkgs-unstable {
           inherit (prev) system;
           config.allowUnfree = true;
