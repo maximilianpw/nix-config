@@ -47,6 +47,7 @@
       "yaak"
       "github"
       "logi-options+"
+      "datagrip"
     ];
 
     masApps = {
