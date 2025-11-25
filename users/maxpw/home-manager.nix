@@ -50,6 +50,14 @@
     chcd = "chezmoi cd";
     chap = "chezmoi apply";
 
+    # Nix system management aliases
+    nr = "make -C ~/nix-config rebuild";
+    nup = "make -C ~/nix-config update";
+    nch = "make -C ~/nix-config check";
+    ngc = "make -C ~/nix-config gc";
+    ngen = "make -C ~/nix-config generations";
+    ninfo = "make -C ~/nix-config info";
+
     # Shortcut to setup a nix-shell with fish. This lets you do something like
     # `fnix -p go` to get an environment with Go but use the fish shell along
     # with it.

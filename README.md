@@ -124,21 +124,43 @@ Unified NixOS + macOS (nix-darwin) flake with Home Manager, Hyprland/GNOME modul
 
 ## Using this flake
 
+### For new systems
+
+See [BOOTSTRAP.md](BOOTSTRAP.md) for detailed instructions on setting up a new system.
+
+Quick start:
+```bash
+git clone <your-repo-url> ~/nix-config
+cd ~/nix-config
+./scripts/bootstrap.sh
+```
+
+Or with Make:
+```bash
+make bootstrap
+```
+
+### For existing systems
+
 Suggested clone path: `~/nix-config` (the rebuild script assumes this).
 
 - macOS (Apple Silicon)
   - Apply: `sudo darwin-rebuild switch --flake .#macbook-pro-m1`
   - Or run: `./scripts/nixos-rebuild.sh`
+  - Or use: `make rebuild`
 
 - NixOS Desktop
   - Apply: `sudo nixos-rebuild switch --flake .#main-pc`
   - Or run: `./scripts/nixos-rebuild.sh`
+  - Or use: `make rebuild`
 
 Optional checks
 
 ```bash
-nix flake check       # validate
-nix develop           # enter dev shell
+make check            # validate flake
+make update           # update inputs
+make dev              # enter dev shell
+make help             # show all make targets
 ```
 
 ## Notes
