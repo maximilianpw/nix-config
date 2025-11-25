@@ -4,11 +4,11 @@
   fetchurl,
 }: let
   pname = "helium";
-  version = "0.5.8.1";
+  version = "0.6.7.1";
 
   src = fetchurl {
     url = "https://github.com/imputnet/helium-linux/releases/download/${version}/helium-${version}-x86_64.AppImage";
-    sha256 = "77c9302c453aaa0120a7b9e513075f45ebc1d49adb10a1d17bcf86846a465228";
+    sha256 = "7d94c136168393911e61cc590c9f37b7078c66ab4485def0b3c00551c1e314bb";
   };
 
   appimageContents = pkgs.appimageTools.extractType2 {
@@ -28,11 +28,6 @@ in
       # Install icon
       install -m 444 -D ${appimageContents}/helium.png $out/share/pixmaps/helium.png
     '';
-
-    extraPkgs = pkgs:
-      with pkgs; [
-        # Add any additional dependencies here if needed
-      ];
 
     meta = with lib; {
       description = "Helium Browser";
