@@ -12,31 +12,38 @@ Unified NixOS + macOS (nix-darwin) flake with Home Manager, Hyprland/GNOME modul
 │   └── mksystem.nix         # mkSystem builder (NixOS & Darwin + Home Manager)
 ├── machines/
 │   ├── macbook-pro-m1.nix   # macOS (nix-darwin) host
-│   ├── vm-aarch64.nix       # NixOS VM (aarch64, VMware Fusion)
-│   ├── vm-shared.nix        # Shared base for VMs (system pkgs, services)
-│   ├── wsl.nix              # NixOS-WSL base (not exported via flake outputs)
+│   ├── main-pc.nix          # NixOS desktop (Ryzen + Hyprland)
+│   ├── wsl.nix              # NixOS-WSL base
 │   └── hardware/
-│       ├── vm-aarch64.nix   # Hardware profile for aarch64 VMware guest
-│       └── vm-intel.nix     # Hardware profile for Intel VM
+│       └── main-pc.nix      # Hardware profile for main-pc
 ├── modules/
+│   ├── core/
+│   │   ├── nix-settings.nix # Shared Nix settings (experimental-features, flakes)
+│   │   └── security.nix     # Security defaults (SSH, polkit, rtkit)
 │   └── desktop/
 │       ├── gnome.nix        # GNOME on Wayland via GDM (+extensions, portals)
 │       └── hyprland.nix     # Hyprland from upstream flake (+portals, env)
+├── packages/
+│   └── helium.nix           # Custom package: Helium floating browser
 ├── scripts/
 │   └── nixos-rebuild.sh     # Smart rebuild script (Darwin/NixOS autodetect)
 ├── users/
 │   └── maxpw/
 │       ├── home-manager.nix # Main Home Manager config (Linux & macOS)
-│       ├── nixos.nix        # NixOS user/system module for vm-aarch64
+│       ├── nixos.nix        # NixOS user/system module
 │       ├── darwin.nix       # nix-darwin user/system module for macbook-pro-m1
 │       ├── fonts.nix        # Fonts (Nerd Fonts + defaults, fontconfig)
+│       ├── neovim.nix       # Neovim configuration with LSPs
+│       ├── packages/
+│       │   ├── dev-tools.nix      # Development packages (languages, tools)
+│       │   ├── terminal-tools.nix # CLI utilities and terminal tools
+│       │   └── linux-desktop.nix  # Linux GUI apps and Wayland tools
 │       ├── zshrc            # zsh init (zinit + plugins)
 │       ├── config.fish      # fish init (ssh-agent, Homebrew, starship)
 │       ├── config.nu        # nushell init (env, direnv hook, helpers)
 │       ├── ghostty.linux    # Ghostty config (Linux); linked by HM
 │       ├── RectangleConfig.json # Rectangle.app settings (macOS); linked by HM
-│       ├── hyprland.conf    # Hyprland example config (Linux, optional)
-│       └── config.hyprland  # Hyprland example config (Linux, optional)
+│       └── [various configs] # Hyprland, waybar, rofi, etc.
 ├── INTEGRATION_SUMMARY.md   # High-level integration notes (may be older)
 ├── nixos-switch.log         # Last rebuild log (script output)
 └── "vscode config.code-profile" # VS Code profile export (settings/extensions)
@@ -52,7 +59,7 @@ Unified NixOS + macOS (nix-darwin) flake with Home Manager, Hyprland/GNOME modul
   - Integrates Home Manager at `home-manager.users.<user>` using `users/<userDir>/home-manager.nix`.
   - Injects convenience args: `currentSystem*`, `isWSL`, `inputs`.
 - Outputs:
-  - `nixosConfigurations.vm-aarch64` (aarch64-linux; user: `maxpw`).
+  - `nixosConfigurations.main-pc` (x86_64-linux; user: `maxpw`).
   - `darwinConfigurations.macbook-pro-m1` (aarch64-darwin; login `max-vev`, userDir `maxpw`).
   - `devShells` for aarch64/x86_64 Linux and aarch64 Darwin.
 
@@ -64,64 +71,56 @@ Unified NixOS + macOS (nix-darwin) flake with Home Manager, Hyprland/GNOME modul
 - machines/macbook-pro-m1.nix (nix-darwin)
   - stateVersion = 6; leaves Nix daemon to Determinate installer (`nix.enable = false`).
   - Optional Linux builder (currently disabled); zsh program enable; basic tools (e.g., cachix).
+  - Imports core modules for shared nix settings.
 
-- machines/vm-aarch64.nix (NixOS VM)
-  - Imports `hardware/vm-aarch64.nix` + `vm-shared.nix`.
-  - Enables binfmt for x86_64 emulation; VMware guest tools; shared `/host` mount via vmhgfs-fuse with safe ordering and `nofail`.
-  - DHCP on `ens160` for VMware on Apple Silicon.
-
-- machines/vm-shared.nix (shared NixOS base for VMs)
-  - Latest kernel; modern Nix settings; optional insecure package pin (mupdf for k2pdfopt).
-  - SSH enabled; Flatpak & Snap enabled; firewall disabled (VM convenience).
-  - Base packages and fonts; disables legacy X11 by default (desktop modules decide).
+- machines/main-pc.nix (NixOS Desktop)
+  - Imports `hardware/main-pc.nix` for hardware configuration.
+  - AMD Ryzen setup with zen kernel, power management, and firmware updates.
+  - Docker and libvirtd for virtualization.
+  - System packages and optional GUI applications.
 
 - machines/wsl.nix (NixOS-WSL)
-  - Enables WSL module, sets default user, Nix settings; stateVersion 23.05. Not exported in flake outputs yet.
+  - Enables WSL module, sets default user; stateVersion 24.05.
+  - Imports shared nix-settings module.
 
-- machines/hardware/*.nix
-  - vm-aarch64: uses labels `nixos-root` and `boot`, VMware video drivers; generated by nixos-generate-config and tweaked.
-  - vm-intel: legacy Intel VM example (root labeled `nixos`).
+- modules/core/nix-settings.nix
+  - Shared Nix configuration: experimental-features (flakes, nix-command), keep-outputs, keep-derivations.
+  - Imported by all machines for consistency.
+
+- modules/core/security.nix
+  - Security defaults: rtkit (for audio), polkit (privilege prompts), SSH with secure defaults.
+  - Centralized security configuration.
 
 - modules/desktop/gnome.nix
   - GDM (Wayland), GNOME desktop, popular extensions, portals; forces GNOME session vars, disables greetd/seatd.
 
 - modules/desktop/hyprland.nix
-  - Hyprland from upstream input, xdg-desktop-portal-hyprland, Xwayland, wlroots-friendly env, GTK portal.
+  - Hyprland from upstream input, xdg-desktop-portal-hyprland, Xwayland, greetd login manager.
 
 - users/maxpw/home-manager.nix
-  - Shared HM config for Linux/macOS; imports `./fonts.nix`.
-  - Installs shells, CLIs, dev tools, AI tooling; on Linux adds browsers, rofi, ghostty.
+  - Shared HM config for Linux/macOS; imports fonts and package modules.
   - Sets EDITOR/PAGER/MANPAGER; links macOS Rectangle config and Linux Ghostty config.
-  - Configures git (signing key, aliases), direnv, neovim, bash/zsh/fish/nushell; enables Ollama; Linux gpg-agent; large cursor on HiDPI Linux.
+  - Configures git (signing key, aliases), shells (bash/zsh/fish/nushell), neovim; Linux gpg-agent.
+
+- users/maxpw/packages/*.nix
+  - dev-tools.nix: Programming languages, LSPs, build tools, cloud/infrastructure tools.
+  - terminal-tools.nix: CLI utilities, git tools, shell prompts, AI tools.
+  - linux-desktop.nix: Wayland tools, GUI applications, desktop utilities (Linux only).
 
 - users/maxpw/nixos.nix (NixOS user/system)
-  - Imports Hyprland desktop module; sets timezone/locale; US Colemak xkb; PipeWire; user `maxpw` in useful groups; Firefox; stateVersion 24.05.
+  - Imports core modules (nix-settings, security) and Hyprland desktop module.
+  - Sets timezone/locale; US Colemak xkb; PipeWire; user `maxpw` in useful groups; Firefox; stateVersion 24.05.
 
 - users/maxpw/darwin.nix (nix-darwin user/system)
   - Homebrew brews & casks (1Password, Rectangle, browsers, IDEs, VPN, Docker Desktop, etc.).
-  - Nerd Fonts; declares `users.users.max-vev` and `system.primaryUser`.
+  - Declares `users.users.max-vev` and `system.primaryUser`.
 
 - users/maxpw/fonts.nix (Home Manager)
   - Installs Nerd Fonts and common font families; enables fontconfig and defaults.
 
-- users/maxpw/zshrc, config.fish, config.nu
-  - Shell startup files (zinit for zsh; ssh-agent/Homebrew/starship for fish; direnv/starship for nushell).
-
-- users/maxpw/ghostty.linux
-  - Ghostty terminal config for Linux; written to `~/.config/ghostty/config` by Home Manager on Linux.
-
-- users/maxpw/RectangleConfig.json
-  - Rectangle.app settings; written by Home Manager on macOS.
-
-- users/maxpw/hyprland.conf, users/maxpw/config.hyprland
-  - Example Hyprland configs for Linux; not auto-linked by default.
-
 - scripts/nixos-rebuild.sh
   - Autodetects Darwin vs NixOS and host from user; validates flake, formats with alejandra, shows diffs, builds/applies, commits, runs GC.
   - Uses `darwin-rebuild` on macOS and `nixos-rebuild` on NixOS.
-
-- "vscode config.code-profile"
-  - VS Code profile export (settings, extensions, snippets). Import via VS Code Profiles > Import Profile.
 
 ## Using this flake
 
@@ -131,8 +130,8 @@ Suggested clone path: `~/nix-config` (the rebuild script assumes this).
   - Apply: `sudo darwin-rebuild switch --flake .#macbook-pro-m1`
   - Or run: `./scripts/nixos-rebuild.sh`
 
-- NixOS VM (aarch64)
-  - Apply: `sudo nixos-rebuild switch --flake .#vm-aarch64`
+- NixOS Desktop
+  - Apply: `sudo nixos-rebuild switch --flake .#main-pc`
   - Or run: `./scripts/nixos-rebuild.sh`
 
 Optional checks

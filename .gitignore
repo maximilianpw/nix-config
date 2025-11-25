@@ -24,3 +24,11 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+
+# Secrets management
+# IMPORTANT: Only commit encrypted .yaml files, never plaintext or private keys
+secrets/secrets.yaml.dec
+secrets/*.dec
+secrets/key.txt
+.age/
+age-keys.txt

@@ -76,11 +76,11 @@ in {
   # System-scoped packages mirroring software managed by Homebrew on macOS.
   # Each package is added only if it exists in the pinned nixpkgs to keep evaluation stable.
   environment.systemPackages = let
-    base = with pkgs; [
-      cachix
-      lm_sensors
-      pciutils
-      usbutils
+    base = [
+      pkgs.cachix
+      pkgs.lm_sensors
+      pkgs.pciutils
+      pkgs.usbutils
     ];
   in
     base

@@ -3,25 +3,20 @@
   pkgs,
   ...
 }: {
+  imports = [
+    ../modules/core/nix-settings.nix
+  ];
+
   # Set in Sept 2024 as part of the macOS Sequoia release.
   system.stateVersion = 6;
 
   # This makes it work with the Determinate Nix installer
   ids.gids.nixbld = 30000;
 
-  nixpkgs.config.allowUnfree = true;
-
-  # Keep in async with vm-shared.nix. (todo: pull this out into a file)
   nix = {
     # We use the determinate-nix installer which manages Nix for us,
     # so we don't want nix-darwin to do it.
     enable = false;
-
-    # We need to enable flakes
-    extraOptions = ''
-      keep-outputs = true
-      keep-derivations = true
-    '';
 
     # Enable the Linux builder so we can run Linux builds on our Mac.
     # This can be debugged by running `sudo ssh linux-builder`
@@ -47,8 +42,6 @@
     };
 
     settings = {
-      # Required for the linux builder
-      experimental-features = ["nix-command" "flakes"];
       trusted-users = ["@admin"];
     };
   };
@@ -57,8 +50,8 @@
   # configuring the rc correctly with nix-darwin paths.
   programs.zsh.enable = true;
 
-  environment.shells = with pkgs; [bashInteractive zsh];
-  environment.systemPackages = with pkgs; [
-    cachix
+  environment.shells = [pkgs.bashInteractive pkgs.zsh];
+  environment.systemPackages = [
+    pkgs.cachix
   ];
 }

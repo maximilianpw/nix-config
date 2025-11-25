@@ -4,12 +4,17 @@
   lib,
   ...
 }: {
-  imports = [../../modules/desktop/hyprland.nix];
+  imports = [
+    ../../modules/core/nix-settings.nix
+    ../../modules/core/security.nix
+    ../../modules/core/sops.nix
+    ../../modules/desktop/hyprland.nix
+  ];
   # --- Base (yours) ---
   networking.networkmanager = {
     enable = true;
-    plugins = with pkgs; [
-      networkmanager-openvpn
+    plugins = [
+      pkgs.networkmanager-openvpn
     ];
   };
   # Timezone (France)
@@ -41,21 +46,20 @@
   # to download binaries that usually download to /bin
   programs.nix-ld = {
     enable = true;
-    libraries = with pkgs; [
+    libraries = [
       # Common libraries that bun/node tools often need
-      stdenv.cc.cc
-      zlib
-      fuse3
-      icu
-      nss
-      openssl
-      curl
-      expat
+      pkgs.stdenv.cc.cc
+      pkgs.zlib
+      pkgs.fuse3
+      pkgs.icu
+      pkgs.nss
+      pkgs.openssl
+      pkgs.curl
+      pkgs.expat
     ];
   };
 
   services.pulseaudio.enable = false;
-  security.rtkit.enable = true;
   services.pipewire = {
     enable = true;
     alsa.enable = true;
@@ -68,23 +72,15 @@
     description = lib.mkDefault "Maximilian PINDER-WHITE";
     extraGroups = ["networkmanager" "wheel" "seat" "input" "video"];
     home = "/home/maxpw";
-    hashedPassword = "$6$rkBFUGv5LjTDnhTx$kka47zG6AOyu51sDL/M6mg.vmsMqlto.OS.dond5N2o5.1LkLRENxQPcSSEsm0444YAE85BN.H/rzjutypgm2/";
+    # Password is managed via sops-nix (see secrets/README.md)
+    hashedPasswordFile = config.sops.secrets.maxpw-password.path;
   };
 
   programs.firefox.enable = true;
-  nixpkgs.config.allowUnfree = true;
 
-  environment.systemPackages = with pkgs; [
-    helium
+  environment.systemPackages = [
+    pkgs.helium
   ];
-
-  services.openssh = {
-    enable = true;
-    # If using keys, harden this:
-    # settings.PasswordAuthentication = false;
-    # settings.KbdInteractiveAuthentication = false;
-    # settings.PermitRootLogin = "no";
-  };
 
   # Keep the stateVersion at the initial install release; don't bump later.
   system.stateVersion = lib.mkDefault "24.05";
@@ -99,8 +95,6 @@
     config.common.default = ["hyprland" "gtk"];
   };
   environment.sessionVariables.NIXOS_OZONE_WL = "1";
-
-  nix.settings.experimental-features = ["nix-command" "flakes"];
 
   # Disable command-not-found (doesn't work with flakes)
   programs.command-not-found.enable = false;

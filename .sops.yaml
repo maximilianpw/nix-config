@@ -1,0 +1,11 @@
+# SOPS configuration for managing secrets
+# See: https://github.com/Mic92/sops-nix
+
+keys:
+  - &admin_max age1feq76jjmp332nvqltcr3k4rmramk4ds7axhjqj8wjcpes46rusvs9wcpwh
+
+creation_rules:
+  - path_regex: secrets/[^/]+\.yaml$
+    key_groups:
+      - age:
+          - *admin_max

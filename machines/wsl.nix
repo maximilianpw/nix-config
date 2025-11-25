@@ -3,7 +3,9 @@
   currentSystemUser,
   ...
 }: {
-  imports = [];
+  imports = [
+    ../modules/core/nix-settings.nix
+  ];
 
   wsl = {
     enable = true;
@@ -12,14 +14,7 @@
     startMenuLaunchers = true;
   };
 
-  nix = {
-    package = pkgs.nixUnstable;
-    extraOptions = ''
-      experimental-features = nix-command flakes
-      keep-outputs = true
-      keep-derivations = true
-    '';
-  };
+  nix.package = pkgs.nixUnstable;
 
-  system.stateVersion = "23.05";
+  system.stateVersion = "24.05";
 }

@@ -12,9 +12,6 @@
     xwayland.enable = true; # not required to boot, but usually desired
   };
 
-  # Polkit (needed for privilege prompts)
-  security.polkit.enable = true;
-
   # Login manager for Wayland sessions (TTY-friendly)
   services.greetd = {
     enable = true;

@@ -151,10 +151,12 @@ info "Current generation: $CURRENT_GEN"
 
 # Commit changes if in a git repository
 if git rev-parse --git-dir 2>&1; then
-    if ! git diff --quiet HEAD -- '*.nix'; then
+    if ! git diff --quiet HEAD; then
         info "Committing changes to git..."
         git add -A
         git commit -m "NixOS/Darwin rebuild: $HOSTNAME - Generation $CURRENT_GEN" || warn "Git commit failed"
+    else
+        info "No changes to commit"
     fi
 fi
 
@@ -167,5 +169,3 @@ else
 fi
 
 success "All done! System is ready."
-git add .
-git commit -m "NixOS/Darwin configuration updated: $CURRENT_GEN" || echo "No changes to commit."

@@ -20,6 +20,9 @@
     hyprland.url = "github:hyprwm/Hyprland";
     jujutsu.url = "github:jj-vcs/jj";
 
+    sops-nix.url = "github:Mic92/sops-nix";
+    sops-nix.inputs.nixpkgs.follows = "nixpkgs";
+
     fish-fzf.url = "github:jethrokuan/fzf/24f4739fc1dffafcc0da3ccfbbd14d9c7d31827a";
     fish-fzf.flake = false;
     fish-foreign-env.url = "github:oh-my-fish/plugin-foreign-env/dddd9213272a0ab848d474d0cbde12ad034e65bc";
@@ -36,16 +39,17 @@
   }: let
     overlays = [
       inputs.jujutsu.overlays.default
-      (final: prev: {
+      (final: prev: let
         unstable = import inputs.nixpkgs-unstable {
           inherit (prev) system;
           config.allowUnfree = true;
         };
-
-        gh = final.unstable.gh;
-        claude-code = final.unstable.claude-code;
-        gemini-cli = final.unstable.gemini-cli;
-        nushell = final.unstable.nushell;
+      in {
+        inherit unstable;
+        gh = unstable.gh;
+        claude-code = unstable.claude-code;
+        gemini-cli = unstable.gemini-cli;
+        nushell = unstable.nushell;
         helium = final.callPackage ./packages/helium.nix {};
       })
     ];

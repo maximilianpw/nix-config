@@ -49,6 +49,11 @@ in
         then inputs.nix-snapd.nixosModules.default
         else {}
       )
+      (
+        if !darwin
+        then inputs.sops-nix.nixosModules.sops
+        else {}
+      )
       machineConfig
       userOSConfig
       homeManagerMods.home-manager

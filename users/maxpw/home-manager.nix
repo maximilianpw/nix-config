@@ -67,107 +67,16 @@
 in {
   imports = [
     ./fonts.nix
+    ./packages/dev-tools.nix
+    ./packages/terminal-tools.nix
+    (import ./packages/linux-desktop.nix {
+      inherit pkgs lib isLinux isWSL;
+    })
   ];
 
   home.stateVersion = "25.05";
 
   xdg.enable = true;
-
-  home.packages = with pkgs;
-    [
-      # environment
-      chezmoi
-      _1password-cli
-      ngrok
-      stow
-      alejandra
-      nodejs_24
-      python3
-      go
-      rustup
-      deno
-      lua
-      bat
-      direnv
-      tflint
-      eza
-      dotnet-sdk_9
-      netcoredbg
-      # terminal dependencies
-      gcc
-      checkstyle
-      vale
-      prettierd
-      tree
-      fzf
-      eslint
-      zoxide
-      neofetch
-      openjdk
-      oh-my-posh
-      ripgrep
-      starship
-      fd
-      xdg-utils
-      zip
-      unzip
-      # git
-      gnupg
-      gh
-      lazygit
-      lazydocker
-      # ai
-      claude-code
-      gemini-cli
-      # dev packages
-      mongosh
-      sops
-      btop
-      terraform
-      cmatrix
-      awscli2
-      asdf
-      ranger
-    ]
-    ++ (lib.optionals (isLinux && !isWSL) [
-      # App launcher (Wayland fork of rofi)
-      rofi-wayland
-
-      # Terminal emulator (GPU accelerated, written in Rust)
-      ghostty
-
-      # ---- Wayland desktop essentials ----
-      waybar
-      mako
-      wl-clipboard
-      cliphist
-      grim
-      slurp
-      swww
-      hyprlock
-      hypridle
-      hyprpaper
-      cava
-      swaynotificationcenter
-      redshift
-      wlogout
-
-      # ---- GUI / desktop apps ----
-      nautilus
-      discord
-      mongodb-compass
-      protonmail-desktop
-      jetbrains.webstorm
-      protonvpn-gui
-
-      # ---- Developer helpers ----
-      nodePackages.jsonlint
-      codex
-      bruno
-      pavucontrol # PulseAudio volume control
-      brightnessctl # brightness control for media keys
-      playerctl # media player control
-    ]);
 
   home.sessionVariables =
     {
