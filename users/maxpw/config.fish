@@ -53,8 +53,6 @@ end
 #-------------------------------------------------------------------------------
 # Programs
 #-------------------------------------------------------------------------------
-# Vim: We should move this somewhere else but it works for now
-mkdir -p $HOME/.vim/{backup,swap,undo}
 
 # Homebrew
 if test -d "/opt/homebrew"
@@ -67,7 +65,7 @@ if test -d "/opt/homebrew"
 end
 
 # Add ~/.local/bin
-set -q PATH; or set PATH ''; set -gx PATH  "$HOME/.local/bin" $PATH;
+fish_add_path -g "$HOME/.local/bin"
 
 # setup zoxide
 zoxide init --cmd cd fish | source
