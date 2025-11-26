@@ -2,6 +2,7 @@
   home.packages = [
     # Programming languages & runtimes
     pkgs.nodejs_24
+    pkgs.pnpm
     pkgs.python3
     pkgs.go
     pkgs.rustup

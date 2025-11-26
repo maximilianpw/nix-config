@@ -22,7 +22,6 @@
     pkgs.lazydocker
 
     # Shell & prompt
-    pkgs.oh-my-posh
     pkgs.starship
 
     # System utilities
