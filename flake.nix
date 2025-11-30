@@ -20,6 +20,8 @@
     hyprland.url = "github:hyprwm/Hyprland";
     jujutsu.url = "github:jj-vcs/jj";
 
+    zig.url = "github:mitchellh/zig-overlay";
+
     sops-nix.url = "github:Mic92/sops-nix";
     sops-nix.inputs.nixpkgs.follows = "nixpkgs";
 
@@ -39,6 +41,7 @@
   }: let
     overlays = [
       inputs.jujutsu.overlays.default
+      inputs.zig.overlays.default
       (final: prev: let
         unstable = import inputs.nixpkgs-unstable {
           inherit (prev) system;

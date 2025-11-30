@@ -48,6 +48,7 @@
       "github"
       "logi-options+"
       "datagrip"
+      "zed"
     ];
 
     masApps = {

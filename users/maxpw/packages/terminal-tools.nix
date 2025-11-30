@@ -36,6 +36,11 @@
 
     # Linting & validation
     pkgs.vale
+    pkgs.glow
+    pkgs.python313Packages.mkdocs
+    pkgs.python313Packages.mkdocs-material
+    pkgs.python313Packages.mkdocs-mermaid2-plugin
+    pkgs.python313Packages.pymdown-extensions
 
     # Security & secrets
     pkgs._1password-cli
