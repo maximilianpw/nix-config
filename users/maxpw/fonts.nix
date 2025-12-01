@@ -12,7 +12,7 @@
     # Non-nerd system stacks & coverage
     noto-fonts
     noto-fonts-cjk-sans
-    noto-fonts-emoji
+    noto-fonts-color-emoji
     liberation_ttf
     dejavu_fonts
     unifont
@@ -21,7 +21,7 @@
     ibm-plex
     roboto
     roboto-mono
-    ubuntu_font_family
+    ubuntu-classic
     cantarell-fonts
     # source-code-pro   # usually redundant if you already picked a mono
     # dina-font         # bitmap look; keep only if you like it

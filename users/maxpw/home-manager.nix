@@ -156,17 +156,19 @@ in {
 
   programs.git = {
     enable = true;
-    userName = "Maximilian PINDER-WHITE";
-    userEmail = "mpinderwhite@proton.me";
-    aliases = {
-      cleanup = "!git branch --merged | grep -E -v '\\*|master|develop' | xargs -n 1 -r git branch -d";
-      prettylog = "log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(r) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative";
-    };
     signing = {
       key = "992CF94F12CF7405147D81FD4AB37B87F45FAC60";
       signByDefault = true;
     };
-    extraConfig = {
+    settings = {
+      user = {
+        name = "Maximilian PINDER-WHITE";
+        email = "mpinderwhite@proton.me";
+      };
+      alias = {
+        cleanup = "!git branch --merged | grep -E -v '\\*|master|develop' | xargs -n 1 -r git branch -d";
+        prettylog = "log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(r) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative";
+      };
       branch.autosetuprebase = "always";
       color.ui = true;
       github.user = "maximilianpw";

@@ -7,7 +7,7 @@
 }: {
   home.packages = lib.optionals (isLinux && !isWSL) [
     # App launcher
-    pkgs.rofi-wayland
+    pkgs.rofi
 
     # Terminal emulator
     pkgs.ghostty
@@ -37,7 +37,6 @@
     pkgs.protonvpn-gui
 
     # Developer tools
-    pkgs.nodePackages.jsonlint
     pkgs.codex
     pkgs.bruno
 

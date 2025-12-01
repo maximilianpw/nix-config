@@ -18,7 +18,7 @@
     settings = {
       default_session = {
         # Text greeter that launches Hyprland
-        command = "${pkgs.greetd.tuigreet}/bin/tuigreet --time --remember --cmd Hyprland";
+        command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --cmd Hyprland";
         user = "greeter";
       };
     };

@@ -21,7 +21,7 @@
       vscode-langservers-extracted # cssls, html, jsonls, eslint
 
       # Docker
-      dockerfile-language-server-nodejs
+      dockerfile-language-server
 
       # Elixir
       elixir-ls
@@ -82,7 +82,6 @@
       # === Linters ===
       nodePackages.eslint_d # Fast ESLint daemon
       hadolint # Dockerfile linter
-      nodePackages.jsonlint # JSON linter
       tflint # Terraform linter
       vale # Prose linter
       # golangci-lint already listed above
