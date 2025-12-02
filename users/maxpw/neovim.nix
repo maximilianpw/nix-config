@@ -55,6 +55,8 @@
       # Rust
       rust-analyzer
       rustfmt # Rust formatter
+      cargo # Rust package manager
+      rustc # Rust compiler
 
       # Tailwind CSS
       tailwindcss-language-server
