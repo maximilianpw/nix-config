@@ -6,6 +6,10 @@
     pkgs.python3
     pkgs.go
     # Rust: managed via Homebrew on macOS, Nix on NixOS
+    pkgs.rustc
+    pkgs.cargo
+    pkgs.rustfmt
+    pkgs.rust-analyzer
     pkgs.deno
     pkgs.lua
     pkgs.dotnet-sdk_9

@@ -52,11 +52,8 @@
       python311Packages.black # Python formatter
       python311Packages.isort # Python import sorter
 
-      # Rust
-      rust-analyzer
-      rustfmt # Rust formatter
-      cargo # Rust package manager
-      rustc # Rust compiler
+      # Rust (managed in home.packages)
+      # rust-analyzer, rustfmt, cargo, rustc in dev-tools.nix
 
       # Tailwind CSS
       tailwindcss-language-server
