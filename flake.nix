@@ -20,6 +20,8 @@
     hyprland.url = "github:hyprwm/Hyprland";
     jujutsu.url = "github:jj-vcs/jj";
 
+    neovim-nightly-overlay.url = "github:nix-community/neovim-nightly-overlay";
+
     zig.url = "github:mitchellh/zig-overlay";
 
     sops-nix.url = "github:Mic92/sops-nix";
