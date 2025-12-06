@@ -14,6 +14,7 @@
     pkgs.lua
     pkgs.dotnet-sdk_9
     pkgs.openjdk
+    pkgs.golangci-lint
 
     # Language servers & formatters
     pkgs.netcoredbg
