@@ -5,11 +5,15 @@
     pkgs.pnpm
     pkgs.python3
     pkgs.go
-    # Rust: managed via Homebrew on macOS, Nix on NixOS
-    pkgs.rustc
-    pkgs.cargo
-    pkgs.rustfmt
-    pkgs.rust-analyzer
+    # Rust via fenix (nightly toolchain)
+    (pkgs.fenix.complete.withComponents [
+      "cargo"
+      "clippy"
+      "rust-src"
+      "rustc"
+      "rustfmt"
+    ])
+    pkgs.rust-analyzer-nightly
     pkgs.deno
     pkgs.lua
     pkgs.dotnet-sdk_9

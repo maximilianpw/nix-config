@@ -52,10 +52,8 @@
       python311Packages.black # Python formatter
       python311Packages.isort # Python import sorter
 
-      # Rust
-      pkgs.rust-bin.nightly.latest.default
-      rust-analyzer
-      rustfmt
+      # Rust (via fenix - already in dev-tools.nix)
+      pkgs.rust-analyzer-nightly
 
       # Tailwind CSS
       tailwindcss-language-server

@@ -22,7 +22,10 @@
 
     neovim-nightly-overlay.url = "github:nix-community/neovim-nightly-overlay";
 
-    rust-overlay.url = "github:oxalica/rust-overlay";
+    fenix = {
+      url = "github:nix-community/fenix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     zig.url = "github:mitchellh/zig-overlay";
 
@@ -37,15 +40,15 @@
 
   outputs = inputs @ {
     self,
+    fenix,
     nixpkgs,
     nixpkgs-unstable,
     home-manager,
     nix-darwin,
-    rust-overlay,
     ...
   }: let
     overlays = [
-      inputs.rust-overlay.overlays.default
+      fenix.overlays.default
       inputs.jujutsu.overlays.default
       inputs.zig.overlays.default
       (final: prev: let
