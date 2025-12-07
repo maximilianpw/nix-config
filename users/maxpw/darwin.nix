@@ -16,7 +16,6 @@
       "jsonlint"
       "gnupg"
       "codex"
-      "rustup"
     ];
 
     casks = [

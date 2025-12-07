@@ -22,6 +22,8 @@
 
     neovim-nightly-overlay.url = "github:nix-community/neovim-nightly-overlay";
 
+    rust-overlay.url = "github:oxalica/rust-overlay";
+
     zig.url = "github:mitchellh/zig-overlay";
 
     sops-nix.url = "github:Mic92/sops-nix";
@@ -39,9 +41,11 @@
     nixpkgs-unstable,
     home-manager,
     nix-darwin,
+    rust-overlay,
     ...
   }: let
     overlays = [
+      inputs.rust-overlay.overlays.default
       inputs.jujutsu.overlays.default
       inputs.zig.overlays.default
       (final: prev: let
