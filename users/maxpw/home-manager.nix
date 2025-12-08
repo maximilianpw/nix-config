@@ -160,6 +160,7 @@ in {
       key = "992CF94F12CF7405147D81FD4AB37B87F45FAC60";
       signByDefault = true;
     };
+    lfs.enable = true;
     settings = {
       user = {
         name = "Maximilian PINDER-WHITE";
