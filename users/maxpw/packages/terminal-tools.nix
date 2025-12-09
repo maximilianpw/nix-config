@@ -4,6 +4,7 @@
     pkgs.chezmoi
     pkgs.stow
     pkgs.direnv
+    pkgs.devenv
 
     # File navigation & search
     pkgs.bat
