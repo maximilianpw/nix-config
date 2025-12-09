@@ -40,6 +40,7 @@
     jn = "jj new";
     jp = "jj git push";
     js = "jj st";
+    jtp = "jj tug && jj git push";
 
     dcu = "docker compose up";
     dcdn = "docker compose down";
