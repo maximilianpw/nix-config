@@ -42,7 +42,7 @@
     };
 
     settings = {
-      trusted-users = ["@admin"];
+      trusted-users = ["@admin" "root" "max-vev"];
     };
   };
 
