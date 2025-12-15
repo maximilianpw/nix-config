@@ -1,42 +1,45 @@
 [redshift]
+; =========================
 ; Temperature settings
-temp-day=6500     ; Daytime temperature (cooler light)
-temp-night=3000   ; Nighttime temperature (warmer light)
-                  ; 6500K - natural daylight
-                  ; 3000K - comfortable evening light
+; =========================
+temp-day=6500        ; Neutral daylight
+temp-night=3700      ; Warm but readable for coding
 
+; =========================
 ; Transition settings
-transition=1      ; 1 = smooth temperature transition
-                  ; 0 = instant transition
+; =========================
+transition=1         ; Smooth temperature transitions
+fade=1               ; Enable fading
 
-; Brightness settings (0.1 to 1.0)
-brightness-day=1.0    ; Maximum brightness during day
-brightness-night=0.8  ; Slightly reduced brightness at night
+; =========================
+; Brightness settings
+; =========================
+brightness-day=0.9
+brightness-night=0.7
 
-; Gamma correction for fine-tuning colors (default: 1.0)
-gamma=0.9:0.9:0.9    ; Values for red:green:blue channels
-                     ; Less than 1.0 - darker, more than 1.0 - brighter
+; =========================
+; Gamma correction
+; Slight blue reduction to reduce eye strain
+; =========================
+gamma=0.95:0.95:0.9
 
-; Location provider settings
-; 'manual' for manual coordinates
+; =========================
+; Location settings
+; =========================
 location-provider=manual
-
-; Screen adjustment method
 adjustment-method=randr
 
-; Transition control settings
-fade=1              ; Enable temperature fade
-elevation-high=3    ; Sun elevation: high (day)
-elevation-low=-6    ; Sun elevation: low (night)
+; =========================
+; Sun elevation thresholds
+; =========================
+elevation-high=2
+elevation-low=-6
 
 [manual]
-; Your city coordinates (Nice, France)
-; Latitude (positive - north, negative - south)
+; Nice, France
 lat=43.7
-; Longitude (positive - east, negative - west)
 lon=7.3
 
 [randr]
-; Monitor-specific settings
-screen=0    ; Screen number (0 = primary monitor)
-preserve=1  ; Preserve screen gamma settings
+screen=0
+preserve=1
