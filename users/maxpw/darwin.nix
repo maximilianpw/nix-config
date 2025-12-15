@@ -47,6 +47,7 @@
       "logi-options+"
       "datagrip"
       "zed"
+      "studio-3t-community"
     ];
 
     masApps = {
