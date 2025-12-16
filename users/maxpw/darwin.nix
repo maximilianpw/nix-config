@@ -15,7 +15,6 @@
       "zsh"
       "jsonlint"
       "gnupg"
-      "codex"
     ];
 
     casks = [

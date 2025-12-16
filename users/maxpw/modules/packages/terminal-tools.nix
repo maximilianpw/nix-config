@@ -49,6 +49,7 @@
 
     # AI tools
     pkgs.claude-code
+    pkgs.codex
     pkgs.gemini-cli
   ];
 }
