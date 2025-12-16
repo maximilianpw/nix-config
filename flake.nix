@@ -27,8 +27,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    zig.url = "github:mitchellh/zig-overlay";
-
     sops-nix.url = "github:Mic92/sops-nix";
     sops-nix.inputs.nixpkgs.follows = "nixpkgs";
 
@@ -50,7 +48,6 @@
     overlays = [
       fenix.overlays.default
       inputs.jujutsu.overlays.default
-      inputs.zig.overlays.default
       (final: prev: let
         unstable = import inputs.nixpkgs-unstable {
           inherit (prev.stdenv.hostPlatform) system;
