@@ -37,7 +37,6 @@
     pkgs.protonvpn-gui
 
     # Developer tools
-    pkgs.codex
     pkgs.bruno
 
     # System utilities

@@ -59,8 +59,9 @@
       in {
         inherit unstable;
         gh = unstable.gh;
-        claude-code = unstable.claude-code;
+        codex = unstable.codex;
         gemini-cli = unstable.gemini-cli;
+        claude-code = unstable.claude-code;
         nushell = unstable.nushell;
         helium = final.callPackage ./packages/helium.nix {};
       })
