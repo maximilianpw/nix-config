@@ -46,9 +46,6 @@ source ~/.zsh_jj_completion
 #-------------------------------------------------------------------------------
 # Tools
 #-------------------------------------------------------------------------------
-# Homebrew Rust (macOS)
-[[ -d "/opt/homebrew/opt/rustup/bin" ]] && path=("/opt/homebrew/opt/rustup/bin" $path)
-
 # GPG (no need to launch agent every time - it auto-starts on use)
 export GPG_TTY=$(tty)
 

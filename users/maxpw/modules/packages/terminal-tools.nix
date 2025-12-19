@@ -51,5 +51,6 @@
     pkgs.claude-code
     pkgs.codex
     pkgs.gemini-cli
+    pkgs.opencode
   ];
 }

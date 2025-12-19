@@ -62,9 +62,7 @@ in {
       viAlias = true;
       vimAlias = true;
       vimdiffAlias = true;
-    }
-    (lib.mkIf (isLinux && !isWSL) {
       extraPackages = (import ./modules/neovim.nix {inherit config pkgs lib;}).programs.neovim.extraPackages;
-    })
+    }
   ];
 }

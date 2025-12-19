@@ -3,6 +3,7 @@
     # Programming languages & runtimes
     pkgs.nodejs_24
     pkgs.pnpm
+    pkgs.bun
     pkgs.python3
     pkgs.go
     # Rust via fenix (nightly toolchain)
