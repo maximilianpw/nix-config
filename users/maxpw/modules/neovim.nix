@@ -6,6 +6,7 @@
 }: {
   programs.neovim = {
     extraPackages = with pkgs; [
+      tree-sitter
       # === Core Tools ===
       # Note: gcc, git, curl, wget, ripgrep, fd already in home.packages
       tree-sitter # Parser generator tool
@@ -31,9 +32,6 @@
       # Nix
       nil # Nix LSP
       nixpkgs-fmt # Nix formatter
-
-      # Rust (via fenix - already in dev-tools.nix)
-      pkgs.rust-analyzer-nightly
 
       # Tailwind CSS
       tailwindcss-language-server
@@ -63,7 +61,6 @@
       # golangci-lint already listed above
 
       # === Additional Tools ===
-      nodePackages.typescript # TypeScript compiler
     ];
   };
 }

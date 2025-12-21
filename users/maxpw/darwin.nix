@@ -36,7 +36,6 @@
       "proton-mail"
       "ghostty"
       "webstorm"
-      "protonvpn"
       "aws-vpn-client"
       "orbstack"
       "claude"
@@ -47,6 +46,7 @@
       "datagrip"
       "zed"
       "studio-3t-community"
+      "mullvad-vpn"
     ];
 
     masApps = {

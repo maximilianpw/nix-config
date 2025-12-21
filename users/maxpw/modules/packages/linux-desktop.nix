@@ -34,7 +34,7 @@
     pkgs.mongodb-compass
     pkgs.protonmail-desktop
     pkgs.jetbrains.webstorm
-    pkgs.protonvpn-gui
+    pkgs.mullvad-vpn
 
     # Developer tools
     pkgs.bruno
