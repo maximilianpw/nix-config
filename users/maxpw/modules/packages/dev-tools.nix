@@ -40,6 +40,7 @@
     # Cloud & infrastructure
     pkgs.terraform
     pkgs.awscli2
+    pkgs.graphite-cli
 
     # Dev tools
     pkgs.sops
