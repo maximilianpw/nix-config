@@ -65,6 +65,14 @@
     alsa.enable = true;
     alsa.support32Bit = true;
     pulse.enable = true;
+
+    # This part unlocks the sample rate
+    extraConfig.pipewire."99-high-res" = {
+      "context.properties" = {
+        "default.clock.rate" = 48000; # The base rate for standard apps
+        "default.clock.allowed-rates" = [44100 48000 88200 96000 176400 192000 384000];
+      };
+    };
   };
 
   users.users.maxpw = {
