@@ -87,6 +87,7 @@
 
   environment.systemPackages = [
     pkgs.helium
+    pkgs.strawberry
   ];
 
   # Keep the stateVersion at the initial install release; don't bump later.
