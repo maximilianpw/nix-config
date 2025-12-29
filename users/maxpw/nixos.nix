@@ -83,7 +83,11 @@
     hashedPasswordFile = config.sops.secrets.maxpw-password.path;
   };
 
-  programs.firefox.enable = true;
+  # used for music
+  services.roon-server = {
+    enable = true;
+    openFirewall = true; # opens the usual LAN ports for discovery/control
+  };
 
   environment.systemPackages = [
     pkgs.helium
