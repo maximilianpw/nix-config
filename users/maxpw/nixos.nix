@@ -89,6 +89,10 @@
     openFirewall = true; # opens the usual LAN ports for discovery/control
   };
 
+  networking.firewall.allowedTCPPorts = [
+    55000
+  ];
+
   environment.systemPackages = [
     pkgs.helium
   ];
