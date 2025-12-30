@@ -100,9 +100,9 @@
     openFirewall = true;
   };
 
-  # Ensure roon user has access to audio group
+  # Ensure roon user has access to audio and nextcloud groups
   users.users.roon-server = {
-    extraGroups = ["audio"];
+    extraGroups = ["audio" "nextcloud"];
     isSystemUser = true;
     group = "roon-server";
   };
