@@ -63,6 +63,7 @@ in {
     fwupd.enable = true;
     blueman.enable = true;
     mullvad-vpn.enable = true;
+    tailscale.enable = true;
   };
   hardware.bluetooth.enable = true;
 
