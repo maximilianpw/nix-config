@@ -60,7 +60,7 @@
         gemini-cli = unstable.gemini-cli;
         claude-code = unstable.claude-code;
         nushell = unstable.nushell;
-        roon = unstable.roon;
+        roon-server = unstable.roon-server;
         helium = final.callPackage ./packages/helium.nix {};
       })
     ];
