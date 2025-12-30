@@ -85,15 +85,7 @@
       enableACME = false;
       sslCertificate = "/var/lib/nextcloud/ssl/cert.pem";
       sslCertificateKey = "/var/lib/nextcloud/ssl/key.pem";
-    };
-
-    # Allow access via Tailscale IP
-    virtualHosts."100.76.56.97" = {
-      forceSSL = true;
-      enableACME = false;
-      sslCertificate = "/var/lib/nextcloud/ssl/cert.pem";
-      sslCertificateKey = "/var/lib/nextcloud/ssl/key.pem";
-      locations."/".proxyPass = "https://nextcloud.localhost";
+      serverAliases = ["100.76.56.97" "main-pc"];
     };
   };
 
