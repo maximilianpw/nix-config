@@ -50,6 +50,13 @@
       trusted_proxies = ["127.0.0.1" "::1"];
       overwriteprotocol = "https";
 
+      # Allow access from Tailscale IP and hostname
+      trusted_domains = [
+        "nextcloud.localhost"
+        "100.76.56.97"
+        "main-pc"
+      ];
+
       # Default phone region
       default_phone_region = "FR";
 
@@ -78,6 +85,15 @@
       enableACME = false;
       sslCertificate = "/var/lib/nextcloud/ssl/cert.pem";
       sslCertificateKey = "/var/lib/nextcloud/ssl/key.pem";
+    };
+
+    # Allow access via Tailscale IP
+    virtualHosts."100.76.56.97" = {
+      forceSSL = true;
+      enableACME = false;
+      sslCertificate = "/var/lib/nextcloud/ssl/cert.pem";
+      sslCertificateKey = "/var/lib/nextcloud/ssl/key.pem";
+      locations."/".proxyPass = "https://nextcloud.localhost";
     };
   };
 
