@@ -23,7 +23,7 @@
   # -------------------------------------------
   services.nextcloud = {
     enable = true;
-    package = pkgs.nextcloud31;
+    package = pkgs.nextcloud32;
     hostName = "nextcloud.localhost";
 
     # Use HTTPS (nginx will handle this)
