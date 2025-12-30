@@ -15,6 +15,7 @@
       "zsh"
       "jsonlint"
       "gnupg"
+      "tailscale"
     ];
 
     casks = [
