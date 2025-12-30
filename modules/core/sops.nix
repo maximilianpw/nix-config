@@ -21,6 +21,10 @@
       maxpw-password = {
         neededForUsers = true; # Decrypt early for user creation
       };
+      nextcloud-admin-password = {
+        owner = "nextcloud";
+        group = "nextcloud";
+      };
     };
   };
 }

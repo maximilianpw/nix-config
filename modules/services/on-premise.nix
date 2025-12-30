@@ -1,0 +1,102 @@
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}: {
+  # ===========================================
+  # On-Premise Services
+  # ===========================================
+  # This module configures self-hosted services:
+  # - Tailscale (mesh VPN)
+  # - Nextcloud (file sync & sharing)
+  # - Roon Server (music library management)
+
+  # -------------------------------------------
+  # Tailscale
+  # -------------------------------------------
+  services.tailscale.enable = true;
+  networking.firewall.trustedInterfaces = ["tailscale0"];
+
+  # -------------------------------------------
+  # Nextcloud
+  # -------------------------------------------
+  services.nextcloud = {
+    enable = true;
+    package = pkgs.nextcloud31;
+    hostName = "nextcloud.localhost";
+
+    # Use HTTPS (nginx will handle this)
+    https = true;
+
+    # Auto-update Nextcloud apps
+    autoUpdateApps.enable = true;
+
+    # Database configuration (PostgreSQL)
+    database.createLocally = true;
+    config = {
+      dbtype = "pgsql";
+      adminuser = "admin";
+      adminpassFile = config.sops.secrets.nextcloud-admin-password.path;
+    };
+
+    # Performance settings
+    configureRedis = true;
+    caching.redis = true;
+
+    # Nextcloud settings
+    settings = {
+      # Trust Tailscale network
+      trusted_proxies = ["127.0.0.1" "::1"];
+      overwriteprotocol = "https";
+
+      # Default phone region
+      default_phone_region = "FR";
+
+      # Maintenance window (4 AM local time)
+      maintenance_window_start = 4;
+    };
+
+    # PHP tuning
+    maxUploadSize = "16G";
+    phpOptions = {
+      "opcache.interned_strings_buffer" = "16";
+      "opcache.memory_consumption" = "256";
+    };
+  };
+
+  # Nginx configuration for Nextcloud
+  services.nginx = {
+    enable = true;
+    recommendedGzipSettings = true;
+    recommendedOptimisation = true;
+    recommendedProxySettings = true;
+    recommendedTlsSettings = true;
+
+    virtualHosts."nextcloud.localhost" = {
+      forceSSL = true;
+      enableACME = false;
+      sslCertificate = "/var/lib/nextcloud/ssl/cert.pem";
+      sslCertificateKey = "/var/lib/nextcloud/ssl/key.pem";
+    };
+  };
+
+  # Open firewall for Nextcloud (HTTP/HTTPS)
+  networking.firewall.allowedTCPPorts = [80 443];
+
+  # -------------------------------------------
+  # Roon Server
+  # -------------------------------------------
+  services.roon-server = {
+    enable = true;
+    openFirewall = true;
+  };
+
+  # Ensure roon user has access to audio group
+  users.users.roon-server = {
+    extraGroups = ["audio"];
+    isSystemUser = true;
+    group = "roon-server";
+  };
+  users.groups.roon-server = {};
+}
