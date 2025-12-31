@@ -15,7 +15,6 @@
       "zsh"
       "jsonlint"
       "gnupg"
-      "tailscale"
     ];
 
     casks = [
@@ -55,6 +54,7 @@
     masApps = {
       "Poolsuite FM" = 1514817810;
       "XCode" = 497799835;
+      "Tailscale" = 1475387142;
     };
 
     onActivation = {
