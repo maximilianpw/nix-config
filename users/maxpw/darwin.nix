@@ -25,14 +25,11 @@
       "hiddenbar"
       "whatsapp"
       "raycast"
-      "appcleaner"
       "chatgpt"
       "discord"
-      "google-chrome"
       "notion"
       "slack"
       "visual-studio-code"
-      "mongodb-compass"
       "proton-mail"
       "ghostty"
       "webstorm"
@@ -49,12 +46,13 @@
       "mullvad-vpn"
       "roon"
       "nextcloud"
+      "termius"
+      "obsidian"
     ];
 
     masApps = {
       "Poolsuite FM" = 1514817810;
       "XCode" = 497799835;
-      "Tailscale" = 1475387142;
     };
 
     onActivation = {
