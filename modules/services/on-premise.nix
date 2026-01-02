@@ -90,6 +90,18 @@
       sslCertificateKey = "/var/lib/nextcloud/ssl/key.pem";
       serverAliases = ["100.76.56.97" "main-pc"];
     };
+
+    virtualHosts."hass.localhost" = {
+      forceSSL = true;
+      enableACME = false;
+      sslCertificate = "/var/lib/nextcloud/ssl/cert.pem";
+      sslCertificateKey = "/var/lib/nextcloud/ssl/key.pem";
+      serverAliases = ["100.76.56.97" "main-pc"];
+      locations."/" = {
+        proxyPass = "http://127.0.0.1:8123";
+        proxyWebsockets = true;
+      };
+    };
   };
 
   # Open firewall for Nextcloud (HTTP/HTTPS)
@@ -114,6 +126,11 @@
   services.home-assistant = {
     enable = true;
     openFirewall = true;
+    extraPackages = ps:
+      with ps; [
+        gtts
+        isal
+      ];
     extraComponents = [
       "default_config"
       "met" # weather
