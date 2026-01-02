@@ -15,7 +15,6 @@
       "zsh"
       "jsonlint"
       "gnupg"
-      "tailscale"
     ];
 
     casks = [
@@ -26,14 +25,11 @@
       "hiddenbar"
       "whatsapp"
       "raycast"
-      "appcleaner"
       "chatgpt"
       "discord"
-      "google-chrome"
       "notion"
       "slack"
       "visual-studio-code"
-      "mongodb-compass"
       "proton-mail"
       "ghostty"
       "webstorm"
@@ -50,6 +46,8 @@
       "mullvad-vpn"
       "roon"
       "nextcloud"
+      "termius"
+      "obsidian"
     ];
 
     masApps = {
