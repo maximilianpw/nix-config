@@ -88,7 +88,7 @@
       enableACME = false;
       sslCertificate = "/var/lib/nextcloud/ssl/cert.pem";
       sslCertificateKey = "/var/lib/nextcloud/ssl/key.pem";
-      serverAliases = ["100.76.56.97" "main-pc"];
+      serverAliases = ["nextcloud.main-pc"];
     };
 
     virtualHosts."hass.localhost" = {
@@ -96,7 +96,7 @@
       enableACME = false;
       sslCertificate = "/var/lib/nextcloud/ssl/cert.pem";
       sslCertificateKey = "/var/lib/nextcloud/ssl/key.pem";
-      serverAliases = ["100.76.56.97" "main-pc"];
+      serverAliases = ["hass.main-pc"];
       locations."/" = {
         proxyPass = "http://127.0.0.1:8123";
         proxyWebsockets = true;
