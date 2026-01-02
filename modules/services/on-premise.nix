@@ -143,8 +143,6 @@
         name = "Home";
         unit_system = "metric";
         time_zone = "Europe/Paris";
-        # Trust Tailscale network for reverse proxy headers
-        trusted_proxies = ["127.0.0.1" "::1" "100.64.0.0/10"];
       };
       http = {
         use_x_forwarded_for = true;
