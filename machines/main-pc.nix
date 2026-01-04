@@ -26,6 +26,11 @@ in {
   # Core system identity
   networking.hostName = "main-pc";
 
+  # Local DNS for on-premise services
+  networking.hosts = {
+    "127.0.0.1" = ["nextcloud.nas" "hass.nas"];
+  };
+
   # Firmware & performance tuning for Ryzen
   hardware.cpu.amd.updateMicrocode = lib.mkDefault true;
   powerManagement.cpuFreqGovernor = lib.mkDefault "schedutil";
