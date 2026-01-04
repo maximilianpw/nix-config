@@ -25,6 +25,9 @@
         owner = "nextcloud";
         group = "nextcloud";
       };
+      borg-backup-passphrase = {
+        # Readable by root only (borgbackup runs as root)
+      };
     };
   };
 }

@@ -20,6 +20,7 @@ in {
   imports = [
     ./hardware/main-pc.nix
     ../modules/services/on-premise.nix
+    ../modules/services/backup.nix
   ];
 
   # Core system identity
