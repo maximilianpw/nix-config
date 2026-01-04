@@ -50,7 +50,7 @@
     # Nextcloud settings
     settings = {
       # Trust Tailscale network
-      trusted_proxies = ["127.0.0.1" "::1"];
+      trusted_proxies = ["127.0.0.1" "::1" "100.64.0.0/10"];
       overwriteprotocol = "https";
 
       # Allow access from Tailscale IP and hostname
@@ -77,30 +77,76 @@
     };
   };
 
-  # Nginx configuration for Nextcloud
-  systemd.services.nextcloud-ssl-init = {
-    description = "Generate self-signed SSL certs for Nextcloud";
+  # -------------------------------------------
+  # SSL Certificate Management
+  # -------------------------------------------
+  # Self-signed certificates for local .nas domains
+  # Stored in neutral location since used by multiple services
+
+  systemd.services.local-ssl-init = {
+    description = "Generate/renew self-signed SSL certs for local services";
     wantedBy = ["multi-user.target"];
     before = ["nginx.service"];
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = true;
+      StateDirectory = "ssl-certs";
     };
     script = ''
-      mkdir -p /var/lib/nextcloud/ssl
-      if [ ! -f /var/lib/nextcloud/ssl/cert.pem ]; then
+      SSL_DIR="/var/lib/ssl-certs"
+      CERT="$SSL_DIR/cert.pem"
+      KEY="$SSL_DIR/key.pem"
+      RENEW_DAYS=30
+
+      generate_cert() {
         ${pkgs.openssl}/bin/openssl req -x509 -newkey rsa:4096 \
-          -keyout /var/lib/nextcloud/ssl/key.pem \
-          -out /var/lib/nextcloud/ssl/cert.pem \
+          -keyout "$KEY" \
+          -out "$CERT" \
           -days 365 -nodes \
-          -subj "/CN=nextcloud.nas" \
-          -addext "subjectAltName=DNS:nextcloud.nas,DNS:hass.nas,DNS:nextcloud.localhost,DNS:hass.localhost"
+          -subj "/CN=local.nas" \
+          -addext "subjectAltName=DNS:nextcloud.nas,DNS:hass.nas,DNS:nextcloud.localhost,DNS:hass.localhost,DNS:nextcloud.main-pc,DNS:hass.main-pc"
+      }
+
+      # Generate if missing
+      if [ ! -f "$CERT" ]; then
+        echo "Generating new SSL certificate..."
+        generate_cert
+      else
+        # Check expiry and renew if within RENEW_DAYS
+        EXPIRY=$(${pkgs.openssl}/bin/openssl x509 -enddate -noout -in "$CERT" | cut -d= -f2)
+        EXPIRY_EPOCH=$(date -d "$EXPIRY" +%s)
+        NOW_EPOCH=$(date +%s)
+        DAYS_LEFT=$(( (EXPIRY_EPOCH - NOW_EPOCH) / 86400 ))
+
+        if [ "$DAYS_LEFT" -lt "$RENEW_DAYS" ]; then
+          echo "Certificate expires in $DAYS_LEFT days, renewing..."
+          generate_cert
+        else
+          echo "Certificate valid for $DAYS_LEFT more days"
+        fi
       fi
-      chown nginx:nginx /var/lib/nextcloud/ssl/key.pem
-      chown nginx:nginx /var/lib/nextcloud/ssl/cert.pem
-      chmod 600 /var/lib/nextcloud/ssl/key.pem
-      chmod 644 /var/lib/nextcloud/ssl/cert.pem
+
+      chown nginx:nginx "$KEY" "$CERT"
+      chmod 600 "$KEY"
+      chmod 644 "$CERT"
     '';
+  };
+
+  # Timer to check certificate expiry weekly
+  systemd.timers.local-ssl-renew = {
+    wantedBy = ["timers.target"];
+    timerConfig = {
+      OnCalendar = "weekly";
+      Persistent = true;
+    };
+  };
+
+  systemd.services.local-ssl-renew = {
+    description = "Check and renew SSL certificates";
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.systemd}/bin/systemctl restart local-ssl-init.service";
+    };
   };
 
   services.nginx = {
@@ -113,17 +159,17 @@
     virtualHosts."nextcloud.nas" = {
       forceSSL = true;
       enableACME = false;
-      sslCertificate = "/var/lib/nextcloud/ssl/cert.pem";
-      sslCertificateKey = "/var/lib/nextcloud/ssl/key.pem";
-      serverAliases = ["nextcloud.main-pc" "nextcloud.nas"];
+      sslCertificate = "/var/lib/ssl-certs/cert.pem";
+      sslCertificateKey = "/var/lib/ssl-certs/key.pem";
+      serverAliases = ["nextcloud.main-pc"];
     };
 
     virtualHosts."hass.nas" = {
       forceSSL = true;
       enableACME = false;
-      sslCertificate = "/var/lib/nextcloud/ssl/cert.pem";
-      sslCertificateKey = "/var/lib/nextcloud/ssl/key.pem";
-      serverAliases = ["hass.main-pc" "hass.nas"];
+      sslCertificate = "/var/lib/ssl-certs/cert.pem";
+      sslCertificateKey = "/var/lib/ssl-certs/key.pem";
+      serverAliases = ["hass.main-pc"];
       locations."/" = {
         proxyPass = "http://127.0.0.1:8123";
         proxyWebsockets = true;
@@ -187,7 +233,7 @@
         name = "Home";
         unit_system = "metric";
         time_zone = "Europe/Paris";
-        external_url = "https://hass.localhost";
+        external_url = "https://hass.nas";
         internal_url = "http://127.0.0.1:8123";
       };
       http = {
