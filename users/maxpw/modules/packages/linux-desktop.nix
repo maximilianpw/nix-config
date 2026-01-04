@@ -43,5 +43,6 @@
     pkgs.pavucontrol
     pkgs.brightnessctl
     pkgs.playerctl
+    pkgs.qbittorrent
   ];
 }
