@@ -27,7 +27,7 @@
   services.nextcloud = {
     enable = true;
     package = pkgs.nextcloud32;
-    hostName = "nextcloud.localhost";
+    hostName = "nextcloud.nas";
 
     # Use HTTPS (nginx will handle this)
     https = true;
@@ -57,6 +57,8 @@
       trusted_domains = [
         "nextcloud.localhost"
         "100.76.56.97"
+        "nextcloud.main-pc"
+        "nextcloud.nas"
         "main-pc"
       ];
 
@@ -76,6 +78,31 @@
   };
 
   # Nginx configuration for Nextcloud
+  systemd.services.nextcloud-ssl-init = {
+    description = "Generate self-signed SSL certs for Nextcloud";
+    wantedBy = ["multi-user.target"];
+    before = ["nginx.service"];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+    script = ''
+      mkdir -p /var/lib/nextcloud/ssl
+      if [ ! -f /var/lib/nextcloud/ssl/cert.pem ]; then
+        ${pkgs.openssl}/bin/openssl req -x509 -newkey rsa:4096 \
+          -keyout /var/lib/nextcloud/ssl/key.pem \
+          -out /var/lib/nextcloud/ssl/cert.pem \
+          -days 365 -nodes \
+          -subj "/CN=nextcloud.nas" \
+          -addext "subjectAltName=DNS:nextcloud.nas,DNS:hass.nas,DNS:nextcloud.localhost,DNS:hass.localhost"
+      fi
+      chown nginx:nginx /var/lib/nextcloud/ssl/key.pem
+      chown nginx:nginx /var/lib/nextcloud/ssl/cert.pem
+      chmod 600 /var/lib/nextcloud/ssl/key.pem
+      chmod 644 /var/lib/nextcloud/ssl/cert.pem
+    '';
+  };
+
   services.nginx = {
     enable = true;
     recommendedGzipSettings = true;
@@ -83,20 +110,20 @@
     recommendedProxySettings = true;
     recommendedTlsSettings = true;
 
-    virtualHosts."nextcloud.localhost" = {
+    virtualHosts."nextcloud.nas" = {
       forceSSL = true;
       enableACME = false;
       sslCertificate = "/var/lib/nextcloud/ssl/cert.pem";
       sslCertificateKey = "/var/lib/nextcloud/ssl/key.pem";
-      serverAliases = ["nextcloud.main-pc"];
+      serverAliases = ["nextcloud.main-pc" "nextcloud.nas"];
     };
 
-    virtualHosts."hass.localhost" = {
+    virtualHosts."hass.nas" = {
       forceSSL = true;
       enableACME = false;
       sslCertificate = "/var/lib/nextcloud/ssl/cert.pem";
       sslCertificateKey = "/var/lib/nextcloud/ssl/key.pem";
-      serverAliases = ["hass.main-pc"];
+      serverAliases = ["hass.main-pc" "hass.nas"];
       locations."/" = {
         proxyPass = "http://127.0.0.1:8123";
         proxyWebsockets = true;
@@ -130,19 +157,38 @@
       with ps; [
         gtts
         isal
+        roonapi
+        pyatv
       ];
     extraComponents = [
       "default_config"
       "met" # weather
       "radio_browser"
       "hue"
-      # Add others as needed: "hue" "zwave" "mqtt" etc.
+      "mobile_app"
+      "roon"
+      "systemmonitor"
+      "apple_tv"
+      "homekit"
+      "homekit_controller"
+      "icloud"
+      "upnp"
+      "speedtestdotnet"
+      "ping"
+      "wake_on_lan"
+      "zeroconf"
+      "ssdp"
+      "sfr_box"
+      "rest"
+      "command_line"
     ];
     config = {
       homeassistant = {
         name = "Home";
         unit_system = "metric";
         time_zone = "Europe/Paris";
+        external_url = "https://hass.localhost";
+        internal_url = "http://127.0.0.1:8123";
       };
       http = {
         use_x_forwarded_for = true;
