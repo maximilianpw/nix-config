@@ -19,7 +19,7 @@
     enable = true;
     useRoutingFeatures = "client";
   };
-  networking.firewall.trustedInterfaces = ["tailscale0"];
+  networking.firewall.trustedInterfaces = ["wg-mullvad" "tailscale0"];
 
   # -------------------------------------------
   # Nextcloud
