@@ -44,10 +44,10 @@
       "zed"
       "studio-3t-community"
       "mullvad-vpn"
-      "roon"
       "nextcloud"
       "termius"
       "obsidian"
+      "qobuz"
     ];
 
     masApps = {
