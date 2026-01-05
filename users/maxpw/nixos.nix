@@ -13,6 +13,7 @@
   # --- Base (yours) ---
   networking.networkmanager = {
     enable = true;
+    dns = "systemd-resolved";
     plugins = [
       pkgs.networkmanager-openvpn
     ];
@@ -99,6 +100,10 @@
     "193.138.218.74"
     "185.213.154.5"
   ];
+  services.resolved.enable = true;
+
+  # 3) Ensure /etc/resolv.conf points at resolved's stub
+  networking.resolvconf.enable = lib.mkForce false;
 
   environment.systemPackages = [
     pkgs.helium
