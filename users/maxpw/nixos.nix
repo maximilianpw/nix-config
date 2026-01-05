@@ -95,6 +95,10 @@
 
   # Trust Tailscale interface - allows Tailnet devices to access all services
   networking.firewall.trustedInterfaces = ["tailscale0"];
+  networking.nameservers = [
+    "193.138.218.74"
+    "185.213.154.5"
+  ];
 
   environment.systemPackages = [
     pkgs.helium
