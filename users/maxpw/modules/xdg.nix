@@ -38,12 +38,6 @@ in {
         {
           "ghostty/config".text = builtins.readFile ../ghostty.linux;
           "redshift/redshift.conf".text = builtins.readFile ../config.redshift;
-          # Hyprland main configs
-          # "hypr/hyprland.conf".source = ../hyprland/hyprland.conf;
-          # "hypr/hyprpaper.conf".source = ../hyprland/hyprpaper.conf;
-          # "hypr/hypridle.conf".source = ../hyprland/hypridle.conf;
-          # "hypr/hyprlock.conf".source = ../hyprland/hyprlock.conf;
-          # Other configs
           "rofi".source = ../rofi;
           "rofi".recursive = true;
           "waybar".source = ../waybar;
