@@ -19,6 +19,7 @@
     gl = "git prettylog";
     gp = "git push";
     v = "nvim";
+    c = "claude --dangerously-skip-permissions";
 
     jd = "jj desc";
     jc = "jj commit";

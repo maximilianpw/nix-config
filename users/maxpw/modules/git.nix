@@ -10,6 +10,8 @@
     # the time of writing this.
   };
 
+  programs.jjui.enable = true;
+
   programs.git = {
     enable = true;
     signing = {
