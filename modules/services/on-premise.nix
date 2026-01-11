@@ -22,6 +22,15 @@
   networking.firewall.trustedInterfaces = ["wg-mullvad" "tailscale0"];
 
   # -------------------------------------------
+  # PostgreSQL
+  # -------------------------------------------
+  services.postgresql = {
+    settings = {
+      port = 5433;
+    };
+  };
+
+  # -------------------------------------------
   # Nextcloud
   # -------------------------------------------
   services.nextcloud = {
@@ -41,6 +50,8 @@
       dbtype = "pgsql";
       adminuser = "admin";
       adminpassFile = config.sops.secrets.nextcloud-admin-password.path;
+      dbhost = "/run/postgresql";
+      dbport = 5433;
     };
 
     # Performance settings

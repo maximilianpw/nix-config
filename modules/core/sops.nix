@@ -21,10 +21,6 @@
       maxpw-password = {
         neededForUsers = true; # Decrypt early for user creation
       };
-      nextcloud-admin-password = {
-        owner = "nextcloud";
-        group = "nextcloud";
-      };
       borg-backup-passphrase = {
         # Readable by root only (borgbackup runs as root)
       };
