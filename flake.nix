@@ -30,6 +30,8 @@
     sops-nix.url = "github:Mic92/sops-nix";
     sops-nix.inputs.nixpkgs.follows = "nixpkgs";
 
+    claude-code.url = "github:ryoppippi/claude-code-overlay";
+
     fish-fzf.url = "github:jethrokuan/fzf/24f4739fc1dffafcc0da3ccfbbd14d9c7d31827a";
     fish-fzf.flake = false;
     fish-foreign-env.url = "github:oh-my-fish/plugin-foreign-env/dddd9213272a0ab848d474d0cbde12ad034e65bc";
@@ -47,6 +49,7 @@
   }: let
     overlays = [
       fenix.overlays.default
+      inputs.claude-code.overlays.default
       inputs.jujutsu.overlays.default
       (final: prev: let
         unstable = import inputs.nixpkgs-unstable {
@@ -57,10 +60,9 @@
         inherit unstable;
         gh = unstable.gh;
         codex = unstable.codex;
+        opencode = unstable.opencode;
         gemini-cli = unstable.gemini-cli;
-        claude-code = unstable.claude-code;
         nushell = unstable.nushell;
-        roon-server = unstable.roon-server;
         helium = final.callPackage ./packages/helium.nix {};
       })
     ];
