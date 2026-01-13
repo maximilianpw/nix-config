@@ -17,12 +17,10 @@
     pkgs.rust-analyzer-nightly
     pkgs.deno
     pkgs.lua
-    pkgs.dotnet-sdk_9
     pkgs.openjdk
     pkgs.golangci-lint
 
     # Language servers & formatters
-    pkgs.netcoredbg
     pkgs.prettierd
     pkgs.eslint
     pkgs.checkstyle
