@@ -21,8 +21,8 @@ in {
 
   xdg.configFile =
     {
-      "ranger".source = ../ranger;
-      "ranger".recursive = true;
+      "yazi".source = ../yazi;
+      "yazi".recursive = true;
     }
     // (
       if isDarwin

@@ -14,7 +14,7 @@
     pkgs.ripgrep
     pkgs.fd
     pkgs.zoxide
-    pkgs.ranger
+    pkgs.yazi # ranger alternative (ranger blocked by https://github.com/NixOS/nixpkgs/issues/479313)
 
     # Git tools
     pkgs.gnupg
