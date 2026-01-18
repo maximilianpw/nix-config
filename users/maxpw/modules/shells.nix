@@ -62,6 +62,24 @@ in {
       if [ -f "$HOME/.cargo/env" ]; then
         . "$HOME/.cargo/env"
       fi
+
+      # JJ PR creation with GitHub CLI
+      jprgh() {
+        jj commit && \
+        jj git push -c '@-' && \
+        jj edit '@-' && \
+        BRANCH='maximilianpw/push-'"$(jj log -r '@' --no-graph -T 'change_id.short()')" && \
+        gh pr create --head "$BRANCH" "$@"
+      }
+
+      # JJ PR creation with Graphite CLI
+      jprgt() {
+        jj commit && \
+        jj git push -c '@-' && \
+        jj edit '@-' && \
+        BRANCH='maximilianpw/push-'"$(jj log -r '@' --no-graph -T 'change_id.short()')" && \
+        gt pr create --head "$BRANCH" "$@"
+      }
     '';
   };
 
@@ -80,6 +98,24 @@ in {
       if [ -f "$HOME/.cargo/env" ]; then
         . "$HOME/.cargo/env"
       fi
+
+      # JJ PR creation with GitHub CLI
+      jprgh() {
+        jj commit && \
+        jj git push -c '@-' && \
+        jj edit '@-' && \
+        BRANCH='maximilianpw/push-'"$(jj log -r '@' --no-graph -T 'change_id.short()')" && \
+        gh pr create --head "$BRANCH" "$@"
+      }
+
+      # JJ PR creation with Graphite CLI
+      jprgt() {
+        jj commit && \
+        jj git push -c '@-' && \
+        jj edit '@-' && \
+        BRANCH='maximilianpw/push-'"$(jj log -r '@' --no-graph -T 'change_id.short()')" && \
+        gt pr create --head "$BRANCH" "$@"
+      }
     '';
     oh-my-zsh.enable = true;
   };
@@ -90,6 +126,25 @@ in {
     interactiveShellInit = lib.strings.concatStrings (lib.strings.intersperse "\n" [
       (builtins.readFile ../config.fish)
       "set -g SHELL ${pkgs.fish}/bin/fish"
+      ''
+        # JJ PR creation with GitHub CLI
+        function jprgh
+          jj commit
+          and jj git push -c '@-'
+          and jj edit '@-'
+          and set BRANCH "maximilianpw/push-"(jj log -r '@' --no-graph -T change_id.short())
+          and gh pr create --head ''$BRANCH ''$argv
+        end
+
+        # JJ PR creation with Graphite CLI
+        function jprgt
+          jj commit
+          and jj git push -c '@-'
+          and jj edit '@-'
+          and set BRANCH "maximilianpw/push-"(jj log -r '@' --no-graph -T change_id.short())
+          and gt pr create --head ''$BRANCH ''$argv
+        end
+      ''
     ]);
 
     plugins =
