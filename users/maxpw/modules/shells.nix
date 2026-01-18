@@ -18,14 +18,17 @@
     }
 
     # JJ PR creation with Graphite CLI
-    # Usage: jprgt "commit message" [gt pr create args...]
+    # Usage: jprgt "commit message" [gt submit args...]
     jprgt() {
       jj commit -m "$1" && \
       jj git push -c '@-' && \
       jj edit '@-' && \
       BRANCH='maximilianpw/push-'"$(jj log -r '@' --no-graph -T 'change_id.short()')" && \
+      git checkout "$BRANCH" && \
+      gt track && \
       shift && \
-      gt pr create --head "$BRANCH" "$@"
+      gt submit "$@" && \
+      jj git import
     }
   '';
 
@@ -42,13 +45,16 @@
     end
 
     # JJ PR creation with Graphite CLI
-    # Usage: jprgt "commit message" [gt pr create args...]
+    # Usage: jprgt "commit message" [gt submit args...]
     function jprgt
       jj commit -m $argv[1]
       and jj git push -c '@-'
       and jj edit '@-'
       and set BRANCH "maximilianpw/push-"(jj log -r '@' --no-graph -T 'change_id.short()')
-      and gt pr create --head $BRANCH $argv[2..-1]
+      and git checkout $BRANCH
+      and gt track
+      and gt submit $argv[2..-1]
+      and jj git import
     end
   '';
 
