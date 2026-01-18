@@ -4,6 +4,54 @@
   lib,
   ...
 }: let
+  # Shared shell functions for POSIX shells (bash/zsh)
+  posixShellFunctions = ''
+    # JJ PR creation with GitHub CLI
+    # Usage: jprgh "commit message" [gh pr create args...]
+    jprgh() {
+      jj commit -m "$1" && \
+      jj git push -c '@-' && \
+      jj edit '@-' && \
+      BRANCH='maximilianpw/push-'"$(jj log -r '@' --no-graph -T 'change_id.short()')" && \
+      shift && \
+      gh pr create --head "$BRANCH" "$@"
+    }
+
+    # JJ PR creation with Graphite CLI
+    # Usage: jprgt "commit message" [gt pr create args...]
+    jprgt() {
+      jj commit -m "$1" && \
+      jj git push -c '@-' && \
+      jj edit '@-' && \
+      BRANCH='maximilianpw/push-'"$(jj log -r '@' --no-graph -T 'change_id.short()')" && \
+      shift && \
+      gt pr create --head "$BRANCH" "$@"
+    }
+  '';
+
+  # Fish shell functions (different syntax)
+  fishShellFunctions = ''
+    # JJ PR creation with GitHub CLI
+    # Usage: jprgh "commit message" [gh pr create args...]
+    function jprgh
+      jj commit -m $argv[1]
+      and jj git push -c '@-'
+      and jj edit '@-'
+      and set BRANCH "maximilianpw/push-"(jj log -r '@' --no-graph -T 'change_id.short()')
+      and gh pr create --head $BRANCH $argv[2..-1]
+    end
+
+    # JJ PR creation with Graphite CLI
+    # Usage: jprgt "commit message" [gt pr create args...]
+    function jprgt
+      jj commit -m $argv[1]
+      and jj git push -c '@-'
+      and jj edit '@-'
+      and set BRANCH "maximilianpw/push-"(jj log -r '@' --no-graph -T 'change_id.short()')
+      and gt pr create --head $BRANCH $argv[2..-1]
+    end
+  '';
+
   shellAliases = {
     z = "cd";
     ls = "eza";
@@ -63,23 +111,7 @@ in {
         . "$HOME/.cargo/env"
       fi
 
-      # JJ PR creation with GitHub CLI
-      jprgh() {
-        jj commit && \
-        jj git push -c '@-' && \
-        jj edit '@-' && \
-        BRANCH='maximilianpw/push-'"$(jj log -r '@' --no-graph -T 'change_id.short()')" && \
-        gh pr create --head "$BRANCH" "$@"
-      }
-
-      # JJ PR creation with Graphite CLI
-      jprgt() {
-        jj commit && \
-        jj git push -c '@-' && \
-        jj edit '@-' && \
-        BRANCH='maximilianpw/push-'"$(jj log -r '@' --no-graph -T 'change_id.short()')" && \
-        gt pr create --head "$BRANCH" "$@"
-      }
+      ${posixShellFunctions}
     '';
   };
 
@@ -99,23 +131,7 @@ in {
         . "$HOME/.cargo/env"
       fi
 
-      # JJ PR creation with GitHub CLI
-      jprgh() {
-        jj commit && \
-        jj git push -c '@-' && \
-        jj edit '@-' && \
-        BRANCH='maximilianpw/push-'"$(jj log -r '@' --no-graph -T 'change_id.short()')" && \
-        gh pr create --head "$BRANCH" "$@"
-      }
-
-      # JJ PR creation with Graphite CLI
-      jprgt() {
-        jj commit && \
-        jj git push -c '@-' && \
-        jj edit '@-' && \
-        BRANCH='maximilianpw/push-'"$(jj log -r '@' --no-graph -T 'change_id.short()')" && \
-        gt pr create --head "$BRANCH" "$@"
-      }
+      ${posixShellFunctions}
     '';
     oh-my-zsh.enable = true;
   };
@@ -126,25 +142,7 @@ in {
     interactiveShellInit = lib.strings.concatStrings (lib.strings.intersperse "\n" [
       (builtins.readFile ../config.fish)
       "set -g SHELL ${pkgs.fish}/bin/fish"
-      ''
-        # JJ PR creation with GitHub CLI
-        function jprgh
-          jj commit
-          and jj git push -c '@-'
-          and jj edit '@-'
-          and set BRANCH "maximilianpw/push-"(jj log -r '@' --no-graph -T change_id.short())
-          and gh pr create --head ''$BRANCH ''$argv
-        end
-
-        # JJ PR creation with Graphite CLI
-        function jprgt
-          jj commit
-          and jj git push -c '@-'
-          and jj edit '@-'
-          and set BRANCH "maximilianpw/push-"(jj log -r '@' --no-graph -T change_id.short())
-          and gt pr create --head ''$BRANCH ''$argv
-        end
-      ''
+      fishShellFunctions
     ]);
 
     plugins =
