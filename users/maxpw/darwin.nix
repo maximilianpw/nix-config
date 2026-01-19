@@ -44,7 +44,6 @@
       "zed"
       "studio-3t-community"
       "mullvad-vpn"
-      "nextcloud"
       "termius"
       "obsidian"
       "qobuz"
