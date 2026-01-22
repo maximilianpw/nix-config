@@ -6,7 +6,6 @@
 }: {
   programs.neovim = {
     extraPackages = with pkgs; [
-      tree-sitter
       # === Core Tools ===
       # Note: gcc, git, curl, wget, ripgrep, fd already in home.packages
       tree-sitter # Parser generator tool

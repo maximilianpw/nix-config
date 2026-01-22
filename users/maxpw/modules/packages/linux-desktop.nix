@@ -33,11 +33,8 @@
     pkgs.discord
     pkgs.mongodb-compass
     pkgs.protonmail-desktop
-    pkgs.jetbrains.webstorm
     pkgs.mullvad-vpn
-
-    # Developer tools
-    pkgs.bruno
+    pkgs.obsidian
 
     # System utilities
     pkgs.pavucontrol

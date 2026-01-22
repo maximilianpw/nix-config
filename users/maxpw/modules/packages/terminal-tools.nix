@@ -4,7 +4,6 @@
     pkgs.chezmoi
     pkgs.stow
     pkgs.direnv
-    pkgs.devenv
 
     # File navigation & search
     pkgs.bat
@@ -14,7 +13,7 @@
     pkgs.ripgrep
     pkgs.fd
     pkgs.zoxide
-    pkgs.yazi # ranger alternative (ranger blocked by https://github.com/NixOS/nixpkgs/issues/479313)
+    pkgs.yazi
 
     # Git tools
     pkgs.gnupg

@@ -24,7 +24,6 @@
     pkgs.prettierd
     pkgs.eslint
     pkgs.checkstyle
-    pkgs.tflint
 
     # Build tools & dependencies
     pkgs.gcc
@@ -33,7 +32,6 @@
 
     # Databases & tools
     pkgs.mongosh
-    pkgs.mongodb-compass
 
     # Cloud & infrastructure
     pkgs.terraform
