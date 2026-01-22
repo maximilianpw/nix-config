@@ -11,8 +11,7 @@
     jprgh() {
       jj commit -m "$1" && \
       jj git push -c '@-' && \
-      jj edit '@-' && \
-      BRANCH='maximilianpw/push-'"$(jj log -r '@' --no-graph -T 'change_id.short()')" && \
+      BRANCH='maximilianpw/push-'"$(jj log -r '@-' --no-graph -T 'change_id.short()')" && \
       shift && \
       gh pr create --head "$BRANCH" "$@"
     }
@@ -22,12 +21,12 @@
     jprgt() {
       jj commit -m "$1" && \
       jj git push -c '@-' && \
-      jj edit '@-' && \
-      BRANCH='maximilianpw/push-'"$(jj log -r '@' --no-graph -T 'change_id.short()')" && \
+      BRANCH='maximilianpw/push-'"$(jj log -r '@-' --no-graph -T 'change_id.short()')" && \
       git checkout "$BRANCH" && \
       gt track && \
       shift && \
       gt submit "$@" && \
+      git checkout - && \
       jj git import
     }
   '';
@@ -39,8 +38,7 @@
     function jprgh
       jj commit -m $argv[1]
       and jj git push -c '@-'
-      and jj edit '@-'
-      and set BRANCH "maximilianpw/push-"(jj log -r '@' --no-graph -T 'change_id.short()')
+      and set BRANCH "maximilianpw/push-"(jj log -r '@-' --no-graph -T 'change_id.short()')
       and gh pr create --head $BRANCH $argv[2..-1]
     end
 
@@ -49,11 +47,11 @@
     function jprgt
       jj commit -m $argv[1]
       and jj git push -c '@-'
-      and jj edit '@-'
-      and set BRANCH "maximilianpw/push-"(jj log -r '@' --no-graph -T 'change_id.short()')
+      and set BRANCH "maximilianpw/push-"(jj log -r '@-' --no-graph -T 'change_id.short()')
       and git checkout $BRANCH
       and gt track
       and gt submit $argv[2..-1]
+      and git checkout -
       and jj git import
     end
   '';
