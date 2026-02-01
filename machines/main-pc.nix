@@ -87,13 +87,9 @@ in {
   in
     base
     ++ optionalTopLevel "_1password-gui"
-    ++ optionalTopLevel "google-chrome"
     ++ optionalTopLevel "discord"
     ++ optionalTopLevel "postman"
-    ++ optionalTopLevel "slack"
     ++ optionalTopLevel "ghostty"
     ++ optionalTopLevel "vscode"
-    ++ optionalTopLevel "protonmail-bridge"
-    ++ optionalTopLevel "termius"
-    ++ optionalNested ["jetbrains" "webstorm"];
+    ++ optionalTopLevel "protonmail-desktop";
 }
