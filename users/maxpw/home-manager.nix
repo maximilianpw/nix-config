@@ -28,6 +28,7 @@ in {
     (import ./modules/gpg.nix {inherit isDarwin;})
     (import ./modules/xdg.nix {inherit isDarwin isWSL;})
     (import ./modules/linux-services.nix {inherit isWSL;})
+    ./modules/tmux.nix
     ./modules/packages/dev-tools.nix
     ./modules/packages/terminal-tools.nix
     (import ./modules/packages/linux-desktop.nix {

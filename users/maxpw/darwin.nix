@@ -39,7 +39,6 @@
       "helium-browser"
       "yaak"
       "github"
-      "logi-options+"
       "datagrip"
       "zed"
       "studio-3t-community"

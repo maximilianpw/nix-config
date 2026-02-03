@@ -46,6 +46,9 @@
     pkgs._1password-cli
     pkgs.ngrok
 
+    # Tmux tools
+    pkgs.sesh
+
     # AI tools
     pkgs.claude-code
     pkgs.codex
