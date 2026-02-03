@@ -32,6 +32,9 @@
       nil # Nix LSP
       nixpkgs-fmt # Nix formatter
 
+      # TypeScript/JavaScript
+      nodePackages.typescript
+
       # Tailwind CSS
       tailwindcss-language-server
 
