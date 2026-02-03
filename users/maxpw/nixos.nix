@@ -80,22 +80,13 @@
     description = lib.mkDefault "Maximilian PINDER-WHITE";
     extraGroups = ["networkmanager" "wheel" "seat" "input" "video"];
     home = "/home/maxpw";
+    shell = pkgs.fish;
     # Password is managed via sops-nix (see secrets/README.md)
     hashedPasswordFile = config.sops.secrets.maxpw-password.path;
   };
 
-  # used for music
-  services.roon-server = {
-    enable = true;
-    openFirewall = true; # opens the usual LAN ports for discovery/control
-  };
+  programs.fish.enable = true;
 
-  networking.firewall.allowedTCPPorts = [
-    55000
-  ];
-
-  # Trust Tailscale interface - allows Tailnet devices to access all services
-  networking.firewall.trustedInterfaces = ["tailscale0"];
   services.resolved.enable = true;
 
   # 3) Ensure /etc/resolv.conf points at resolved's stub
