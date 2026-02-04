@@ -68,6 +68,8 @@
     shell = pkgs.fish;
   };
 
+  programs.fish.enable = true;
+
   # Required for some settings like homebrew to know what user to apply to.
   system.primaryUser = "max-vev";
 }
