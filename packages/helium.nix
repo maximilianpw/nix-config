@@ -1,3 +1,4 @@
+# To update: change version, run nix build, update sha256
 {
   pkgs,
   lib,

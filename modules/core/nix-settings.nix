@@ -1,8 +1,13 @@
-{lib, ...}: {
+{
+  lib,
+  currentSystemUser,
+  ...
+}: {
   nix.settings = {
     experimental-features = ["nix-command" "flakes"];
     keep-outputs = true;
     keep-derivations = true;
-    trusted-users = ["root" "maxpw" "max-vev"];
+    trusted-users = ["root"];
+    allowed-users = ["root" currentSystemUser];
   };
 }

@@ -12,14 +12,13 @@
   darwin ? false,
   wsl ? false,
 }: let
-  isWSL = wsl;
-  isLinux = !darwin && !isWSL;
-
   machineConfig = ../machines/${name}.nix;
   userOSConfig =
     ../users/${userDir}/${
       if darwin
       then "darwin"
+      else if wsl
+      then "wsl"
       else "nixos"
     }.nix;
   userHMConfig = ../users/${userDir}/home-manager.nix;
@@ -40,18 +39,13 @@ in
       {nixpkgs.config.allowUnfree = true;}
       {nixpkgs.overlays = overlays;}
       (
-        if isWSL
-        then inputs.nixos-wsl.nixosModules.wsl
-        else {}
-      )
-      (
-        if isLinux
-        then inputs.nix-snapd.nixosModules.default
-        else {}
-      )
-      (
         if !darwin
         then inputs.sops-nix.nixosModules.sops
+        else {}
+      )
+      (
+        if wsl
+        then inputs.nixos-wsl.nixosModules.wsl
         else {}
       )
       machineConfig
@@ -62,8 +56,8 @@ in
         home-manager.useUserPackages = true;
         home-manager.backupFileExtension = "backup";
         home-manager.users.${user} = import userHMConfig {
-          isWSL = isWSL;
           isDarwin = darwin;
+          isWSL = wsl;
           inputs = inputs;
         };
       }
@@ -73,7 +67,7 @@ in
           currentSystemName = name;
           currentSystemUser = user;
           currentSystemUserDir = userDir;
-          isWSL = isWSL;
+          isWSL = wsl;
           inputs = inputs;
         };
       }

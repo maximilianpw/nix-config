@@ -1,6 +1,6 @@
 {
-  isWSL,
   isDarwin,
+  isWSL ? false,
   inputs,
   ...
 }: {
@@ -9,7 +9,7 @@
   lib,
   ...
 }: let
-  isLinux = pkgs.stdenv.isLinux;
+  isLinux = pkgs.stdenv.isLinux && !isWSL;
 
   # For our MANPAGER env var
   # https://github.com/sharkdp/bat/issues/1145
@@ -24,15 +24,15 @@ in {
   imports = [
     ./modules/fonts.nix
     ./modules/git.nix
-    (import ./modules/shells.nix {inherit inputs;})
-    (import ./modules/gpg.nix {inherit isDarwin;})
+    ./modules/shells.nix
+    (import ./modules/gpg.nix {inherit isDarwin isWSL;})
     (import ./modules/xdg.nix {inherit isDarwin isWSL;})
     (import ./modules/linux-services.nix {inherit isWSL;})
     ./modules/tmux.nix
     ./modules/packages/dev-tools.nix
     ./modules/packages/terminal-tools.nix
     (import ./modules/packages/linux-desktop.nix {
-      inherit pkgs lib isLinux isWSL;
+      inherit pkgs lib isLinux;
     })
   ];
 
@@ -54,6 +54,11 @@ in {
       }
       else {}
     );
+
+  programs.direnv = {
+    enable = true;
+    nix-direnv.enable = true;
+  };
 
   programs.neovim = lib.mkMerge [
     {

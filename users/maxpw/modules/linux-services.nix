@@ -1,12 +1,12 @@
 # Linux-specific systemd services and desktop settings
-{isWSL, ...}: {
+{isWSL ? false, ...}: {
   pkgs,
   lib,
   ...
 }: let
-  isLinux = pkgs.stdenv.isLinux;
+  isLinux = pkgs.stdenv.isLinux && !isWSL;
 in {
-  systemd.user.services.polkit-gnome = lib.mkIf (isLinux && !isWSL) {
+  systemd.user.services.polkit-gnome = lib.mkIf isLinux {
     Unit = {
       Description = "polkit-gnome Authentication Agent";
       After = ["graphical-session.target"];
@@ -20,7 +20,7 @@ in {
   };
 
   # Make cursor not tiny on HiDPI screens
-  home.pointerCursor = lib.mkIf (isLinux && !isWSL) {
+  home.pointerCursor = lib.mkIf isLinux {
     name = "Vanilla-DMZ";
     package = pkgs.vanilla-dmz;
     size = 128;

@@ -1,4 +1,4 @@
-.PHONY: help bootstrap rebuild check update gc clean format diff test
+.PHONY: help bootstrap rebuild check update gc clean format diff test wsl
 
 # Default target
 .DEFAULT_GOAL := help
@@ -71,6 +71,11 @@ rollback: ## Rollback to previous generation
 		sudo nixos-rebuild --rollback; \
 	fi
 	@echo "Rollback complete!"
+
+wsl: ## Build WSL tarball for import
+	@echo "Building WSL tarball..."
+	@nix build ".#nixosConfigurations.wsl.config.system.build.tarballBuilder" --no-link
+	@echo "WSL tarball build complete!"
 
 info: ## Show system information
 	@echo "System Information:"

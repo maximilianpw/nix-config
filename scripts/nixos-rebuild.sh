@@ -61,6 +61,14 @@ else
     HOSTNAME="${USER_HOST_MAP[$auto_username]:-$(hostname)}"
     FLAKE_ATTR="nixosConfigurations.$HOSTNAME"
     FLAKE_SWITCH_ATTR="$HOSTNAME"
+
+    # WSL detection: override hostname/flake attr when running under WSL
+    if [[ -e /proc/sys/fs/binfmt_misc/WSLInterp ]] || grep -qi microsoft /proc/version 2>/dev/null; then
+        info "WSL environment detected, overriding to wsl config"
+        HOSTNAME="wsl"
+        FLAKE_ATTR="nixosConfigurations.wsl"
+        FLAKE_SWITCH_ATTR="wsl"
+    fi
 fi
 
 info "Detected user: $auto_username"

@@ -12,9 +12,8 @@
   # SSH server with secure defaults
   services.openssh = {
     enable = lib.mkDefault true;
-    # Uncomment these for hardened security:
-    # settings.PasswordAuthentication = false;
-    # settings.KbdInteractiveAuthentication = false;
-    # settings.PermitRootLogin = "no";
+    settings.PasswordAuthentication = false;
+    settings.KbdInteractiveAuthentication = false;
+    settings.PermitRootLogin = "no";
   };
 }

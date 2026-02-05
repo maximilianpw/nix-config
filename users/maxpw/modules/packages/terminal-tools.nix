@@ -3,8 +3,6 @@
     # Environment management
     pkgs.chezmoi
     pkgs.stow
-    pkgs.direnv
-
     # File navigation & search
     pkgs.bat
     pkgs.eza
@@ -25,7 +23,7 @@
     pkgs.starship
 
     # System utilities
-    pkgs.neofetch
+    pkgs.fastfetch
     pkgs.btop
     pkgs.cmatrix
 

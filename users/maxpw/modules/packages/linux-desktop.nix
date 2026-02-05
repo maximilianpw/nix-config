@@ -2,10 +2,9 @@
   pkgs,
   lib,
   isLinux,
-  isWSL,
   ...
 }: {
-  home.packages = lib.optionals (isLinux && !isWSL) [
+  home.packages = lib.optionals isLinux [
     # App launcher
     pkgs.rofi
 

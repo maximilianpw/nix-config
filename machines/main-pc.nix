@@ -3,20 +3,7 @@
   pkgs,
   lib,
   ...
-}: let
-  withOptional = pkg:
-    if pkg == null
-    then []
-    else [pkg];
-  optionalPkg = attrPath: let
-    pkg = lib.attrsets.attrByPath attrPath null pkgs;
-  in
-    withOptional pkg;
-  optionalTopLevel = name:
-    optionalPkg [name];
-  optionalNested = attrPath:
-    optionalPkg attrPath;
-in {
+}: {
   imports = [
     ./hardware/main-pc.nix
     ../modules/services/backup.nix
@@ -75,21 +62,11 @@ in {
   programs.virt-manager.enable = true;
   users.users.maxpw.extraGroups = lib.mkAfter ["docker" "libvirtd" "kvm"];
 
-  # System-scoped packages mirroring software managed by Homebrew on macOS.
-  # Each package is added only if it exists in the pinned nixpkgs to keep evaluation stable.
-  environment.systemPackages = let
-    base = [
-      pkgs.cachix
-      pkgs.lm_sensors
-      pkgs.pciutils
-      pkgs.usbutils
-    ];
-  in
-    base
-    ++ optionalTopLevel "_1password-gui"
-    ++ optionalTopLevel "discord"
-    ++ optionalTopLevel "postman"
-    ++ optionalTopLevel "ghostty"
-    ++ optionalTopLevel "vscode"
-    ++ optionalTopLevel "protonmail-desktop";
+  # System-scoped packages
+  environment.systemPackages = [
+    pkgs.cachix
+    pkgs.lm_sensors
+    pkgs.pciutils
+    pkgs.usbutils
+  ];
 }

@@ -1,14 +1,14 @@
 # XDG config file management
 {
   isDarwin,
-  isWSL,
+  isWSL ? false,
   ...
 }: {
   pkgs,
   lib,
   ...
 }: let
-  isLinux = pkgs.stdenv.isLinux;
+  isLinux = pkgs.stdenv.isLinux && !isWSL;
 
   # Helper function to automatically symlink all files in a directory
   symlinkDir = dir: prefix:

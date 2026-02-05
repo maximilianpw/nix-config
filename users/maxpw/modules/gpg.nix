@@ -1,5 +1,9 @@
 # GPG and gpg-agent configuration
-{isDarwin, ...}: {
+{
+  isDarwin,
+  isWSL ? false,
+  ...
+}: {
   pkgs,
   lib,
   ...
@@ -10,7 +14,10 @@ in {
 
   services.gpg-agent = lib.mkIf isLinux {
     enable = true;
-    pinentry.package = pkgs.pinentry-gnome3;
+    pinentry.package =
+      if isWSL
+      then pkgs.pinentry-curses
+      else pkgs.pinentry-gnome3;
 
     # cache the keys forever so we don't get asked for a password
     defaultCacheTtl = 31536000;

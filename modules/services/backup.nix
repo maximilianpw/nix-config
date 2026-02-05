@@ -28,42 +28,21 @@
   # -------------------------------------------
   services.borgbackup.jobs.main = {
     paths = [
-      "/home/maxpw"
-      "/var/lib" # Service data (Nextcloud, Home Assistant, etc.)
+      "/home/maxpw/nix-config"
+      "/home/maxpw/Documents"
+      "/home/maxpw/Projects"
+      "/home/maxpw/.config"
+      "/home/maxpw/.local/share"
+      "/home/maxpw/.ssh"
+      "/home/maxpw/.gnupg"
+      "/var/lib"
     ];
 
     exclude = [
-      # Caches and temp files
-      "/home/*/.cache"
-      "/home/*/.local/share/Trash"
-      "/home/*/Downloads"
-      "/home/*/.npm"
-      "/home/*/.cargo/registry"
-      "/home/*/.rustup"
-      "/home/*/.local/share/Steam"
-      "/home/*/.wine"
-
-      # Large reproducible directories
-      "/home/*/go/pkg"
-      "/home/*/.gradle"
-      "/home/*/.m2"
-      "/home/*/node_modules"
       "**/node_modules"
       "**/.git/objects"
       "**/__pycache__"
-      "**/.mypy_cache"
-      "**/.pytest_cache"
-
-      # Nix-related (reproducible from config)
-      "/home/*/.nix-defexpr"
-      "/home/*/.nix-profile"
-
-      # Secrets already backed up elsewhere
-      "/var/lib/sops-nix"
-
-      # Temporary/runtime data
-      "/var/lib/systemd/coredump"
-      "/var/lib/docker" # Can be large, typically reproducible
+      "**/.cache"
     ];
 
     repo = "/mnt/backups/borg";

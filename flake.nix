@@ -5,12 +5,6 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
 
-    nixos-wsl.url = "github:nix-community/NixOS-WSL";
-    nixos-wsl.inputs.nixpkgs.follows = "nixpkgs";
-
-    nix-snapd.url = "github:nix-community/nix-snapd";
-    nix-snapd.inputs.nixpkgs.follows = "nixpkgs";
-
     home-manager.url = "github:nix-community/home-manager/release-25.11";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
@@ -30,12 +24,10 @@
     sops-nix.url = "github:Mic92/sops-nix";
     sops-nix.inputs.nixpkgs.follows = "nixpkgs";
 
-    claude-code.url = "github:ryoppippi/claude-code-overlay";
+    nixos-wsl.url = "github:nix-community/NixOS-WSL";
+    nixos-wsl.inputs.nixpkgs.follows = "nixpkgs";
 
-    fish-fzf.url = "github:jethrokuan/fzf/24f4739fc1dffafcc0da3ccfbbd14d9c7d31827a";
-    fish-fzf.flake = false;
-    fish-foreign-env.url = "github:oh-my-fish/plugin-foreign-env/dddd9213272a0ab848d474d0cbde12ad034e65bc";
-    fish-foreign-env.flake = false;
+    claude-code.url = "github:ryoppippi/claude-code-overlay";
   };
 
   outputs = inputs @ {
@@ -47,6 +39,7 @@
     nix-darwin,
     ...
   }: let
+    # Overlay to pull select packages from nixpkgs-unstable and add custom packages
     overlays = [
       fenix.overlays.default
       inputs.claude-code.overlays.default
@@ -74,6 +67,12 @@
     nixosConfigurations.main-pc = mkSystem "main-pc" {
       system = "x86_64-linux";
       user = "maxpw";
+    };
+
+    nixosConfigurations.wsl = mkSystem "wsl" {
+      system = "x86_64-linux";
+      user = "maxpw";
+      wsl = true;
     };
 
     darwinConfigurations.macbook-pro-m1 = mkSystem "macbook-pro-m1" {

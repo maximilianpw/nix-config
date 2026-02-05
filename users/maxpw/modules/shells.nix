@@ -1,37 +1,10 @@
-# Shell configurations - bash, zsh, fish, nushell
-{inputs, ...}: {
+# Shell configurations - fish (primary), nushell, bash/zsh (compatibility)
+{
   pkgs,
   lib,
   ...
 }: let
-  # Shared shell functions for POSIX shells (bash/zsh)
-  posixShellFunctions = ''
-    # JJ PR creation with GitHub CLI
-    # Usage: jprgh "commit message" [gh pr create args...]
-    jprgh() {
-      jj commit -m "$1" && \
-      jj git push -c '@-' && \
-      BRANCH='maximilianpw/push-'"$(jj log -r '@-' --no-graph -T 'change_id.short()')" && \
-      shift && \
-      gh pr create --head "$BRANCH" "$@"
-    }
-
-    # JJ PR creation with Graphite CLI
-    # Usage: jprgt "commit message" [gt submit args...]
-    jprgt() {
-      jj commit -m "$1" && \
-      jj git push -c '@-' && \
-      BRANCH='maximilianpw/push-'"$(jj log -r '@-' --no-graph -T 'change_id.short()')" && \
-      git checkout "$BRANCH" && \
-      gt track && \
-      shift && \
-      gt submit "$@" && \
-      git checkout - && \
-      jj git import
-    }
-  '';
-
-  # Fish shell functions (different syntax)
+  # Fish shell functions
   fishShellFunctions = ''
     # JJ PR creation with GitHub CLI
     # Usage: jprgh "commit message" [gh pr create args...]
@@ -107,16 +80,6 @@ in {
   programs.bash = {
     enable = true;
     shellAliases = shellAliases;
-    shellOptions = [];
-    historyControl = ["ignoredups" "ignorespace"];
-    profileExtra = ''
-      # Source Rust environment only if it exists (fresh installs won't have rustup yet)
-      if [ -f "$HOME/.cargo/env" ]; then
-        . "$HOME/.cargo/env"
-      fi
-
-      ${posixShellFunctions}
-    '';
   };
 
   programs.nushell = {
@@ -128,16 +91,14 @@ in {
   programs.zsh = {
     enable = true;
     shellAliases = shellAliases;
-    initContent = builtins.readFile ../zshrc;
-    envExtra = ''
-      # Source Rust environment only if present
-      if [ -f "$HOME/.cargo/env" ]; then
-        . "$HOME/.cargo/env"
-      fi
-
-      ${posixShellFunctions}
-    '';
-    oh-my-zsh.enable = true;
+    history = {
+      size = 5000;
+      save = 5000;
+      ignoreAllDups = true;
+      ignoreSpace = true;
+      share = true;
+    };
+    completionInit = "autoload -Uz compinit && compinit -C -i";
   };
 
   programs.fish = {
@@ -149,13 +110,25 @@ in {
       fishShellFunctions
     ]);
 
-    plugins =
-      map (n: {
-        name = n;
-        src = inputs.${n};
-      }) [
-        "fish-fzf"
-        "fish-foreign-env"
-      ];
+    plugins = [
+      {
+        name = "fish-fzf";
+        src = pkgs.fetchFromGitHub {
+          owner = "jethrokuan";
+          repo = "fzf";
+          rev = "24f4739fc1dffafcc0da3ccfbbd14d9c7d31827a";
+          sha256 = "sha256-QyCkksUYELC+TJDZS1C8aL5MBLmDcwM8gMsfkO0p4E8=";
+        };
+      }
+      {
+        name = "fish-foreign-env";
+        src = pkgs.fetchFromGitHub {
+          owner = "oh-my-fish";
+          repo = "plugin-foreign-env";
+          rev = "dddd9213272a0ab848d474d0cbde12ad034e65bc";
+          sha256 = "sha256-er1KI2xSUtTlQd9jZl1AjqeArrfBxrgBLcw5OqinuAM=";
+        };
+      }
+    ];
   };
 }
