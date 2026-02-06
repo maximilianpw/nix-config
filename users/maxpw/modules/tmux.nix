@@ -19,6 +19,30 @@
       sessionist
       open
       {
+        plugin = extrakto;
+        extraConfig = ''
+          set -g @extrakto_split_direction 'p'
+          set -g @extrakto_popup_size '60%'
+        '';
+      }
+      {
+        plugin = tmux-floax;
+        extraConfig = ''
+          set -g @floax-bind 'f'
+          set -g @floax-width '80%'
+          set -g @floax-height '80%'
+          set -g @floax-border-color '#7aa2f7'
+        '';
+      }
+      {
+        plugin = tmux-sessionx;
+        extraConfig = ''
+          set -g @sessionx-bind 'o'
+          set -g @sessionx-preview-enabled 'true'
+        '';
+      }
+      tmux-which-key
+      {
         plugin = resurrect;
         extraConfig = ''
           set -g @resurrect-strategy-nvim 'session'
@@ -76,7 +100,7 @@
       bind p display-popup -E -w 80% -h 80% -d "#{pane_current_path}"
       bind g display-popup -E -w 90% -h 90% -d "#{pane_current_path}" lazygit
       bind G display-popup -E -w 90% -h 90% -d "#{pane_current_path}" jjui
-      bind s display-popup -E "tmux list-sessions | fzf --reverse | cut -d: -f1 | xargs tmux switch-client -t"
+      # Session picker now handled by tmux-sessionx (prefix + o)
 
       # Join/break panes
       bind j choose-window "join-pane -h -s '%%'"
