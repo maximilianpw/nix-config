@@ -5,27 +5,25 @@
   ...
 }: {
   home.packages = lib.optionals isLinux [
-    # App launcher
-    pkgs.rofi
+    # App launcher (Wayland-native fork)
+    pkgs.rofi-wayland
 
     # Terminal emulator
     pkgs.ghostty
 
     # Wayland desktop essentials
     pkgs.waybar
-    pkgs.mako
     pkgs.wl-clipboard
     pkgs.cliphist
     pkgs.grim
     pkgs.slurp
-    pkgs.swww
     pkgs.hyprlock
     pkgs.hypridle
     pkgs.hyprpaper
-    pkgs.cava
     pkgs.swaynotificationcenter
-    pkgs.redshift
+    pkgs.gammastep
     pkgs.wlogout
+    pkgs.networkmanagerapplet
 
     # GUI applications
     pkgs.nautilus
@@ -40,5 +38,6 @@
     pkgs.brightnessctl
     pkgs.playerctl
     pkgs.qbittorrent
+    pkgs.cava
   ];
 }

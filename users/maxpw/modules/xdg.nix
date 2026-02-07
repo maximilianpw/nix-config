@@ -37,7 +37,7 @@ in {
       then
         {
           "ghostty/config".text = builtins.readFile ../ghostty.linux;
-          "redshift/redshift.conf".text = builtins.readFile ../config.redshift;
+          "gammastep/config.ini".text = builtins.readFile ../config.gammastep;
           "rofi".source = ../rofi;
           "rofi".recursive = true;
           "waybar".source = ../waybar;

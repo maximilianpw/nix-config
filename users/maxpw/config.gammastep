@@ -1,0 +1,16 @@
+[general]
+temp-day=6500
+temp-night=3700
+transition=1
+fade=1
+brightness-day=0.9
+brightness-night=0.7
+gamma=0.95:0.95:0.9
+location-provider=manual
+adjustment-method=wayland
+elevation-high=2
+elevation-low=-6
+
+[manual]
+lat=43.7
+lon=7.3

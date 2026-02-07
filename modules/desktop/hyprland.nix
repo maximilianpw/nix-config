@@ -4,12 +4,13 @@
   lib,
   ...
 }: {
-  # Core Hyprland (selectable via existing DM, or start from TTY)
+  # Core Hyprland with UWSM session management
   programs.hyprland = {
     enable = true;
     package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
     portalPackage = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
-    xwayland.enable = true; # not required to boot, but usually desired
+    withUWSM = true;
+    xwayland.enable = true;
   };
 
   # Login manager for Wayland sessions (TTY-friendly)
@@ -17,8 +18,8 @@
     enable = true;
     settings = {
       default_session = {
-        # Text greeter that launches Hyprland
-        command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --cmd Hyprland";
+        # Text greeter that launches Hyprland via UWSM
+        command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --cmd 'uwsm start hyprland-uwsm.desktop'";
         user = "greeter";
       };
     };

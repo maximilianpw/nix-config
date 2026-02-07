@@ -49,7 +49,6 @@
 @define-color warning @yellow;
 @define-color error   @red;
 @define-color info    @blue;
-@define-color info    @blue;
 
 /* Module-specific background colors */
 @define-color bg-workspaces #2a2a37;
