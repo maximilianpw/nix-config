@@ -32,10 +32,9 @@
     then inputs.home-manager.darwinModules
     else inputs.home-manager.nixosModules;
 in
-  systemFunc rec {
-    inherit system;
-
+  systemFunc {
     modules = [
+      {nixpkgs.hostPlatform = system;}
       {nixpkgs.config.allowUnfree = true;}
       {nixpkgs.overlays = overlays;}
       (

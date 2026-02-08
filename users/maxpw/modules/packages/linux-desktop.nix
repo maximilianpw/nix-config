@@ -5,8 +5,8 @@
   ...
 }: {
   home.packages = lib.optionals isLinux [
-    # App launcher (Wayland-native fork)
-    pkgs.rofi-wayland
+    # App launcher
+    pkgs.rofi
 
     # Terminal emulator
     pkgs.ghostty

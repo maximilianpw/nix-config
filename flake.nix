@@ -42,8 +42,13 @@
     # Overlay to pull select packages from nixpkgs-unstable and add custom packages
     overlays = [
       fenix.overlays.default
-      inputs.claude-code.overlays.default
-      inputs.jujutsu.overlays.default
+      (final: prev: {
+        claude-code = inputs.claude-code.packages.${prev.stdenv.hostPlatform.system}.claude;
+        claude-code-minimal = inputs.claude-code.packages.${prev.stdenv.hostPlatform.system}.claude-minimal;
+      })
+      (final: prev: {
+        jujutsu = inputs.jujutsu.packages.${final.stdenv.hostPlatform.system}.jujutsu;
+      })
       (final: prev: let
         unstable = import inputs.nixpkgs-unstable {
           inherit (prev.stdenv.hostPlatform) system;
