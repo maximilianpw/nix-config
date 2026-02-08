@@ -8,7 +8,7 @@
   border: none;
   border-radius: 0;
   font-family: 'JetBrains Mono', 'Hack Nerd Font', monospace;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   min-height: 0;
   padding: 0;
@@ -16,26 +16,35 @@
 }
 
 window#waybar {
-  background: transparent;
+  all: unset;
 }
 
 /* ---------------------------------------------------------------------------
- * Shared module capsule
+ * Floating islands
  * ------------------------------------------------------------------------ */
 
-#workspaces,
-#window,
-#pulseaudio,
-#network,
-#custom-notification,
-#clock,
-#custom-power {
-  background: rgba(31, 31, 40, 0.82);
-  color: @text;
-  margin: 5px 3px;
-  padding: 2px 12px;
+.modules-left {
+  padding: 7px;
+  margin: 8px 0 4px 10px;
   border-radius: 10px;
-  transition: background 0.2s ease;
+  background: alpha(@base, 0.75);
+  box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.5);
+}
+
+.modules-center {
+  padding: 7px;
+  margin: 8px 0 4px 0;
+  border-radius: 10px;
+  background: alpha(@base, 0.75);
+  box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.5);
+}
+
+.modules-right {
+  padding: 7px;
+  margin: 8px 10px 4px 0;
+  border-radius: 10px;
+  background: alpha(@base, 0.75);
+  box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.5);
 }
 
 /* ---------------------------------------------------------------------------
@@ -43,56 +52,60 @@ window#waybar {
  * ------------------------------------------------------------------------ */
 
 tooltip {
-  background: transparent;
+  background: @base;
+  color: @subtext1;
+  border-radius: 8px;
 }
 
 tooltip label {
-  background: @base;
-  color: @text;
-  border-radius: 8px;
   padding: 6px 10px;
   font-size: 12px;
 }
 
 /* ---------------------------------------------------------------------------
- * Workspaces - dot indicators
+ * Workspaces - numbered
  * ------------------------------------------------------------------------ */
 
 #workspaces {
-  padding: 2px 6px;
+  padding: 0 4px;
 }
 
 #workspaces button {
-  padding: 0 4px;
-  margin: 3px 1px;
-  border-radius: 50%;
-  min-width: 8px;
-  min-height: 8px;
-  color: transparent;
-  background: rgba(255, 255, 255, 0.15);
-  border: none;
-  box-shadow: none;
-  text-shadow: none;
-  outline: none;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  all: unset;
+  padding: 0 7px;
+  color: alpha(@mauve, 0.4);
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.2s ease;
 }
 
 #workspaces button:hover {
-  background: rgba(255, 255, 255, 0.35);
+  color: @mauve;
+  text-shadow: 0px 0px 3px alpha(@mauve, 0.5);
 }
 
 #workspaces button.active {
-  background: @mauve;
-  min-width: 20px;
-  border-radius: 10px;
-}
-
-#workspaces button.urgent {
-  background: @red;
+  color: @mauve;
+  text-shadow: 0px 0px 4px alpha(@mauve, 0.6);
 }
 
 #workspaces button.empty {
-  background: rgba(255, 255, 255, 0.06);
+  color: alpha(@overlay0, 0.3);
+}
+
+#workspaces button.empty:hover {
+  color: alpha(@overlay1, 0.6);
+  text-shadow: 0px 0px 2px rgba(0, 0, 0, 0.3);
+}
+
+#workspaces button.empty.active {
+  color: @mauve;
+  text-shadow: 0px 0px 4px alpha(@mauve, 0.6);
+}
+
+#workspaces button.urgent {
+  color: @red;
+  text-shadow: 0px 0px 4px alpha(@red, 0.5);
 }
 
 /* ---------------------------------------------------------------------------
@@ -101,79 +114,48 @@ tooltip label {
 
 #window {
   color: @subtext1;
+  padding: 0 8px;
   font-weight: 500;
-  padding: 2px 16px;
 }
 
 /* ---------------------------------------------------------------------------
- * Audio
+ * Shared module style
  * ------------------------------------------------------------------------ */
 
-#pulseaudio {
-  color: @yellow;
+#pulseaudio,
+#network,
+#custom-notification,
+#clock,
+#custom-power {
+  padding: 0 6px;
+  color: @subtext1;
+  transition: all 0.3s ease;
 }
 
-#pulseaudio:hover {
-  background: rgba(31, 31, 40, 0.95);
+#pulseaudio:hover,
+#network:hover,
+#custom-notification:hover,
+#clock:hover,
+#custom-power:hover {
+  color: @mauve;
 }
+
+/* ---------------------------------------------------------------------------
+ * Module accents
+ * ------------------------------------------------------------------------ */
 
 #pulseaudio.muted {
-  color: @overlay1;
-}
-
-/* ---------------------------------------------------------------------------
- * Network
- * ------------------------------------------------------------------------ */
-
-#network {
-  color: @teal;
-}
-
-#network:hover {
-  background: rgba(31, 31, 40, 0.95);
+  color: @overlay0;
 }
 
 #network.disconnected {
   color: @red;
-  opacity: 0.7;
 }
-
-/* ---------------------------------------------------------------------------
- * Notifications
- * ------------------------------------------------------------------------ */
-
-#custom-notification {
-  color: @lavender;
-}
-
-#custom-notification:hover {
-  background: rgba(31, 31, 40, 0.95);
-}
-
-/* ---------------------------------------------------------------------------
- * Clock
- * ------------------------------------------------------------------------ */
 
 #clock {
-  color: @blue;
   font-weight: 600;
 }
 
-#clock:hover {
-  background: rgba(31, 31, 40, 0.95);
-}
-
-/* ---------------------------------------------------------------------------
- * Power
- * ------------------------------------------------------------------------ */
-
 #custom-power {
-  color: @red;
-  padding: 2px 10px;
-  margin-right: 6px;
-}
-
-#custom-power:hover {
-  background: @red;
-  color: @base;
+  padding: 0 5px 0 6px;
 }
