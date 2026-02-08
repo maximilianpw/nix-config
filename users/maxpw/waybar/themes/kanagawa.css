@@ -50,11 +50,3 @@
 @define-color error   @red;
 @define-color info    @blue;
 
-/* Module-specific background colors */
-@define-color bg-workspaces #2a2a37;
-@define-color bg-clock      #7aa89f;
-@define-color bg-system     #363646;
-@define-color bg-network    #363646;
-@define-color bg-audio      #363646;
-@define-color bg-launcher   #957fb8;
-@define-color bg-power      #e82424;

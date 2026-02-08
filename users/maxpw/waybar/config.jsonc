@@ -1,16 +1,12 @@
 {
-  "style": "./style.css",
-
   "layer": "top",
   "position": "top",
-  "height": 32,
-  "spacing": 5,
+  "height": 38,
+  "reload_style_on_change": true,
 
-  "modules-left": ["custom/launcher", "hyprland/workspaces", "memory", "cpu", "temperature", "disk"],
-
+  "modules-left": ["hyprland/workspaces"],
   "modules-center": ["hyprland/window"],
-
-  "modules-right": ["pulseaudio", "network", "custom/notification", "clock", "custom/power", "tray"],
+  "modules-right": ["pulseaudio", "network", "custom/notification", "clock", "custom/power"],
 
   "include": "./modules.jsonc"
 }
