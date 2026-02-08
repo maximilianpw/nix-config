@@ -132,4 +132,6 @@
       set -g message-style "fg=#7aa2f7,bg=#1a1b26"
     '';
   };
+
+  programs.tmuxinator.enable = true;
 }
