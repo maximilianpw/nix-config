@@ -133,5 +133,5 @@
     '';
   };
 
-  programs.tmuxinator.enable = true;
+  home.packages = [pkgs.tmuxinator];
 }
