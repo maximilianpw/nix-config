@@ -12,5 +12,5 @@
 
   "modules-right": ["pulseaudio", "network", "custom/notification", "clock", "custom/power", "tray"],
 
-  "include": "./modules.jsonc",
+  "include": "./modules.jsonc"
 }

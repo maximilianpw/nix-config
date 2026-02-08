@@ -53,6 +53,7 @@
   systemd.services.disable-gpe-wakeup = {
     description = "Disable spurious GPE ACPI wakeups";
     wantedBy = ["multi-user.target"];
+    path = [pkgs.gawk pkgs.gnugrep];
     serviceConfig.Type = "oneshot";
     script = ''
       for gpe in /sys/firmware/acpi/interrupts/gpe*; do
