@@ -19,7 +19,7 @@
     settings = {
       default_session = {
         # Text greeter that launches Hyprland via UWSM
-        command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --cmd 'uwsm start hyprland-uwsm.desktop'";
+        command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --cmd start-hyprland";
         user = "greeter";
       };
     };
