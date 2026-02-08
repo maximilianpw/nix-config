@@ -61,6 +61,7 @@
         opencode = unstable.opencode;
         gemini-cli = unstable.gemini-cli;
         nushell = unstable.nushell;
+        tmuxinator = unstable.tmuxinator;
         helium = final.callPackage ./packages/helium.nix {};
       })
     ];
