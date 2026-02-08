@@ -40,11 +40,35 @@
     SuspendState=mem
   '';
 
-  # Disable USB wakeup to prevent immediate wake from sleep
+  # Disable wakeup sources to prevent immediate wake from sleep
   services.udev.extraRules = ''
-    # Disable USB wake for specific controllers that cause issues
+    # Disable wakeup on ALL USB devices and controllers
+    ACTION=="add", SUBSYSTEM=="usb", ATTR{power/wakeup}="disabled"
     ACTION=="add", SUBSYSTEM=="pci", DRIVER=="xhci_hcd", ATTR{power/wakeup}="disabled"
+    # Disable wakeup on network interfaces
+    ACTION=="add", SUBSYSTEM=="net", KERNEL=="enp*", RUN+="${pkgs.bash}/bin/bash -c 'echo disabled > /sys/class/net/%k/device/power/wakeup'"
   '';
+
+  # Disable spurious GPE ACPI wakeups (common AMD Ryzen issue)
+  systemd.services.disable-gpe-wakeup = {
+    description = "Disable spurious GPE ACPI wakeups";
+    wantedBy = ["multi-user.target"];
+    serviceConfig.Type = "oneshot";
+    script = ''
+      for gpe in /sys/firmware/acpi/interrupts/gpe*; do
+        echo "disable" > "$gpe" 2>/dev/null || true
+      done
+      # Re-enable power button wake
+      if [ -f /proc/acpi/wakeup ]; then
+        for dev in PWRB PWBN; do
+          status=$(grep "^$dev" /proc/acpi/wakeup 2>/dev/null | awk '{print $3}')
+          if [ "$status" = "*disabled" ]; then
+            echo "$dev" > /proc/acpi/wakeup
+          fi
+        done
+      fi
+    '';
+  };
 
   # Hardware enablement for a desktop workstation
   services = {
