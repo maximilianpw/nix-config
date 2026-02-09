@@ -23,8 +23,9 @@
     kernelModules = ["amd_pmc"];
     kernelParams = [
       "amd_pstate=guided"
-      "mem_sleep_default=s2idle"
+      "resume=UUID=ba998885-222e-4dd5-963a-895933322128"
     ];
+    resumeDevice = "/dev/disk/by-uuid/ba998885-222e-4dd5-963a-895933322128";
     loader = {
       systemd-boot.enable = lib.mkDefault true;
       efi.canTouchEfiVariables = lib.mkDefault true;
@@ -32,60 +33,13 @@
     };
   };
 
-  # Sleep/suspend configuration
+  # Use hibernate instead of suspend (Beelink SER9 has broken s2idle firmware)
   systemd.sleep.extraConfig = ''
     AllowSuspend=yes
     AllowHibernation=yes
     AllowHybridSleep=yes
-    SuspendState=freeze
-  '';
-
-  # Disable wakeup sources to prevent immediate wake from sleep
-  services.udev.extraRules = ''
-    # Disable wakeup on ALL USB devices and controllers
-    ACTION=="add", SUBSYSTEM=="usb", ATTR{power/wakeup}="disabled"
-    ACTION=="add", SUBSYSTEM=="pci", DRIVER=="xhci_hcd", ATTR{power/wakeup}="disabled"
-    # Specifically disable wakeup on Intel AX200 Bluetooth
-    ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="8087", ATTR{idProduct}=="0029", ATTR{power/wakeup}="disabled"
-    # Disable wakeup on network interfaces
-    ACTION=="add", SUBSYSTEM=="net", KERNEL=="enp*", RUN+="${pkgs.bash}/bin/bash -c 'echo disabled > /sys/class/net/%k/device/power/wakeup'"
-  '';
-
-  # Disable spurious GPE ACPI wakeups (common AMD Ryzen issue)
-  systemd.services.disable-gpe-wakeup = {
-    description = "Disable spurious GPE ACPI wakeups";
-    wantedBy = ["multi-user.target"];
-    path = [pkgs.gawk pkgs.gnugrep];
-    serviceConfig.Type = "oneshot";
-    script = ''
-      for gpe in /sys/firmware/acpi/interrupts/gpe*; do
-        echo "disable" > "$gpe" 2>/dev/null || true
-      done
-      # Disable ACPI wakeup devices that cause spurious wakes
-      if [ -f /proc/acpi/wakeup ]; then
-        for dev in GPP0 GPP1 GPP3 GPP5 GPP7 NHI0 NHI1; do
-          status=$(grep "^$dev" /proc/acpi/wakeup 2>/dev/null | awk '{print $3}')
-          if [ "$status" = "*enabled" ]; then
-            echo "$dev" > /proc/acpi/wakeup
-          fi
-        done
-        # Ensure power button wake stays enabled
-        for dev in PWRB PWBN; do
-          status=$(grep "^$dev" /proc/acpi/wakeup 2>/dev/null | awk '{print $3}')
-          if [ "$status" = "*disabled" ]; then
-            echo "$dev" > /proc/acpi/wakeup
-          fi
-        done
-      fi
-    '';
-  };
-
-  # Unload bluetooth driver before suspend to prevent wake, reload after resume
-  powerManagement.powerDownCommands = ''
-    ${pkgs.kmod}/bin/modprobe -r btusb
-  '';
-  powerManagement.resumeCommands = ''
-    ${pkgs.kmod}/bin/modprobe btusb
+    SuspendState=disk
+    HibernateMode=shutdown
   '';
 
   # Restart NetworkManager after resume to restore connectivity
