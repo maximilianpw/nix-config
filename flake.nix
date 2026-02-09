@@ -27,7 +27,7 @@
     nixos-wsl.url = "github:nix-community/NixOS-WSL";
     nixos-wsl.inputs.nixpkgs.follows = "nixpkgs";
 
-    claude-code.url = "github:ryoppippi/claude-code-overlay";
+    llm-agents.url = "github:numtide/llm-agents.nix";
   };
 
   outputs = inputs @ {
@@ -42,9 +42,13 @@
     # Overlay to pull select packages from nixpkgs-unstable and add custom packages
     overlays = [
       fenix.overlays.default
-      (final: prev: {
-        claude-code = inputs.claude-code.packages.${prev.stdenv.hostPlatform.system}.claude;
-        claude-code-minimal = inputs.claude-code.packages.${prev.stdenv.hostPlatform.system}.claude-minimal;
+      (final: prev: let
+        llm = inputs.llm-agents.packages.${prev.stdenv.hostPlatform.system};
+      in {
+        claude-code = llm.claude-code;
+        codex = llm.codex;
+        opencode = llm.opencode;
+        gemini-cli = llm.gemini-cli;
       })
       (final: prev: {
         jujutsu = inputs.jujutsu.packages.${final.stdenv.hostPlatform.system}.jujutsu;
@@ -57,9 +61,6 @@
       in {
         inherit unstable;
         gh = unstable.gh;
-        codex = unstable.codex;
-        opencode = unstable.opencode;
-        gemini-cli = unstable.gemini-cli;
         nushell = unstable.nushell;
         tmuxinator = unstable.tmuxinator;
         helium = final.callPackage ./packages/helium.nix {};
