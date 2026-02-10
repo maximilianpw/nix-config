@@ -65,7 +65,7 @@
   # account remains max-vev. This indirection is handled via userDir in mksystem.nix.
   users.users.max-vev = {
     home = "/Users/max-vev";
-    shell = pkgs.fish;
+    shell = pkgs.nushell;
   };
 
   programs.fish.enable = true;

@@ -10,7 +10,6 @@
     pkgs.fzf
     pkgs.ripgrep
     pkgs.fd
-    pkgs.zoxide
     pkgs.yazi
 
     # Git tools
@@ -18,9 +17,6 @@
     pkgs.gh
     pkgs.lazygit
     pkgs.lazydocker
-
-    # Shell & prompt
-    pkgs.starship
 
     # System utilities
     pkgs.fastfetch
