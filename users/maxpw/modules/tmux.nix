@@ -52,13 +52,16 @@
       {
         plugin = continuum;
         extraConfig = ''
-          set -g @continuum-restore 'on'
+          set -g @continuum-restore 'off'
           set -g @continuum-save-interval '10'
         '';
       }
     ];
 
     extraConfig = ''
+      # Override default-command set by tmux-sensible (which uses reattach-to-user-namespace with zsh)
+      set -g default-command "${pkgs.fish}/bin/fish"
+
       # True color and undercurl support
       set -as terminal-features ",xterm-256color:RGB"
       set -as terminal-overrides ',*:Smulx=\E[4::%p1%dm'

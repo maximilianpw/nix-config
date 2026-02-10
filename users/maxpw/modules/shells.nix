@@ -83,7 +83,7 @@ in {
 
   programs.nushell = {
     enable = true;
-    shellAliases = builtins.removeAttrs shellAliases ["jtp"];
+    shellAliases = builtins.removeAttrs shellAliases ["jtp" "ls"];
     configFile.source = ../config.nu;
   };
 
@@ -98,6 +98,11 @@ in {
       share = true;
     };
     completionInit = "autoload -Uz compinit && compinit -C -i";
+  };
+
+  programs.carapace = {
+    enable = true;
+    enableNushellIntegration = true;
   };
 
   programs.zoxide = {
