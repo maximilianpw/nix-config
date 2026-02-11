@@ -7,15 +7,6 @@ $env.config.buffer_editor = "nvim"
 $env.config.show_banner = false
 $env.config.highlight_resolved_externals = true
 
-# Direnv hook (merge into existing config, don't replace)
-$env.config.hooks.pre_prompt = ($env.config.hooks.pre_prompt? | default [] | append { ||
-  if (which direnv | is-empty) { return }
-  direnv export json | from json | default {} | load-env
-  if 'ENV_CONVERSIONS' in $env and 'PATH' in $env.ENV_CONVERSIONS {
-    $env.PATH = do $env.ENV_CONVERSIONS.PATH.from_string $env.PATH
-  }
-})
-
 #-------------------------------------------------------------------------------
 # Functions
 #-------------------------------------------------------------------------------
@@ -29,6 +20,11 @@ def gitprep [message: string] {
   git push
 }
 
+def jtp [] {
+  jj tug
+  jj git push
+}
+
 def lsg [] {
   ls | sort-by type name -i | grid -c | str trim
 }
@@ -39,16 +35,6 @@ alias ll = lsg
 # Modules & Integrations
 #-------------------------------------------------------------------------------
 use std/dirs
-
-# Starship (only generate if missing)
-let starship_path = ($nu.data-dir | path join "vendor/autoload/starship.nu")
-if not ($starship_path | path exists) {
-  mkdir ($starship_path | path dirname)
-  starship init nu | save -f $starship_path
-}
-
-# Zoxide
-source ~/.zoxide.nu
 
 #-------------------------------------------------------------------------------
 # Homebrew (macOS)
@@ -61,8 +47,8 @@ if ('/opt/homebrew' | path type) == 'dir' {
     '/opt/homebrew/bin'
     '/opt/homebrew/sbin'
   ]
-  $env.MANPATH = $env.MANPATH? | prepend '/opt/homebrew/share/man'
-  $env.INFOPATH = $env.INFOPATH? | prepend '/opt/homebrew/share/info'
+  $env.MANPATH = $"/opt/homebrew/share/man:($env.MANPATH? | default '')"
+  $env.INFOPATH = $"/opt/homebrew/share/info:($env.INFOPATH? | default '')"
 }
 
 #-------------------------------------------------------------------------------

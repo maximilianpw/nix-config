@@ -80,7 +80,7 @@
     description = lib.mkDefault "Maximilian PINDER-WHITE";
     extraGroups = ["networkmanager" "wheel" "seat" "input" "video"];
     home = "/home/maxpw";
-    shell = pkgs.fish;
+    shell = pkgs.nushell;
     # Password is managed via sops-nix (see secrets/README.md)
     hashedPasswordFile = config.sops.secrets.maxpw-password.path;
   };

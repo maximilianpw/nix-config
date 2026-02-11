@@ -1,4 +1,4 @@
-# Shell configurations - fish (primary), nushell, bash/zsh (compatibility)
+# Shell configurations - nushell (primary), fish, bash/zsh (compatibility)
 {
   pkgs,
   lib,
@@ -30,7 +30,6 @@
   '';
 
   shellAliases = {
-    z = "cd";
     ls = "eza";
 
     ga = "git add";
@@ -84,7 +83,7 @@ in {
 
   programs.nushell = {
     enable = true;
-    shellAliases = shellAliases;
+    shellAliases = builtins.removeAttrs shellAliases ["jtp" "ls"];
     configFile.source = ../config.nu;
   };
 
@@ -99,6 +98,20 @@ in {
       share = true;
     };
     completionInit = "autoload -Uz compinit && compinit -C -i";
+  };
+
+  programs.carapace = {
+    enable = true;
+    enableNushellIntegration = true;
+  };
+
+  programs.zoxide = {
+    enable = true;
+    options = ["--cmd cd"];
+  };
+
+  programs.starship = {
+    enable = true;
   };
 
   programs.fish = {
