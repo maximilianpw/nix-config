@@ -42,14 +42,14 @@
     HibernateMode=shutdown
   '';
 
-  # Restart NetworkManager after resume to restore connectivity
+  # Restore networking and USB audio after hibernate resume
   systemd.services.network-resume = {
-    description = "Restart NetworkManager after suspend";
+    description = "Restore services after hibernate";
     wantedBy = ["suspend.target" "hibernate.target" "hybrid-sleep.target"];
     after = ["systemd-suspend.service" "systemd-hibernate.service" "systemd-hybrid-sleep.service"];
     serviceConfig = {
       Type = "oneshot";
-      ExecStart = "${pkgs.bash}/bin/bash -c '${pkgs.systemd}/bin/systemctl restart NetworkManager && ${pkgs.systemd}/bin/systemctl restart mullvad-daemon'";
+      ExecStart = "${pkgs.bash}/bin/bash -c '${pkgs.kmod}/bin/modprobe -r snd_usb_audio && ${pkgs.kmod}/bin/modprobe snd_usb_audio && ${pkgs.systemd}/bin/systemctl restart NetworkManager && ${pkgs.systemd}/bin/systemctl restart mullvad-daemon'";
     };
   };
 
