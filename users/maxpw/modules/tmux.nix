@@ -1,7 +1,7 @@
 {pkgs, ...}: {
   programs.tmux = {
     enable = true;
-    shell = "${pkgs.fish}/bin/fish";
+    shell = "${pkgs.nushell}/bin/nu";
     terminal = "tmux-256color";
     prefix = "C-Space";
     baseIndex = 1;
@@ -42,12 +42,6 @@
         '';
       }
       {
-        plugin = tmux-which-key;
-        extraConfig = ''
-          set -g @tmux-which-key-xdg-enable 1
-        '';
-      }
-      {
         plugin = resurrect;
         extraConfig = ''
           set -g @resurrect-strategy-nvim 'session'
@@ -65,7 +59,7 @@
 
     extraConfig = ''
       # Override default-command set by tmux-sensible (which uses reattach-to-user-namespace with zsh)
-      set -g default-command "${pkgs.fish}/bin/fish"
+      set -g default-command "${pkgs.nushell}/bin/nu"
 
       # True color and undercurl support
       set -as terminal-features ",xterm-256color:RGB"
@@ -105,7 +99,6 @@
       bind -T copy-mode-vi v send-keys -X begin-selection
       bind -T copy-mode-vi C-v send-keys -X rectangle-toggle
 
-      bind p display-popup -E -w 80% -h 80% -d "#{pane_current_path}"
       bind g display-popup -E -w 90% -h 90% -d "#{pane_current_path}" lazygit
       bind G display-popup -E -w 90% -h 90% -d "#{pane_current_path}" jjui
       # Session picker now handled by tmux-sessionx (prefix + o)
@@ -138,6 +131,7 @@
       set -g pane-active-border-style "fg=#7aa2f7"
 
       set -g message-style "fg=#7aa2f7,bg=#1a1b26"
+
     '';
   };
 
