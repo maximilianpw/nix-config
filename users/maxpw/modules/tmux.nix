@@ -41,7 +41,12 @@
           set -g @sessionx-preview-enabled 'true'
         '';
       }
-      tmux-which-key
+      {
+        plugin = tmux-which-key;
+        extraConfig = ''
+          set -g @tmux-which-key-xdg-enable 1
+        '';
+      }
       {
         plugin = resurrect;
         extraConfig = ''

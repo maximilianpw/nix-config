@@ -45,7 +45,7 @@
       "mullvad-vpn"
       "termius"
       "obsidian"
-      "qobuz"
+      "tidal"
     ];
 
     masApps = {
