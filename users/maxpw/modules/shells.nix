@@ -43,7 +43,7 @@
     gl = "git prettylog";
     gp = "git push";
     v = "nvim";
-    c = "claude --dangerously-skip-permissions";
+    c = "DISABLE_ZOXIDE=1 claude --dangerously-skip-permissions";
 
     jd = "jj desc";
     jc = "jj commit";
@@ -79,6 +79,11 @@ in {
   programs.bash = {
     enable = true;
     shellAliases = shellAliases;
+    initExtra = ''
+      if [ -z "$DISABLE_ZOXIDE" ]; then
+        eval "$(zoxide init --cmd cd bash)"
+      fi
+    '';
   };
 
   programs.nushell = {
@@ -98,6 +103,11 @@ in {
       share = true;
     };
     completionInit = "autoload -Uz compinit && compinit -C -i";
+    initExtra = ''
+      if [ -z "$DISABLE_ZOXIDE" ]; then
+        eval "$(zoxide init --cmd cd zsh)"
+      fi
+    '';
   };
 
   programs.carapace = {
@@ -107,6 +117,8 @@ in {
 
   programs.zoxide = {
     enable = true;
+    enableZshIntegration = false;
+    enableBashIntegration = false;
     options = ["--cmd cd"];
   };
 
