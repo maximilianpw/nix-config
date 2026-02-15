@@ -88,7 +88,7 @@ in {
 
   programs.nushell = {
     enable = true;
-    shellAliases = builtins.removeAttrs shellAliases ["jtp" "ls"];
+    shellAliases = builtins.removeAttrs shellAliases ["jtp" "ls" "c"];
     configFile.source = ../config.nu;
   };
 
