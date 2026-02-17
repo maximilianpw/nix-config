@@ -14,8 +14,6 @@
     hyprland.url = "github:hyprwm/Hyprland";
     jujutsu.url = "github:jj-vcs/jj";
 
-    neovim-nightly-overlay.url = "github:nix-community/neovim-nightly-overlay";
-
     fenix = {
       url = "github:nix-community/fenix";
       inputs.nixpkgs.follows = "nixpkgs";

@@ -63,7 +63,7 @@ in {
   programs.neovim = lib.mkMerge [
     {
       enable = true;
-      package = inputs.neovim-nightly-overlay.packages.${pkgs.stdenv.hostPlatform.system}.default;
+      package = pkgs.neovim-unwrapped;
       defaultEditor = true;
       viAlias = true;
       vimAlias = true;
