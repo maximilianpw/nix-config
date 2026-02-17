@@ -23,27 +23,10 @@ rebuild: ## Rebuild system configuration (NixOS/Darwin)
 	@echo "Starting system rebuild..."
 	@$(SCRIPT_DIR)/nixos-rebuild.sh
 
-check: ## Validate flake configuration
-	@echo "Checking flake configuration..."
-	@nix flake check
-
 update: ## Update flake inputs to latest versions
 	@echo "Updating flake inputs..."
 	@nix flake update
 	@echo "Done! Run 'make rebuild' to apply updates."
-
-diff: ## Show uncommitted changes in Nix files
-	@echo "Changes in Nix files:"
-	@git diff --color=always -U2 '*.nix' || echo "No changes detected"
-
-gc: ## Run garbage collection (clean old generations)
-	@echo "Running aggressive garbage collection..."
-	@if [ "$$(uname -s)" = "Darwin" ]; then \
-		nix-collect-garbage -d; \
-	else \
-		sudo nix-collect-garbage -d; \
-	fi
-	@echo "Aggressive garbage collection complete!"
 
 
 build: ## Build system configuration without switching
