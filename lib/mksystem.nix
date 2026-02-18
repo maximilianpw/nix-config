@@ -58,6 +58,7 @@ in
           isDarwin = darwin;
           isWSL = wsl;
           inputs = inputs;
+          hostname = name;
         };
       }
       {

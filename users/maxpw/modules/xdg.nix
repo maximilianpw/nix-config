@@ -2,6 +2,7 @@
 {
   isDarwin,
   isWSL ? false,
+  hostname,
   ...
 }: {
   pkgs,
@@ -16,6 +17,48 @@
       name = "${prefix}/${name}";
       value = {source = "${dir}/${name}";};
     }) (builtins.readDir dir);
+
+  # Per-host Hyprland overrides
+  hasLockScreen = hostname != "main-pc";
+
+  hypridleConf =
+    if hasLockScreen
+    then ''
+      listener {
+        timeout = 600         # 10 min
+        on-timeout = hyprlock
+      }
+
+      listener {
+        timeout = 900         # 15 min
+        on-timeout = hyprctl dispatch dpms off
+        on-resume = hyprctl dispatch dpms on
+      }
+
+      listener {
+        timeout = 3600        # 1 hour
+        on-timeout = systemctl hibernate
+      }
+    ''
+    else ''
+      listener {
+        timeout = 900         # 15 min
+        on-timeout = hyprctl dispatch dpms off
+        on-resume = hyprctl dispatch dpms on
+      }
+
+      listener {
+        timeout = 3600        # 1 hour
+        on-timeout = systemctl hibernate
+      }
+    '';
+
+  hostConf =
+    if hasLockScreen
+    then ''
+      bind = $mod, ESCAPE, exec, hyprlock
+    ''
+    else "";
 in {
   xdg.enable = true;
 
@@ -53,6 +96,10 @@ in {
             (builtins.readFile ../wlogout/style.css);
         }
         // (symlinkDir ../hyprland "hypr")
+        // {
+          "hypr/hypridle.conf".text = hypridleConf;
+          "hypr/host.conf".text = hostConf;
+        }
       else {}
     );
 }

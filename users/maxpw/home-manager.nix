@@ -2,6 +2,7 @@
   isDarwin,
   isWSL ? false,
   inputs,
+  hostname,
   ...
 }: {
   config,
@@ -26,13 +27,13 @@ in {
     ./modules/git.nix
     ./modules/shells.nix
     (import ./modules/gpg.nix {inherit isDarwin isWSL;})
-    (import ./modules/xdg.nix {inherit isDarwin isWSL;})
+    (import ./modules/xdg.nix {inherit isDarwin isWSL hostname;})
     (import ./modules/linux-services.nix {inherit isWSL;})
     ./modules/tmux.nix
     ./modules/packages/dev-tools.nix
     ./modules/packages/terminal-tools.nix
     (import ./modules/packages/linux-desktop.nix {
-      inherit pkgs lib isLinux;
+      inherit pkgs lib isLinux hostname;
     })
   ];
 

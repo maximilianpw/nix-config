@@ -2,9 +2,11 @@
   pkgs,
   lib,
   isLinux,
+  hostname,
   ...
 }: {
-  home.packages = lib.optionals isLinux [
+  home.packages =
+    lib.optionals isLinux [
     # App launcher
     pkgs.rofi
 
@@ -17,9 +19,8 @@
     pkgs.cliphist
     pkgs.grim
     pkgs.slurp
-    pkgs.hyprlock
-    pkgs.hypridle
     pkgs.hyprpaper
+    pkgs.hypridle
     pkgs.swaynotificationcenter
     pkgs.gammastep
     pkgs.wlogout
@@ -40,5 +41,8 @@
     pkgs.playerctl
     pkgs.qbittorrent
     pkgs.cava
-  ];
+  ]
+    ++ lib.optionals (isLinux && hostname != "main-pc") [
+      pkgs.hyprlock
+    ];
 }
