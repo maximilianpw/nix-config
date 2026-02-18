@@ -26,7 +26,7 @@ def jtp [] {
 }
 
 def c [...args: string] {
-  DISABLE_ZOXIDE=1 claude --dangerously-skip-permissions ...$args
+  with-env {DISABLE_ZOXIDE: "1"} { claude --dangerously-skip-permissions ...$args }
 }
 
 def lsg [] {
