@@ -47,6 +47,7 @@
         codex = llm.codex;
         opencode = llm.opencode;
         gemini-cli = llm.gemini-cli;
+        amp-cli = llm.amp;
       })
       (final: prev: {
         jujutsu = inputs.jujutsu.packages.${final.stdenv.hostPlatform.system}.jujutsu;
