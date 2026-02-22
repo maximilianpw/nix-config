@@ -25,7 +25,7 @@ def jtp [] {
   jj git push
 }
 
-def c [...args: string] {
+def --wrapped c [...args: string] {
   with-env {DISABLE_ZOXIDE: "1"} { claude --dangerously-skip-permissions ...$args }
 }
 
