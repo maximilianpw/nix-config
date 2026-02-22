@@ -65,6 +65,7 @@
     tma = "tmux attach";
     tml = "tmux list-sessions";
     tmka = "tmux kill-sessions -a";
+    tms = "tmuxinator start";
 
     # Nix system management aliases
     nr = "make -C ~/nix-config rebuild";
