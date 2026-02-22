@@ -12,7 +12,6 @@
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
 
     hyprland.url = "github:hyprwm/Hyprland";
-    jujutsu.url = "github:jj-vcs/jj";
 
     fenix = {
       url = "github:nix-community/fenix";
@@ -49,9 +48,6 @@
         gemini-cli = llm.gemini-cli;
         amp-cli = llm.amp;
       })
-      (final: prev: {
-        jujutsu = inputs.jujutsu.packages.${final.stdenv.hostPlatform.system}.jujutsu;
-      })
       (final: prev: let
         unstable = import inputs.nixpkgs-unstable {
           inherit (prev.stdenv.hostPlatform) system;
@@ -62,6 +58,7 @@
         gh = unstable.gh;
         nushell = unstable.nushell;
         tmuxinator = unstable.tmuxinator;
+        jujutsu = unstable.jujutsu;
         helium = final.callPackage ./packages/helium.nix {};
       })
     ];
