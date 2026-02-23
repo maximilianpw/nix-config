@@ -10,8 +10,9 @@
       # App launcher
       pkgs.rofi
 
-      # Terminal emulator
+      # Terminal emulators
       pkgs.ghostty
+      pkgs.kitty
 
       # Wayland desktop essentials
       pkgs.waybar

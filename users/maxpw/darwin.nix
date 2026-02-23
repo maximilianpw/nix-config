@@ -15,6 +15,7 @@
       "zsh"
       "jsonlint"
       "gnupg"
+      "pinentry-mac"
     ];
 
     casks = [
@@ -32,6 +33,7 @@
       "visual-studio-code"
       "proton-mail"
       "ghostty"
+      "kitty"
       "webstorm"
       "aws-vpn-client"
       "orbstack"

@@ -23,4 +23,13 @@ in {
     defaultCacheTtl = 31536000;
     maxCacheTtl = 31536000;
   };
+
+  # macOS: use pinentry-mac for proper clipboard/paste support
+  home.file.".gnupg/gpg-agent.conf" = lib.mkIf isDarwin {
+    text = ''
+      pinentry-program /opt/homebrew/bin/pinentry-mac
+      default-cache-ttl 31536000
+      max-cache-ttl 31536000
+    '';
+  };
 }

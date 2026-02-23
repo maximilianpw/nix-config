@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "Bash(nix flake check:*)",
+      "Bash(nix build:*)",
+      "Bash(alejandra:*)",
+      "Bash(make -C ~/nix-config:*)",
+      "Bash(git:*)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "command": "if [[ \"$CLAUDE_TOOL_INPUT_FILE_PATH\" == *.nix ]]; then alejandra -q \"$CLAUDE_TOOL_INPUT_FILE_PATH\" 2>/dev/null; fi"
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "command": "case \"$CLAUDE_TOOL_INPUT_FILE_PATH\" in */secrets/secrets.yaml|*/flake.lock) echo 'BLOCK: This file should not be edited directly. Use sops for secrets or nix flake update for the lock file.' && exit 1;; esac"
+      }
+    ]
+  }
+}
