@@ -12,6 +12,7 @@ A unified NixOS + nix-darwin flake managing three systems from a single codebase
 ## Commands
 
 ```bash
+make bootstrap   # Bootstrap a new system (initial setup)
 make rebuild     # Apply configuration (auto-detects platform, formats with alejandra, commits, runs GC)
 make build       # Build without switching
 make update      # Update flake inputs
@@ -20,6 +21,8 @@ make generations # List system generations
 make rollback    # Rollback to previous generation
 make info        # Show system information
 ```
+
+To validate Nix syntax without building: `nix flake check --no-build`
 
 The Nix formatter is **alejandra** (run automatically during rebuild). The rebuild script (`scripts/nixos-rebuild.sh`) expects the repo cloned at `~/nix-config`.
 
@@ -60,7 +63,7 @@ users/maxpw/
   darwin.nix        # macOS user: Homebrew casks/brews, Mac App Store apps, fonts
   wsl.nix           # WSL user: minimal config (nix-ld, fish, no desktop)
   modules/
-    shells.nix      # Nushell (primary), Fish, Bash, Zsh; all shell aliases defined here
+    shells.nix      # Nushell, Fish, Bash, Zsh; all shell aliases defined here
     git.nix         # Git + Jujutsu (jj) config
     fonts.nix       # Nerd fonts + system fonts with fontconfig
     xdg.nix         # XDG config file management (Hyprland, Ghostty, waybar, kitty, yazi, etc.)
@@ -96,6 +99,13 @@ Dotfiles for desktop apps (Hyprland, waybar, rofi, ghostty, kitty, yazi, etc.) l
 - **Adding packages**: User packages go in `users/maxpw/modules/packages/` split by category. System packages go in the relevant machine file.
 - **Platform conditionals**: OS-specific config lives in `nixos.nix`/`darwin.nix`/`wsl.nix` per user, not behind `if` statements in shared modules. For Home Manager modules, use `isDarwin`/`isWSL`/`hostname` arguments passed through from `home-manager.nix`.
 - **New modules**: Import them in the appropriate aggregator (`home-manager.nix`, `nixos.nix`, or `darwin.nix`). The `mksystem.nix` builder handles wiring.
-- **Nixpkgs channels**: Stable is `nixpkgs` (25.11). For bleeding-edge packages, add them to the unstable overlay in `flake.nix`.
+- **Nixpkgs channels**: Stable is `nixpkgs` (25.11). For bleeding-edge packages, add them to the unstable overlay in `flake.nix`. To add a new unstable package: in the third overlay in `flake.nix`, add `<pkg> = unstable.<pkg>;` alongside the existing entries (gh, nushell, etc.), then reference `pkgs.<pkg>` in the relevant module.
 - **Shell aliases**: All aliases are centralized in `users/maxpw/modules/shells.nix`. The `nr` alias runs `make -C ~/nix-config rebuild`.
 - **macOS GUI apps**: Managed via Homebrew casks in `darwin.nix`, not Nix packages. Homebrew `onActivation.cleanup = "zap"` removes anything not declared.
+
+## Gotchas
+
+- **Never bump `stateVersion`**: `system.stateVersion` and `home.stateVersion` must stay at their initial install values. They control state migration, not the package set version.
+- **Hyprland comes from upstream flake input**, not nixpkgs. Check the `hyprland` input in `flake.nix` when debugging Hyprland issues.
+- **macOS Nix daemon**: Managed by the Determinate installer. `nix.enable = false` in `macbook-pro-m1.nix` — don't set it to `true`.
+- **Rebuild auto-commits**: `make rebuild` stages all changes, commits with a generation message, and runs GC. Don't make unrelated uncommitted changes before rebuilding.
