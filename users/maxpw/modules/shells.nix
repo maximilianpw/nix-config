@@ -1,4 +1,4 @@
-# Shell configurations - nushell (primary), fish, bash/zsh (compatibility)
+# Shell configurations - fish (primary), nushell, bash/zsh (compatibility)
 {
   pkgs,
   lib,
@@ -113,7 +113,7 @@ in {
 
   programs.carapace = {
     enable = true;
-    enableNushellIntegration = true;
+    enableFishIntegration = true;
   };
 
   programs.zoxide = {

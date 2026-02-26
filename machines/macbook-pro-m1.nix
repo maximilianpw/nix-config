@@ -50,7 +50,7 @@
   # configuring the rc correctly with nix-darwin paths.
   programs.zsh.enable = true;
 
-  environment.shells = [pkgs.bashInteractive pkgs.zsh];
+  environment.shells = [pkgs.bashInteractive pkgs.zsh pkgs.fish];
   environment.systemPackages = [
     pkgs.cachix
   ];
