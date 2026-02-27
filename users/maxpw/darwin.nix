@@ -52,7 +52,6 @@
 
     masApps = {
       "Poolsuite FM" = 1514817810;
-      "XCode" = 497799835;
     };
 
     onActivation = {

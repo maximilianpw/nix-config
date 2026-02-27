@@ -36,13 +36,13 @@ The core abstraction. Called as `mkSystem "<hostname>" { system, user, userDir?,
 - Loads `users/<userDir>/nixos.nix`, `darwin.nix`, or `wsl.nix` based on platform flags
 - Loads `users/<userDir>/home-manager.nix` for cross-platform Home Manager config
 - Wires overlays, sops-nix (NixOS only), NixOS-WSL (when `wsl = true`)
-- Injects `currentSystem*`, `isWSL`, and `inputs` args into all modules
+- Injects `currentSystem`, `currentSystemName`, `currentSystemUser`, `currentSystemUserDir`, `isWSL`, and `inputs` args into all modules
 
 The `userDir` parameter allows the macOS username (`max-vev`) to differ from the repo directory (`maxpw`), so both systems share `users/maxpw/`.
 
 ### How Home Manager modules receive platform info
 
-`mksystem.nix` imports `home-manager.nix` by calling it as a function with `{ isDarwin, isWSL, inputs, hostname }`. Modules like `xdg.nix`, `gpg.nix`, and `linux-desktop.nix` receive these via their own function arguments (curried imports in `home-manager.nix`). The pattern is:
+`mksystem.nix` imports `home-manager.nix` by calling it as a function with `{ isDarwin, isWSL, inputs, hostname }`. Modules like `xdg.nix`, `gpg.nix`, `linux-desktop.nix`, and `linux-services.nix` receive these via their own function arguments (curried imports in `home-manager.nix`). The pattern is:
 
 ```nix
 # in home-manager.nix imports list:
@@ -58,8 +58,8 @@ modules/
   desktop/          # Hyprland + greetd (Linux only)
   services/         # Borg backup with retention policy
 users/maxpw/
-  home-manager.nix  # Cross-platform entry: imports all user modules, configures Neovim + LSPs
-  nixos.nix         # NixOS user: PipeWire, networking, nix-ld, locale, Wayland, Hyprland
+  home-manager.nix  # Cross-platform entry: imports all user modules
+  nixos.nix         # NixOS user: PipeWire, networking, nix-ld, locale, Wayland, user account, imports Hyprland module
   darwin.nix        # macOS user: Homebrew casks/brews, Mac App Store apps, fonts
   wsl.nix           # WSL user: minimal config (nix-ld, fish, no desktop)
   modules/
@@ -67,6 +67,7 @@ users/maxpw/
     git.nix         # Git + Jujutsu (jj) config
     fonts.nix       # Nerd fonts + system fonts with fontconfig
     xdg.nix         # XDG config file management (Hyprland, Ghostty, waybar, kitty, yazi, etc.)
+    neovim.nix      # Neovim config + LSP packages (called as function from home-manager.nix)
     gpg.nix         # GPG agent (Linux only)
     tmux.nix        # Tmux with plugins
     linux-services.nix  # Polkit agent, cursor settings
@@ -108,4 +109,4 @@ Dotfiles for desktop apps (Hyprland, waybar, rofi, ghostty, kitty, yazi, etc.) l
 - **Never bump `stateVersion`**: `system.stateVersion` and `home.stateVersion` must stay at their initial install values. They control state migration, not the package set version.
 - **Hyprland comes from upstream flake input**, not nixpkgs. Check the `hyprland` input in `flake.nix` when debugging Hyprland issues.
 - **macOS Nix daemon**: Managed by the Determinate installer. `nix.enable = false` in `macbook-pro-m1.nix` — don't set it to `true`.
-- **Rebuild auto-commits**: `make rebuild` stages all changes, commits with a generation message, and runs GC. Don't make unrelated uncommitted changes before rebuilding.
+- **Rebuild auto-commits**: `make rebuild` stages tracked-file changes, commits with a generation message, and runs GC. Untracked new files are not auto-staged. Don't make unrelated uncommitted changes before rebuilding.
