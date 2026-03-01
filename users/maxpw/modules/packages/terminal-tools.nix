@@ -38,6 +38,7 @@
 
     # Security & secrets
     pkgs._1password-cli
+    pkgs.bitwarden-cli
     pkgs.ngrok
 
     # Tmux tools

@@ -35,6 +35,7 @@
       pkgs.mullvad-vpn
       pkgs.obsidian
       pkgs._1password-gui
+      pkgs.bitwarden-desktop
 
       # System utilities
       pkgs.pavucontrol

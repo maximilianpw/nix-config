@@ -21,6 +21,7 @@
     casks = [
       "colemak-dh"
       "1password"
+      "bitwarden"
       "rectangle"
       "figma"
       "hiddenbar"
