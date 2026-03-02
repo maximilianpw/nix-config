@@ -61,6 +61,14 @@ in {
     nix-direnv.enable = true;
   };
 
+  programs.ssh = {
+    enable = true;
+    includes = lib.optionals isDarwin ["~/.orbstack/ssh/config"];
+    matchBlocks."*" = {
+      extraOptions.IdentityAgent = "%d/.bitwarden-ssh-agent.sock";
+    };
+  };
+
   programs.neovim = lib.mkMerge [
     {
       enable = true;

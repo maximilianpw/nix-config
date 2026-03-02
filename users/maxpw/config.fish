@@ -6,7 +6,7 @@ if not test -d $HOME/.ssh
     chmod 0700 $HOME/.ssh
 end
 
-set -l bw_agent "$HOME/Library/Group Containers/2BUA8C4S2C.com.bitwarden/t/ssh-agent.sock"
+set -l bw_agent "$HOME/.bitwarden-ssh-agent.sock"
 if test -e "$bw_agent"
     set -gx SSH_AUTH_SOCK "$bw_agent"
 end

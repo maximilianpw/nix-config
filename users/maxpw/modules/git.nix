@@ -15,7 +15,7 @@
   programs.git = {
     enable = true;
     signing = {
-      key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPQbe7mMKNr+11IoIofCKlKR+jEZrKi2IgN/OcL3UuhD";
+      key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOmu6frsv/nqaFGf7ynOwBX743wuhiNhf1pXxHeSIk0o";
       signByDefault = true;
     };
     settings = {
