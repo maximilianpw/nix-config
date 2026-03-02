@@ -15,7 +15,7 @@
   programs.git = {
     enable = true;
     signing = {
-      key = "992CF94F12CF7405147D81FD4AB37B87F45FAC60";
+      key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPQbe7mMKNr+11IoIofCKlKR+jEZrKi2IgN/OcL3UuhD";
       signByDefault = true;
     };
     settings = {
@@ -23,6 +23,7 @@
         name = "Maximilian PINDER-WHITE";
         email = "mpinderwhite@proton.me";
       };
+      gpg.format = "ssh";
       alias = {
         cleanup = "!git branch --merged | grep -E -v '\\*|master|develop' | xargs -n 1 -r git branch -d";
         prettylog = "log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(r) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative";
