@@ -1,7 +1,7 @@
 {pkgs, ...}: {
   home.packages = [
     # Programming languages & runtimes
-    pkgs.nodejs_24
+    pkgs.nodejs_22
     pkgs.pnpm
     pkgs.bun
     pkgs.python3
