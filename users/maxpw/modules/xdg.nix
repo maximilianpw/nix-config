@@ -24,6 +24,11 @@
   hypridleConf =
     if hasLockScreen
     then ''
+      general {
+        before_sleep_cmd = hyprctl dispatch dpms on
+        after_sleep_cmd = hyprctl dispatch dpms on
+      }
+
       listener {
         timeout = 600         # 10 min
         on-timeout = hyprlock
@@ -41,10 +46,15 @@
       }
     ''
     else ''
+      general {
+        before_sleep_cmd = hyprctl dispatch dpms on
+        after_sleep_cmd = hyprctl dispatch dpms on
+      }
+
       listener {
         timeout = 900         # 15 min
-        on-timeout = hyprctl dispatch dpms off
-        on-resume = hyprctl dispatch dpms on
+        on-timeout = hyprctl keyword monitor ,disable
+        on-resume = hyprctl keyword monitor ,preferred,auto,1.6
       }
 
       listener {

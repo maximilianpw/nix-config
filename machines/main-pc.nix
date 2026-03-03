@@ -49,7 +49,7 @@
     after = ["systemd-suspend.service" "systemd-hibernate.service" "systemd-hybrid-sleep.service"];
     serviceConfig = {
       Type = "oneshot";
-      ExecStart = "${pkgs.bash}/bin/bash -c '${pkgs.kmod}/bin/modprobe -r snd_usb_audio && ${pkgs.kmod}/bin/modprobe snd_usb_audio && ${pkgs.systemd}/bin/systemctl restart NetworkManager && ${pkgs.systemd}/bin/systemctl restart mullvad-daemon'";
+      ExecStart = "${pkgs.bash}/bin/bash -c '${pkgs.kmod}/bin/modprobe -r snd_usb_audio || true && ${pkgs.kmod}/bin/modprobe snd_usb_audio && ${pkgs.systemd}/bin/systemctl restart NetworkManager && ${pkgs.systemd}/bin/systemctl restart mullvad-daemon'";
     };
   };
 
