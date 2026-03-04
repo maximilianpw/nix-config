@@ -104,7 +104,7 @@ in {
       share = true;
     };
     completionInit = "autoload -Uz compinit && compinit -C -i";
-    initExtra = ''
+    initContent = ''
       if [ -z "$DISABLE_ZOXIDE" ]; then
         eval "$(zoxide init --cmd cd zsh)"
       fi

@@ -49,7 +49,6 @@
       "termius"
       "obsidian"
       "tidal"
-      "bitwarden"
     ];
 
     masApps = {

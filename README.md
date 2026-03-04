@@ -21,7 +21,6 @@ Unified NixOS + macOS (nix-darwin) flake with Home Manager, Hyprland/GNOME modul
 │   │   ├── nix-settings.nix # Shared Nix settings (experimental-features, flakes)
 │   │   └── security.nix     # Security defaults (SSH, polkit, rtkit)
 │   └── desktop/
-│       ├── gnome.nix        # GNOME on Wayland via GDM (+extensions, portals)
 │       └── hyprland.nix     # Hyprland from upstream flake (+portals, env)
 ├── packages/
 │   └── helium.nix           # Custom package: Helium floating browser
@@ -38,24 +37,22 @@ Unified NixOS + macOS (nix-darwin) flake with Home Manager, Hyprland/GNOME modul
 │       │   ├── dev-tools.nix      # Development packages (languages, tools)
 │       │   ├── terminal-tools.nix # CLI utilities and terminal tools
 │       │   └── linux-desktop.nix  # Linux GUI apps and Wayland tools
-│       ├── zshrc            # zsh init (zinit + plugins)
 │       ├── config.fish      # fish init (ssh-agent, Homebrew, starship)
 │       ├── config.nu        # nushell init (env, direnv hook, helpers)
 │       ├── ghostty.linux    # Ghostty config (Linux); linked by HM
 │       ├── RectangleConfig.json # Rectangle.app settings (macOS); linked by HM
 │       └── [various configs] # Hyprland, waybar, rofi, etc.
-├── INTEGRATION_SUMMARY.md   # High-level integration notes (may be older)
 ├── nixos-switch.log         # Last rebuild log (script output)
-└── "vscode config.code-profile" # VS Code profile export (settings/extensions)
+└── docs/                    # Supplemental documentation
 ```
 
 ## Flake overview
 
-- Inputs: nixpkgs 25.05, nixpkgs-unstable (select pkgs), home-manager 25.05, nix-darwin 25.05, Hyprland, nix-snapd, NixOS-WSL.
+- Inputs: nixpkgs 25.11, nixpkgs-unstable (select pkgs), home-manager 25.11, nix-darwin 25.11, Hyprland, NixOS-WSL.
 - Overlay: exposes `unstable` and selects newer packages (gh, claude-code, nushell).
 - mkSystem (`lib/mksystem.nix`):
   - Picks nixosSystem or darwinSystem.
-  - Adds nix-snapd on Linux; NixOS-WSL when `wsl = true`.
+  - Adds NixOS-WSL module when `wsl = true`.
   - Integrates Home Manager at `home-manager.users.<user>` using `users/<userDir>/home-manager.nix`.
   - Injects convenience args: `currentSystem*`, `isWSL`, `inputs`.
 - Outputs:
@@ -66,7 +63,7 @@ Unified NixOS + macOS (nix-darwin) flake with Home Manager, Hyprland/GNOME modul
 ## What each file/module does
 
 - lib/mksystem.nix
-  - Chooses NixOS or Darwin system function, wires Home Manager, optional WSL & snapd, passes `currentSystem*` args.
+  - Chooses NixOS or Darwin system function, wires Home Manager and optional WSL, passes `currentSystem*` args.
 
 - machines/macbook-pro-m1.nix (nix-darwin)
   - stateVersion = 6; leaves Nix daemon to Determinate installer (`nix.enable = false`).
@@ -84,7 +81,7 @@ Unified NixOS + macOS (nix-darwin) flake with Home Manager, Hyprland/GNOME modul
   - Imports shared nix-settings module.
 
 - modules/core/nix-settings.nix
-  - Shared Nix configuration: experimental-features (flakes, nix-command), keep-outputs, keep-derivations.
+  - Shared Nix configuration: experimental-features (flakes, nix-command), store optimization, keep-outputs, keep-derivations.
   - Imported by all machines for consistency.
 
 - modules/core/security.nix
@@ -157,15 +154,14 @@ Suggested clone path: `~/nix-config` (the rebuild script assumes this).
 Optional checks
 
 ```bash
-make check            # validate flake
+nix flake check --no-build
 make update           # update inputs
-make dev              # enter dev shell
+nix develop           # enter dev shell
 make help             # show all make targets
 ```
 
 ## Notes
 
-- INTEGRATION_SUMMARY.md describes an older hosts/modules layout; the canonical structure is this README.
 - Hyprland comes from the upstream flake input to ensure recent builds on aarch64.
 - On macOS, Nix is managed by the Determinate installer; nix-darwin’s `nix.enable` is disabled accordingly.
 

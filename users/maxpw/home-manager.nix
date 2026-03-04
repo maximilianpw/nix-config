@@ -30,6 +30,7 @@ in {
     (import ./modules/xdg.nix {inherit isDarwin isWSL hostname;})
     (import ./modules/linux-services.nix {inherit isWSL;})
     ./modules/tmux.nix
+    ./modules/neovim.nix
     ./modules/packages/dev-tools.nix
     ./modules/packages/terminal-tools.nix
     (import ./modules/packages/linux-desktop.nix {
@@ -63,21 +64,11 @@ in {
 
   programs.ssh = {
     enable = true;
+    # Keep SSH defaults explicit as Home Manager changes its implicit defaults.
+    enableDefaultConfig = false;
     includes = lib.optionals isDarwin ["~/.orbstack/ssh/config"];
     matchBlocks."*" = {
       extraOptions.IdentityAgent = "%d/.bitwarden-ssh-agent.sock";
     };
   };
-
-  programs.neovim = lib.mkMerge [
-    {
-      enable = true;
-      package = pkgs.neovim-unwrapped;
-      defaultEditor = true;
-      viAlias = true;
-      vimAlias = true;
-      vimdiffAlias = true;
-      extraPackages = (import ./modules/neovim.nix {inherit config pkgs lib;}).programs.neovim.extraPackages;
-    }
-  ];
 }

@@ -22,9 +22,14 @@ success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
 
 usage() {
     cat << EOF
-Usage: $0
+Usage: $0 [OPTIONS]
 
 Automatically detects username and platform.
+
+Options:
+  --force      Continue even if flake validation fails
+  --commit     Commit repo changes after a successful rebuild
+  -h, --help   Show this help message
 
 Host mapping:
   - max-vev: macbook-pro-m1 (darwin)
@@ -33,6 +38,32 @@ Host mapping:
 On macOS, uses darwin-rebuild. On Linux, uses nixos-rebuild.
 EOF
 }
+
+# Script flags
+FORCE=0
+AUTO_COMMIT=0
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --force)
+            FORCE=1
+            shift
+            ;;
+        --commit)
+            AUTO_COMMIT=1
+            shift
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        *)
+            error "Unknown option: $1"
+            usage
+            exit 1
+            ;;
+    esac
+done
 
 # Username to host mapping (map login -> flake config name)
 declare -A USER_HOST_MAP
@@ -99,8 +130,13 @@ fi
 
 # Validate flake
 info "Validating flake configuration..."
-if ! nix flake check --no-build 2>/dev/null; then
-    warn "Flake validation failed, continuing anyway..."
+if ! nix flake check --no-build; then
+    if [[ "$FORCE" == "1" ]]; then
+        warn "Flake validation failed, continuing because --force was set."
+    else
+        error "Flake validation failed. Re-run with --force to continue anyway."
+        exit 1
+    fi
 fi
 
 # Format Nix files
@@ -158,14 +194,20 @@ fi
 info "Current generation: $CURRENT_GEN"
 
 # Commit changes if in a git repository
-if git rev-parse --git-dir 2>&1; then
-    if ! git diff --quiet HEAD; then
-        info "Committing changes to git..."
-        git add -A
-        git commit -m "NixOS/Darwin rebuild: $HOSTNAME - Generation $CURRENT_GEN" || warn "Git commit failed"
+if [[ "$AUTO_COMMIT" == "1" ]]; then
+    if git rev-parse --git-dir 2>&1; then
+        if ! git diff --quiet HEAD; then
+            info "Committing changes to git..."
+            git add -u
+            git commit -m "NixOS/Darwin rebuild: $HOSTNAME - Generation $CURRENT_GEN" || warn "Git commit failed"
+        else
+            info "No changes to commit"
+        fi
     else
-        info "No changes to commit"
+        warn "Not in a git repository; skipping commit"
     fi
+else
+    info "Skipping git commit (use --commit to enable)"
 fi
 
 # Clean up old generations (keep last 10)

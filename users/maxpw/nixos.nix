@@ -9,6 +9,7 @@
     ../../modules/core/security.nix
     ../../modules/core/sops.nix
     ../../modules/desktop/hyprland.nix
+    ./modules/linux-common.nix
   ];
   # --- Base (yours) ---
   networking.networkmanager = {
@@ -18,21 +19,6 @@
       pkgs.networkmanager-openvpn
     ];
   };
-  # Timezone (France)
-  time.timeZone = "Europe/Paris";
-  i18n.defaultLocale = lib.mkDefault "en_US.UTF-8";
-  i18n.extraLocaleSettings = lib.mkDefault {
-    LC_ADDRESS = "en_US.UTF-8";
-    LC_IDENTIFICATION = "en_US.UTF-8";
-    LC_MEASUREMENT = "en_US.UTF-8";
-    LC_MONETARY = "en_US.UTF-8";
-    LC_NAME = "en_US.UTF-8";
-    LC_NUMERIC = "en_US.UTF-8";
-    LC_PAPER = "en_US.UTF-8";
-    LC_TELEPHONE = "en_US.UTF-8";
-    LC_TIME = "en_US.UTF-8";
-  };
-
   # Default to disabling X if no desktop module overrides; GNOME module will set true.
   services.xserver.enable = lib.mkDefault false; # no X11 unless desktop enables it
   # Provide XKB layout info (used by Wayland compositors like Hyprland)
@@ -43,22 +29,6 @@
   services.printing.enable = false;
 
   hardware.graphics.enable = true;
-
-  # to download binaries that usually download to /bin
-  programs.nix-ld = {
-    enable = true;
-    libraries = [
-      # Common libraries that bun/node tools often need
-      pkgs.stdenv.cc.cc
-      pkgs.zlib
-      pkgs.fuse3
-      pkgs.icu
-      pkgs.nss
-      pkgs.openssl
-      pkgs.curl
-      pkgs.expat
-    ];
-  };
 
   services.pulseaudio.enable = false;
   services.pipewire = {
@@ -85,8 +55,6 @@
     hashedPasswordFile = config.sops.secrets.maxpw-password.path;
   };
 
-  programs.fish.enable = true;
-
   services.resolved.enable = true;
 
   # 3) Ensure /etc/resolv.conf points at resolved's stub
@@ -109,7 +77,4 @@
     config.common.default = ["hyprland" "gtk"];
   };
   environment.sessionVariables.NIXOS_OZONE_WL = "1";
-
-  # Disable command-not-found (doesn't work with flakes)
-  programs.command-not-found.enable = false;
 }

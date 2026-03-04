@@ -64,7 +64,7 @@
     };
 
     # Run daily at 3 AM
-    startAt = "daily";
+    startAt = "03:00";
     persistentTimer = true;
 
     # Extra borg create options

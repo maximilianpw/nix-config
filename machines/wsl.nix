@@ -1,13 +1,4 @@
-{
-  pkgs,
-  lib,
-  ...
-}: {
-  imports = [
-    ../modules/core/nix-settings.nix
-    ../modules/core/security.nix
-  ];
-
+{lib, ...}: {
   wsl = {
     enable = true;
     defaultUser = "maxpw";
@@ -19,23 +10,8 @@
 
   virtualisation.docker.enable = true;
 
-  programs.fish.enable = true;
-
-  programs.nix-ld = {
-    enable = true;
-    libraries = [
-      pkgs.stdenv.cc.cc
-      pkgs.zlib
-      pkgs.fuse3
-      pkgs.icu
-      pkgs.nss
-      pkgs.openssl
-      pkgs.curl
-      pkgs.expat
-    ];
-  };
-
-  programs.command-not-found.enable = false;
+  # Disable SSH daemon inside WSL by default.
+  services.openssh.enable = lib.mkForce false;
 
   system.stateVersion = lib.mkDefault "24.05";
 }

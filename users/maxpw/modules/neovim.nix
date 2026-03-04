@@ -5,6 +5,12 @@
   ...
 }: {
   programs.neovim = {
+    enable = true;
+    package = pkgs.neovim-unwrapped;
+    defaultEditor = true;
+    viAlias = true;
+    vimAlias = true;
+    vimdiffAlias = true;
     extraPackages = with pkgs; [
       # === Core Tools ===
       # Note: gcc, git, curl, wget, ripgrep, fd already in home.packages
