@@ -33,12 +33,11 @@
     };
   };
 
-  # Use hibernate instead of suspend (Beelink SER9 has broken s2idle firmware)
+  # Beelink SER9: disable suspend paths (broken s2idle) and allow hibernate only
   systemd.sleep.extraConfig = ''
-    AllowSuspend=yes
+    AllowSuspend=no
     AllowHibernation=yes
-    AllowHybridSleep=yes
-    SuspendState=disk
+    AllowHybridSleep=no
     HibernateMode=shutdown
   '';
 

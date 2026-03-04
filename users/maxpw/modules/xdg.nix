@@ -46,21 +46,6 @@
       }
     ''
     else ''
-      general {
-        before_sleep_cmd = hyprctl dispatch dpms on
-        after_sleep_cmd = hyprctl dispatch dpms on
-      }
-
-      listener {
-        timeout = 900         # 15 min
-        on-timeout = hyprctl keyword monitor ,disable
-        on-resume = hyprctl keyword monitor ,preferred,auto,1.6
-      }
-
-      listener {
-        timeout = 3600        # 1 hour
-        on-timeout = systemctl hibernate
-      }
     '';
 
   hostConf =
