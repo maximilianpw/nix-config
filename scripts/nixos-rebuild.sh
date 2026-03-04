@@ -6,6 +6,7 @@ set -euo pipefail
 auto_username=$(whoami)
 CONFIG_DIR="$HOME/nix-config"
 LOG_FILE="$CONFIG_DIR/nixos-switch.log"
+FLAKE_REF="path:$CONFIG_DIR"
 
 # Colors for output
 RED='\033[0;31m'
@@ -107,6 +108,7 @@ info "Selected host: $HOSTNAME"
 info "Platform: $PLATFORM"
 info "Rebuild command: $REBUILD_CMD"
 info "Flake attribute: $FLAKE_ATTR"
+info "Flake ref: $FLAKE_REF"
 
 # Change to config directory
 if [[ ! -d "$CONFIG_DIR" ]]; then
@@ -130,7 +132,7 @@ fi
 
 # Validate flake
 info "Validating flake configuration..."
-if ! nix flake check --no-build; then
+if ! nix flake check --no-build "$FLAKE_REF"; then
     if [[ "$FORCE" == "1" ]]; then
         warn "Flake validation failed, continuing because --force was set."
     else
@@ -161,7 +163,7 @@ if [[ "$PLATFORM" == "nixos" ]]; then
     # We must build its system build output.
     BUILD_ATTR="$FLAKE_ATTR.config.system.build.toplevel"
     info "Building NixOS system derivation: $BUILD_ATTR"
-    if ! nix build ".#$BUILD_ATTR" --no-link 2>&1 | tee "$LOG_FILE"; then
+    if ! nix build "$FLAKE_REF#$BUILD_ATTR" --no-link 2>&1 | tee "$LOG_FILE"; then
         error "Build failed! Check the log above for details."
         exit 1
     fi
@@ -170,13 +172,13 @@ fi
 # Apply the configuration
 info "Applying configuration..."
 if [[ "$PLATFORM" == "darwin" ]]; then
-    if ! sudo darwin-rebuild switch --flake ".#$FLAKE_SWITCH_ATTR" 2>&1 | tee -a "$LOG_FILE"; then
+    if ! sudo darwin-rebuild switch --flake "$FLAKE_REF#$FLAKE_SWITCH_ATTR" 2>&1 | tee -a "$LOG_FILE"; then
         error "Rebuild failed! Check the log:"
         grep --color=always -E "(error|Error|ERROR|warning|Warning|WARN)" "$LOG_FILE" || true
         exit 1
     fi
 else
-    if ! sudo nixos-rebuild switch --flake ".#$FLAKE_SWITCH_ATTR" 2>&1 | tee -a "$LOG_FILE"; then
+    if ! sudo nixos-rebuild switch --flake "$FLAKE_REF#$FLAKE_SWITCH_ATTR" 2>&1 | tee -a "$LOG_FILE"; then
         error "Rebuild failed! Check the log:"
         grep --color=always -E "(error|Error|ERROR|warning|Warning|WARN)" "$LOG_FILE" || true
         exit 1
