@@ -6,7 +6,7 @@ set -euo pipefail
 auto_username=$(whoami)
 CONFIG_DIR="$HOME/nix-config"
 LOG_FILE="$CONFIG_DIR/nixos-switch.log"
-FLAKE_REF="path:$CONFIG_DIR"
+FLAKE_REF="git+file://$CONFIG_DIR"
 
 # Colors for output
 RED='\033[0;31m'
@@ -130,9 +130,35 @@ if [[ "${SKIP_ETC_NIXOS_LINK:-0}" != "1" ]]; then
     fi
 fi
 
-# Validate flake
+# Validate flake (retry once on transient stale /nix/store/*-source errors)
+validate_flake() {
+    local attempt=1
+    local max_attempts=2
+    local validation_output=""
+
+    while [[ "$attempt" -le "$max_attempts" ]]; do
+        if validation_output=$(nix flake check --no-build "$FLAKE_REF" 2>&1); then
+            printf "%s\n" "$validation_output"
+            return 0
+        fi
+
+        printf "%s\n" "$validation_output"
+
+        if grep -qE "path '/nix/store/.*-source' is not valid" <<< "$validation_output" && [[ "$attempt" -lt "$max_attempts" ]]; then
+            warn "Detected stale flake source path in /nix/store; refreshing metadata and retrying validation..."
+            nix flake metadata "$FLAKE_REF" >/dev/null 2>&1 || true
+            attempt=$((attempt + 1))
+            continue
+        fi
+
+        return 1
+    done
+
+    return 1
+}
+
 info "Validating flake configuration..."
-if ! nix flake check --no-build "$FLAKE_REF"; then
+if ! validate_flake; then
     if [[ "$FORCE" == "1" ]]; then
         warn "Flake validation failed, continuing because --force was set."
     else
