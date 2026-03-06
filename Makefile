@@ -1,4 +1,4 @@
-.PHONY: help bootstrap rebuild check update gc clean format diff test wsl
+.PHONY: help bootstrap rebuild rebuild-check check update gc clean format diff test wsl
 
 # Default target
 .DEFAULT_GOAL := help
@@ -22,6 +22,10 @@ bootstrap: ## Bootstrap a new system (initial setup)
 rebuild: ## Rebuild system configuration (NixOS/Darwin)
 	@echo "Starting system rebuild..."
 	@$(SCRIPT_DIR)/nixos-rebuild.sh
+
+rebuild-check: ## Rebuild with flake check before switching
+	@echo "Starting system rebuild with flake check..."
+	@$(SCRIPT_DIR)/nixos-rebuild.sh --check
 
 update: ## Update flake inputs to latest versions
 	@echo "Updating flake inputs..."

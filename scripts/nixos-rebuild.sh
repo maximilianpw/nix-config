@@ -28,6 +28,7 @@ Usage: $0 [OPTIONS]
 Automatically detects username and platform.
 
 Options:
+  --check      Run 'nix flake check --no-build' before rebuilding
   --force      Continue even if flake validation fails
   --commit     Commit repo changes after a successful rebuild
   -h, --help   Show this help message
@@ -43,9 +44,14 @@ EOF
 # Script flags
 FORCE=0
 AUTO_COMMIT=0
+FLAKE_CHECK=0
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
+        --check)
+            FLAKE_CHECK=1
+            shift
+            ;;
         --force)
             FORCE=1
             shift
@@ -130,40 +136,18 @@ if [[ "${SKIP_ETC_NIXOS_LINK:-0}" != "1" ]]; then
     fi
 fi
 
-# Validate flake (retry once on transient stale /nix/store/*-source errors)
-validate_flake() {
-    local attempt=1
-    local max_attempts=2
-    local validation_output=""
-
-    while [[ "$attempt" -le "$max_attempts" ]]; do
-        if validation_output=$(nix flake check --no-build "$FLAKE_REF" 2>&1); then
-            printf "%s\n" "$validation_output"
-            return 0
+# Run flake check if requested
+if [[ "$FLAKE_CHECK" == "1" ]]; then
+    info "Running nix flake check..."
+    if ! nix flake check --no-build "$FLAKE_REF" 2>&1; then
+        if [[ "$FORCE" == "1" ]]; then
+            warn "Flake check failed, continuing because --force was set."
+        else
+            error "Flake check failed. Re-run with --force to continue anyway."
+            exit 1
         fi
-
-        printf "%s\n" "$validation_output"
-
-        if grep -qE "path '/nix/store/.*-source' is not valid" <<< "$validation_output" && [[ "$attempt" -lt "$max_attempts" ]]; then
-            warn "Detected stale flake source path in /nix/store; refreshing metadata and retrying validation..."
-            nix flake metadata "$FLAKE_REF" >/dev/null 2>&1 || true
-            attempt=$((attempt + 1))
-            continue
-        fi
-
-        return 1
-    done
-
-    return 1
-}
-
-info "Validating flake configuration..."
-if ! validate_flake; then
-    if [[ "$FORCE" == "1" ]]; then
-        warn "Flake validation failed, continuing because --force was set."
     else
-        error "Flake validation failed. Re-run with --force to continue anyway."
-        exit 1
+        success "Flake check passed."
     fi
 fi
 
