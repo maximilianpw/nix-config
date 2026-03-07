@@ -68,7 +68,7 @@ in {
     enableDefaultConfig = false;
     includes = lib.optionals isDarwin ["~/.orbstack/ssh/config"];
     matchBlocks."*" = {
-      extraOptions.IdentityAgent = "%d/.bitwarden-ssh-agent.sock";
+      extraOptions.IdentityAgent = "%d/.1password/agent.sock";
     };
   };
 }

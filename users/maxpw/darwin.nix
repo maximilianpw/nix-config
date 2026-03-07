@@ -21,10 +21,8 @@
     casks = [
       "colemak-dh"
       "1password"
-      "bitwarden"
       "rectangle"
       "figma"
-      "hiddenbar"
       "whatsapp"
       "raycast"
       "chatgpt"
@@ -34,7 +32,6 @@
       "visual-studio-code"
       "proton-mail"
       "ghostty"
-      "kitty"
       "webstorm"
       "aws-vpn-client"
       "orbstack"
@@ -49,6 +46,7 @@
       "termius"
       "obsidian"
       "tidal"
+      "monero-wallet"
     ];
 
     masApps = {

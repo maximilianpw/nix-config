@@ -1,14 +1,14 @@
 #-------------------------------------------------------------------------------
-# SSH Agent (Bitwarden)
+# SSH Agent (1Password)
 #-------------------------------------------------------------------------------
 if not test -d $HOME/.ssh
     mkdir -p $HOME/.ssh
     chmod 0700 $HOME/.ssh
 end
 
-set -l bw_agent "$HOME/.bitwarden-ssh-agent.sock"
-if test -e "$bw_agent"
-    set -gx SSH_AUTH_SOCK "$bw_agent"
+set -l op_agent "$HOME/.1password/agent.sock"
+if test -e "$op_agent"
+    set -gx SSH_AUTH_SOCK "$op_agent"
 end
 
 #-------------------------------------------------------------------------------
