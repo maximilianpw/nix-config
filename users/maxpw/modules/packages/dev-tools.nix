@@ -6,15 +6,11 @@
     pkgs.bun
     pkgs.python3
     pkgs.go
-    # Rust via fenix (nightly toolchain)
-    (pkgs.fenix.complete.withComponents [
+    # Rust via fenix (stable, project flakes provide full toolchains)
+    (pkgs.fenix.stable.withComponents [
       "cargo"
-      "clippy"
-      "rust-src"
       "rustc"
-      "rustfmt"
     ])
-    pkgs.rust-analyzer-nightly
     pkgs.deno
     pkgs.lua
     pkgs.openjdk

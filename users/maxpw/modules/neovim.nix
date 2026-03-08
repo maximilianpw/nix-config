@@ -44,6 +44,9 @@
       # Tailwind CSS
       tailwindcss-language-server
 
+      # Rust
+      rust-analyzer
+
       # TOML
       taplo # TOML LSP
 

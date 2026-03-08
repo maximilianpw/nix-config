@@ -18,7 +18,7 @@
     enable = true;
     settings = {
       default_session = {
-        # Text greeter that launches Hyprland via UWSM
+        # Launch Hyprland via UWSM start-hyprland wrapper
         command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --cmd start-hyprland";
         user = "greeter";
       };
