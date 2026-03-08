@@ -70,6 +70,12 @@
   # Console (TTY) keymap for Colemak
   console.keyMap = "colemak";
 
+  programs._1password.enable = true;
+  programs._1password-gui = {
+    enable = true;
+    polkitPolicyOwners = ["maxpw"];
+  };
+
   services.dbus.enable = true;
   xdg.portal = {
     enable = true;

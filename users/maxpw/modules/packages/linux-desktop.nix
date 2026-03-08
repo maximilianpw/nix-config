@@ -34,7 +34,6 @@
       pkgs.protonmail-desktop
       pkgs.mullvad-vpn
       pkgs.obsidian
-      pkgs._1password-gui
 
       # System utilities
       pkgs.pavucontrol
