@@ -72,6 +72,10 @@
     libvirtd.enable = true;
   };
   programs.virt-manager.enable = true;
+  programs.steam = {
+    enable = true;
+    gamescopeSession.enable = true;
+  };
   users.users.maxpw.extraGroups = lib.mkAfter ["docker" "libvirtd" "kvm"];
 
   # System-scoped packages
