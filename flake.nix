@@ -59,6 +59,7 @@
         tmuxinator = unstable.tmuxinator;
         jujutsu = unstable.jujutsu;
         helium = final.callPackage ./packages/helium.nix {};
+        t3code = final.callPackage ./packages/t3code.nix {};
       })
     ];
 

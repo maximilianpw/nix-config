@@ -47,6 +47,7 @@
       "obsidian"
       "tidal"
       "monero-wallet"
+      "t3-code"
     ];
 
     masApps = {
