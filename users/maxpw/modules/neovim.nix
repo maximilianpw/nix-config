@@ -40,6 +40,7 @@
 
       # TypeScript/JavaScript
       nodePackages.typescript
+      vscode-js-debug
 
       # Tailwind CSS
       tailwindcss-language-server
@@ -69,9 +70,6 @@
       hadolint # Dockerfile linter
       tflint # Terraform linter
       vale # Prose linter
-      # golangci-lint already listed above
-
-      # === Additional Tools ===
     ];
   };
 }
