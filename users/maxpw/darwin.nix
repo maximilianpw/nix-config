@@ -47,7 +47,7 @@
       "obsidian"
       "tidal"
       "monero-wallet"
-      "t3-code"
+      "cursor"
     ];
 
     masApps = {
@@ -70,6 +70,11 @@
   };
 
   programs.fish.enable = true;
+
+  # Obsidian CLI (installed via Homebrew cask)
+  environment.systemPath = [
+    "/Applications/Obsidian.app/Contents/MacOS"
+  ];
 
   # Required for some settings like homebrew to know what user to apply to.
   system.primaryUser = "max-vev";
