@@ -22,24 +22,19 @@
       "colemak-dh"
       "1password"
       "rectangle"
-      "figma"
       "whatsapp"
       "raycast"
       "chatgpt"
       "discord"
       "notion"
       "slack"
-      "visual-studio-code"
       "proton-mail"
       "ghostty"
-      "webstorm"
       "aws-vpn-client"
       "orbstack"
       "claude"
       "helium-browser"
       "yaak"
-      "github"
-      "datagrip"
       "zed"
       "studio-3t-community"
       "mullvad-vpn"
@@ -48,11 +43,8 @@
       "tidal"
       "monero-wallet"
       "cursor"
+      "t3-code"
     ];
-
-    masApps = {
-      "Poolsuite FM" = 1514817810;
-    };
 
     onActivation = {
       autoUpdate = true;
