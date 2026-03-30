@@ -42,6 +42,17 @@
       pkgs.playerctl
       pkgs.qbittorrent
       pkgs.cava
+
+      # Focus existing window or launch app (used by hyper key bindings)
+      (pkgs.writeShellScriptBin "focus-or-launch" ''
+        class="$1"
+        shift
+        if hyprctl clients | grep -q "class: $class"; then
+          hyprctl dispatch focuswindow "class:$class"
+        else
+          exec "$@"
+        fi
+      '')
     ]
     ++ lib.optionals (isLinux && hostname != "main-pc") [
       pkgs.hyprlock

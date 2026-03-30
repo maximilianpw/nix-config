@@ -58,6 +58,19 @@
     options iwlmvm power_scheme=1
   '';
 
+  # Caps Lock → tap=Escape / hold=Hyper (Ctrl+Super+Alt+Shift)
+  # Pairs with the $hyper bindings in hyprland/conf/keybinds.conf
+  services.keyd = {
+    enable = true;
+    keyboards.default = {
+      ids = ["*"];
+      settings = {
+        main.capslock = "overload(hyper, esc)";
+        "hyper:C-M-A-S" = {};
+      };
+    };
+  };
+
   # Hardware enablement for a desktop workstation
   services = {
     fwupd.enable = true;
