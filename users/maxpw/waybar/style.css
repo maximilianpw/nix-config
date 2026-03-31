@@ -124,6 +124,7 @@ tooltip label {
 
 #pulseaudio,
 #network,
+#mullvad,
 #custom-notification,
 #clock,
 #custom-power {
@@ -134,6 +135,7 @@ tooltip label {
 
 #pulseaudio:hover,
 #network:hover,
+#mullvad:hover,
 #custom-notification:hover,
 #clock:hover,
 #custom-power:hover {
@@ -149,6 +151,14 @@ tooltip label {
 }
 
 #network.disconnected {
+  color: @red;
+}
+
+#mullvad.connected {
+  color: @green;
+}
+
+#mullvad.disconnected {
   color: @red;
 }
 

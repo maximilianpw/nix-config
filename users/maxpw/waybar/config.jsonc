@@ -6,7 +6,7 @@
 
   "modules-left": ["hyprland/workspaces"],
   "modules-center": ["hyprland/window"],
-  "modules-right": ["pulseaudio", "network", "custom/notification", "clock", "custom/power"],
+  "modules-right": ["pulseaudio", "network", "mullvad", "custom/notification", "clock", "custom/power"],
 
   "include": "./modules.jsonc"
 }
