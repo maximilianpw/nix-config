@@ -43,7 +43,9 @@
       "tidal"
       "monero-wallet"
       "cursor"
+      "cmux"
       "t3-code"
+      "linear-linear"
     ];
 
     onActivation = {
