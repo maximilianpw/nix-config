@@ -46,6 +46,7 @@
       "cmux"
       "t3-code"
       "linear-linear"
+      "whispr-flow"
     ];
 
     onActivation = {
