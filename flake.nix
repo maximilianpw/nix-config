@@ -52,6 +52,7 @@
         unstable = inputs.nixpkgs-unstable.legacyPackages.${prev.stdenv.hostPlatform.system};
       in {
         gh = unstable.gh;
+        neovim-unwrapped = unstable.neovim-unwrapped;
         nushell = unstable.nushell;
         tmuxinator = unstable.tmuxinator;
         jujutsu = unstable.jujutsu;
