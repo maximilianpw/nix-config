@@ -25,6 +25,9 @@
     nixos-wsl.inputs.nixpkgs.follows = "nixpkgs";
 
     llm-agents.url = "github:numtide/llm-agents.nix";
+
+    disko.url = "github:nix-community/disko";
+    disko.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = inputs @ {
@@ -82,6 +85,32 @@
       user = "max-vev";
       userDir = "maxpw";
       darwin = true;
+    };
+
+    templates = {
+      generic = {
+        path = ./templates/generic;
+        description = "Generic Nix devshell with direnv";
+      };
+      node = {
+        path = ./templates/node;
+        description = "Node.js project with pnpm";
+      };
+      rust = {
+        path = ./templates/rust;
+        description = "Rust project with fenix toolchain";
+      };
+    };
+
+    # Eval-only checks: catch typos, missing modules, type errors without building
+    checks = {
+      x86_64-linux = {
+        eval-main-pc = self.nixosConfigurations.main-pc.config.system.build.toplevel;
+        eval-wsl = self.nixosConfigurations.wsl.config.system.build.toplevel;
+      };
+      aarch64-darwin = {
+        eval-macbook = self.darwinConfigurations.macbook-pro-m1.system;
+      };
     };
 
     devShells = nixpkgs.lib.genAttrs ["aarch64-linux" "x86_64-linux" "aarch64-darwin"] (system: let

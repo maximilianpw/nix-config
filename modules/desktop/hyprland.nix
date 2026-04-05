@@ -2,25 +2,37 @@
   inputs,
   pkgs,
   lib,
+  config,
   ...
-}: {
-  # Core Hyprland with UWSM session management
-  programs.hyprland = {
-    enable = true;
-    package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
-    portalPackage = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
-    withUWSM = true;
-    xwayland.enable = true;
+}: let
+  cfg = config.custom.hyprland;
+in {
+  options.custom.hyprland = {
+    enable = lib.mkEnableOption "Hyprland with greetd";
+
+    greeterCommand = lib.mkOption {
+      type = lib.types.str;
+      default = "${pkgs.tuigreet}/bin/tuigreet --time --remember --cmd start-hyprland";
+      description = "Greeter command for greetd";
+    };
   };
 
-  # Login manager for Wayland sessions (TTY-friendly)
-  services.greetd = {
-    enable = true;
-    settings = {
-      default_session = {
-        # Launch Hyprland via UWSM start-hyprland wrapper
-        command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --cmd start-hyprland";
-        user = "greeter";
+  config = lib.mkIf cfg.enable {
+    programs.hyprland = {
+      enable = true;
+      package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
+      portalPackage = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
+      withUWSM = true;
+      xwayland.enable = true;
+    };
+
+    services.greetd = {
+      enable = true;
+      settings = {
+        default_session = {
+          command = cfg.greeterCommand;
+          user = "greeter";
+        };
       };
     };
   };

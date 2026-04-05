@@ -11,6 +11,8 @@
     ../../modules/desktop/hyprland.nix
     ./modules/linux-common.nix
   ];
+
+  custom.hyprland.enable = true;
   # --- Base (yours) ---
   networking.networkmanager = {
     enable = true;

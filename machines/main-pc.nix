@@ -9,6 +9,8 @@
     ../modules/services/backup.nix
   ];
 
+  custom.backup.enable = true;
+
   # Core system identity
   networking.hostName = "main-pc";
 
