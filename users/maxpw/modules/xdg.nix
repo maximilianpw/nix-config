@@ -3,8 +3,6 @@
   isDarwin,
   isWSL ? false,
   hostname,
-  ...
-}: {
   pkgs,
   lib,
   ...

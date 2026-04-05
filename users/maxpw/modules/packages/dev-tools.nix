@@ -36,6 +36,6 @@
 
     # Dev tools
     pkgs.sops
-    pkgs.asdf
+    pkgs.mise
   ];
 }

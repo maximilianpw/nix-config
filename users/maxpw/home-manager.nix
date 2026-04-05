@@ -3,8 +3,6 @@
   isWSL ? false,
   inputs,
   hostname,
-  ...
-}: {
   config,
   pkgs,
   lib,
@@ -26,16 +24,14 @@ in {
     ./modules/fonts.nix
     ./modules/git.nix
     ./modules/shells.nix
-    (import ./modules/gpg.nix {inherit isDarwin isWSL;})
-    (import ./modules/xdg.nix {inherit isDarwin isWSL hostname;})
-    (import ./modules/linux-services.nix {inherit isWSL;})
+    ./modules/gpg.nix
+    ./modules/xdg.nix
+    ./modules/linux-services.nix
     ./modules/tmux.nix
     ./modules/neovim.nix
     ./modules/packages/dev-tools.nix
     ./modules/packages/terminal-tools.nix
-    (import ./modules/packages/linux-desktop.nix {
-      inherit pkgs lib isLinux hostname;
-    })
+    ./modules/packages/linux-desktop.nix
   ];
 
   home.stateVersion = "25.05";

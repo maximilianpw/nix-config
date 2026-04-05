@@ -2,7 +2,6 @@
   home.packages = [
     # Environment management
     pkgs.chezmoi
-    pkgs.stow
     # File navigation & search
     pkgs.bat
     pkgs.eza

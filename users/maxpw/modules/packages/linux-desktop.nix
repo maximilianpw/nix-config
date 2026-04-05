@@ -1,10 +1,13 @@
 {
+  isDarwin ? false,
+  isWSL ? false,
+  hostname,
   pkgs,
   lib,
-  isLinux,
-  hostname,
   ...
-}: {
+}: let
+  isLinux = pkgs.stdenv.isLinux && !isWSL;
+in {
   home.packages =
     lib.optionals isLinux [
       # App launcher

@@ -54,12 +54,13 @@ in
         home-manager.useGlobalPkgs = true;
         home-manager.useUserPackages = true;
         home-manager.backupFileExtension = "backup";
-        home-manager.users.${user} = import userHMConfig {
+        home-manager.extraSpecialArgs = {
           isDarwin = darwin;
           isWSL = wsl;
-          inputs = inputs;
           hostname = name;
+          inherit inputs;
         };
+        home-manager.users.${user} = import userHMConfig;
       }
       {
         config._module.args = {

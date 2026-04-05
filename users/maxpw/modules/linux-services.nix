@@ -1,5 +1,6 @@
 # Linux-specific systemd services and desktop settings
-{isWSL ? false, ...}: {
+{
+  isWSL ? false,
   pkgs,
   lib,
   ...

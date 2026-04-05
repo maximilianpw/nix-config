@@ -49,10 +49,7 @@
         amp-cli = llm.amp;
       })
       (final: prev: let
-        unstable = import inputs.nixpkgs-unstable {
-          inherit (prev.stdenv.hostPlatform) system;
-          config.allowUnfree = true;
-        };
+        unstable = inputs.nixpkgs-unstable.legacyPackages.${prev.stdenv.hostPlatform.system};
       in {
         gh = unstable.gh;
         nushell = unstable.nushell;

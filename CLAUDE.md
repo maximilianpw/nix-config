@@ -42,11 +42,11 @@ The `userDir` parameter allows the macOS username (`max-vev`) to differ from the
 
 ### How Home Manager modules receive platform info
 
-`mksystem.nix` imports `home-manager.nix` by calling it as a function with `{ isDarwin, isWSL, inputs, hostname }`. Modules like `xdg.nix`, `gpg.nix`, `linux-desktop.nix`, and `linux-services.nix` receive these via their own function arguments (curried imports in `home-manager.nix`). The pattern is:
+`mksystem.nix` passes `isDarwin`, `isWSL`, `hostname`, and `inputs` to all Home Manager modules via `home-manager.extraSpecialArgs`. Modules receive these as regular function arguments:
 
 ```nix
-# in home-manager.nix imports list:
-(import ./modules/xdg.nix {inherit isDarwin isWSL hostname;})
+# any HM module can destructure these directly:
+{ isDarwin, isWSL ? false, hostname, pkgs, lib, ... }: { ... }
 ```
 
 ### Module Layout

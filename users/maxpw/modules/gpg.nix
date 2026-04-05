@@ -2,8 +2,6 @@
 {
   isDarwin,
   isWSL ? false,
-  ...
-}: {
   pkgs,
   lib,
   ...
