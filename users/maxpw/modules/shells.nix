@@ -1,4 +1,4 @@
-# Shell configurations - fish (primary), nushell, bash/zsh (compatibility)
+# Shell configurations - nushell (primary), fish, bash/zsh (compatibility)
 {
   pkgs,
   lib,
@@ -81,6 +81,8 @@ in {
     enable = true;
     shellAliases = shellAliases;
     initExtra = ''
+      eval "$(mise activate bash)"
+
       if [ -z "$DISABLE_ZOXIDE" ]; then
         eval "$(zoxide init --cmd cd bash)"
       fi
@@ -89,8 +91,31 @@ in {
 
   programs.nushell = {
     enable = true;
-    shellAliases = builtins.removeAttrs shellAliases ["jtp" "ls" "c"];
+    shellAliases = builtins.removeAttrs shellAliases ["jtp" "ls" "c" "fnix"];
     configFile.source = ../config.nu;
+    extraConfig = ''
+      use ($nu.default-config-dir | path join "mise.nu")
+      use ($nu.default-config-dir | path join "ghostty.nu")
+    '';
+    extraEnv = ''
+      $env.SHELL = "${pkgs.nushell}/bin/nu"
+
+      let mise_path = $nu.default-config-dir | path join "mise.nu"
+      ^mise activate nu | save $mise_path --force
+
+      # Ghostty shell integration - copy to config dir so config.nu can `use` it
+      let ghostty_dest = ($nu.default-config-dir | path join "ghostty.nu")
+      if ($env | get -o GHOSTTY_RESOURCES_DIR | is-not-empty) {
+        let ghostty_src = ($env.GHOSTTY_RESOURCES_DIR | path join "shell-integration" "nushell" "ghostty.nu")
+        if ($ghostty_src | path exists) {
+          open $ghostty_src | save -f $ghostty_dest
+        } else {
+          "# ghostty stub" | save -f $ghostty_dest
+        }
+      } else {
+        "# ghostty stub" | save -f $ghostty_dest
+      }
+    '';
   };
 
   programs.zsh = {
@@ -105,6 +130,8 @@ in {
     };
     completionInit = "autoload -Uz compinit && compinit -C -i";
     initContent = ''
+      eval "$(mise activate zsh)"
+
       if [ -z "$DISABLE_ZOXIDE" ]; then
         eval "$(zoxide init --cmd cd zsh)"
       fi
@@ -114,6 +141,7 @@ in {
   programs.carapace = {
     enable = true;
     enableFishIntegration = true;
+    enableNushellIntegration = true;
   };
 
   programs.zoxide = {
@@ -133,6 +161,7 @@ in {
     interactiveShellInit = lib.strings.concatStrings (lib.strings.intersperse "\n" [
       (builtins.readFile ../config.fish)
       "set -g SHELL ${pkgs.fish}/bin/fish"
+      "mise activate fish | source"
       fishShellFunctions
     ]);
 

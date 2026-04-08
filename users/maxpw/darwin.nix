@@ -3,7 +3,9 @@
   pkgs,
   lib,
   ...
-}: {
+}: let
+  settings = import ./settings.nix {inherit pkgs;};
+in {
   fonts.packages = with pkgs; [
     pkgs."nerd-fonts".fira-code
     pkgs."nerd-fonts".jetbrains-mono
@@ -119,10 +121,11 @@
   # account remains max-vev. This indirection is handled via userDir in mksystem.nix.
   users.users.max-vev = {
     home = "/Users/max-vev";
-    shell = pkgs.fish;
+    shell = settings.defaultShell;
   };
 
   programs.fish.enable = true;
+  environment.shells = [pkgs.nushell];
 
   # Obsidian CLI (installed via Homebrew cask)
   environment.systemPath = [

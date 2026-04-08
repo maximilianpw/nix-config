@@ -3,7 +3,9 @@
   pkgs,
   lib,
   ...
-}: {
+}: let
+  settings = import ./settings.nix {inherit pkgs;};
+in {
   imports = [
     ../../modules/core/nix-settings.nix
     ../../modules/core/security.nix
@@ -52,7 +54,7 @@
     description = lib.mkDefault "Maximilian PINDER-WHITE";
     extraGroups = ["networkmanager" "wheel" "seat" "input" "video"];
     home = "/home/maxpw";
-    shell = pkgs.fish;
+    shell = settings.defaultShell;
     # Password is managed via sops-nix (see secrets/README.md)
     hashedPasswordFile = config.sops.secrets.maxpw-password.path;
   };

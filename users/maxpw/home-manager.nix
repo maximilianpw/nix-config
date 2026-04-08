@@ -8,6 +8,7 @@
   lib,
   ...
 }: let
+  settings = import ./settings.nix {inherit pkgs;};
   isLinux = pkgs.stdenv.isLinux && !isWSL;
 
   # For our MANPAGER env var
@@ -40,6 +41,7 @@ in {
     {
       EDITOR = "nvim";
       VISUAL = "nvim";
+      SHELL = lib.getExe settings.defaultShell;
       PAGER = "less -FirSwX";
       MANPAGER = "${manpager}/bin/manpager";
       MANROFFOPT = "-c";

@@ -19,6 +19,7 @@
   };
 
   programs.fish.enable = true;
+  environment.shells = [pkgs.nushell];
 
   programs.nix-ld = {
     enable = true;

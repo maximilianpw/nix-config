@@ -1,7 +1,7 @@
 {pkgs, ...}: {
   programs.tmux = {
     enable = true;
-    shell = "${pkgs.fish}/bin/fish";
+    shell = "${pkgs.nushell}/bin/nu";
     terminal = "tmux-256color";
     prefix = "C-Space";
     baseIndex = 1;
@@ -59,7 +59,7 @@
 
     extraConfig = ''
       # Override default-command set by tmux-sensible (which uses reattach-to-user-namespace with zsh)
-      set -g default-command "${pkgs.fish}/bin/fish"
+      set -g default-command "${pkgs.nushell}/bin/nu"
 
       # True color and undercurl support
       set -as terminal-features ",xterm-256color:RGB"

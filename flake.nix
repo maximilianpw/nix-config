@@ -59,6 +59,7 @@
         nushell = unstable.nushell;
         tmuxinator = unstable.tmuxinator;
         jujutsu = unstable.jujutsu;
+        direnv = unstable.direnv;
         helium = final.callPackage ./packages/helium.nix {};
         obsidian = final.callPackage ./packages/obsidian.nix {};
         t3code = final.callPackage ./packages/t3code.nix {};
