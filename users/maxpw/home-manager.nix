@@ -25,6 +25,7 @@ in {
     ./modules/fonts.nix
     ./modules/git.nix
     ./modules/shells.nix
+    ./modules/nushell.nix
     ./modules/gpg.nix
     ./modules/xdg.nix
     ./modules/linux-services.nix

@@ -57,6 +57,7 @@
         gh = unstable.gh;
         neovim-unwrapped = unstable.neovim-unwrapped;
         nushell = unstable.nushell;
+        nushellPlugins = unstable.nushellPlugins;
         tmuxinator = unstable.tmuxinator;
         jujutsu = unstable.jujutsu;
         direnv = unstable.direnv;
