@@ -2,6 +2,7 @@
 {
   pkgs,
   lib,
+  isDarwin,
   ...
 }: let
   # Fish shell functions
@@ -124,7 +125,7 @@ in {
         hcl
         semver
       ]
-      ++ lib.optionals isLinux [
+      ++ lib.optionals (!isDarwin) [
         desktop_notifications
       ];
   };
