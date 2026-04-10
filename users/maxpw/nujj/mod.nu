@@ -2,6 +2,11 @@ export use atomic.nu
 export use commands.nu *
 export use caps.nu *
 
+# Bare `nujj` defaults to `nujj tblog` — forwards all args through.
+export def --wrapped main [...args] {
+  tblog ...$args
+}
+
 export-env {
   $env.nujj = {
     completion: {
