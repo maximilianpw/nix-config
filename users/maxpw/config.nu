@@ -1,7 +1,5 @@
 # config.nu
 
-use ($nu.default-config-dir | path join scripts nujj)
-
 $env.VISUAL = "nvim"
 $env.EDITOR = "nvim"
 

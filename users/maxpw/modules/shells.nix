@@ -116,6 +116,17 @@ in {
         "# ghostty stub" | save -f $ghostty_dest
       }
     '';
+    plugins = with pkgs.nushellPlugins;
+      [
+        gstat
+        query
+        skim
+        hcl
+        semver
+      ]
+      ++ lib.optionals isLinux [
+        desktop_notifications
+      ];
   };
 
   programs.zsh = {
