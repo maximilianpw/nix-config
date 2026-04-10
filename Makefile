@@ -1,4 +1,4 @@
-.PHONY: help bootstrap rebuild rebuild-check check update gc clean format diff test wsl
+.PHONY: help bootstrap rebuild rebuild-check check update update-packages gc clean format diff test wsl skills
 
 # Default target
 .DEFAULT_GOAL := help
@@ -32,6 +32,16 @@ update: ## Update flake inputs to latest versions
 	@nix flake update
 	@echo "Done! Run 'make rebuild' to apply updates."
 
+update-packages: ## Bump custom packages (helium, obsidian, t3code, skills) via nix-update
+	@echo "Bumping custom packages via nix-update..."
+	@echo "Note: Linux-only packages (helium, obsidian, t3code) cannot be built"
+	@echo "from macOS. The CI workflow handles them; here we only bump what"
+	@echo "this host can actually evaluate."
+	@for pkg in helium obsidian t3code skills; do \
+		echo ">> nix-update $$pkg"; \
+		nix run nixpkgs#nix-update -- --flake "$$pkg" || echo "(skipped: $$pkg)"; \
+	done
+
 
 build: ## Build system configuration without switching
 	@echo "Building system configuration..."
@@ -58,6 +68,10 @@ rollback: ## Rollback to previous generation
 		sudo nixos-rebuild --rollback; \
 	fi
 	@echo "Rollback complete!"
+
+skills: ## Install declared agent skills (npx skills add)
+	@echo "Installing declared agent skills..."
+	@$(SCRIPT_DIR)/install-skills.sh
 
 wsl: ## Build WSL tarball for import
 	@echo "Building WSL tarball..."

@@ -37,5 +37,6 @@
     # Dev tools
     pkgs.sops
     pkgs.mise
+    pkgs.skills
   ];
 }

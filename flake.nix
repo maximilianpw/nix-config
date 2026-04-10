@@ -64,6 +64,7 @@
         helium = final.callPackage ./packages/helium.nix {};
         obsidian = final.callPackage ./packages/obsidian.nix {};
         t3code = final.callPackage ./packages/t3code.nix {};
+        skills = final.callPackage ./packages/skills.nix {};
       })
     ];
 
@@ -113,6 +114,28 @@
       };
       aarch64-darwin = {
         eval-macbook = self.darwinConfigurations.macbook-pro-m1.system;
+      };
+    };
+
+    # Custom packages exposed as flake outputs so `nix build .#<name>` and
+    # `nix-update --flake <name>` can find them. The overlay still injects
+    # these into `pkgs.*` for module consumption — this is additive.
+    packages = let
+      mkPkgs = system:
+        import nixpkgs {
+          inherit system overlays;
+          config.allowUnfree = true;
+        };
+    in {
+      x86_64-linux = let
+        pkgs = mkPkgs "x86_64-linux";
+      in {
+        inherit (pkgs) helium obsidian t3code skills;
+      };
+      aarch64-darwin = let
+        pkgs = mkPkgs "aarch64-darwin";
+      in {
+        inherit (pkgs) skills;
       };
     };
 

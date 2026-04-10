@@ -154,9 +154,25 @@ make gc-aggressive     # Delete all old generations
 make build             # Build without switching
 make generations       # List system generations
 make rollback          # Rollback to previous generation
+make skills            # Install declared agent skills (see scripts/install-skills.sh)
 make dev               # Enter development shell
 make info              # Show system information
 ```
+
+## Agent Skills
+
+Agent skills (the `npx skills` ecosystem) are installed declaratively via
+`scripts/install-skills.sh`. The script holds the canonical list of
+`owner/repo@skill` entries that should exist on every machine. On a new
+system, run once after your first `make rebuild`:
+
+```bash
+make skills
+```
+
+Re-run whenever you add a new entry to the script. To pull upstream updates
+for already-installed skills, use `skills update` directly. The `skills` CLI
+itself is packaged in `packages/skills.nix` and installed via home-manager.
 
 ## Troubleshooting
 

@@ -1,0 +1,76 @@
+name: Update packages
+
+on:
+  schedule:
+    # Monday 09:00 UTC — picked to align with most upstream release cadences.
+    - cron: "0 9 * * 1"
+  workflow_dispatch:
+    inputs:
+      packages:
+        description: "Space-separated package names (default: all)"
+        required: false
+        default: "helium obsidian t3code skills"
+
+jobs:
+  update:
+    name: Bump custom packages
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: DeterminateSystems/nix-installer-action@main
+
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+
+      - name: Run nix-update for each package
+        id: bump
+        run: |
+          set -euo pipefail
+          packages="${{ github.event.inputs.packages || 'helium obsidian t3code skills' }}"
+          failed=()
+          for pkg in $packages; do
+            echo "::group::nix-update $pkg"
+            if nix run nixpkgs#nix-update -- --flake "$pkg"; then
+              echo "ok: $pkg"
+            else
+              echo "failed: $pkg"
+              failed+=("$pkg")
+            fi
+            echo "::endgroup::"
+          done
+          if [ "${#failed[@]}" -gt 0 ]; then
+            echo "failed_packages=${failed[*]}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check for changes
+        id: diff
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+            git --no-pager diff
+          else
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Open pull request
+        if: steps.diff.outputs.has_changes == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: automated/update-packages
+          base: main
+          commit-message: "chore: bump custom packages"
+          title: "chore: bump custom packages"
+          body: |
+            Automated version bumps from `nix-update`, run by
+            `.github/workflows/update-packages.yml`.
+
+            CI will build `darwinConfigurations.macbook-pro-m1` and the two
+            NixOS configs, so a green check here means the new versions at
+            least evaluate and build cleanly. Smoke-test the apps locally
+            before merging if the upstream changelog suggests risk.
+
+            ${{ steps.bump.outputs.failed_packages && format('⚠️ Packages that failed to update: `{0}`', steps.bump.outputs.failed_packages) || '' }}
+          delete-branch: true
