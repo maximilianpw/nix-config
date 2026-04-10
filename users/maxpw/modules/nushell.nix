@@ -17,4 +17,9 @@ in {
     ++ lib.optionals isLinux [
       desktop_notifications
     ];
+
+  xdg.configFile."nushell/scripts/nujj" = {
+    source = ../nujj;
+    recursive = true;
+  };
 }
