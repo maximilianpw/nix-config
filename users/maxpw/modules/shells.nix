@@ -45,8 +45,8 @@
     v = "nvim";
     c = "DISABLE_ZOXIDE=1 claude --dangerously-skip-permissions";
 
-    jd = "jj desc";
     jc = "jj commit";
+    jd = "jj diff";
     jf = "jj git fetch";
     jn = "jj new";
     jp = "jj git push";
