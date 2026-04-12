@@ -1,4 +1,3 @@
-# To update: change version, run nix build, update sha256
 {
   pkgs,
   lib,
@@ -9,7 +8,7 @@
 
   src = fetchurl {
     url = "https://github.com/obsidianmd/obsidian-releases/releases/download/v${version}/Obsidian-${version}.AppImage";
-    sha256 = "f6d8b96fe685a8632c819cc093a248ace0f6bab410f44a6c929a2611b1ebb17c";
+    hash = "sha256-9ti5b+aFqGMsgZzAk6JIrOD2urQQ9EpskpomEbHrsXw=";
   };
 
   appimageContents = pkgs.appimageTools.extractType2 {

@@ -8,7 +8,7 @@
 
   src = fetchurl {
     url = "https://github.com/pingdotgg/t3code/releases/download/v${version}/T3-Code-${version}-x86_64.AppImage";
-    sha256 = "sha256:8dd2e6ae239bf56b2eb0e20268f85e8710f1e2002cc4755bf2624f2248054d98";
+    hash = "sha256-jdLmriOb9WsusOICaPhehxDx4gAsxHVb8mJPIkgFTZg=";
   };
 
   appimageContents = pkgs.appimageTools.extractType2 {

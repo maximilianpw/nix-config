@@ -1,4 +1,3 @@
-# To update: change version, run nix build, update sha256
 {
   pkgs,
   lib,
@@ -9,7 +8,7 @@
 
   src = fetchurl {
     url = "https://github.com/imputnet/helium-linux/releases/download/${version}/helium-${version}-x86_64.AppImage";
-    sha256 = "a4dfc8c3500d8200cec7115bd82378dfaa9b72bb3cfdb0dc12a8d90bcd20ad0b";
+    hash = "sha256-pN/Iw1ANggDOxxFb2CN436qbcrs8/bDcEqjZC80grQs=";
   };
 
   appimageContents = pkgs.appimageTools.extractType2 {
