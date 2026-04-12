@@ -20,14 +20,3 @@ jobs:
           name: maximilianpw
           authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
       - run: nix build .#nixosConfigurations.${{ matrix.config }}.config.system.build.toplevel --no-link
-
-  build-darwin:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: DeterminateSystems/nix-installer-action@main
-      - uses: cachix/cachix-action@v15
-        with:
-          name: maximilianpw
-          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
-      - run: nix build .#darwinConfigurations.macbook-pro-m1.system --no-link
