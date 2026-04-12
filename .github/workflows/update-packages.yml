@@ -68,7 +68,7 @@ jobs:
           git checkout -B "$BRANCH"
           git add -A
           git commit -m "chore: bump custom packages"
-          git push --force-with-lease origin "$BRANCH"
+          git push --force origin "$BRANCH"
 
           BODY="Automated version bumps from \`nix-update\`, run by
           \`.github/workflows/update-packages.yml\`.
