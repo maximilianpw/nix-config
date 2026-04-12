@@ -19,12 +19,12 @@ in
     inherit pname version src;
 
     extraInstallCommands = ''
-      install -m 444 -D ${appimageContents}/t3-code-desktop.desktop $out/share/applications/t3-code-desktop.desktop
-      substituteInPlace $out/share/applications/t3-code-desktop.desktop \
-        --replace 'Exec=AppRun' "Exec=${pname}" \
-        --replace 'Icon=t3-code-desktop' "Icon=$out/share/pixmaps/t3-code-desktop.png"
+      install -m 444 -D ${appimageContents}/t3code.desktop $out/share/applications/t3code.desktop
+      substituteInPlace $out/share/applications/t3code.desktop \
+        --replace-warn 'Exec=AppRun' "Exec=${pname}" \
+        --replace-warn 'Icon=t3code' "Icon=$out/share/pixmaps/t3code.png"
 
-      install -m 444 -D ${appimageContents}/usr/share/icons/hicolor/1024x1024/apps/t3-code-desktop.png $out/share/pixmaps/t3-code-desktop.png
+      install -m 444 -D ${appimageContents}/usr/share/icons/hicolor/1024x1024/apps/t3code.png $out/share/pixmaps/t3code.png
     '';
 
     meta = with lib; {
