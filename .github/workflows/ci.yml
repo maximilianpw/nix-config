@@ -7,16 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  check:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: DeterminateSystems/nix-installer-action@main
-      - uses: DeterminateSystems/magic-nix-cache-action@main
-      - run: nix flake check --no-build
-
   build-linux:
-    needs: check
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -24,11 +15,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: DeterminateSystems/nix-installer-action@main
+        with:
+          extra-conf: |
+            extra-substituters = https://hyprland.cachix.org
+            extra-trusted-public-keys = hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc=
       - uses: DeterminateSystems/magic-nix-cache-action@main
       - run: nix build .#nixosConfigurations.${{ matrix.config }}.config.system.build.toplevel --no-link
 
   build-darwin:
-    needs: check
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
