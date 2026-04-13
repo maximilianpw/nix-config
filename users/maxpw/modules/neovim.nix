@@ -70,6 +70,7 @@
       hadolint # Dockerfile linter
       tflint # Terraform linter
       vale # Prose linter
+      oxlint # Fast JS/TS linter
     ];
   };
 }
