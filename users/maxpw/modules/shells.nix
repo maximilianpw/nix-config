@@ -59,7 +59,7 @@
     dcb = "docker compose build";
     dcbc = "docker compose build --no-cache";
 
-    chcd = "chezmoi cd";
+    chcd = "cd ~/.local/share/chezmoi";
     chap = "chezmoi apply";
 
     tm = "tmux";
