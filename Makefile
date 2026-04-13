@@ -1,4 +1,4 @@
-.PHONY: help bootstrap rebuild rebuild-check check update update-packages gc clean format diff test wsl skills
+.PHONY: help bootstrap rebuild rebuild-check check update update-all update-packages gc clean format diff test wsl skills
 
 # Default target
 .DEFAULT_GOAL := help
@@ -27,8 +27,13 @@ rebuild-check: ## Rebuild with flake check before switching
 	@echo "Starting system rebuild with flake check..."
 	@$(SCRIPT_DIR)/nixos-rebuild.sh --check
 
-update: ## Update flake inputs to latest versions
-	@echo "Updating flake inputs..."
+update: ## Update flake inputs (skips Hyprland & NixOS-only inputs)
+	@echo "Updating shared flake inputs (skipping hyprland, sops-nix, nixos-wsl, disko)..."
+	@nix flake update nixpkgs nixpkgs-unstable home-manager nix-darwin fenix llm-agents
+	@echo "Done! Run 'make rebuild' to apply updates."
+
+update-all: ## Update all flake inputs including Hyprland & NixOS-only
+	@echo "Updating all flake inputs..."
 	@nix flake update
 	@echo "Done! Run 'make rebuild' to apply updates."
 
