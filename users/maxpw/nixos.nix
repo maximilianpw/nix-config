@@ -80,6 +80,17 @@ in {
     polkitPolicyOwners = ["maxpw"];
   };
 
+  # Allow Helium (Chromium fork) to talk to the 1Password desktop app via
+  # native messaging. 1Password verifies browsers against a built-in list
+  # plus this file; it must be owned by root with mode 0755 or it's ignored.
+  environment.etc."1password/custom_allowed_browsers" = {
+    text = ''
+      helium
+      .helium-wrapped
+    '';
+    mode = "0755";
+  };
+
   services.dbus.enable = true;
   xdg.portal = {
     enable = true;

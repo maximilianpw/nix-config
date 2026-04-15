@@ -87,6 +87,25 @@ in {
             ["@WLOGOUT_ICONS@"]
             ["${pkgs.wlogout}/share/wlogout/icons"]
             (builtins.readFile ../wlogout/style.css);
+
+          # 1Password browser integration for Helium (Chromium fork).
+          # Must also add Helium's binary path to customAllowedBrowsers via
+          # the 1Password UI (Settings → Developer) — settings.json is
+          # HMAC-signed so it cannot be set declaratively.
+          "helium/NativeMessagingHosts/com.1password.1password.json".text = builtins.toJSON {
+            name = "com.1password.1password";
+            description = "1Password BrowserSupport";
+            path = "/run/wrappers/bin/1Password-BrowserSupport";
+            type = "stdio";
+            allowed_origins = [
+              "chrome-extension://aeblfdkhhhdcdjpifhhbdiojplfjncoa/"
+              "chrome-extension://bkpbhnjcbehoklfkljkkbbmipaphipgl/"
+              "chrome-extension://dppgmdbiimibapkepcbdbmkaabgiofem/"
+              "chrome-extension://gejiddohjgogedgjnonbofjigllpkmbf/"
+              "chrome-extension://hjlinigoblmkhjejkmbegnoaljkphmgo/"
+              "chrome-extension://khgocmkkpikpnmmkgmdnfckapcdkgfaf/"
+            ];
+          };
         }
         // (symlinkDir ../hyprland "hypr")
         // {
