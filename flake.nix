@@ -54,8 +54,11 @@
       (final: prev: let
         unstable = inputs.nixpkgs-unstable.legacyPackages.${prev.stdenv.hostPlatform.system};
       in {
+        # Expose the full unstable channel for consumers that need a single
+        # unstable package without shadowing the stable one globally (which
+        # would force mass rebuilds of everything depending on it).
+        inherit unstable;
         gh = unstable.gh;
-        neovim-unwrapped = unstable.neovim-unwrapped;
         nushell = unstable.nushell;
         nushellPlugins = unstable.nushellPlugins;
         tmuxinator = unstable.tmuxinator;
