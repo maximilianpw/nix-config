@@ -39,5 +39,6 @@
     pkgs.sops
     pkgs.mise
     pkgs.skills
+    pkgs.comma
   ];
 }
