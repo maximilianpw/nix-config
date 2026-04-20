@@ -62,8 +62,6 @@
         # would force mass rebuilds of everything depending on it).
         inherit unstable;
         gh = unstable.gh;
-        nushell = unstable.nushell;
-        nushellPlugins = unstable.nushellPlugins;
         tmuxinator = unstable.tmuxinator;
         jujutsu = unstable.jujutsu;
         direnv = unstable.direnv;
