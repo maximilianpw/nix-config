@@ -40,5 +40,6 @@
     pkgs.mise
     pkgs.skills
     pkgs.comma
+    pkgs.coderabbit
   ];
 }

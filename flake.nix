@@ -28,6 +28,9 @@
 
     disko.url = "github:nix-community/disko";
     disko.inputs.nixpkgs.follows = "nixpkgs";
+
+    nix-index-database.url = "github:nix-community/nix-index-database";
+    nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = inputs @ {
@@ -68,6 +71,7 @@
         obsidian = final.callPackage ./packages/obsidian.nix {};
         t3code = final.callPackage ./packages/t3code.nix {};
         skills = final.callPackage ./packages/skills.nix {};
+        coderabbit = final.callPackage ./packages/coderabbit.nix {};
       })
     ];
 
@@ -133,12 +137,12 @@
       x86_64-linux = let
         pkgs = mkPkgs "x86_64-linux";
       in {
-        inherit (pkgs) helium obsidian t3code skills;
+        inherit (pkgs) helium obsidian t3code skills coderabbit;
       };
       aarch64-darwin = let
         pkgs = mkPkgs "aarch64-darwin";
       in {
-        inherit (pkgs) skills;
+        inherit (pkgs) skills coderabbit;
       };
     };
 

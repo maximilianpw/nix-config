@@ -22,6 +22,7 @@
   '';
 in {
   imports = [
+    inputs.nix-index-database.homeModules.nix-index
     ./modules/fonts.nix
     ./modules/git.nix
     ./modules/shells.nix

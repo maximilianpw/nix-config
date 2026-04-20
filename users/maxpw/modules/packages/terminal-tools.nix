@@ -45,7 +45,6 @@
     # AI tools
     pkgs.claude-code
     pkgs.codex
-    pkgs.gemini-cli
     pkgs.opencode
     pkgs.amp-cli
   ];

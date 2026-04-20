@@ -118,15 +118,12 @@ in {
       }
     '';
     plugins = with pkgs.nushellPlugins;
+    # Plugins pinned to nushell 0.111.0 in nixpkgs-unstable (skim, hcl,
+    # semver, desktop_notifications) are ABI-incompatible with nushell
+    # 0.112.1 and have been dropped until nixpkgs catches up.
       [
         gstat
         query
-        skim
-        hcl
-        semver
-      ]
-      ++ lib.optionals (!isDarwin) [
-        desktop_notifications
       ];
   };
 
