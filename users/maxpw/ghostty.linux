@@ -8,13 +8,6 @@ macos-non-native-fullscreen = visible-menu
 macos-option-as-alt = left
 mouse-hide-while-typing = true
 
-# Window
-gtk-titlebar-style = tabs
-window-padding-x = 8
-window-padding-y = 6
-window-padding-balance = true
-window-save-state = always
-
 # Clipboard
 copy-on-select = clipboard
 clipboard-read = allow
