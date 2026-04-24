@@ -99,7 +99,7 @@ in {
       use ($nu.default-config-dir | path join "ghostty.nu")
     '';
     extraEnv = ''
-      $env.SHELL = "${pkgs.nushell}/bin/nu"
+      $env.SHELL = "${pkgs.bash}/bin/bash"
 
       let mise_path = $nu.default-config-dir | path join "mise.nu"
       ^mise activate nu | save $mise_path --force

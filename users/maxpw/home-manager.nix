@@ -42,7 +42,6 @@ in {
     {
       EDITOR = "nvim";
       VISUAL = "nvim";
-      SHELL = lib.getExe settings.defaultShell;
       PAGER = "less -FirSwX";
       MANPAGER = "${manpager}/bin/manpager";
       MANROFFOPT = "-c";
