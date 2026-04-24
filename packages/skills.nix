@@ -10,7 +10,7 @@
   common-updater-scripts,
 }: let
   pname = "skills";
-  version = "1.5.0";
+  version = "1.5.1";
 
   yamlVersion = "2.8.3";
   yamlSrc = fetchurl {
@@ -23,7 +23,7 @@ in
 
     src = fetchurl {
       url = "https://registry.npmjs.org/skills/-/skills-${version}.tgz";
-      hash = "sha256-ju9WPOfQJuQGZb9Wrk4CzN+IpsCkx6p4fupMKocctwE=";
+      hash = "sha256-w1G3D7OvPzbROFiDxCM4x/qzXM2LGQYP0Oyk0mJCIkA=";
     };
 
     sourceRoot = "package";
