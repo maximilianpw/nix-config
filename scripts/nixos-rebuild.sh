@@ -31,6 +31,8 @@ Options:
   --check      Run 'nix flake check --no-build' before rebuilding
   --force      Continue even if flake validation fails
   --commit     Commit repo changes after a successful rebuild
+  --verbose    Show live build logs and verbose fetch/eval progress
+               (passes -L -v --show-trace to nix build / rebuild)
   -h, --help   Show this help message
 
 Host mapping:
@@ -45,6 +47,7 @@ EOF
 FORCE=0
 AUTO_COMMIT=0
 FLAKE_CHECK=0
+VERBOSE=0
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -58,6 +61,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --commit)
             AUTO_COMMIT=1
+            shift
+            ;;
+        --verbose)
+            VERBOSE=1
             shift
             ;;
         -h|--help)
@@ -80,6 +87,13 @@ USER_HOST_MAP=(
 )
 
 HOSTNAME="${USER_HOST_MAP[$auto_username]:-default}"
+
+# Extra flags passed to nix build / *-rebuild when --verbose is set
+VERBOSE_FLAGS=()
+if [[ "$VERBOSE" == "1" ]]; then
+    VERBOSE_FLAGS=(-L -v --show-trace)
+    info "Verbose mode enabled (-L -v --show-trace)"
+fi
 
 # Detect platform
 UNAME_OUT="$(uname -s)"
@@ -173,7 +187,7 @@ if [[ "$PLATFORM" == "nixos" ]]; then
     # We must build its system build output.
     BUILD_ATTR="$FLAKE_ATTR.config.system.build.toplevel"
     info "Building NixOS system derivation: $BUILD_ATTR"
-    if ! nix build "$FLAKE_REF#$BUILD_ATTR" --no-link 2>&1 | tee "$LOG_FILE"; then
+    if ! nix build "$FLAKE_REF#$BUILD_ATTR" --no-link "${VERBOSE_FLAGS[@]}" 2>&1 | tee "$LOG_FILE"; then
         error "Build failed! Check the log above for details."
         exit 1
     fi
@@ -182,13 +196,13 @@ fi
 # Apply the configuration
 info "Applying configuration..."
 if [[ "$PLATFORM" == "darwin" ]]; then
-    if ! sudo darwin-rebuild switch --flake "$FLAKE_REF#$FLAKE_SWITCH_ATTR" 2>&1 | tee -a "$LOG_FILE"; then
+    if ! sudo darwin-rebuild switch --flake "$FLAKE_REF#$FLAKE_SWITCH_ATTR" "${VERBOSE_FLAGS[@]}" 2>&1 | tee -a "$LOG_FILE"; then
         error "Rebuild failed! Check the log:"
         grep --color=always -E "(error|Error|ERROR|warning|Warning|WARN)" "$LOG_FILE" || true
         exit 1
     fi
 else
-    if ! sudo nixos-rebuild switch --flake "$FLAKE_REF#$FLAKE_SWITCH_ATTR" 2>&1 | tee -a "$LOG_FILE"; then
+    if ! sudo nixos-rebuild switch --flake "$FLAKE_REF#$FLAKE_SWITCH_ATTR" "${VERBOSE_FLAGS[@]}" 2>&1 | tee -a "$LOG_FILE"; then
         error "Rebuild failed! Check the log:"
         grep --color=always -E "(error|Error|ERROR|warning|Warning|WARN)" "$LOG_FILE" || true
         exit 1

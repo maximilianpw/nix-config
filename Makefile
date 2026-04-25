@@ -1,4 +1,4 @@
-.PHONY: help bootstrap rebuild rebuild-check check update update-all update-packages gc clean format diff test wsl skills
+.PHONY: help bootstrap rebuild rebuild-check rebuild-verbose check update update-all update-packages gc clean format diff test wsl skills
 
 # Default target
 .DEFAULT_GOAL := help
@@ -26,6 +26,10 @@ rebuild: ## Rebuild system configuration (NixOS/Darwin)
 rebuild-check: ## Rebuild with flake check before switching
 	@echo "Starting system rebuild with flake check..."
 	@$(SCRIPT_DIR)/nixos-rebuild.sh --check
+
+rebuild-verbose: ## Rebuild with live build logs (-L -v --show-trace)
+	@echo "Starting system rebuild with verbose output..."
+	@$(SCRIPT_DIR)/nixos-rebuild.sh --verbose
 
 update: ## Update flake inputs (skips Hyprland & NixOS-only inputs)
 	@echo "Updating shared flake inputs (skipping hyprland, sops-nix, nixos-wsl, disko)..."

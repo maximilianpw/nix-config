@@ -61,10 +61,7 @@
         # unstable package without shadowing the stable one globally (which
         # would force mass rebuilds of everything depending on it).
         inherit unstable;
-        gh = unstable.gh;
-        tmuxinator = unstable.tmuxinator;
         jujutsu = unstable.jujutsu;
-        direnv = unstable.direnv;
         helium = final.callPackage ./packages/helium.nix {};
         obsidian = final.callPackage ./packages/obsidian.nix {};
         t3code = final.callPackage ./packages/t3code.nix {};
