@@ -51,7 +51,6 @@
         claude-code = llm.claude-code;
         codex = llm.codex;
         opencode = llm.opencode;
-        gemini-cli = llm.gemini-cli;
         amp-cli = llm.amp;
       })
       (final: prev: let
@@ -61,6 +60,8 @@
         # unstable package without shadowing the stable one globally (which
         # would force mass rebuilds of everything depending on it).
         inherit unstable;
+        # direnv 2.37.1 fish tests get killed during build on macOS (sandbox/OOM)
+        direnv = prev.direnv.overrideAttrs (old: {doCheck = false;});
         jujutsu = unstable.jujutsu;
         helium = final.callPackage ./packages/helium.nix {};
         obsidian = final.callPackage ./packages/obsidian.nix {};

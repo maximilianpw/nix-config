@@ -10,6 +10,8 @@
     pkgs.ripgrep
     pkgs.fd
     pkgs.yazi
+    pkgs.jq
+    pkgs.uv
 
     # Git tools
     pkgs.gnupg
