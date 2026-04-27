@@ -19,6 +19,7 @@
     # Language servers & formatters
     pkgs.prettierd
     pkgs.eslint
+    pkgs.biome
     pkgs.oxlint
     pkgs.checkstyle
 
