@@ -34,6 +34,7 @@ in {
     ./modules/packages/dev-tools.nix
     ./modules/packages/terminal-tools.nix
     ./modules/packages/linux-desktop.nix
+    ./modules/packages/custom-scripts.nix
   ];
 
   home.stateVersion = "25.05";

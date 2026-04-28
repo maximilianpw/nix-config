@@ -49,6 +49,7 @@ in {
       "t3-code"
       "linear-linear"
       "wispr-flow"
+      "freelens"
     ];
 
     onActivation = {
