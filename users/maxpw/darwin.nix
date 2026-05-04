@@ -47,9 +47,10 @@ in {
       "cursor"
       "cmux"
       "t3-code"
-      "linear-linear"
+      "linear"
       "wispr-flow"
       "freelens"
+      "raindropio"
     ];
 
     onActivation = {
