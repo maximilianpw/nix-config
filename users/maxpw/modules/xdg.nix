@@ -106,6 +106,20 @@ in {
               "chrome-extension://khgocmkkpikpnmmkgmdnfckapcdkgfaf/"
             ];
           };
+          "net.imput.helium/NativeMessagingHosts/com.1password.1password.json".text = builtins.toJSON {
+            name = "com.1password.1password";
+            description = "1Password BrowserSupport";
+            path = "/run/wrappers/bin/1Password-BrowserSupport";
+            type = "stdio";
+            allowed_origins = [
+              "chrome-extension://aeblfdkhhhdcdjpifhhbdiojplfjncoa/"
+              "chrome-extension://bkpbhnjcbehoklfkljkkbbmipaphipgl/"
+              "chrome-extension://dppgmdbiimibapkepcbdbmkaabgiofem/"
+              "chrome-extension://gejiddohjgogedgjnonbofjigllpkmbf/"
+              "chrome-extension://hjlinigoblmkhjejkmbegnoaljkphmgo/"
+              "chrome-extension://khgocmkkpikpnmmkgmdnfckapcdkgfaf/"
+            ];
+          };
         }
         // (symlinkDir ../hyprland "hypr")
         // {
