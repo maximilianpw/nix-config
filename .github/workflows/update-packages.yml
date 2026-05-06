@@ -9,7 +9,7 @@ on:
       packages:
         description: "Space-separated package names (default: all)"
         required: false
-        default: "helium obsidian t3code skills"
+        default: "helium obsidian t3code skills coderabbit"
 
 jobs:
   update:
@@ -29,7 +29,7 @@ jobs:
         id: bump
         run: |
           set -euo pipefail
-          packages="${{ github.event.inputs.packages || 'helium obsidian t3code skills' }}"
+          packages="${{ github.event.inputs.packages || 'helium obsidian t3code skills coderabbit' }}"
           failed=()
           for pkg in $packages; do
             echo "::group::nix-update $pkg"
