@@ -68,6 +68,7 @@
         t3code = final.callPackage ./packages/t3code.nix {};
         skills = final.callPackage ./packages/skills.nix {};
         coderabbit = final.callPackage ./packages/coderabbit.nix {};
+        hunkdiff = final.callPackage ./packages/hunkdiff.nix {};
       })
     ];
 
@@ -133,12 +134,12 @@
       x86_64-linux = let
         pkgs = mkPkgs "x86_64-linux";
       in {
-        inherit (pkgs) helium obsidian t3code skills coderabbit;
+        inherit (pkgs) helium obsidian t3code skills coderabbit hunkdiff;
       };
       aarch64-darwin = let
         pkgs = mkPkgs "aarch64-darwin";
       in {
-        inherit (pkgs) skills coderabbit;
+        inherit (pkgs) skills coderabbit hunkdiff;
       };
     };
 

@@ -18,6 +18,7 @@
     pkgs.gh
     pkgs.lazygit
     pkgs.lazydocker
+    pkgs.hunkdiff
 
     # System utilities
     pkgs.fastfetch

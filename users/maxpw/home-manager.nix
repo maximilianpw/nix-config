@@ -29,6 +29,7 @@ in {
     ./modules/gpg.nix
     ./modules/xdg.nix
     ./modules/linux-services.nix
+    ./modules/zellij.nix
     ./modules/tmux.nix
     ./modules/neovim.nix
     ./modules/packages/dev-tools.nix
