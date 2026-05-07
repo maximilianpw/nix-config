@@ -27,7 +27,7 @@ in {
       "whatsapp"
       "raycast"
       "chatgpt"
-      "discord"
+      "legcord"
       "notion"
       "slack"
       "proton-mail"
@@ -50,7 +50,6 @@ in {
       "linear"
       "wispr-flow"
       "freelens"
-      "raindropio"
     ];
 
     onActivation = {

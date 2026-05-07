@@ -1,4 +1,69 @@
-{pkgs, ...}: {
+{
+  pkgs,
+  isDarwin,
+  isWSL ? false,
+  ...
+}: let
+  zellijClipboardSettings =
+    if isDarwin
+    then {copy_command = "pbcopy";}
+    else if pkgs.stdenv.isLinux && !isWSL
+    then {copy_command = "wl-copy";}
+    else {};
+in {
+  programs.zellij = {
+    enable = true;
+    settings =
+      {
+        default_shell = "${pkgs.nushell}/bin/nu";
+        session_serialization = true;
+        serialize_pane_viewport = true;
+        scrollback_lines_to_serialize = 10000;
+        scroll_buffer_size = 50000;
+      }
+      // zellijClipboardSettings;
+    extraConfig = ''
+      keybinds {
+        shared_except "tmux" "locked" {
+          bind "Ctrl Space" { SwitchToMode "Tmux"; }
+        }
+
+        tmux {
+          bind "|" { NewPane "Right"; SwitchToMode "Normal"; }
+          bind "-" { NewPane "Down"; SwitchToMode "Normal"; }
+          bind "B" { BreakPane; SwitchToMode "Normal"; }
+          bind "1" { GoToTab 1; SwitchToMode "Normal"; }
+          bind "2" { GoToTab 2; SwitchToMode "Normal"; }
+          bind "3" { GoToTab 3; SwitchToMode "Normal"; }
+          bind "4" { GoToTab 4; SwitchToMode "Normal"; }
+          bind "5" { GoToTab 5; SwitchToMode "Normal"; }
+          bind "6" { GoToTab 6; SwitchToMode "Normal"; }
+          bind "7" { GoToTab 7; SwitchToMode "Normal"; }
+          bind "8" { GoToTab 8; SwitchToMode "Normal"; }
+          bind "9" { GoToTab 9; SwitchToMode "Normal"; }
+          bind "g" {
+            Run "lazygit" {
+              floating true
+              close_on_exit true
+              width "90%"
+              height "90%"
+            };
+            SwitchToMode "Normal";
+          }
+          bind "G" {
+            Run "jjui" {
+              floating true
+              close_on_exit true
+              width "90%"
+              height "90%"
+            };
+            SwitchToMode "Normal";
+          }
+        }
+      }
+    '';
+  };
+
   programs.tmux = {
     enable = true;
     shell = "${pkgs.nushell}/bin/nu";
