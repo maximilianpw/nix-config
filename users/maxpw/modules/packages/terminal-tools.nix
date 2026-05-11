@@ -39,17 +39,10 @@
     pkgs._1password-cli
     pkgs.ngrok
 
-    # Ai
-    pkgs.ollama
     # Agent CLIs from llm-agents.
     pkgs.claude-code
     pkgs.codex
     pkgs.opencode
     pkgs.amp-cli
   ];
-
-  services.ollama = {
-    enable = true;
-    package = pkgs.ollama;
-  };
 }

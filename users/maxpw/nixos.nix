@@ -80,6 +80,9 @@ in {
     polkitPolicyOwners = ["maxpw"];
   };
 
+  programs.ollama.enable = true;
+  services.ollama.enable = true;
+
   # Allow Helium (Chromium fork) to talk to the 1Password desktop app via
   # native messaging. 1Password verifies browsers against a built-in list
   # plus this file; it must be owned by root with mode 0755 or it's ignored.

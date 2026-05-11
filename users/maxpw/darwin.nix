@@ -18,6 +18,7 @@ in {
       "jsonlint"
       "gnupg"
       "pinentry-mac"
+      "ollama"
     ];
 
     casks = [
