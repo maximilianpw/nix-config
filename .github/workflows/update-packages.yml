@@ -11,6 +11,10 @@ on:
         required: false
         default: "helium obsidian t3code skills coderabbit"
 
+concurrency:
+  group: update-packages
+  cancel-in-progress: false
+
 jobs:
   update:
     name: Bump custom packages
@@ -24,6 +28,8 @@ jobs:
       - uses: DeterminateSystems/nix-installer-action@main
 
       - uses: DeterminateSystems/magic-nix-cache-action@main
+        with:
+          use-flakehub: false
 
       - name: Run nix-update for each package
         id: bump
@@ -33,7 +39,7 @@ jobs:
           failed=()
           for pkg in $packages; do
             echo "::group::nix-update $pkg"
-            if nix run nixpkgs#nix-update -- --flake "$pkg"; then
+            if nix run nixpkgs#nix-update -- --flake --use-update-script "$pkg"; then
               echo "ok: $pkg"
             else
               echo "failed: $pkg"
