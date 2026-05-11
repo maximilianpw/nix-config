@@ -43,7 +43,6 @@ in {
       pkgs.pavucontrol
       pkgs.brightnessctl
       pkgs.playerctl
-      pkgs.qbittorrent
       pkgs.cava
 
       # Focus existing window or launch app (used by hyper key bindings)

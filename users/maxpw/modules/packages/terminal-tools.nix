@@ -15,10 +15,7 @@
 
     # Git tools
     pkgs.gnupg
-    pkgs.gh
-    pkgs.lazygit
     pkgs.lazydocker
-    pkgs.hunkdiff
 
     # System utilities
     pkgs.fastfetch
@@ -42,13 +39,17 @@
     pkgs._1password-cli
     pkgs.ngrok
 
-    # Tmux tools
-    pkgs.sesh
-
-    # AI tools
+    # Ai
+    pkgs.ollama
+    # Agent CLIs from llm-agents.
     pkgs.claude-code
     pkgs.codex
     pkgs.opencode
     pkgs.amp-cli
   ];
+
+  services.ollama = {
+    enable = true;
+    package = pkgs.ollama;
+  };
 }

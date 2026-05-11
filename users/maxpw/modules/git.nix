@@ -9,9 +9,11 @@
     # I don't use "settings" because the path is wrong on macOS at
     # the time of writing this.
   };
-
   programs.jjui.enable = true;
 
+  programs.gh.enable = true;
+  programs.lazygit.enable = true;
+  programs.hunkdiff.enable = true;
   programs.git = {
     enable = true;
     signing = {
