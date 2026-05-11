@@ -2,14 +2,14 @@ name: Update packages
 
 on:
   schedule:
-    # Monday 09:00 UTC — picked to align with most upstream release cadences.
-    - cron: "0 9 * * 1"
+    # Monday 07:00 UTC — picked to align with most upstream release cadences.
+    - cron: '0 7 * * 1'
   workflow_dispatch:
     inputs:
       packages:
-        description: "Space-separated package names (default: all)"
+        description: 'Space-separated package names (default: all)'
         required: false
-        default: "helium obsidian t3code skills coderabbit"
+        default: 'helium obsidian t3code skills coderabbit'
 
 concurrency:
   group: update-packages
@@ -67,8 +67,8 @@ jobs:
         with:
           branch: automated/update-packages
           base: main
-          commit-message: "chore: bump custom packages"
-          title: "chore: bump custom packages"
+          commit-message: 'chore: bump custom packages'
+          title: 'chore: bump custom packages'
           body: |
             Automated version bumps from `nix-update`, run by
             `.github/workflows/update-packages.yml`.
