@@ -99,7 +99,7 @@ in {
 
   programs.nushell = {
     enable = true;
-    shellAliases = builtins.removeAttrs shellAliases ["jtp" "ls" "c" "fnix"];
+    shellAliases = builtins.removeAttrs shellAliases ["jtp" "ls" "fnix"];
     configFile.source = ../config.nu;
     extraConfig = ''
       use ($nu.default-config-dir | path join "mise.nu")
