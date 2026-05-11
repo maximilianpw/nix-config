@@ -80,7 +80,6 @@ in {
     polkitPolicyOwners = ["maxpw"];
   };
 
-  programs.ollama.enable = true;
   services.ollama.enable = true;
 
   # Allow Helium (Chromium fork) to talk to the 1Password desktop app via
