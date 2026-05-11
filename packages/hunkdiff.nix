@@ -10,7 +10,7 @@
   nix,
 }: let
   pname = "hunkdiff";
-  version = "0.10.0";
+  version = "0.11.1";
 
   hostPackages = {
     aarch64-darwin = {
@@ -45,7 +45,7 @@ in
 
     src = fetchurl {
       url = "https://registry.npmjs.org/hunkdiff/-/hunkdiff-${version}.tgz";
-      hash = "sha512-GfUYNCzEnZ0OTdg340YRFbW1SvvwgRMyQmn44t2GKoSjYqiXGaDCeOG66fpIzU8WRdbUi2uzdGIVkEsCps8TeA==";
+      hash = "sha256-251t629e3cqLL89PzYqh4vJhoGhsAaAnkKv7Q4IqKfc=";
     };
 
     sourceRoot = "package";
