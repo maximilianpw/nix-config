@@ -13,7 +13,7 @@
 
   programs.gh.enable = true;
   programs.lazygit.enable = true;
-  programs.hunkdiff.enable = true;
+  home.packages = [pkgs.hunkdiff];
   programs.git = {
     enable = true;
     signing = {
