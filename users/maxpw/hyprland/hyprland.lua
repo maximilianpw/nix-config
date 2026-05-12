@@ -1,5 +1,4 @@
 -- Hyprland Lua config entrypoint.
--- Legacy hyprland.conf is kept in this directory as a rollback reference.
 
 require("conf.monitors")
 require("conf.environment")

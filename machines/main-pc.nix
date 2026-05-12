@@ -61,7 +61,7 @@
   '';
 
   # Caps Lock → tap=Escape / hold=Hyper (Ctrl+Super+Alt+Shift)
-  # Pairs with the $hyper bindings in hyprland/conf/keybinds.conf
+  # Pairs with the hyper bindings in hyprland/conf/keybinds.lua
   services.keyd = {
     enable = true;
     keyboards.default = {

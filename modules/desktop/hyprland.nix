@@ -3,16 +3,18 @@
   pkgs,
   lib,
   config,
+  currentSystemUser ? "maxpw",
   ...
 }: let
   cfg = config.custom.hyprland;
+  homeDir = config.users.users.${currentSystemUser}.home;
 in {
   options.custom.hyprland = {
     enable = lib.mkEnableOption "Hyprland with greetd";
 
     greeterCommand = lib.mkOption {
       type = lib.types.str;
-      default = "${pkgs.tuigreet}/bin/tuigreet --time --remember --cmd start-hyprland";
+      default = "${pkgs.tuigreet}/bin/tuigreet --time --remember --cmd 'start-hyprland -- --config ${homeDir}/.config/hypr/hyprland.lua'";
       description = "Greeter command for greetd";
     };
   };

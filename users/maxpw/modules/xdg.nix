@@ -16,7 +16,7 @@
     lib.mapAttrs' (name: type: {
       name = "${prefix}/${name}";
       value = {source = config.lib.file.mkOutOfStoreSymlink "${outOfStoreDir}/${name}";};
-    }) (builtins.readDir dir);
+    }) (lib.filterAttrs (name: _: name != "hyprland.conf") (builtins.readDir dir));
 
   hasLockScreen = hostname != "main-pc";
 

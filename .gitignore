@@ -25,6 +25,9 @@ Thumbs.db
 *.tmp
 *.temp
 
+# Hyprland creates this stub even when hyprland.lua is the active config.
+users/maxpw/hyprland/hyprland.conf
+
 # Secrets management
 # IMPORTANT: Only commit encrypted .yaml files, never plaintext or private keys
 secrets/secrets.yaml.dec
