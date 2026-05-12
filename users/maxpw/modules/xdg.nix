@@ -3,11 +3,29 @@
   config,
   isDarwin,
   isWSL ? false,
+  hostname,
+  lib,
   pkgs,
   ...
 }: let
   isLinux = pkgs.stdenv.isLinux && !isWSL;
   hyprConfigPath = "${config.home.homeDirectory}/nix-config/users/maxpw/hyprland";
+
+  # Live-link top-level Hyprland entries while allowing generated host overrides.
+  symlinkDir = dir: outOfStoreDir: prefix:
+    lib.mapAttrs' (name: type: {
+      name = "${prefix}/${name}";
+      value = {source = config.lib.file.mkOutOfStoreSymlink "${outOfStoreDir}/${name}";};
+    }) (builtins.readDir dir);
+
+  hasLockScreen = hostname != "main-pc";
+
+  hostLua =
+    if hasLockScreen
+    then ''
+      hl.bind("SUPER + ESCAPE", hl.dsp.exec_cmd("hyprlock"))
+    ''
+    else "";
 in {
   xdg.enable = true;
 
@@ -26,57 +44,61 @@ in {
     )
     // (
       if isLinux
-      then {
-        "ghostty/config".text = builtins.readFile ../ghostty.linux;
-        "gammastep/config.ini".text = builtins.readFile ../config.gammastep;
-        "rofi".source = ../rofi;
-        "rofi".recursive = true;
-        "waybar".source = ../waybar;
-        "waybar".recursive = true;
-        "swaync".source = ../swaync;
-        "swaync".recursive = true;
-        "wlogout/layout".source = ../wlogout/layout;
-        "wlogout/colors.css".source = ../wlogout/colors.css;
-        "wlogout/style.css".text =
-          builtins.replaceStrings
-          ["@WLOGOUT_ICONS@"]
-          ["${pkgs.wlogout}/share/wlogout/icons"]
-          (builtins.readFile ../wlogout/style.css);
+      then
+        {
+          "ghostty/config".text = builtins.readFile ../ghostty.linux;
+          "gammastep/config.ini".text = builtins.readFile ../config.gammastep;
+          "rofi".source = ../rofi;
+          "rofi".recursive = true;
+          "waybar".source = ../waybar;
+          "waybar".recursive = true;
+          "swaync".source = ../swaync;
+          "swaync".recursive = true;
+          "wlogout/layout".source = ../wlogout/layout;
+          "wlogout/colors.css".source = ../wlogout/colors.css;
+          "wlogout/style.css".text =
+            builtins.replaceStrings
+            ["@WLOGOUT_ICONS@"]
+            ["${pkgs.wlogout}/share/wlogout/icons"]
+            (builtins.readFile ../wlogout/style.css);
 
-        # 1Password browser integration for Helium (Chromium fork).
-        # Must also add Helium's binary path to customAllowedBrowsers via
-        # the 1Password UI (Settings → Developer) — settings.json is
-        # HMAC-signed so it cannot be set declaratively.
-        "helium/NativeMessagingHosts/com.1password.1password.json".text = builtins.toJSON {
-          name = "com.1password.1password";
-          description = "1Password BrowserSupport";
-          path = "/run/wrappers/bin/1Password-BrowserSupport";
-          type = "stdio";
-          allowed_origins = [
-            "chrome-extension://aeblfdkhhhdcdjpifhhbdiojplfjncoa/"
-            "chrome-extension://bkpbhnjcbehoklfkljkkbbmipaphipgl/"
-            "chrome-extension://dppgmdbiimibapkepcbdbmkaabgiofem/"
-            "chrome-extension://gejiddohjgogedgjnonbofjigllpkmbf/"
-            "chrome-extension://hjlinigoblmkhjejkmbegnoaljkphmgo/"
-            "chrome-extension://khgocmkkpikpnmmkgmdnfckapcdkgfaf/"
-          ];
-        };
-        "net.imput.helium/NativeMessagingHosts/com.1password.1password.json".text = builtins.toJSON {
-          name = "com.1password.1password";
-          description = "1Password BrowserSupport";
-          path = "/run/wrappers/bin/1Password-BrowserSupport";
-          type = "stdio";
-          allowed_origins = [
-            "chrome-extension://aeblfdkhhhdcdjpifhhbdiojplfjncoa/"
-            "chrome-extension://bkpbhnjcbehoklfkljkkbbmipaphipgl/"
-            "chrome-extension://dppgmdbiimibapkepcbdbmkaabgiofem/"
-            "chrome-extension://gejiddohjgogedgjnonbofjigllpkmbf/"
-            "chrome-extension://hjlinigoblmkhjejkmbegnoaljkphmgo/"
-            "chrome-extension://khgocmkkpikpnmmkgmdnfckapcdkgfaf/"
-          ];
-        };
-        "hypr".source = config.lib.file.mkOutOfStoreSymlink hyprConfigPath;
-      }
+          # 1Password browser integration for Helium (Chromium fork).
+          # Must also add Helium's binary path to customAllowedBrowsers via
+          # the 1Password UI (Settings → Developer) — settings.json is
+          # HMAC-signed so it cannot be set declaratively.
+          "helium/NativeMessagingHosts/com.1password.1password.json".text = builtins.toJSON {
+            name = "com.1password.1password";
+            description = "1Password BrowserSupport";
+            path = "/run/wrappers/bin/1Password-BrowserSupport";
+            type = "stdio";
+            allowed_origins = [
+              "chrome-extension://aeblfdkhhhdcdjpifhhbdiojplfjncoa/"
+              "chrome-extension://bkpbhnjcbehoklfkljkkbbmipaphipgl/"
+              "chrome-extension://dppgmdbiimibapkepcbdbmkaabgiofem/"
+              "chrome-extension://gejiddohjgogedgjnonbofjigllpkmbf/"
+              "chrome-extension://hjlinigoblmkhjejkmbegnoaljkphmgo/"
+              "chrome-extension://khgocmkkpikpnmmkgmdnfckapcdkgfaf/"
+            ];
+          };
+          "net.imput.helium/NativeMessagingHosts/com.1password.1password.json".text = builtins.toJSON {
+            name = "com.1password.1password";
+            description = "1Password BrowserSupport";
+            path = "/run/wrappers/bin/1Password-BrowserSupport";
+            type = "stdio";
+            allowed_origins = [
+              "chrome-extension://aeblfdkhhhdcdjpifhhbdiojplfjncoa/"
+              "chrome-extension://bkpbhnjcbehoklfkljkkbbmipaphipgl/"
+              "chrome-extension://dppgmdbiimibapkepcbdbmkaabgiofem/"
+              "chrome-extension://gejiddohjgogedgjnonbofjigllpkmbf/"
+              "chrome-extension://hjlinigoblmkhjejkmbegnoaljkphmgo/"
+              "chrome-extension://khgocmkkpikpnmmkgmdnfckapcdkgfaf/"
+            ];
+          };
+        }
+        // (symlinkDir ../hyprland hyprConfigPath "hypr")
+        // {
+          "hypr/host.lua".text = hostLua;
+        }
       else {}
     );
 }
