@@ -52,6 +52,13 @@
       bind = $mod, ESCAPE, exec, hyprlock
     ''
     else "";
+
+  hostLua =
+    if hasLockScreen
+    then ''
+      hl.bind("SUPER + ESCAPE", hl.dsp.exec_cmd("hyprlock"))
+    ''
+    else "";
 in {
   xdg.enable = true;
 
@@ -125,6 +132,7 @@ in {
         // {
           "hypr/hypridle.conf".text = hypridleConf;
           "hypr/host.conf".text = hostConf;
+          "hypr/host.lua".text = hostLua;
         }
       else {}
     );

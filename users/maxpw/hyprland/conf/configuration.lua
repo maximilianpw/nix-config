@@ -1,0 +1,89 @@
+-- Input Configuration
+-- ===================
+
+hl.config({
+	input = {
+		kb_layout = "us",
+		kb_variant = "colemak_dh",
+		kb_options = "caps:escape,compose:ralt",
+		repeat_rate = 50,
+		repeat_delay = 300,
+		resolve_binds_by_sym = true,
+		focus_on_close = 2,
+		touchpad = {
+			natural_scroll = true,
+			drag_lock = 1,
+			middle_button_emulation = true,
+			clickfinger_behavior = true,
+		},
+		accel_profile = "flat",
+		sensitivity = 0,
+	},
+
+	-- Layout and Window Management
+	-- ============================
+
+	general = {
+		gaps_in = 4,
+		gaps_out = 6,
+		float_gaps = 0,
+		border_size = 2,
+		resize_on_border = true,
+		allow_tearing = false,
+		layout = "dwindle",
+
+		snap = {
+			enabled = true,
+			window_gap = 10,
+			monitor_gap = 10,
+			border_overlap = true,
+		},
+	},
+
+	dwindle = {
+		smart_split = true,
+		force_split = 2,
+		preserve_split = true,
+	},
+
+	master = {
+		mfact = 0.65,
+		new_status = "slave",
+		new_on_active = "after",
+		orientation = "left",
+	},
+
+	-- Miscellaneous Settings
+	-- ======================
+
+	cursor = {
+		no_hardware_cursors = true,
+	},
+
+	misc = {
+		disable_hyprland_logo = true,
+		focus_on_activate = true,
+		mouse_move_enables_dpms = false,
+		key_press_enables_dpms = true,
+		vrr = 1,
+		enable_swallow = true,
+		swallow_regex = "^(com\\.mitchellh\\.ghostty)$",
+		swallow_exception_regex = "^(wev|nmtui)$",
+		allow_session_lock_restore = true,
+	},
+
+	binds = {
+		workspace_back_and_forth = false,
+		allow_workspace_cycles = true,
+	},
+
+	render = {
+		direct_scanout = 2,
+	},
+})
+
+hl.gesture({
+	fingers = 3,
+	direction = "horizontal",
+	action = "workspace",
+})
