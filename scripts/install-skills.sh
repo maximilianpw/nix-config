@@ -6,7 +6,7 @@
 # up newly-added entries. Existing skills are left alone by the CLI.
 #
 # Requires the `skills` CLI, which is provided by packages/skills.nix and
-# installed globally via dev-tools.nix. Updates for already-installed skills
+# installed globally via agent-tools.nix. Updates for already-installed skills
 # come from `skills update`, not this script.
 
 set -euo pipefail

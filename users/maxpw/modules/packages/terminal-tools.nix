@@ -38,11 +38,5 @@
     # Security & secrets
     pkgs._1password-cli
     pkgs.ngrok
-
-    # Agent CLIs from llm-agents.
-    pkgs.claude-code
-    pkgs.codex
-    pkgs.opencode
-    pkgs.amp-cli
   ];
 }

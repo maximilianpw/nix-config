@@ -43,8 +43,6 @@
     gl = "git prettylog";
     gp = "git push";
     v = "nvim";
-    ccc = "DISABLE_ZOXIDE=1 claude --dangerously-skip-permissions";
-    c = "codex --yolo";
 
     jc = "jj commit";
     jd = "jj diff";

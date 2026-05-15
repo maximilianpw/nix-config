@@ -10,6 +10,15 @@
 }: let
   isLinux = pkgs.stdenv.isLinux && !isWSL;
   hyprConfigPath = "${config.home.homeDirectory}/nix-config/users/maxpw/hyprland";
+  uwsmEnv = ''
+    export GDK_SCALE=1.6
+    export GDK_DPI_SCALE=1
+    export GDK_BACKEND=wayland,x11
+    export QT_QPA_PLATFORM='wayland;xcb'
+    export MOZ_ENABLE_WAYLAND=1
+    export XCURSOR_THEME=Vanilla-DMZ
+    export XCURSOR_SIZE=128
+  '';
 
   # Live-link top-level Hyprland entries while allowing generated host overrides.
   symlinkDir = dir: outOfStoreDir: prefix:
@@ -48,6 +57,7 @@ in {
         {
           "ghostty/config".text = builtins.readFile ../ghostty.linux;
           "gammastep/config.ini".text = builtins.readFile ../config.gammastep;
+          "uwsm/env".text = uwsmEnv;
           "rofi".source = ../rofi;
           "rofi".recursive = true;
           "waybar".source = ../waybar;

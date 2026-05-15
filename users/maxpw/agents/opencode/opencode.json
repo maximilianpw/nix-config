@@ -1,0 +1,77 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "openai/gpt-5.5",
+  "plugin": [
+    "cc-safety-net",
+    "opencode-notify",
+    "@simonwjackson/opencode-direnv",
+    "@tarquinen/opencode-smart-title",
+    "@slkiser/opencode-quota",
+    "opencode-antigravity-auth@latest"
+  ],
+  "permission": {
+    "bash": {
+      "ls *": "allow",
+      "pwd": "allow",
+      "tree *": "allow",
+      "which *": "allow",
+      "file *": "allow",
+      "wc *": "allow",
+      "head *": "allow",
+      "tail *": "allow",
+      "cat *": "allow",
+      "echo *": "allow",
+      "rg *": "allow",
+      "grep *": "allow",
+      "find *": "allow",
+      "fd *": "allow",
+      "jq *": "allow",
+      "git status": "allow",
+      "git status *": "allow",
+      "git diff": "allow",
+      "git diff *": "allow",
+      "git log": "allow",
+      "git log *": "allow",
+      "git show *": "allow",
+      "git branch": "allow",
+      "git branch *": "allow",
+      "git remote *": "allow",
+      "git ls-files *": "allow",
+      "git stash list": "allow",
+      "jj log *": "allow",
+      "jj status": "allow",
+      "jj diff *": "allow",
+      "gh pr view *": "allow",
+      "gh pr list *": "allow",
+      "gh issue view *": "allow",
+      "gh issue list *": "allow",
+      "gh api *": "allow",
+      "obsidian *": "allow",
+      "rm -rf *": "deny",
+      "sudo *": "deny",
+      "git push --force*": "deny",
+      "git reset --hard*": "deny",
+      "*": "ask"
+    },
+    "edit": "ask",
+    "external_directory": {
+      "~/Documents/obsidian vault/**": "allow"
+    }
+  },
+  "mcp": {
+    "context7": {
+      "type": "remote",
+      "url": "https://mcp.context7.com/mcp",
+      "enabled": true
+    }
+  },
+  "experimental": {
+    "quotaToast": {
+      "enableToast": false,
+      "showSessionTokens": true,
+      "enabledProviders": "auto",
+      "formatStyle": "grouped",
+      "percentDisplayMode": "remaining"
+    }
+  }
+}

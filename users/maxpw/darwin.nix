@@ -26,7 +26,6 @@ in {
       "1password"
       "rectangle"
       "whatsapp"
-      "raycast"
       "chatgpt"
       "legcord"
       "notion"

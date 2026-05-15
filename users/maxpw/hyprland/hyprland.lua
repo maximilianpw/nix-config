@@ -1,7 +1,6 @@
 -- Hyprland Lua config entrypoint.
 
 require("conf.monitors")
-require("conf.environment")
 require("conf.configuration")
 require("conf.animations")
 require("conf.autostart")

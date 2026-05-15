@@ -39,7 +39,6 @@
     # Dev tools
     pkgs.sops
     pkgs.mise
-    pkgs.skills
     pkgs.comma
     pkgs.coderabbit
   ];

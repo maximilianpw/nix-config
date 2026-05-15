@@ -91,10 +91,6 @@ def jtp [] {
   jj git push
 }
 
-def --wrapped ccc [...args: string] {
-  with-env {DISABLE_ZOXIDE: "1"} { claude --dangerously-skip-permissions ...$args }
-}
-
 def lsg [] {
   ls | sort-by type name -i | grid -c | str trim
 }

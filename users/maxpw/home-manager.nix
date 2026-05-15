@@ -25,6 +25,7 @@ in {
     inputs.nix-index-database.homeModules.nix-index
     ./modules/fonts.nix
     ./modules/git.nix
+    ./modules/agent-tools.nix
     ./modules/shells.nix
     ./modules/gpg.nix
     ./modules/xdg.nix

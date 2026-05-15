@@ -163,6 +163,8 @@ make help             # show all make targets
 ## Notes
 
 - Hyprland comes from the upstream flake input to ensure recent builds on aarch64.
+- The Hyprland Lua config is installed by Home Manager at the documented default path, `$XDG_CONFIG_HOME/hypr/hyprland.lua` (`~/.config/hypr/hyprland.lua` in practice). The greetd session starts `start-hyprland` without `--config`; live edits can be reloaded with `hyprctl reload`.
+- Because Hyprland is launched with UWSM, Wayland toolkit and cursor environment variables are managed in `$XDG_CONFIG_HOME/uwsm/env` instead of the Lua config.
 - On macOS, Nix is managed by the Determinate installer; nix-darwin’s `nix.enable` is disabled accordingly.
 
 ## License

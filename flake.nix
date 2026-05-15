@@ -52,6 +52,8 @@
         codex = llm.codex;
         opencode = llm.opencode;
         amp-cli = llm.amp;
+        pi = llm.pi;
+        agent-browser = llm.agent-browser;
       })
       (final: prev: let
         unstable = inputs.nixpkgs-unstable.legacyPackages.${prev.stdenv.hostPlatform.system};
