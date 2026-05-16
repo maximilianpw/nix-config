@@ -11,6 +11,7 @@
     p = "pi";
   };
   source = path: config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/nix-config/users/maxpw/agents/${path}";
+  piConfigSource = path: config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/pi-config/${path}";
 
   globalSkills = [
     "mattpocock/skills@tdd"
@@ -41,7 +42,7 @@ in {
     ".codex/AGENTS.md".source = source "shared/AGENTS.md";
     ".claude/CLAUDE.md".source = source "shared/AGENTS.md";
     ".config/opencode/AGENTS.md".source = source "shared/AGENTS.md";
-    ".pi/agent/AGENTS.md".source = source "shared/AGENTS.md";
+    ".pi/agent/AGENTS.md".source = piConfigSource "AGENTS.md";
 
     ".claude/settings.json".source = source "claude/settings.json";
     ".claude/commands" = {
@@ -55,7 +56,19 @@ in {
 
     ".config/opencode/opencode.json".source = source "opencode/opencode.json";
 
-    ".pi/agent/settings.json".source = source "pi/settings.json";
+    ".pi/agent/settings.json".source = piConfigSource "settings.json";
+    ".pi/agent/extensions" = {
+      source = piConfigSource "extensions";
+      recursive = true;
+    };
+    ".pi/agent/prompts" = {
+      source = piConfigSource "prompts";
+      recursive = true;
+    };
+    ".pi/agent/themes" = {
+      source = piConfigSource "themes";
+      recursive = true;
+    };
   };
 
   home.activation.installGlobalSkills = lib.hm.dag.entryAfter ["writeBoundary"] ''
