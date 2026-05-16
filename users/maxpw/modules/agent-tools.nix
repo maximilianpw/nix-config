@@ -34,7 +34,7 @@ in {
     ".codex/AGENTS.md".source = source "shared/AGENTS.md";
     ".claude/CLAUDE.md".source = source "shared/AGENTS.md";
     ".config/opencode/AGENTS.md".source = source "shared/AGENTS.md";
-    ".pi/AGENTS.md".source = source "shared/AGENTS.md";
+    ".pi/agent/AGENTS.md".source = source "shared/AGENTS.md";
 
     ".claude/settings.json".source = source "claude/settings.json";
     ".claude/commands" = {
