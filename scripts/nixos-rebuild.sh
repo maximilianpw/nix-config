@@ -138,6 +138,9 @@ fi
 
 pushd "$CONFIG_DIR"
 
+# Keep failure summaries scoped to the current rebuild attempt.
+: > "$LOG_FILE"
+
 # Ensure /etc/nixos points to this repo (optional override: set SKIP_ETC_NIXOS_LINK=1)
 if [[ "${SKIP_ETC_NIXOS_LINK:-0}" != "1" ]]; then
     TARGET_REAL=$(readlink -f /etc/nixos 2>/dev/null || echo "")

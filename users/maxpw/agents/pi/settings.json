@@ -1,0 +1,7 @@
+{
+  "defaultProvider": "openai",
+  "defaultModel": "gpt-5.5",
+  "hideThinkingBlock": false,
+  "defaultThinkingLevel": "medium",
+  "enableInstallTelemetry": false
+}

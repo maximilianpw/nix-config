@@ -1,4 +1,4 @@
-.PHONY: help bootstrap rebuild rebuild-check rebuild-verbose check update update-all update-packages gc clean format diff test wsl skills
+.PHONY: help bootstrap rebuild rebuild-check rebuild-verbose check update update-all update-packages gc clean format diff test wsl
 
 # Default target
 .DEFAULT_GOAL := help
@@ -77,10 +77,6 @@ rollback: ## Rollback to previous generation
 		sudo nixos-rebuild --rollback; \
 	fi
 	@echo "Rollback complete!"
-
-skills: ## Install declared agent skills (npx skills add)
-	@echo "Installing declared agent skills..."
-	@$(SCRIPT_DIR)/install-skills.sh
 
 wsl: ## Build WSL tarball for import
 	@echo "Building WSL tarball..."

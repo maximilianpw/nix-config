@@ -50,6 +50,7 @@ in {
       "linear"
       "wispr-flow"
       "freelens"
+      "roon"
     ];
 
     onActivation = {
