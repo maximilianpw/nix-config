@@ -17,7 +17,13 @@
     "mattpocock/skills@grill-me"
     "mattpocock/skills@write-a-prd"
     "mattpocock/skills@improve-codebase-architecture"
-    "mattpocock/skills@prd-to-issues"
+    "mattpocock/skills@to-issues"
+    "mattpocock/skills@diagnose"
+    "mattpocock/skills@triage"
+    "obra/superpowers@verification-before-completion"
+    "obra/superpowers@receiving-code-review"
+    "anthropics/skills@frontend-design"
+    "vercel-labs/agent-skills@vercel-react-best-practices"
     "vercel-labs/skills@find-skills"
   ];
 in {
