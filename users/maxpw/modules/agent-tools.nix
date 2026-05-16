@@ -68,13 +68,15 @@ in {
     install_skill() {
       local skill="$1"
       local skill_name="''${skill##*@}"
-      local skill_path="$HOME/.agents/skills/$skill_name/SKILL.md"
+      local shared_skill_path="$HOME/.agents/skills/$skill_name/SKILL.md"
+      local claude_skill_path="$HOME/.claude/skills/$skill_name/SKILL.md"
+      local pi_skill_path="$HOME/.pi/agent/skills/$skill_name/SKILL.md"
 
-      if [ -e "$skill_path" ]; then
+      if [ -e "$shared_skill_path" ] && [ -e "$claude_skill_path" ] && [ -e "$pi_skill_path" ]; then
         return 0
       fi
 
-      if ! ${pkgs.skills}/bin/skills add "$skill" -g -y 2>&1; then
+      if ! ${pkgs.skills}/bin/skills add "$skill" -g --agent claude-code pi codex amp -y 2>&1; then
         echo "installGlobalSkills: failed to install $skill" >&2
         return 1
       fi
