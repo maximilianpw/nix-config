@@ -17,6 +17,7 @@
     "mattpocock/skills@grill-me"
     "mattpocock/skills@write-a-prd"
     "mattpocock/skills@improve-codebase-architecture"
+    "mattpocock/skills@prd-to-issues"
     "vercel-labs/skills@find-skills"
   ];
 in {
@@ -68,8 +69,8 @@ in {
       fi
 
       if ! ${pkgs.skills}/bin/skills add "$skill" -g -y 2>&1; then
-        echo "installGlobalSkills: warning: failed to install $skill" >&2
-        return 0
+        echo "installGlobalSkills: failed to install $skill" >&2
+        return 1
       fi
     }
 
