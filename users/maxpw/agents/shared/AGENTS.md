@@ -8,11 +8,11 @@ The vault is located at `~/Documents/obsidian vault/`.
 
 ### Feature Planning
 
-When discussing or planning a new feature, create a note in the vault using the Feature template (`999-TEMPLATES/Feature.md`). Fill in the template sections (Why, MVP, Not doing, Approach) to align on scope before writing code.
+Create a feature note only for larger features or when explicitly asked. A feature is "larger" when it spans multiple files or sessions, needs scope tradeoffs, or creates decisions worth preserving beyond the current chat. Use the Feature template (`999-TEMPLATES/Feature.md`) and fill in the sections (Why, MVP, Not doing, Approach) before writing code. Do not create Obsidian notes for small code changes, routine edits, or exploratory discussion.
 
 ### Bug Reports
 
-When investigating or reporting a bug, create a note in the vault using the Problem template (`999-TEMPLATES/Problem.md`). Fill in the sections (What's happening, What I expected, What I've tried, What I think is going on) and update the Solution section after resolving it.
+Create a problem note only for substantial bugs, ongoing investigations, or when explicitly asked. A bug is "substantial" when the root cause is unclear, reproduction is involved, impact is high, or the investigation is likely to span more than one session. Use the Problem template (`999-TEMPLATES/Problem.md`) and fill in the sections (What's happening, What I expected, What I've tried, What I think is going on). Update the Solution section after resolving it. Do not create Obsidian notes for quick fixes or simple diagnostics.
 
 ### Wiki Integration
 
@@ -20,12 +20,12 @@ The vault contains a persistent LLM-maintained wiki at `200-WIKI/`. See `200-WIK
 
 **When working on project code:**
 
-- Before diving into domain-specific work, read the relevant topic index at `200-WIKI/topics/<topic>/index.md` for context. Key mappings:
+- Before diving into domain-specific work that clearly maps to an existing topic, read the relevant topic index at `200-WIKI/topics/<topic>/index.md` for context. Key mappings:
   - VEV / vev-server / vev-ocpi → `ev-charging/` (also linked from `333-VEV/`)
   - LibreStock / Effect migration → `effect-ts/`
   - Architecture decisions → `software-architecture/`
   - Dev tooling (jj, etc.) → `dev-tools/`
-- When a conversation produces a useful synthesis, exploration, or resolved question that would benefit future work, offer to file it back as a wiki article.
+- When a conversation produces a useful synthesis, exploration, or resolved question that would benefit future work, offer to file it back as a wiki article. Do not update the wiki silently.
 
 **When to update the wiki:**
 
@@ -75,22 +75,24 @@ Background and deeper workflows: `200-WIKI/topics/dev-tools/` has my jj notes.
 
 ## Planning First
 
-Never jump straight into implementation. For any non-trivial task:
+Do not jump straight into implementation for substantial or ambiguous work:
 
-1. **Understand the problem** — read the relevant code, ask clarifying questions, make sure you know what's actually going on before proposing changes.
-2. **Draft a plan** — outline the approach, the files involved, and the key decisions. For complex work, use plan mode.
-3. **Grill the plan** — before implementing, automatically invoke `/grill-me` to stress-test the plan with the user. Resolve ambiguities, surface missed edge cases, and reach shared understanding before writing code.
-4. **Then implement** — only after alignment.
+1. **Understand the problem** — read the relevant code, ask clarifying questions, and make sure you know what's actually going on before proposing changes.
+2. **Draft a lightweight plan** — outline the approach, files involved, and key decisions when the task is non-trivial. A plan can be only two or three bullets when the path is clear.
+3. **Stress-test only when warranted** — use the grill-me skill or equivalent workflow only for complex, high-risk, product/design-heavy, or explicitly requested planning. Do not invoke it for routine code edits, small refactors, simple bug fixes, or tasks where the path is obvious.
+4. **Then implement** — after the plan is clear enough for the task size.
 
-For larger features, also create a Feature note in the Obsidian vault (see below) to capture Why, MVP, Not doing, and Approach.
+For larger features, create a Feature note in the Obsidian vault only when it will help preserve scope or decisions.
 
-A "trivial" change is a one-liner, a typo fix, or something the user explicitly tells you to just do. Everything else gets a plan.
+A "trivial" change is a one-liner, a typo fix, a small config/content edit, or something the user explicitly tells you to just do. Trivial changes can be implemented directly. Do not wait for explicit approval after presenting a plan unless the user asked for planning only, the change is risky, or the next step is genuinely ambiguous.
 
-## Shell: prefer Nushell over POSIX text tools
+## Shells
 
-Nushell is the primary interactive shell. When generating commands, scripts, or one-liners for the user to run, prefer Nushell's structured-data pipelines over POSIX text-munging tools.
+Use POSIX-compatible shell syntax for normal agent tool calls and commands that need to run reliably in project scripts, CI, Makefiles, package scripts, or other standard shell contexts. Use Bash-specific syntax only when the target context is Bash.
 
-**Substitutions:**
+Nushell is the primary interactive shell for the user. Prefer Nushell only when generating commands, scripts, or one-liners intended for the user to run interactively, especially when structured-data pipelines are clearer than POSIX text-munging. If using Nushell from a Bash-oriented tool call, invoke it explicitly with `nu -c '...'`.
+
+**Nushell substitutions for user-facing commands:**
 
 - `grep` → `where`, `find`, or `str contains`
 - `awk` / `cut` → `get`, `select`, `columns`
@@ -102,8 +104,9 @@ Nushell is the primary interactive shell. When generating commands, scripts, or 
 - `head` / `tail` → `first N` / `last N`
 - `find . -name` → `ls **/*pattern*` or `glob`
 
-**When the POSIX tool is still right:**
+**When Bash/POSIX is still right:**
 
-- Target is a Bash/POSIX script, CI step, Makefile, or README example that runs under `/bin/sh`.
+- Agent tool calls where Bash/POSIX is the expected execution environment.
+- Target is a Bash/POSIX script, CI step, Makefile, README example, or package script.
 - Tool shells out via `system()` or similar and won't pick up Nushell.
 - Piping to a tool that expects raw text on stdin in a way Nushell would mangle.

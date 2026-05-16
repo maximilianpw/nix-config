@@ -16,7 +16,7 @@
   globalSkills = [
     "mattpocock/skills@tdd"
     "mattpocock/skills@grill-me"
-    "mattpocock/skills@write-a-prd"
+    "mattpocock/skills@to-prd"
     "mattpocock/skills@improve-codebase-architecture"
     "mattpocock/skills@to-issues"
     "mattpocock/skills@diagnose"
