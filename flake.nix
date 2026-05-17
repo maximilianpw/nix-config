@@ -57,6 +57,13 @@
       })
       (final: prev: let
         unstable = inputs.nixpkgs-unstable.legacyPackages.${prev.stdenv.hostPlatform.system};
+        unstableUnfree = import inputs.nixpkgs-unstable {
+          system = prev.stdenv.hostPlatform.system;
+          config.allowUnfreePredicate = pkg:
+            builtins.elem (prev.lib.getName pkg) [
+              "roon-server"
+            ];
+        };
       in {
         # Expose the full unstable channel for consumers that need a single
         # unstable package without shadowing the stable one globally (which
@@ -65,6 +72,7 @@
         # direnv 2.37.1 fish tests get killed during build on macOS (sandbox/OOM)
         direnv = prev.direnv.overrideAttrs (old: {doCheck = false;});
         jujutsu = unstable.jujutsu;
+        roon-server = unstableUnfree.roon-server;
         helium = final.callPackage ./packages/helium.nix {};
         obsidian = final.callPackage ./packages/obsidian.nix {};
         t3code = final.callPackage ./packages/t3code.nix {};
