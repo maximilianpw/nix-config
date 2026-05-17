@@ -12,6 +12,10 @@
   };
   source = path: config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/nix-config/users/maxpw/agents/${path}";
   piConfigSource = path: config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/pi-config/${path}";
+  piAgentsText =
+    (builtins.readFile ../agents/shared/AGENTS.md)
+    + "\n\n---\n\n"
+    + (builtins.readFile ../agents/pi/AGENTS.md);
 
   globalSkills = [
     "mattpocock/skills@tdd"
@@ -42,7 +46,11 @@ in {
     ".codex/AGENTS.md".source = source "shared/AGENTS.md";
     ".claude/CLAUDE.md".source = source "shared/AGENTS.md";
     ".config/opencode/AGENTS.md".source = source "shared/AGENTS.md";
-    ".pi/agent/AGENTS.md".source = piConfigSource "AGENTS.md";
+    # Compose Pi context from shared cross-agent policy plus Pi-only guidance.
+    ".pi/agent/AGENTS.md".text = piAgentsText;
+    # Small Pi-specific system prompt nudge. Larger operating policy belongs in
+    # the composed AGENTS.md above.
+    ".pi/agent/APPEND_SYSTEM.md".source = piConfigSource "APPEND_SYSTEM.md";
 
     ".claude/settings.json".source = source "claude/settings.json";
     ".claude/commands" = {
