@@ -19,6 +19,7 @@ in {
       "gnupg"
       "pinentry-mac"
       "ollama"
+      "tailscale"
     ];
 
     casks = [

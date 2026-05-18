@@ -61,7 +61,8 @@
       # Override default-command set by tmux-sensible (which uses reattach-to-user-namespace with zsh)
       set -g default-command "${pkgs.nushell}/bin/nu"
 
-      # True color and undercurl support
+      # True color, undercurl, and modified key support
+      set -g extended-keys on
       set -as terminal-features ",xterm-256color:RGB"
       set -as terminal-overrides ',*:Smulx=\E[4::%p1%dm'
       set -as terminal-overrides ',*:Setulc=\E[58::2::%p1%{65536}%/%d::%p1%{256}%/%{255}%&%d::%p1%{255}%&%d%;m'
