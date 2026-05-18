@@ -38,11 +38,11 @@
   xorg,
 }: let
   pname = "helium";
-  version = "0.12.1.1";
+  version = "0.12.3.1";
 
   src = fetchurl {
     url = "https://github.com/imputnet/helium-linux/releases/download/${version}/helium-${version}-x86_64_linux.tar.xz";
-    hash = "sha256-LQTffKZUf5HMm/Dgy8UlbLtGldz3ptQm2qPx4fXzY54=";
+    hash = "sha256-a4kcudN+bsOV253BSmTFsx0Tngmr/jbUd/A1gesc6QE=";
   };
 
   runtimeLibs = [
