@@ -24,7 +24,6 @@
     pkgs.checkstyle
 
     # Build tools & dependencies
-    pkgs.gcc
     pkgs.gnumake
     pkgs.alejandra
 
