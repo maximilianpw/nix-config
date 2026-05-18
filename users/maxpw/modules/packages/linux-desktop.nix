@@ -49,7 +49,15 @@ in {
       (pkgs.writeShellScriptBin "focus-or-launch" ''
         class="$1"
         shift
-        if hyprctl clients | grep -q "class: $class"; then
+
+        if hyprctl clients | ${pkgs.gawk}/bin/awk -v class="$class" '
+          $1 == "class:" {
+            $1 = ""
+            sub(/^ /, "")
+            if ($0 == class) found = 1
+          }
+          END { exit found ? 0 : 1 }
+        '; then
           hyprctl dispatch focuswindow "class:$class"
         else
           exec "$@"

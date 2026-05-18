@@ -41,8 +41,11 @@ hypr.combo_binds(mod, {
 	{ "Minus", dsp.layout("mfact -0.05") },
 })
 
--- Back to previous workspace
-hypr.bind_combo(mod, "BACKSPACE", dsp.focus({ workspace = "previous" }))
+-- Workspace navigation
+hypr.combo_binds(mod, {
+	{ "BACKSPACE", dsp.focus({ workspace = "previous" }) },
+	{ "SHIFT + BACKSPACE", dsp.window.move({ workspace = "previous" }) },
+})
 
 -- Next/Prev with wrap
 hypr.combo_binds(mod .. " + CTRL", {
@@ -106,6 +109,8 @@ hypr.combo_binds(mod, {
 -- Utilities
 hypr.exec_combo_binds(mod, {
 	{ "V", [[cliphist list | rofi -dmenu -p "clipboard" | cliphist decode | wl-copy]] },
+	{ "SHIFT + V", "cliphist wipe" },
+	{ "ESCAPE", "wlogout" },
 })
 
 -- Screenshots

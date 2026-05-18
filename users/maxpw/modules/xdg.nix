@@ -35,6 +35,33 @@
       hl.bind("SUPER + ESCAPE", hl.dsp.exec_cmd("hyprlock"))
     ''
     else "";
+
+  hypridleConfig =
+    if hasLockScreen
+    then ''
+      listener {
+        timeout = 600
+        on-timeout = hyprlock
+      }
+
+      listener {
+        timeout = 900
+        on-timeout = hyprctl dispatch dpms off
+        on-resume = hyprctl dispatch dpms on
+      }
+
+      listener {
+        timeout = 3600
+        on-timeout = systemctl hibernate
+      }
+    ''
+    else ''
+      listener {
+        timeout = 900
+        on-timeout = hyprctl dispatch dpms off
+        on-resume = hyprctl dispatch dpms on
+      }
+    '';
 in {
   xdg.enable = true;
 
@@ -108,6 +135,7 @@ in {
         // (symlinkDir ../hyprland hyprConfigPath "hypr")
         // {
           "hypr/host.lua".text = hostLua;
+          "hypr/hypridle.conf".text = hypridleConfig;
         }
       else {}
     );
