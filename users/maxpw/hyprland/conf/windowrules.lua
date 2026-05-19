@@ -44,6 +44,14 @@ hypr.window_rules({
 	{ match = { class = "^(org\\.gnome\\.Nautilus)$" }, size = "800 600" },
 })
 
+-- Prevent idle/DPMS while watching video, gaming, or presenting fullscreen
+hypr.window_rules({
+	{ match = { fullscreen = true }, idle_inhibit = "fullscreen" },
+	{ match = { class = "^(mpv|vlc)$" }, idle_inhibit = "focus" },
+	{ match = { content = "video" }, idle_inhibit = "focus" },
+	{ match = { content = "game" }, idle_inhibit = "fullscreen" },
+})
+
 -- Nautilus properties dialog
 hypr.window_rules({
 	{
@@ -60,8 +68,11 @@ hypr.window_rules({
 
 -- Layer rules
 hypr.layer_rules({
-	{ match = { namespace = "waybar" }, ignore_alpha = 0.2 },
+	{ match = { namespace = "waybar" }, blur = true, ignore_alpha = 0.2 },
 	{ match = { namespace = "waybar" }, no_anim = true },
+	{ match = { namespace = "rofi" }, blur = true, ignore_alpha = 0.2, dim_around = true },
+	{ match = { namespace = "swaync.*" }, blur = true, ignore_alpha = 0.1 },
+	{ match = { namespace = "wlogout" }, blur = true, dim_around = true },
 })
 
 -- Workspace assignments
@@ -71,6 +82,19 @@ hypr.window_rules({
 })
 
 hypr.workspace_rules({
-	{ workspace = "1", layout = "master" },
-	{ workspace = "3", layout = "master" },
+	{ workspace = "1", default_name = "term", persistent = true },
+	{ workspace = "2", default_name = "web", persistent = true },
+	{ workspace = "3", persistent = true, layout = "master" },
+	{ workspace = "4", persistent = true },
+	{ workspace = "5", persistent = true },
+	-- Keep the normal outer gap for single-window workspaces so there is
+	-- visible separation between tiled windows and the top Waybar layer.
+	{ workspace = "f[1]s[false]", gaps_out = 0, gaps_in = 0 },
+})
+
+-- Smart gaps: remove borders when a workspace only has one tiled window,
+-- while preserving the global decoration rounding.
+hypr.window_rules({
+	{ match = { float = false, workspace = "w[tv1]s[false]" }, border_size = 0 },
+	{ match = { float = false, workspace = "f[1]s[false]" }, border_size = 0 },
 })
