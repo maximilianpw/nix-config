@@ -67,12 +67,6 @@
     tmka = "tmux kill-sessions -a";
     tms = "tmuxinator start";
 
-    zj = "zellij";
-    zja = "zellij attach --create";
-    zjl = "zellij list-sessions";
-    zjk = "zellij kill-session";
-    zjd = "zellij delete-session --force";
-
     # Nix system management aliases
     nr = "make -C ~/nix-config rebuild";
     nup = "make -C ~/nix-config update";
