@@ -1,8 +1,4 @@
-{
-  config,
-  pkgs,
-  ...
-}: {
+{pkgs, ...}: {
   home.packages = with pkgs; [
     # Nerd/symbols (terminal, waybar, icons)
     nerd-fonts.jetbrains-mono
@@ -34,7 +30,6 @@
       monospace = [
         "JetBrainsMono Nerd Font"
         "FiraCode Nerd Font"
-        "Hack Nerd Font" # only if you keep nerd-fonts.hack
         "Noto Sans Mono" # non-nerd fallback
         "Symbols Nerd Font" # icons/glyphs fallback
         "Noto Color Emoji"

@@ -2,12 +2,13 @@
   pkgs,
   isDarwin,
   isWSL ? false,
+  isLinuxDesktop ? pkgs.stdenv.isLinux && !isWSL,
   ...
 }: let
   zellijClipboardSettings =
     if isDarwin
     then {copy_command = "pbcopy";}
-    else if pkgs.stdenv.isLinux && !isWSL
+    else if isLinuxDesktop
     then {copy_command = "wl-copy";}
     else {};
 in {

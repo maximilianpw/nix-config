@@ -1,16 +1,10 @@
 {
   isDarwin,
-  isWSL ? false,
   inputs,
-  hostname,
-  config,
   pkgs,
   lib,
   ...
 }: let
-  settings = import ./settings.nix {inherit pkgs;};
-  isLinux = pkgs.stdenv.isLinux && !isWSL;
-
   # For our MANPAGER env var
   # https://github.com/sharkdp/bat/issues/1145
   manpager = pkgs.writeShellScriptBin "manpager" ''

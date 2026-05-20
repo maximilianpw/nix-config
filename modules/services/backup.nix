@@ -2,9 +2,11 @@
   config,
   pkgs,
   lib,
+  currentSystemUser ? "maxpw",
   ...
 }: let
   cfg = config.custom.backup;
+  homeDir = "/home/${currentSystemUser}";
 in {
   options.custom.backup = {
     enable = lib.mkEnableOption "borgbackup to external drive";
@@ -12,13 +14,13 @@ in {
     paths = lib.mkOption {
       type = lib.types.listOf lib.types.str;
       default = [
-        "/home/maxpw/nix-config"
-        "/home/maxpw/Documents"
-        "/home/maxpw/Projects"
-        "/home/maxpw/.config"
-        "/home/maxpw/.local/share"
-        "/home/maxpw/.ssh"
-        "/home/maxpw/.gnupg"
+        "${homeDir}/nix-config"
+        "${homeDir}/Documents"
+        "${homeDir}/Projects"
+        "${homeDir}/.config"
+        "${homeDir}/.local/share"
+        "${homeDir}/.ssh"
+        "${homeDir}/.gnupg"
         "/var/lib"
       ];
       description = "Paths to back up";

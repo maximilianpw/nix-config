@@ -1,15 +1,13 @@
 {
-  isDarwin ? false,
   isWSL ? false,
+  isLinuxDesktop ? pkgs.stdenv.isLinux && !isWSL,
   hostname,
   pkgs,
   lib,
   ...
-}: let
-  isLinux = pkgs.stdenv.isLinux && !isWSL;
-in {
+}: {
   home.packages =
-    lib.optionals isLinux [
+    lib.optionals isLinuxDesktop [
       # App launcher
       pkgs.rofi
 
@@ -64,7 +62,7 @@ in {
         fi
       '')
     ]
-    ++ lib.optionals (isLinux && hostname != "main-pc") [
+    ++ lib.optionals (isLinuxDesktop && hostname != "main-pc") [
       pkgs.hyprlock
     ];
 }

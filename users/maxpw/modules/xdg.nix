@@ -2,14 +2,14 @@
 {
   config,
   isDarwin,
-  isWSL ? false,
+  isLinuxDesktop ? false,
+  currentSystemUserDir ? "maxpw",
   hostname,
   lib,
   pkgs,
   ...
 }: let
-  isLinux = pkgs.stdenv.isLinux && !isWSL;
-  hyprConfigPath = "${config.home.homeDirectory}/nix-config/users/maxpw/hyprland";
+  hyprConfigPath = "${config.home.homeDirectory}/nix-config/users/${currentSystemUserDir}/hyprland";
   uwsmEnv = ''
     export GDK_SCALE=1.6
     export GDK_DPI_SCALE=1
@@ -62,6 +62,28 @@
         on-resume = hyprctl dispatch dpms on
       }
     '';
+
+  onePasswordAllowedOrigins = [
+    "chrome-extension://aeblfdkhhhdcdjpifhhbdiojplfjncoa/"
+    "chrome-extension://bkpbhnjcbehoklfkljkkbbmipaphipgl/"
+    "chrome-extension://dppgmdbiimibapkepcbdbmkaabgiofem/"
+    "chrome-extension://gejiddohjgogedgjnonbofjigllpkmbf/"
+    "chrome-extension://hjlinigoblmkhjejkmbegnoaljkphmgo/"
+    "chrome-extension://khgocmkkpikpnmmkgmdnfckapcdkgfaf/"
+  ];
+
+  onePasswordNativeMessagingHost = builtins.toJSON {
+    name = "com.1password.1password";
+    description = "1Password BrowserSupport";
+    path = "/run/wrappers/bin/1Password-BrowserSupport";
+    type = "stdio";
+    allowed_origins = onePasswordAllowedOrigins;
+  };
+
+  heliumNativeMessagingFiles = lib.genAttrs [
+    "helium/NativeMessagingHosts/com.1password.1password.json"
+    "net.imput.helium/NativeMessagingHosts/com.1password.1password.json"
+  ] (_: {text = onePasswordNativeMessagingHost;});
 in {
   xdg.enable = true;
 
@@ -79,7 +101,7 @@ in {
       else {}
     )
     // (
-      if isLinux
+      if isLinuxDesktop
       then
         {
           "ghostty/config".text = builtins.readFile ../ghostty.linux;
@@ -103,35 +125,8 @@ in {
           # Must also add Helium's binary path to customAllowedBrowsers via
           # the 1Password UI (Settings → Developer) — settings.json is
           # HMAC-signed so it cannot be set declaratively.
-          "helium/NativeMessagingHosts/com.1password.1password.json".text = builtins.toJSON {
-            name = "com.1password.1password";
-            description = "1Password BrowserSupport";
-            path = "/run/wrappers/bin/1Password-BrowserSupport";
-            type = "stdio";
-            allowed_origins = [
-              "chrome-extension://aeblfdkhhhdcdjpifhhbdiojplfjncoa/"
-              "chrome-extension://bkpbhnjcbehoklfkljkkbbmipaphipgl/"
-              "chrome-extension://dppgmdbiimibapkepcbdbmkaabgiofem/"
-              "chrome-extension://gejiddohjgogedgjnonbofjigllpkmbf/"
-              "chrome-extension://hjlinigoblmkhjejkmbegnoaljkphmgo/"
-              "chrome-extension://khgocmkkpikpnmmkgmdnfckapcdkgfaf/"
-            ];
-          };
-          "net.imput.helium/NativeMessagingHosts/com.1password.1password.json".text = builtins.toJSON {
-            name = "com.1password.1password";
-            description = "1Password BrowserSupport";
-            path = "/run/wrappers/bin/1Password-BrowserSupport";
-            type = "stdio";
-            allowed_origins = [
-              "chrome-extension://aeblfdkhhhdcdjpifhhbdiojplfjncoa/"
-              "chrome-extension://bkpbhnjcbehoklfkljkkbbmipaphipgl/"
-              "chrome-extension://dppgmdbiimibapkepcbdbmkaabgiofem/"
-              "chrome-extension://gejiddohjgogedgjnonbofjigllpkmbf/"
-              "chrome-extension://hjlinigoblmkhjejkmbegnoaljkphmgo/"
-              "chrome-extension://khgocmkkpikpnmmkgmdnfckapcdkgfaf/"
-            ];
-          };
         }
+        // heliumNativeMessagingFiles
         // (symlinkDir ../hyprland hyprConfigPath "hypr")
         // {
           "hypr/host.lua".text = hostLua;

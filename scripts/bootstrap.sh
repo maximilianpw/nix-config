@@ -73,6 +73,8 @@ else
     PLATFORM="nixos"
 fi
 
+REPO_URL="${NIX_CONFIG_REPO_URL:-git@github.com:maximilianpw/nix-config.git}"
+
 info "Detected platform: $PLATFORM"
 
 # Check if running in dry-run mode
@@ -153,15 +155,12 @@ elif [[ -d "$CONFIG_DIR" ]]; then
         exit 1
     fi
 else
-    info "Cloning nix-config repository..."
+    info "Cloning nix-config repository from $REPO_URL..."
     if [[ "$DRY_RUN" == "false" ]]; then
-        # Note: Update this URL to your actual repository
-        warn "Update the repository URL in this script!"
-        echo "Example: git clone https://github.com/yourusername/nix-config.git $CONFIG_DIR"
-        error "Please edit scripts/bootstrap.sh and update the git clone URL"
-        exit 1
+        git clone "$REPO_URL" "$CONFIG_DIR"
+        success "Repository cloned to $CONFIG_DIR"
     else
-        info "[DRY-RUN] Would clone repository to $CONFIG_DIR"
+        info "[DRY-RUN] Would run: git clone $REPO_URL $CONFIG_DIR"
     fi
 fi
 

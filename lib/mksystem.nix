@@ -12,6 +12,7 @@
   darwin ? false,
   wsl ? false,
 }: let
+  lib = nixpkgs.lib;
   machineConfig = ../machines/${name}.nix;
   userOSConfig =
     ../users/${userDir}/${
@@ -31,46 +32,44 @@
     if darwin
     then inputs.home-manager.darwinModules
     else inputs.home-manager.nixosModules;
+
+  systemArgs = {
+    currentSystem = system;
+    currentSystemName = name;
+    currentSystemUser = user;
+    currentSystemUserDir = userDir;
+    isDarwin = darwin;
+    isWSL = wsl;
+    isLinuxDesktop = !darwin && !wsl;
+    inherit inputs;
+  };
 in
   systemFunc {
-    modules = [
-      {nixpkgs.hostPlatform = system;}
-      {nixpkgs.config.allowUnfree = true;}
-      {nixpkgs.overlays = overlays;}
-      (
-        if !darwin
-        then inputs.sops-nix.nixosModules.sops
-        else {}
-      )
-      (
-        if wsl
-        then inputs.nixos-wsl.nixosModules.wsl
-        else {}
-      )
-      machineConfig
-      userOSConfig
-      homeManagerMods.home-manager
-      {
-        home-manager.useGlobalPkgs = true;
-        home-manager.useUserPackages = true;
-        home-manager.backupFileExtension = "backup";
-        home-manager.extraSpecialArgs = {
-          isDarwin = darwin;
-          isWSL = wsl;
-          hostname = name;
-          inherit inputs;
-        };
-        home-manager.users.${user} = import userHMConfig;
-      }
-      {
-        config._module.args = {
-          currentSystem = system;
-          currentSystemName = name;
-          currentSystemUser = user;
-          currentSystemUserDir = userDir;
-          isWSL = wsl;
-          inputs = inputs;
-        };
-      }
-    ];
+    modules =
+      [
+        {nixpkgs.hostPlatform = system;}
+        {nixpkgs.config.allowUnfree = true;}
+        {nixpkgs.overlays = overlays;}
+      ]
+      ++ lib.optional (!darwin) inputs.sops-nix.nixosModules.sops
+      ++ lib.optional wsl inputs.nixos-wsl.nixosModules.wsl
+      ++ [
+        machineConfig
+        userOSConfig
+        homeManagerMods.home-manager
+        {
+          home-manager.useGlobalPkgs = true;
+          home-manager.useUserPackages = true;
+          home-manager.backupFileExtension = "backup";
+          home-manager.extraSpecialArgs =
+            systemArgs
+            // {
+              hostname = name;
+            };
+          home-manager.users.${user} = import userHMConfig;
+        }
+        {
+          config._module.args = systemArgs;
+        }
+      ];
   }
