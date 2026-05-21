@@ -1,4 +1,4 @@
-.PHONY: help bootstrap rebuild rebuild-check rebuild-verbose check update update-all update-packages gc clean format diff test wsl
+.PHONY: help bootstrap rebuild rebuild-check rebuild-verbose rebuild-processes cleanup-rebuild check update update-all update-packages gc clean format diff test wsl
 
 # Default target
 .DEFAULT_GOAL := help
@@ -30,6 +30,44 @@ rebuild-check: ## Rebuild with flake check before switching
 rebuild-verbose: ## Rebuild with live build logs (-L -v --show-trace)
 	@echo "Starting system rebuild with verbose output..."
 	@$(SCRIPT_DIR)/nixos-rebuild.sh --verbose
+
+rebuild-processes: ## Show Nix processes related to the last rebuild log
+	@echo "Nix processes related to this config or the last rebuild log:"
+	@{ \
+		pattern='nix-config|darwin-rebuild|nixos-rebuild'; \
+		if [ -f nixos-switch.log ]; then \
+			drv_pattern=$$(sed -n 's|.*/\([^/]*\.drv\).*|\1|p' nixos-switch.log | sort -u | paste -sd '|' -); \
+			if [ -n "$$drv_pattern" ]; then \
+				pattern="$$pattern|nix-build-($$drv_pattern)-"; \
+			fi; \
+		fi; \
+		ps -axo pid,ppid,pgid,stat,etime,command | grep -E "$$pattern" | grep -v grep || true; \
+	}
+
+cleanup-rebuild: ## Stop Nix build processes related to the last interrupted rebuild
+	@echo "Stopping Nix processes related to this config or the last rebuild log..."
+	@{ \
+		pattern='nix-config|darwin-rebuild|nixos-rebuild'; \
+		if [ -f nixos-switch.log ]; then \
+			drv_pattern=$$(sed -n 's|.*/\([^/]*\.drv\).*|\1|p' nixos-switch.log | sort -u | paste -sd '|' -); \
+			if [ -n "$$drv_pattern" ]; then \
+				pattern="$$pattern|nix-build-($$drv_pattern)-"; \
+			fi; \
+		fi; \
+		pids=$$(ps -axo pid,command | grep -E "$$pattern" | grep -v grep | awk '{print $$1}'); \
+		if [ -z "$$pids" ]; then \
+			echo "No matching rebuild processes found."; \
+			exit 0; \
+		fi; \
+		echo "Sending TERM to: $$pids"; \
+		sudo kill -TERM $$pids 2>/dev/null || true; \
+		sleep 3; \
+		remaining=$$(ps -axo pid,command | grep -E "$$pattern" | grep -v grep | awk '{print $$1}'); \
+		if [ -n "$$remaining" ]; then \
+			echo "Still running; sending KILL to: $$remaining"; \
+			sudo kill -KILL $$remaining 2>/dev/null || true; \
+		fi; \
+	}
 
 update: ## Update flake inputs (skips Hyprland & NixOS-only inputs)
 	@echo "Updating shared flake inputs (skipping hyprland, sops-nix, nixos-wsl, disko)..."
