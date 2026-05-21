@@ -57,7 +57,10 @@ hl.config({
 	-- ======================
 
 	cursor = {
-		no_hardware_cursors = true,
+		no_hardware_cursors = 2,
+		no_break_fs_vrr = 2,
+		inactive_timeout = 3,
+		hide_on_key_press = true,
 	},
 
 	misc = {
@@ -75,6 +78,19 @@ hl.config({
 	binds = {
 		workspace_back_and_forth = false,
 		allow_workspace_cycles = true,
+	},
+
+	group = {
+		auto_group = false,
+		groupbar = {
+			enabled = true,
+			gradients = true,
+			render_titles = true,
+		},
+	},
+
+	xwayland = {
+		force_zero_scaling = true,
 	},
 
 	render = {

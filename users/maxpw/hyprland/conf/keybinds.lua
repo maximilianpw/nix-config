@@ -65,6 +65,14 @@ hypr.combo_binds(mod, {
 	{ "SHIFT + Tab", dsp.window.cycle_next({ prev = true }) },
 })
 
+-- Grouped/tabbed windows
+hypr.combo_binds(mod, {
+	{ "T", dsp.group.toggle({}) },
+	{ "SHIFT + T", dsp.group.lock_active({ action = "toggle" }) },
+	{ "BracketLeft", dsp.group.prev({}) },
+	{ "BracketRight", dsp.group.next({}) },
+})
+
 -- Opacity toggles
 hypr.exec_combo_binds(mod, {
 	{ "O", "hyprctl keyword decoration:active_opacity 0.9 && hyprctl keyword decoration:inactive_opacity 0.8" },
