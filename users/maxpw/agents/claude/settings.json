@@ -5,8 +5,18 @@
     "CLAUDE_CODE_NO_FLICKER": "1"
   },
   "permissions": {
-    "allow": ["Bash(pnpm:*)", "Bash(npm:*)", "Bash(grep:*)", "Bash(tree:*)", "Bash(find:*)", "Bash(cat:*)"],
-    "deny": ["Bash(git push)", "Bash(jj git push)"],
+    "allow": [
+      "Bash(pnpm:*)",
+      "Bash(npm:*)",
+      "Bash(grep:*)",
+      "Bash(tree:*)",
+      "Bash(find:*)",
+      "Bash(cat:*)"
+    ],
+    "deny": [
+      "Bash(git push)",
+      "Bash(jj git push)"
+    ],
     "ask": [],
     "defaultMode": "auto"
   },
