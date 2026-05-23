@@ -51,7 +51,7 @@ in {
       "linear"
       "wispr-flow"
       "freelens"
-      "roon"
+      "granola"
     ];
 
     onActivation = {
