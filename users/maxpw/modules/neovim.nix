@@ -30,6 +30,8 @@
       gopls
       delve # Go debugger
       golangci-lint # Go linter
+      # Note: goimports/gofumpt are installed imperatively by go.nvim's
+      # update_all_sync build step (into ~/go/bin); gofmt ships with `go`.
 
       # Lua
       lua-language-server
@@ -54,6 +56,10 @@
       # YAML
       yaml-language-server
 
+      # === Debug Adapters ===
+      # (delve for Go and vscode-js-debug for JS/TS are listed above)
+      netcoredbg # C# / .NET debug adapter (config/dap/languages.lua)
+
       # === Formatters ===
       # JavaScript/TypeScript/Web
       nodePackages.prettier
@@ -61,6 +67,9 @@
 
       # Lua
       stylua
+
+      # Shell (sh/bash/zsh)
+      shfmt
 
       # General
       alejandra # Nix formatter (alternative to nixpkgs-fmt)

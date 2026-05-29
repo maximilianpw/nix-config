@@ -10,6 +10,7 @@
     (pkgs.fenix.stable.withComponents [
       "cargo"
       "rustc"
+      "rustfmt" # conform formats Rust via the rustfmt binary
     ])
     pkgs.deno
     pkgs.lua

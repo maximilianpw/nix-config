@@ -34,7 +34,6 @@
     "posthog@claude-plugins-official": true
   },
   "effortLevel": "high",
-  "advisorModel": "opus",
   "skipDangerousModePermissionPrompt": true,
   "theme": "dark",
   "preferredNotifChannel": "ghostty",
