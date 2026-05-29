@@ -98,8 +98,8 @@ in {
       fi
 
       if ! ${pkgs.skills}/bin/skills add "$skill" -g --agent claude-code pi codex amp -y 2>&1; then
-        echo "installGlobalSkills: failed to install $skill" >&2
-        return 1
+        # Network fetch during activation; never abort the rebuild over it.
+        echo "installGlobalSkills: warning: failed to install $skill (skipping)" >&2
       fi
     }
 
