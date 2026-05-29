@@ -1,7 +1,7 @@
 # GPG and gpg-agent configuration
 {
   isDarwin,
-  isWSL ? false,
+  isWSL,
   pkgs,
   lib,
   ...

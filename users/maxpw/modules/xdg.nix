@@ -2,8 +2,8 @@
 {
   config,
   isDarwin,
-  isLinuxDesktop ? false,
-  currentSystemUserDir ? "maxpw",
+  isLinuxDesktop,
+  currentSystemUserDir,
   hostname,
   lib,
   pkgs,

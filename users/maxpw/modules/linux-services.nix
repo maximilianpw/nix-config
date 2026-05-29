@@ -1,7 +1,6 @@
 # Linux-specific systemd services and desktop settings
 {
-  isWSL ? false,
-  isLinuxDesktop ? pkgs.stdenv.isLinux && !isWSL,
+  isLinuxDesktop,
   pkgs,
   lib,
   ...

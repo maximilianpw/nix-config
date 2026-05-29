@@ -1,6 +1,5 @@
 {
-  isWSL ? false,
-  isLinuxDesktop ? pkgs.stdenv.isLinux && !isWSL,
+  isLinuxDesktop,
   hostname,
   pkgs,
   lib,
