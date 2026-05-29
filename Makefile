@@ -1,4 +1,4 @@
-.PHONY: help bootstrap rebuild rebuild-check rebuild-verbose rebuild-processes cleanup-rebuild check update update-all update-packages gc clean format diff test wsl
+.PHONY: help bootstrap rebuild rebuild-check rebuild-verbose rebuild-processes cleanup-rebuild check check-nvim update update-all update-packages gc clean format diff test wsl
 
 # Default target
 .DEFAULT_GOAL := help
@@ -89,6 +89,9 @@ update-packages: ## Bump custom packages (helium, obsidian, t3code, skills, code
 		nix run nixpkgs#nix-update -- --flake "$$pkg" || echo "(skipped: $$pkg)"; \
 	done
 
+
+check-nvim: ## Verify every tool the Neovim config uses is on PATH
+	@$(SCRIPT_DIR)/check-nvim-tooling.sh
 
 build: ## Build system configuration without switching
 	@echo "Building system configuration..."

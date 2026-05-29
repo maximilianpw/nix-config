@@ -68,6 +68,13 @@
       # Lua
       stylua
 
+      # Python (conform: ruff_format then black)
+      ruff
+      black
+
+      # C/C++ (conform: clang_format)
+      clang-tools
+
       # Shell (sh/bash/zsh)
       shfmt
 
