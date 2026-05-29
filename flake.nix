@@ -153,6 +153,10 @@
       };
     };
 
+    formatter = nixpkgs.lib.genAttrs ["aarch64-linux" "x86_64-linux" "aarch64-darwin"] (
+      system: nixpkgs.legacyPackages.${system}.alejandra
+    );
+
     devShells = nixpkgs.lib.genAttrs ["aarch64-linux" "x86_64-linux" "aarch64-darwin"] (system: let
       pkgs = nixpkgs.legacyPackages.${system};
     in {
