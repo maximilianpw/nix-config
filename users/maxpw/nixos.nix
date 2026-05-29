@@ -2,6 +2,7 @@
   config,
   pkgs,
   lib,
+  currentSystemUser,
   ...
 }: let
   settings = import ./settings.nix {inherit pkgs;};
@@ -49,11 +50,11 @@ in {
     };
   };
 
-  users.users.maxpw = {
+  users.users.${currentSystemUser} = {
     isNormalUser = true;
     description = lib.mkDefault "Maximilian PINDER-WHITE";
     extraGroups = ["networkmanager" "wheel" "seat" "input" "video"];
-    home = "/home/maxpw";
+    home = "/home/${currentSystemUser}";
     shell = settings.defaultShell;
     # Password is managed via sops-nix (see secrets/README.md)
     hashedPasswordFile = config.sops.secrets.maxpw-password.path;
@@ -77,7 +78,7 @@ in {
   programs._1password.enable = true;
   programs._1password-gui = {
     enable = true;
-    polkitPolicyOwners = ["maxpw"];
+    polkitPolicyOwners = [currentSystemUser];
   };
 
   services.ollama.enable = true;
