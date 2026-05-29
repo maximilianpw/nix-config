@@ -9,6 +9,7 @@ in {
   imports = [
     ../../modules/core/nix-settings.nix
     ../../modules/core/security.nix
+    ../../modules/core/shells.nix
     ./modules/linux-common.nix
   ];
 

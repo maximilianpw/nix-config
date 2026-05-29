@@ -11,6 +11,7 @@ in {
     ../../modules/core/nix-settings.nix
     ../../modules/core/security.nix
     ../../modules/core/sops.nix
+    ../../modules/core/shells.nix
     ../../modules/desktop/hyprland.nix
     ./modules/linux-common.nix
   ];

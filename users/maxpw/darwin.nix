@@ -6,6 +6,10 @@
 }: let
   settings = import ./settings.nix {inherit pkgs;};
 in {
+  imports = [
+    ../../modules/core/shells.nix
+  ];
+
   fonts.packages = with pkgs; [
     pkgs."nerd-fonts".fira-code
     pkgs."nerd-fonts".jetbrains-mono
@@ -126,9 +130,6 @@ in {
     home = "/Users/max-vev";
     shell = settings.defaultShell;
   };
-
-  programs.fish.enable = true;
-  environment.shells = [pkgs.nushell];
 
   # Obsidian CLI (installed via Homebrew cask)
   environment.systemPath = [
