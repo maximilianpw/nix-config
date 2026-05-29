@@ -73,10 +73,11 @@ jobs:
             Automated version bumps from `nix-update`, run by
             `.github/workflows/update-packages.yml`.
 
-            CI will build `darwinConfigurations.macbook-pro-m1` and the two
-            NixOS configs, so a green check here means the new versions at
-            least evaluate and build cleanly. Smoke-test the apps locally
-            before merging if the upstream changelog suggests risk.
+            CI builds the two NixOS configs (`main-pc`, `wsl`) on Linux
+            runners, so a green check means the Linux package set still
+            evaluates and builds. The Darwin config is **not** built in CI
+            (no macOS runner), so macOS-only packages are unverified here —
+            smoke-test them locally before merging.
 
             ${{ steps.bump.outputs.failed_packages && format('> [!WARNING]\n> Packages that failed to update: `{0}`', steps.bump.outputs.failed_packages) || '' }}
           delete-branch: true
