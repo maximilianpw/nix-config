@@ -72,6 +72,7 @@
         # direnv 2.37.1 fish tests get killed during build on macOS (sandbox/OOM)
         direnv = prev.direnv.overrideAttrs (old: {doCheck = false;});
         jujutsu = unstable.jujutsu;
+        zig = unstable.zig;
         roon-server = unstableUnfree.roon-server;
         helium = final.callPackage ./packages/helium.nix {};
         obsidian = final.callPackage ./packages/obsidian.nix {};
