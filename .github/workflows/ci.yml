@@ -7,6 +7,13 @@ on:
     branches: [main]
 
 jobs:
+  flake-health:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/determinate-nix-action@v3
+      - uses: DeterminateSystems/flake-checker-action@main
+
   build-linux:
     runs-on: ubuntu-latest
     strategy:
@@ -14,7 +21,7 @@ jobs:
         config: [main-pc, wsl]
     steps:
       - uses: actions/checkout@v4
-      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/determinate-nix-action@v3
       - uses: cachix/cachix-action@v15
         with:
           name: maximilianpw
