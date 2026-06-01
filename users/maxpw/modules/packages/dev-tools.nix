@@ -14,6 +14,7 @@
     ])
     pkgs.deno
     pkgs.lua
+    pkgs.zig
     pkgs.openjdk
     pkgs.golangci-lint
 
