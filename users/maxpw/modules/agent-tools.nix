@@ -2,6 +2,7 @@
   config,
   pkgs,
   lib,
+  isDarwin,
   ...
 }: let
   agentAliases = {
@@ -27,7 +28,6 @@
     "mattpocock/skills@triage"
     "obra/superpowers@verification-before-completion"
     "obra/superpowers@receiving-code-review"
-    "anthropics/skills@frontend-design"
     "vercel-labs/agent-skills@vercel-react-best-practices"
     "vercel-labs/skills@find-skills"
   ];
@@ -38,7 +38,6 @@ in {
     pkgs.opencode
     pkgs.amp-cli
     pkgs.pi
-    pkgs.agent-browser
     pkgs.skills
   ];
 

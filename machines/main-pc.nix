@@ -7,7 +7,6 @@
   imports = [
     ./hardware/main-pc.nix
     ../modules/services/backup.nix
-    ../modules/services/roon-tailscale.nix
   ];
 
   custom.backup.enable = true;

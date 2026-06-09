@@ -53,17 +53,12 @@
         opencode = llm.opencode;
         amp-cli = llm.amp;
         pi = llm.pi;
+        skills = llm.skills;
+        hunkdiff = llm.hunk;
         agent-browser = llm.agent-browser;
       })
       (final: prev: let
         unstable = inputs.nixpkgs-unstable.legacyPackages.${prev.stdenv.hostPlatform.system};
-        unstableUnfree = import inputs.nixpkgs-unstable {
-          system = prev.stdenv.hostPlatform.system;
-          config.allowUnfreePredicate = pkg:
-            builtins.elem (prev.lib.getName pkg) [
-              "roon-server"
-            ];
-        };
       in {
         # Expose the full unstable channel for consumers that need a single
         # unstable package without shadowing the stable one globally (which
@@ -73,13 +68,10 @@
         direnv = prev.direnv.overrideAttrs (old: {doCheck = false;});
         jujutsu = unstable.jujutsu;
         zig = unstable.zig;
-        roon-server = unstableUnfree.roon-server;
         helium = final.callPackage ./packages/helium.nix {};
         obsidian = final.callPackage ./packages/obsidian.nix {};
         t3code = final.callPackage ./packages/t3code.nix {};
-        skills = final.callPackage ./packages/skills.nix {};
         coderabbit = final.callPackage ./packages/coderabbit.nix {};
-        hunkdiff = final.callPackage ./packages/hunkdiff.nix {};
       })
     ];
 

@@ -172,7 +172,7 @@ make skills
 
 Re-run whenever you add a new entry to the script. To pull upstream updates
 for already-installed skills, use `skills update` directly. The `skills` CLI
-itself is packaged in `packages/skills.nix` and installed via home-manager.
+comes from the `llm-agents.nix` flake input and is installed via home-manager.
 
 ## Troubleshooting
 
