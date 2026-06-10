@@ -136,7 +136,7 @@ if [[ ! -d "$CONFIG_DIR" ]]; then
     exit 1
 fi
 
-pushd "$CONFIG_DIR"
+pushd "$CONFIG_DIR" >/dev/null
 
 # Keep failure summaries scoped to the current rebuild attempt.
 : > "$LOG_FILE"
@@ -170,7 +170,7 @@ fi
 
 # Format Nix files
 info "Formatting Nix files..."
-if command -v alejandra 2>&1; then
+if command -v alejandra >/dev/null 2>&1; then
     alejandra . 2>&1 || warn "Formatting failed"
 else
     warn "alejandra not found, skipping formatting"
@@ -214,17 +214,14 @@ fi
 
 success "Rebuild completed successfully!"
 
-# Get current generation metadata
-if [[ "$PLATFORM" == "darwin" ]]; then
-    CURRENT_GEN=$(nix-env --list-generations --profile "$HOME/.nix-profile" | grep current | awk '{print $2 " " $3 " " $4}')
-else
-    CURRENT_GEN=$(sudo nix-env --list-generations --profile /nix/var/nix/profiles/system | grep current | awk '{print $2 " " $3 " " $4}')
-fi
+# Get current generation metadata (both platforms use the system profile;
+# $HOME/.nix-profile is the per-user profile and unrelated to rebuilds)
+CURRENT_GEN=$(sudo nix-env --list-generations --profile /nix/var/nix/profiles/system | grep current | awk '{print $2 " " $3 " " $4}')
 info "Current generation: $CURRENT_GEN"
 
 # Commit changes if in a git repository
 if [[ "$AUTO_COMMIT" == "1" ]]; then
-    if git rev-parse --git-dir 2>&1; then
+    if git rev-parse --git-dir >/dev/null 2>&1; then
         if ! git diff --quiet HEAD; then
             info "Committing changes to git..."
             git add -u
@@ -239,7 +236,7 @@ else
     info "Skipping git commit (use --commit to enable)"
 fi
 
-# Clean up old generations (keep last 10)
+# Clean up generations older than 30 days
 info "Cleaning up old generations..."
 if [[ "$PLATFORM" == "darwin" ]]; then
     nix-collect-garbage --delete-older-than 30d 2>&1 || warn "Garbage collection failed"

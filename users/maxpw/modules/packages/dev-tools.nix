@@ -1,7 +1,7 @@
 {pkgs, ...}: {
   home.packages = [
     # Programming languages & runtimes
-    pkgs.nodejs_22
+    pkgs.nodejs_24
     pkgs.pnpm
     pkgs.bun
     pkgs.python3
@@ -19,7 +19,7 @@
     pkgs.golangci-lint
 
     # Language servers & formatters
-    pkgs.prettierd
+    # (prettierd is editor-only; it lives in modules/neovim.nix extraPackages)
     pkgs.eslint
     pkgs.biome
     pkgs.oxlint

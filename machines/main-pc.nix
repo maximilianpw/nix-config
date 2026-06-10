@@ -84,6 +84,8 @@
   # Container & virtualization stack
   virtualisation = {
     docker.enable = true;
+    # Default docker (28.x) is unmaintained and marked insecure in nixpkgs 25.11
+    docker.package = pkgs.docker_29;
     libvirtd.enable = true;
   };
   programs.virt-manager.enable = true;

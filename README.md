@@ -1,6 +1,6 @@
 # Nix-Config
 
-Unified NixOS + macOS (nix-darwin) flake with Home Manager, Hyprland/GNOME modules, and a smart rebuild script.
+Unified NixOS + macOS (nix-darwin) flake with Home Manager, a Hyprland desktop module, and a smart rebuild script.
 
 ## Repository layout
 
@@ -48,8 +48,8 @@ Unified NixOS + macOS (nix-darwin) flake with Home Manager, Hyprland/GNOME modul
 
 ## Flake overview
 
-- Inputs: nixpkgs 25.11, nixpkgs-unstable (select pkgs), home-manager 25.11, nix-darwin 25.11, Hyprland, NixOS-WSL.
-- Overlay: exposes `unstable` and selects newer packages (gh, claude-code, nushell).
+- Inputs: nixpkgs 25.11, nixpkgs-unstable (select pkgs), home-manager 25.11, nix-darwin 25.11, Hyprland, NixOS-WSL, fenix, sops-nix, llm-agents, disko, nix-index-database.
+- Overlays: fenix (Rust toolchain); llm-agents (claude-code, codex, opencode, amp-cli, pi, skills, hunkdiff, agent-browser); unstable passthrough (`pkgs.unstable`, plus jujutsu/zig pinned to unstable) and custom packages (helium, obsidian, t3code, coderabbit).
 - mkSystem (`lib/mksystem.nix`):
   - Picks nixosSystem or darwinSystem.
   - Adds NixOS-WSL module when `wsl = true`.

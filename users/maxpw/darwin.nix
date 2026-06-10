@@ -10,10 +10,8 @@ in {
     ../../modules/core/shells.nix
   ];
 
-  fonts.packages = with pkgs; [
-    pkgs."nerd-fonts".fira-code
-    pkgs."nerd-fonts".jetbrains-mono
-  ];
+  # Fonts come from Home Manager (users/maxpw/modules/fonts.nix), which
+  # installs them to ~/Library/Fonts/HomeManager on macOS.
   homebrew = {
     enable = true;
 
@@ -62,6 +60,9 @@ in {
       autoUpdate = true;
       cleanup = "zap";
       upgrade = true;
+      # Homebrew now requires an explicit confirmation flag when `brew bundle`
+      # is run with cleanup during nix-darwin activation.
+      extraFlags = ["--force-cleanup"];
     };
   };
   # macOS system preferences (imported from current defaults)

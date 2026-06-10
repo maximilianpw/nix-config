@@ -7,13 +7,19 @@ on:
   workflow_dispatch:
     inputs:
       packages:
-        description: 'Space-separated package names (default: all)'
+        description: 'Space-separated package names (default: all, see env.DEFAULT_PACKAGES)'
         required: false
-        default: 'helium obsidian t3code skills coderabbit'
+        default: ''
 
 concurrency:
   group: update-packages
   cancel-in-progress: false
+
+env:
+  # Single source of truth for the default package list (schedule + dispatch).
+  # Only packages defined in this repo (packages/*.nix) — skills/hunkdiff come
+  # from the llm-agents input and are bumped via `nix flake update llm-agents`.
+  DEFAULT_PACKAGES: 'helium obsidian t3code coderabbit'
 
 jobs:
   update:
@@ -27,7 +33,7 @@ jobs:
 
       - uses: DeterminateSystems/determinate-nix-action@v3
 
-      - uses: DeterminateSystems/magic-nix-cache-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@v14
         with:
           use-flakehub: false
 
@@ -35,7 +41,7 @@ jobs:
         id: bump
         run: |
           set -euo pipefail
-          packages="${{ github.event.inputs.packages || 'helium obsidian t3code skills coderabbit' }}"
+          packages="${{ github.event.inputs.packages || env.DEFAULT_PACKAGES }}"
           failed=()
           for pkg in $packages; do
             echo "::group::nix-update $pkg"

@@ -13,7 +13,7 @@ A unified NixOS + nix-darwin flake managing three systems from a single codebase
 
 ```bash
 make bootstrap   # Bootstrap a new system (initial setup)
-make rebuild     # Apply configuration (auto-detects platform, formats with alejandra, commits, runs GC)
+make rebuild     # Apply configuration (auto-detects platform, formats with alejandra, runs GC; pass --commit to the script to auto-commit)
 make build       # Build without switching
 make update      # Update flake inputs
 make wsl         # Build WSL tarball for import
@@ -75,7 +75,7 @@ users/maxpw/
       dev-tools.nix       # Languages, formatters, cloud tools
       terminal-tools.nix  # CLI utilities (bat, eza, fzf, ripgrep, etc.)
       linux-desktop.nix   # Wayland/GUI apps (Ghostty, rofi, waybar, etc.)
-packages/           # Custom package definitions (helium.nix - AppImage wrapper)
+packages/           # Custom package definitions (helium, obsidian, t3code, coderabbit)
 secrets/            # sops-nix encrypted secrets (age encryption, key in 1Password)
 ```
 
@@ -83,8 +83,8 @@ secrets/            # sops-nix encrypted secrets (age encryption, key in 1Passwo
 
 Three overlays applied in order:
 1. **fenix** - Rust toolchain
-2. **llm-agents** - AI CLI tools (claude-code, codex, opencode, gemini-cli, amp-cli) from the `numtide/llm-agents.nix` flake input
-3. **unstable + custom** - Pulls select packages from `nixpkgs-unstable` (gh, nushell, tmuxinator, jujutsu) and defines the `helium` custom package
+2. **llm-agents** - AI CLI tools (claude-code, codex, opencode, amp-cli, pi, skills, hunkdiff, agent-browser) from the `numtide/llm-agents.nix` flake input
+3. **unstable + custom** - Exposes the full unstable channel as `pkgs.unstable`, pulls select packages from `nixpkgs-unstable` (jujutsu, zig), and defines the custom packages (helium, obsidian, t3code, coderabbit)
 
 ### Secrets
 
@@ -100,7 +100,7 @@ Dotfiles for desktop apps (Hyprland, waybar, rofi, ghostty, kitty, yazi, etc.) l
 - **Adding packages**: User packages go in `users/maxpw/modules/packages/` split by category. System packages go in the relevant machine file.
 - **Platform conditionals**: Config that diverges substantially per-OS lives in `nixos.nix`/`darwin.nix`/`wsl.nix` per user, not behind `if` statements in large shared modules. Small cross-platform Home Manager modules that are imported unconditionally (e.g. `gpg.nix`, `linux-services.nix`, `linux-desktop.nix`, `xdg.nix`) may instead guard their platform-specific bits internally using the `isDarwin`/`isWSL`/`isLinuxDesktop`/`hostname` arguments injected by `mksystem.nix` — these flags are always passed, so destructure them directly without fallback defaults.
 - **New modules**: Import them in the appropriate aggregator (`home-manager.nix`, `nixos.nix`, or `darwin.nix`). The `mksystem.nix` builder handles wiring.
-- **Nixpkgs channels**: Stable is `nixpkgs` (25.11). For bleeding-edge packages, add them to the unstable overlay in `flake.nix`. To add a new unstable package: in the third overlay in `flake.nix`, add `<pkg> = unstable.<pkg>;` alongside the existing entries (gh, nushell, etc.), then reference `pkgs.<pkg>` in the relevant module.
+- **Nixpkgs channels**: Stable is `nixpkgs` (25.11). For bleeding-edge packages, add them to the unstable overlay in `flake.nix`. To add a new unstable package: in the third overlay in `flake.nix`, add `<pkg> = unstable.<pkg>;` alongside the existing entries (jujutsu, zig), then reference `pkgs.<pkg>` in the relevant module. For a one-off, `pkgs.unstable.<pkg>` also works without touching the overlay.
 - **Shell aliases**: All aliases are centralized in `users/maxpw/modules/shells.nix`. The `nr` alias runs `make -C ~/nix-config rebuild`.
 - **Shell**: Nushell is the primary interactive shell. When generating commands, scripts, or one-liners for the user to run, prefer Nushell's structured-data pipelines over POSIX text-munging tools. Substitute `grep` → `where`/`find`/`str contains`, `awk`/`cut` → `get`/`select`/`columns`, `sed` → `str replace`, `wc -l` → `length`, `sort | uniq -c` → `group-by | transpose`, `xargs` → `each`, `jq` → native `from json` + `get`. Reach for the POSIX tool only when the target is a non-Nushell context (a Bash script, CI step, Makefile, README example, or a tool that shells out via `/bin/sh`).
 - **macOS GUI apps**: Managed via Homebrew casks in `darwin.nix`, not Nix packages. Homebrew `onActivation.cleanup = "zap"` removes anything not declared.
@@ -110,4 +110,5 @@ Dotfiles for desktop apps (Hyprland, waybar, rofi, ghostty, kitty, yazi, etc.) l
 - **Never bump `stateVersion`**: `system.stateVersion` and `home.stateVersion` must stay at their initial install values. They control state migration, not the package set version.
 - **Hyprland comes from upstream flake input**, not nixpkgs. Check the `hyprland` input in `flake.nix` when debugging Hyprland issues.
 - **macOS Nix daemon**: Managed by the Determinate installer. `nix.enable = false` in `macbook-pro-m1.nix` — don't set it to `true`.
-- **Rebuild auto-commits**: `make rebuild` stages tracked-file changes, commits with a generation message, and runs GC. Untracked new files are not auto-staged. Don't make unrelated uncommitted changes before rebuilding.
+- **Rebuild does NOT auto-commit**: committing is opt-in via `scripts/nixos-rebuild.sh --commit` (which stages tracked-file changes and commits with a generation message). `make rebuild` formats with alejandra and runs GC but leaves the repo uncommitted.
+- **Darwin Nix settings live in /etc/nix/nix.custom.conf**: because `nix.enable = false` on macOS, nix-darwin ignores `nix.settings`. Caches/trusted-users for the Mac are managed via `environment.etc."nix/nix.custom.conf"` in `machines/macbook-pro-m1.nix`.

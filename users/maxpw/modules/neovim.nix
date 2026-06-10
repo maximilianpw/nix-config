@@ -30,14 +30,13 @@
         # Go
         gopls
         delve # Go debugger
-        golangci-lint # Go linter
+        # golangci-lint comes from packages/dev-tools.nix (also a CLI tool)
         # Note: goimports/gofumpt are installed imperatively by go.nvim's
         # update_all_sync build step (into ~/go/bin); gofmt ships with `go`.
         # Lua
         lua-language-server
         # Nix
         nil # Nix LSP
-        nixpkgs-fmt # Nix formatter
         # TypeScript/JavaScript
         nodePackages.typescript
         vscode-js-debug
@@ -68,7 +67,7 @@
         # Shell (sh/bash/zsh)
         shfmt
         # General
-        alejandra # Nix formatter (alternative to nixpkgs-fmt)
+        alejandra # Nix formatter
         # === Linters ===
         nodePackages.eslint_d # Fast ESLint daemon
         hadolint # Dockerfile linter

@@ -34,10 +34,7 @@ Edit `../.sops.yaml` and replace `YOUR_AGE_PUBLIC_KEY_HERE` with the public key 
 ### 3. Create your secrets file
 
 ```bash
-# Create the secrets file from template
-cp secrets.yaml.example secrets.yaml
-
-# Edit it with sops (this will encrypt it)
+# Create/edit the secrets file with sops (encrypts on save using .sops.yaml rules)
 nix-shell -p sops --run "sops secrets.yaml"
 ```
 
@@ -69,6 +66,28 @@ The password is automatically decrypted and used by NixOS at build time. The dec
 - The `.sops.yaml` file contains public keys only - safe to commit
 - The age private key is backed up in **1Password** (vault: Personal, item: "sops nixos")
 - Keep the 1Password account secure with a strong master password and 2FA
+
+## TODO: Add a second recipient (avoid 1Password single point of failure)
+
+Currently `.sops.yaml` has a single age recipient whose private key lives only
+in 1Password. Losing 1Password access would permanently lock the secrets —
+including the borg passphrase that protects the backups. To fix, add the
+NixOS host's own key as a second recipient (run on main-pc):
+
+```bash
+# Derive an age public key from the host's SSH host key
+nix-shell -p ssh-to-age --run 'ssh-to-age < /etc/ssh/ssh_host_ed25519_key.pub'
+
+# Add it under `keys:` in ../.sops.yaml (e.g. &host_main_pc) and include it in
+# the creation_rules key group, then re-encrypt to all recipients:
+nix-shell -p sops --run 'sops updatekeys secrets/secrets.yaml'
+
+# Point sops-nix at the host key in modules/core/sops.nix:
+#   sops.age.sshKeyPaths = ["/etc/ssh/ssh_host_ed25519_key"];
+```
+
+Also consider keeping an offline copy of the borg passphrase (it guards the
+backups that would be needed in exactly the scenario where 1Password is gone).
 
 ## Rotating Secrets
 
