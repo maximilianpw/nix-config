@@ -11,6 +11,11 @@
     viAlias = true;
     vimAlias = true;
     vimdiffAlias = true;
+    # nixpkgs 26.05 flipped these defaults to false. Pin to the prior behavior
+    # to keep the update purely a version bump; set to false to drop the unused
+    # ruby/python3 providers and shrink the wrapper closure.
+    withRuby = true;
+    withPython3 = true;
     extraPackages = with pkgs;
       lib.optionals stdenv.hostPlatform.isLinux [
         # C compiler is required by nvim-treesitter parser builds (`tree-sitter build` invokes `cc`).
@@ -22,7 +27,7 @@
         tree-sitter # Parser generator tool
         # === LSP Servers ===
         # Bash/Shell
-        nodePackages.bash-language-server
+        bash-language-server
         # CSS/HTML
         vscode-langservers-extracted # cssls, html, jsonls, eslint
         # Docker
@@ -38,7 +43,7 @@
         # Nix
         nil # Nix LSP
         # TypeScript/JavaScript
-        nodePackages.typescript
+        typescript
         vscode-js-debug
         # Tailwind CSS
         tailwindcss-language-server
@@ -55,7 +60,7 @@
         netcoredbg # C# / .NET debug adapter (config/dap/languages.lua)
         # === Formatters ===
         # JavaScript/TypeScript/Web
-        nodePackages.prettier
+        prettier
         prettierd # Faster prettier daemon
         # Lua
         stylua
@@ -69,7 +74,7 @@
         # General
         alejandra # Nix formatter
         # === Linters ===
-        nodePackages.eslint_d # Fast ESLint daemon
+        eslint_d # Fast ESLint daemon
         hadolint # Dockerfile linter
         tflint # Terraform linter
         vale # Prose linter

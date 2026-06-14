@@ -36,12 +36,12 @@
   };
 
   # Beelink SER9: disable suspend paths (broken s2idle) and allow hibernate only
-  systemd.sleep.extraConfig = ''
-    AllowSuspend=no
-    AllowHibernation=yes
-    AllowHybridSleep=no
-    HibernateMode=shutdown
-  '';
+  systemd.sleep.settings.Sleep = {
+    AllowSuspend = "no";
+    AllowHibernation = "yes";
+    AllowHybridSleep = "no";
+    HibernateMode = "shutdown";
+  };
 
   # Restore networking and USB audio after hibernate resume
   systemd.services.network-resume = {
