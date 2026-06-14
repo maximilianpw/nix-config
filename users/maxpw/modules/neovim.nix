@@ -49,15 +49,14 @@
         tailwindcss-language-server
         # Rust
         rust-analyzer
-        # Zig
-        zls # Zig LSP
+        # Zig (the zig compiler itself comes from packages/dev-tools.nix)
+        zls
         # TOML
         taplo # TOML LSP
         # YAML
         yaml-language-server
         # === Debug Adapters ===
         # (delve for Go and vscode-js-debug for JS/TS are listed above)
-        netcoredbg # C# / .NET debug adapter (config/dap/languages.lua)
         # === Formatters ===
         # JavaScript/TypeScript/Web
         prettier

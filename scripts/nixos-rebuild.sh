@@ -199,13 +199,13 @@ fi
 # Apply the configuration
 info "Applying configuration..."
 if [[ "$PLATFORM" == "darwin" ]]; then
-    if ! sudo darwin-rebuild switch --flake "$FLAKE_REF#$FLAKE_SWITCH_ATTR" "${VERBOSE_FLAGS[@]}" 2>&1 | tee -a "$LOG_FILE"; then
+    if ! sudo -H darwin-rebuild switch --flake "$FLAKE_REF#$FLAKE_SWITCH_ATTR" "${VERBOSE_FLAGS[@]}" 2>&1 | tee -a "$LOG_FILE"; then
         error "Rebuild failed! Check the log:"
         grep --color=always -E "(error|Error|ERROR|warning|Warning|WARN)" "$LOG_FILE" || true
         exit 1
     fi
 else
-    if ! sudo nixos-rebuild switch --flake "$FLAKE_REF#$FLAKE_SWITCH_ATTR" "${VERBOSE_FLAGS[@]}" 2>&1 | tee -a "$LOG_FILE"; then
+    if ! sudo -H nixos-rebuild switch --flake "$FLAKE_REF#$FLAKE_SWITCH_ATTR" "${VERBOSE_FLAGS[@]}" 2>&1 | tee -a "$LOG_FILE"; then
         error "Rebuild failed! Check the log:"
         grep --color=always -E "(error|Error|ERROR|warning|Warning|WARN)" "$LOG_FILE" || true
         exit 1
@@ -216,7 +216,7 @@ success "Rebuild completed successfully!"
 
 # Get current generation metadata (both platforms use the system profile;
 # $HOME/.nix-profile is the per-user profile and unrelated to rebuilds)
-CURRENT_GEN=$(sudo nix-env --list-generations --profile /nix/var/nix/profiles/system | grep current | awk '{print $2 " " $3 " " $4}')
+CURRENT_GEN=$(sudo -H nix-env --list-generations --profile /nix/var/nix/profiles/system | grep current | awk '{print $2 " " $3 " " $4}')
 info "Current generation: $CURRENT_GEN"
 
 # Commit changes if in a git repository
@@ -241,7 +241,7 @@ info "Cleaning up old generations..."
 if [[ "$PLATFORM" == "darwin" ]]; then
     nix-collect-garbage --delete-older-than 30d 2>&1 || warn "Garbage collection failed"
 else
-    sudo nix-collect-garbage --delete-older-than 30d 2>&1 || warn "Garbage collection failed"
+    sudo -H nix-collect-garbage --delete-older-than 30d 2>&1 || warn "Garbage collection failed"
 fi
 
 success "All done! System is ready."
