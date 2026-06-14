@@ -42,5 +42,8 @@
     pkgs.mise
     pkgs.comma
     pkgs.coderabbit
+
+    # AI agents
+    pkgs.hermes # Hermes Agent CLI (Nous Research)
   ];
 }
