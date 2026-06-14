@@ -32,6 +32,12 @@ hl.config({
 		allow_tearing = false,
 		layout = "dwindle",
 
+		-- Solid white active border (was Hyprland's default blue gradient).
+		col = {
+			active_border = {colors = {"rgba(ffffffff)"}},
+			inactive_border = "rgba(595959aa)",
+		},
+
 		snap = {
 			enabled = true,
 			window_gap = 10,
