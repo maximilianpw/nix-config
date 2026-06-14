@@ -11,6 +11,11 @@
     viAlias = true;
     vimAlias = true;
     vimdiffAlias = true;
+    # nixpkgs 26.05 flipped these defaults to false. Pin to the prior behavior
+    # to keep the update purely a version bump; set to false to drop the unused
+    # ruby/python3 providers and shrink the wrapper closure.
+    withRuby = true;
+    withPython3 = true;
     extraPackages = with pkgs;
       lib.optionals stdenv.hostPlatform.isLinux [
         # C compiler is required by nvim-treesitter parser builds (`tree-sitter build` invokes `cc`).
@@ -22,7 +27,7 @@
         tree-sitter # Parser generator tool
         # === LSP Servers ===
         # Bash/Shell
-        nodePackages.bash-language-server
+        bash-language-server
         # CSS/HTML
         vscode-langservers-extracted # cssls, html, jsonls, eslint
         # Docker
@@ -30,16 +35,15 @@
         # Go
         gopls
         delve # Go debugger
-        golangci-lint # Go linter
+        # golangci-lint comes from packages/dev-tools.nix (also a CLI tool)
         # Note: goimports/gofumpt are installed imperatively by go.nvim's
         # update_all_sync build step (into ~/go/bin); gofmt ships with `go`.
         # Lua
         lua-language-server
         # Nix
         nil # Nix LSP
-        nixpkgs-fmt # Nix formatter
         # TypeScript/JavaScript
-        nodePackages.typescript
+        typescript
         vscode-js-debug
         # Tailwind CSS
         tailwindcss-language-server
@@ -56,7 +60,7 @@
         netcoredbg # C# / .NET debug adapter (config/dap/languages.lua)
         # === Formatters ===
         # JavaScript/TypeScript/Web
-        nodePackages.prettier
+        prettier
         prettierd # Faster prettier daemon
         # Lua
         stylua
@@ -68,9 +72,9 @@
         # Shell (sh/bash/zsh)
         shfmt
         # General
-        alejandra # Nix formatter (alternative to nixpkgs-fmt)
+        alejandra # Nix formatter
         # === Linters ===
-        nodePackages.eslint_d # Fast ESLint daemon
+        eslint_d # Fast ESLint daemon
         hadolint # Dockerfile linter
         tflint # Terraform linter
         vale # Prose linter

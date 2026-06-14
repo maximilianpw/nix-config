@@ -26,8 +26,8 @@ hl.config({
 			enabled = true,
 			range = 10,
 			render_power = 3,
-			color = "rgba(33ccffee)",
-			color_inactive = "rgba(33ccff00)",
+			color = "rgba(ffffffee)",
+			color_inactive = "rgba(ffffff00)",
 		},
 	},
 })

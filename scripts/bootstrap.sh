@@ -27,13 +27,15 @@ OPTIONS:
     -h, --help          Show this help message
     -s, --skip-clone    Skip cloning the repository (use if already cloned)
     -d, --dry-run       Show what would be done without executing
+    -u, --update        Update flake inputs before the initial rebuild
+                        (default: build from the committed, CI-tested flake.lock)
 
 This script will:
   1. Check for Nix installation (and offer to install if missing)
   2. Clone the nix-config repository to ~/nix-config (if not present)
   3. Set up /etc/nixos symlink (NixOS only)
   4. Enable flakes and nix-command
-  5. Update flake inputs
+  5. Update flake inputs (only with --update)
   6. Perform initial system rebuild
 
 EOF
@@ -42,6 +44,7 @@ EOF
 # Parse arguments
 SKIP_CLONE=false
 DRY_RUN=false
+UPDATE_INPUTS=false
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -55,6 +58,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         -d|--dry-run)
             DRY_RUN=true
+            shift
+            ;;
+        -u|--update)
+            UPDATE_INPUTS=true
             shift
             ;;
         *)
@@ -197,19 +204,24 @@ else
     step "4/6: Skipping /etc/nixos symlink (not on NixOS)"
 fi
 
-# Step 5: Update flake inputs
-step "5/6: Updating flake inputs..."
-pushd "$CONFIG_DIR" > /dev/null
-if [[ "$DRY_RUN" == "false" ]]; then
-    if nix flake update; then
-        success "Flake inputs updated"
+# Step 5: Optionally update flake inputs (default: keep the committed,
+# CI-tested flake.lock so the first build is a known-good input set)
+if [[ "$UPDATE_INPUTS" == "true" ]]; then
+    step "5/6: Updating flake inputs..."
+    pushd "$CONFIG_DIR" > /dev/null
+    if [[ "$DRY_RUN" == "false" ]]; then
+        if nix flake update; then
+            success "Flake inputs updated"
+        else
+            warn "Flake update failed, continuing anyway..."
+        fi
     else
-        warn "Flake update failed, continuing anyway..."
+        info "[DRY-RUN] Would run: nix flake update"
     fi
+    popd > /dev/null
 else
-    info "[DRY-RUN] Would run: nix flake update"
+    step "5/6: Keeping committed flake.lock (pass --update to update inputs)"
 fi
-popd > /dev/null
 
 # Step 6: Perform initial rebuild
 step "6/6: Ready for initial system rebuild"

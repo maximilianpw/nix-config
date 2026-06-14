@@ -1,5 +1,6 @@
 # Shell configurations - nushell (primary), fish, bash/zsh (compatibility)
 {
+  config,
   pkgs,
   lib,
   isDarwin,
@@ -128,6 +129,9 @@ in {
 
   programs.zsh = {
     enable = true;
+    # nixpkgs 26.05 will move the default zsh dotDir to XDG; pin the prior
+    # (home-directory) location to keep the update behavior-neutral.
+    dotDir = config.home.homeDirectory;
     shellAliases = shellAliases;
     history = {
       size = 5000;

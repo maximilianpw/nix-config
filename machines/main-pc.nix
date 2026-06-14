@@ -7,7 +7,6 @@
   imports = [
     ./hardware/main-pc.nix
     ../modules/services/backup.nix
-    ../modules/services/roon-tailscale.nix
   ];
 
   custom.backup.enable = true;
@@ -37,12 +36,12 @@
   };
 
   # Beelink SER9: disable suspend paths (broken s2idle) and allow hibernate only
-  systemd.sleep.extraConfig = ''
-    AllowSuspend=no
-    AllowHibernation=yes
-    AllowHybridSleep=no
-    HibernateMode=shutdown
-  '';
+  systemd.sleep.settings.Sleep = {
+    AllowSuspend = "no";
+    AllowHibernation = "yes";
+    AllowHybridSleep = "no";
+    HibernateMode = "shutdown";
+  };
 
   # Restore networking and USB audio after hibernate resume
   systemd.services.network-resume = {
@@ -85,6 +84,8 @@
   # Container & virtualization stack
   virtualisation = {
     docker.enable = true;
+    # Default docker (28.x) is unmaintained and marked insecure in nixpkgs 25.11
+    docker.package = pkgs.docker_29;
     libvirtd.enable = true;
   };
   programs.virt-manager.enable = true;

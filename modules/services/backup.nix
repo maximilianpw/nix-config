@@ -33,6 +33,14 @@ in {
         "**/.git/objects"
         "**/__pycache__"
         "**/.cache"
+        # /var/lib is in `paths`, but these are huge, high-churn, and
+        # reproducible: container layers, VM disk images, LLM model blobs.
+        "/var/lib/docker"
+        "/var/lib/containers"
+        "/var/lib/libvirt/images"
+        "/var/lib/private/ollama"
+        "/var/lib/ollama"
+        "/var/lib/systemd/coredump"
       ];
       description = "Patterns to exclude from backup";
     };
@@ -50,7 +58,17 @@ in {
     };
 
     retention = lib.mkOption {
-      type = lib.types.attrs;
+      # Strict keys so a typo (e.g. `dailly`) fails at eval time instead of
+      # silently weakening the prune policy at runtime.
+      type = lib.types.submodule {
+        options = {
+          within = lib.mkOption {type = lib.types.str;};
+          daily = lib.mkOption {type = lib.types.int;};
+          weekly = lib.mkOption {type = lib.types.int;};
+          monthly = lib.mkOption {type = lib.types.int;};
+          yearly = lib.mkOption {type = lib.types.int;};
+        };
+      };
       default = {
         within = "1d";
         daily = 7;

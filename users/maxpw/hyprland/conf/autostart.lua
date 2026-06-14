@@ -7,7 +7,10 @@ hl.on("hyprland.start", function()
 	hypr.exec_once({
 		"waybar",
 		"wl-paste --watch cliphist store",
-		"hyprpaper",
+		-- hyprpaper 0.8.4 (nixpkgs 26.05) ignores the `wallpaper=` line in
+		-- hyprpaper.conf at startup ("Monitor … has no target"), so apply it
+		-- over IPC once the daemon is up. The `preload=` line still works.
+		"hyprpaper & (for i in $(seq 1 40); do hyprctl hyprpaper wallpaper ',/home/maxpw/Images/wallpaper.jpg' && break; sleep 0.5; done)",
 		"1password --silent",
 		"gammastep",
 		"hypridle",

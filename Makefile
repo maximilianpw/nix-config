@@ -1,4 +1,4 @@
-.PHONY: help bootstrap rebuild rebuild-check rebuild-verbose rebuild-processes cleanup-rebuild check check-nvim update update-all update-packages gc clean format diff test wsl
+.PHONY: help bootstrap rebuild rebuild-check rebuild-verbose rebuild-processes cleanup-rebuild check-nvim update update-all update-packages build generations rollback wsl info
 
 # Default target
 .DEFAULT_GOAL := help
@@ -79,12 +79,13 @@ update-all: ## Update all flake inputs including Hyprland & NixOS-only
 	@nix flake update
 	@echo "Done! Run 'make rebuild' to apply updates."
 
-update-packages: ## Bump custom packages (helium, obsidian, t3code, skills, coderabbit, hunkdiff) via nix-update
+update-packages: ## Bump repo-local custom packages (helium, obsidian, t3code, coderabbit) via nix-update
 	@echo "Bumping custom packages via nix-update..."
 	@echo "Note: Linux-only packages (helium, obsidian, t3code) cannot be built"
 	@echo "from macOS. The CI workflow handles them; here we only bump what"
 	@echo "this host can actually evaluate."
-	@for pkg in helium obsidian t3code skills coderabbit hunkdiff; do \
+	@echo "(skills/hunkdiff come from the llm-agents input: use 'make update')"
+	@for pkg in helium obsidian t3code coderabbit; do \
 		echo ">> nix-update $$pkg"; \
 		nix run nixpkgs#nix-update -- --flake "$$pkg" || echo "(skipped: $$pkg)"; \
 	done
