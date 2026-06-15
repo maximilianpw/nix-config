@@ -4,11 +4,11 @@
   fetchurl,
 }: let
   pname = "t3code";
-  version = "0.0.25";
+  version = "0.0.27";
 
   src = fetchurl {
     url = "https://github.com/pingdotgg/t3code/releases/download/v${version}/T3-Code-${version}-x86_64.AppImage";
-    hash = "sha256-aO1gFdYRs/9kvT8/1W4/v5e8os9E7rJl46BTK9SUglI=";
+    hash = "sha256-ALkm7wSVbDlZR7TWVag3NRbP1kvGJQqmpR1mmZvSCAU=";
   };
 
   appimageContents = pkgs.appimageTools.extractType2 {
@@ -24,7 +24,7 @@ in
         --replace-warn 'Exec=AppRun' "Exec=${pname}" \
         --replace-warn 'Icon=t3code' "Icon=$out/share/pixmaps/t3code.png"
 
-      install -m 444 -D ${appimageContents}/usr/share/icons/hicolor/1024x1024/apps/t3code.png $out/share/pixmaps/t3code.png
+      install -m 444 -D ${appimageContents}/usr/share/icons/hicolor/512x512/apps/t3code.png $out/share/pixmaps/t3code.png
     '';
 
     meta = with lib; {

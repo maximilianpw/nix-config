@@ -6,16 +6,16 @@
   autoPatchelfHook,
 }: let
   pname = "coderabbit";
-  version = "0.4.1";
+  version = "0.6.0";
 
   sources = {
     x86_64-linux = fetchurl {
       url = "https://cli.coderabbit.ai/releases/${version}/coderabbit-linux-x64.zip";
-      hash = "sha256-j+vmIsC22gqBtU6DXbpuUwdI6lqF6l+ThGPypiOBADw=";
+      hash = "sha256-OUh3qzUBVwcMZllzK7AcwrXEHsTPtdo47pT3Ue+u9hc=";
     };
     aarch64-darwin = fetchurl {
       url = "https://cli.coderabbit.ai/releases/${version}/coderabbit-darwin-arm64.zip";
-      hash = "sha256-8tHaZnurBb8HqxRjj4uPLLvy0rl4oTyoVqvbDN3TPGI=";
+      hash = "sha256-hOxkKwZXS2XyENLxsgWcqi/zeNKpzv721jamqw/5Hp4=";
     };
   };
 

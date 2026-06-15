@@ -5,6 +5,11 @@
   lib,
   ...
 }: {
+  services.gnome-keyring = lib.mkIf isLinuxDesktop {
+    enable = true;
+    components = ["secrets"];
+  };
+
   systemd.user.services.polkit-gnome = lib.mkIf isLinuxDesktop {
     Unit = {
       Description = "polkit-gnome Authentication Agent";
@@ -26,7 +31,8 @@
   systemd.user.services.protonmail-bridge = lib.mkIf isLinuxDesktop {
     Unit = {
       Description = "Proton Mail Bridge";
-      After = ["graphical-session.target"];
+      After = ["graphical-session.target" "gnome-keyring.service"];
+      Wants = ["gnome-keyring.service"];
       PartOf = ["graphical-session.target"];
     };
     Service = {

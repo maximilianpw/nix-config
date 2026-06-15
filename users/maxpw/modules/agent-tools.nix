@@ -6,8 +6,8 @@
   ...
 }: let
   agentAliases = {
-    c = "DISABLE_ZOXIDE=1 claude --dangerously-skip-permissions";
-    ccc = "codex --yolo";
+    c = "codex --yolo";
+    ccc = "DISABLE_ZOXIDE=1 claude --dangerously-skip-permissions";
     oc = "opencode";
     p = "pi";
   };
@@ -21,15 +21,15 @@
   globalSkills = [
     "mattpocock/skills@tdd"
     "mattpocock/skills@grill-me"
-    "mattpocock/skills@to-prd"
     "mattpocock/skills@improve-codebase-architecture"
     "mattpocock/skills@to-issues"
     "mattpocock/skills@diagnose"
-    "mattpocock/skills@triage"
     "obra/superpowers@verification-before-completion"
     "obra/superpowers@receiving-code-review"
     "vercel-labs/agent-skills@vercel-react-best-practices"
     "vercel-labs/skills@find-skills"
+    "shadcn/improve"
+    "shadcn/ui"
   ];
 in {
   home.packages = [

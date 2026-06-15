@@ -23,6 +23,7 @@
   isLinuxDesktop,
   inputs,
   config,
+  pkgs,
   lib,
   ...
 }: let
@@ -33,6 +34,8 @@
     if isDarwin
     then config.sops.secrets.himalaya-work-password.path
     else "/run/secrets/himalaya-bridge-password";
+
+  bridgeCertFile = "${config.xdg.configHome}/himalaya/proton-bridge-cert.pem";
 in {
   imports = lib.optionals isDarwin [
     inputs.sops-nix.homeManagerModules.sops
@@ -52,6 +55,19 @@ in {
       };
     })
     {
+      home.activation.exportProtonBridgeCert = lib.hm.dag.entryAfter ["writeBoundary"] ''
+        cert_file="${bridgeCertFile}"
+        cert_dir="$(dirname "$cert_file")"
+        mkdir -p "$cert_dir"
+
+        if ${pkgs.coreutils}/bin/timeout 2 ${pkgs.bash}/bin/bash -c "</dev/tcp/127.0.0.1/1143" 2>/dev/null; then
+          ${pkgs.openssl}/bin/openssl s_client -starttls imap -connect 127.0.0.1:1143 -showcerts </dev/null 2>/dev/null \
+            | ${pkgs.openssl}/bin/openssl x509 -outform PEM > "$cert_file"
+        elif [ ! -s "$cert_file" ]; then
+          echo "Proton Mail Bridge is not listening on 127.0.0.1:1143; cannot export certificate for himalaya." >&2
+        fi
+      '';
+
       programs.himalaya.enable = true;
 
       accounts.email.accounts.work = {
@@ -76,6 +92,11 @@ in {
           host = "127.0.0.1";
           port = 1025;
           tls.useStartTls = true;
+        };
+
+        himalaya.settings = {
+          backend.encryption.cert = bridgeCertFile;
+          message.send.backend.encryption.cert = bridgeCertFile;
         };
 
         folders = {
