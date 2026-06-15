@@ -6,8 +6,8 @@
   ...
 }: let
   agentAliases = {
-    c = "codex --yolo";
-    ccc = "DISABLE_ZOXIDE=1 claude --dangerously-skip-permissions";
+    c = "DISABLE_ZOXIDE=1 claude --dangerously-skip-permissions";
+    ccc = "codex --yolo";
     oc = "opencode";
     p = "pi";
   };
