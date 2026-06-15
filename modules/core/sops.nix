@@ -1,6 +1,7 @@
 {
   config,
   lib,
+  currentSystemUser,
   ...
 }: {
   # Configure sops-nix
@@ -23,6 +24,11 @@
       };
       borg-backup-passphrase = {
         # Readable by root only (borgbackup runs as root)
+      };
+      himalaya-bridge-password = {
+        # Proton Bridge password for this host; read at runtime by himalaya,
+        # which runs as the user, so it must be owned by the user (not root).
+        owner = currentSystemUser;
       };
     };
   };

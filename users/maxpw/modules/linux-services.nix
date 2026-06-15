@@ -18,6 +18,25 @@
     Install = {WantedBy = ["graphical-session.target"];};
   };
 
+  # Proton Mail Bridge: local IMAP/SMTP gateway that himalaya talks to.
+  # Runs headless once you've logged in interactively at least once
+  # (`protonmail-bridge --cli` -> `login`). Bridge needs a Secret Service
+  # keyring (e.g. gnome-keyring) to persist credentials; if login can't store
+  # them, enable a keyring before relying on this unit.
+  systemd.user.services.protonmail-bridge = lib.mkIf isLinuxDesktop {
+    Unit = {
+      Description = "Proton Mail Bridge";
+      After = ["graphical-session.target"];
+      PartOf = ["graphical-session.target"];
+    };
+    Service = {
+      ExecStart = "${pkgs.protonmail-bridge}/bin/protonmail-bridge --noninteractive";
+      Restart = "on-failure";
+      RestartSec = 10;
+    };
+    Install = {WantedBy = ["graphical-session.target"];};
+  };
+
   # Make cursor not tiny on HiDPI screens
   home.pointerCursor = lib.mkIf isLinuxDesktop {
     name = "Vanilla-DMZ";

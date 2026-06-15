@@ -22,6 +22,7 @@ in {
     ./modules/agent-tools.nix
     ./modules/shells.nix
     ./modules/gpg.nix
+    ./modules/himalaya.nix
     ./modules/xdg.nix
     ./modules/linux-services.nix
     ./modules/tmux.nix

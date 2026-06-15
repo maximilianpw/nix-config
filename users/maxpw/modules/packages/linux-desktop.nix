@@ -45,6 +45,7 @@
       pkgs.discord
       pkgs.mongodb-compass
       pkgs.protonmail-desktop
+      pkgs.protonmail-bridge # local IMAP/SMTP bridge for himalaya (see modules/himalaya.nix)
       pkgs.mullvad-vpn
       pkgs.obsidian
       pkgs.t3code
