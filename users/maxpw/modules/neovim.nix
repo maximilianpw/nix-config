@@ -11,11 +11,8 @@
     viAlias = true;
     vimAlias = true;
     vimdiffAlias = true;
-    # nixpkgs 26.05 flipped these defaults to false. Pin to the prior behavior
-    # to keep the update purely a version bump; set to false to drop the unused
-    # ruby/python3 providers and shrink the wrapper closure.
-    withRuby = true;
-    withPython3 = true;
+    withRuby = false;
+    withPython3 = false;
     extraPackages = with pkgs;
       lib.optionals stdenv.hostPlatform.isLinux [
         # C compiler is required by nvim-treesitter parser builds (`tree-sitter build` invokes `cc`).
@@ -79,4 +76,6 @@
         vale # Prose linter
       ];
   };
+
+  xdg.configFile."nvim/init.lua".enable = lib.mkForce false;
 }
