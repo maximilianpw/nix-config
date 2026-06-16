@@ -21,6 +21,7 @@ in {
     ./modules/git.nix
     ./modules/agent-tools.nix
     ./modules/shells.nix
+    ./modules/syncthing.nix
     ./modules/gpg.nix
     ./modules/himalaya.nix
     ./modules/xdg.nix

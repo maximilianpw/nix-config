@@ -6,6 +6,7 @@
 }: {
   imports = [
     ./hardware/main-pc.nix
+    ../homelab
     ../modules/services/backup.nix
   ];
 

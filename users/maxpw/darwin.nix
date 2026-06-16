@@ -55,6 +55,7 @@ in {
       "wispr-flow"
       "freelens"
       "granola"
+      "nextcloud"
     ];
 
     onActivation = {

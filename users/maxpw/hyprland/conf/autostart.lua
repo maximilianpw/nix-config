@@ -15,7 +15,6 @@ hl.on("hyprland.start", function()
 		"gammastep",
 		"hypridle",
 		"swaync",
-		"mullvad-gui --minimize-to-tray",
 		"blueman-applet",
 		"nm-applet --indicator",
 	})
