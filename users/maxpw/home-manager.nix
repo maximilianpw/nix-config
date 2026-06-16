@@ -35,6 +35,10 @@ in {
 
   home.stateVersion = "25.05";
 
+  home.sessionPath = [
+    "$HOME/.local/bin"
+  ];
+
   home.sessionVariables =
     {
       EDITOR = "nvim";

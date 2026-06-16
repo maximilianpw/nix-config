@@ -63,12 +63,14 @@ in {
 
     ".config/opencode/opencode.json".source = source "opencode/opencode.json";
 
-    # Hermes Agent (Nous Research). config.yaml holds the non-secret settings;
-    # the .managed marker puts Hermes in package-managed mode so it treats the
-    # config as read-only and won't self-mutate it (config.py is_managed()).
+    # Hermes Agent (Nous Research). config.yaml holds the non-secret settings.
     # Secrets live in ~/.hermes/.env, managed by hand (not via Nix).
     ".hermes/config.yaml".source = source "hermes/config.yaml";
-    ".hermes/.managed".text = "nix\n";
+    ".hermes/.managed" = lib.mkIf (!isDarwin) {
+      # Linux uses the Nix-built Hermes package, so keep Hermes in
+      # package-managed mode there. macOS uses the upstream installer.
+      text = "nix\n";
+    };
 
     ".pi/agent/settings.json".source = piConfigSource "settings.json";
     ".pi/agent/extensions" = {

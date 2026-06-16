@@ -22,6 +22,7 @@ in {
       "pinentry-mac"
       "ollama"
       "tailscale"
+      "ffmpeg"
     ];
 
     casks = [
