@@ -47,5 +47,6 @@
   "theme": "dark",
   "preferredNotifChannel": "ghostty",
   "agentPushNotifEnabled": true,
-  "skipAutoPermissionPrompt": true
+  "skipAutoPermissionPrompt": true,
+  "tui": "fullscreen"
 }
