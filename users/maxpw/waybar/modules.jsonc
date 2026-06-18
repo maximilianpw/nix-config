@@ -1,11 +1,13 @@
 {
   // Workspaces
   "hyprland/workspaces": {
-    "format": "{name}",
-    "on-click": "activate",
+    "format": "{id}",
     "all-outputs": true,
+    "move-to-monitor": true,
+    "persistent-only": true,
+    "sort-by": "number",
     "persistent-workspaces": {
-      "*": 5
+      "*": [1, 2, 3, 4, 5]
     }
   },
 

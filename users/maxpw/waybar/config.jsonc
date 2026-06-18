@@ -2,6 +2,7 @@
   "layer": "top",
   "position": "top",
   "height": 38,
+  "passthrough": false,
   "reload_style_on_change": true,
 
   "modules-left": ["hyprland/workspaces"],
