@@ -1,5 +1,6 @@
 {
   imports = [
+    ./birdclaw.nix
     ./cloudflared.nix
     ./hermes.nix
     ./home-assistant.nix

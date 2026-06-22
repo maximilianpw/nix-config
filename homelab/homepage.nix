@@ -49,6 +49,13 @@
             };
           }
           {
+            Birdclaw = {
+              href = "https://birdclaw.maximilian.pw";
+              description = "Twitter archive";
+              siteMonitor = "http://127.0.0.1:3003";
+            };
+          }
+          {
             Syncthing = {
               href = "https://syncthing.maximilian.pw";
               description = "File sync";
