@@ -55,7 +55,6 @@ tooltip label {
   padding: 6px 10px;
 }
 
-#custom-user,
 #memory,
 #cpu,
 #custom-distro,
@@ -72,23 +71,13 @@ tooltip label {
 
 #custom-left_div,
 #custom-left_inv,
-#custom-right_div,
-#custom-right_inv {
+#custom-right_div {
   min-height: 28px;
   font-size: 22px;
   padding: 0;
 }
 
 /* Left cluster */
-#custom-user {
-  padding: 0 10px;
-  color: @accent;
-}
-
-#custom-user:hover {
-  color: @hover-fg;
-}
-
 #custom-left_div.1,
 #custom-right_div.1 {
   color: @workspaces;
@@ -160,20 +149,20 @@ window#waybar.empty #window {
   color: @cpu;
 }
 
-#custom-left_div.5,
+#custom-left_div.5 {
+  color: @accent;
+}
+
 #custom-right_div.2 {
+  background-color: @time;
   color: @accent;
 }
 
 #custom-distro {
-  padding: 0 10px 0 6px;
+  padding: 0 12px 0 4px;
   background-color: @accent;
   color: @main-bg;
   font-size: 18px;
-}
-
-#custom-right_inv.1 {
-  color: @time;
 }
 
 #idle_inhibitor {

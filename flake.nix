@@ -82,7 +82,9 @@
           extraDependencyGroups = ["anthropic" "messaging" "voice"];
         };
         hermes-desktop = inputs.hermes-agent.packages.${prev.stdenv.hostPlatform.system}.desktop;
+        bird = final.callPackage ./packages/bird.nix {};
         birdclaw = final.callPackage ./packages/birdclaw.nix {};
+        xurl = final.callPackage ./packages/xurl.nix {};
         helium = final.callPackage ./packages/helium.nix {};
         obsidian = final.callPackage ./packages/obsidian.nix {};
         t3code = final.callPackage ./packages/t3code.nix {};
@@ -152,12 +154,12 @@
       x86_64-linux = let
         pkgs = mkPkgs "x86_64-linux";
       in {
-        inherit (pkgs) birdclaw helium obsidian t3code skills coderabbit hunkdiff;
+        inherit (pkgs) bird birdclaw xurl helium obsidian t3code skills coderabbit hunkdiff;
       };
       aarch64-darwin = let
         pkgs = mkPkgs "aarch64-darwin";
       in {
-        inherit (pkgs) birdclaw skills coderabbit hunkdiff;
+        inherit (pkgs) bird birdclaw xurl skills coderabbit hunkdiff;
       };
     };
 

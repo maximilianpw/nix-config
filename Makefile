@@ -79,13 +79,13 @@ update-all: ## Update all flake inputs including Hyprland & NixOS-only
 	@nix flake update
 	@echo "Done! Run 'make rebuild' to apply updates."
 
-update-packages: ## Bump repo-local custom packages (helium, obsidian, t3code, coderabbit) via nix-update
+update-packages: ## Bump repo-local custom packages (helium, obsidian, t3code, coderabbit, xurl) via nix-update
 	@echo "Bumping custom packages via nix-update..."
 	@echo "Note: Linux-only packages (helium, obsidian, t3code) cannot be built"
 	@echo "from macOS. The CI workflow handles them; here we only bump what"
 	@echo "this host can actually evaluate."
 	@echo "(skills/hunkdiff come from the llm-agents input: use 'make update')"
-	@for pkg in helium obsidian t3code coderabbit; do \
+	@for pkg in helium obsidian t3code coderabbit xurl; do \
 		echo ">> nix-update $$pkg"; \
 		nix run nixpkgs#nix-update -- --flake "$$pkg" || echo "(skipped: $$pkg)"; \
 	done

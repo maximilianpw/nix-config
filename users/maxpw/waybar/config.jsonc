@@ -7,7 +7,6 @@
   "reload_style_on_change": true,
 
   "modules-left": [
-    "custom/user",
     "custom/left_div#1",
     "hyprland/workspaces",
     "custom/right_div#1",
@@ -21,7 +20,6 @@
     "custom/left_div#5",
     "custom/distro",
     "custom/right_div#2",
-    "custom/right_inv#1",
     "idle_inhibitor",
     "clock#time",
     "custom/right_div#3",

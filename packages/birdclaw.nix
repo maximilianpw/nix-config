@@ -1,5 +1,6 @@
 {
   lib,
+  bash,
   buildNpmPackage,
   fetchurl,
   nodejs_26,
@@ -34,6 +35,9 @@ in
         { print }
       ' package.json > package.json.tmp
       mv package.json.tmp package.json
+
+      substituteInPlace dist/cli/birdclaw.js dist/server/assets/router-*.js \
+        --replace-fail '"/bin/bash"' '"${bash}/bin/bash"'
     '';
 
     dontNpmBuild = true;

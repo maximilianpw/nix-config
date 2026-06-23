@@ -7,7 +7,7 @@
 
   services.nextcloud = {
     enable = true;
-    package = pkgs.nextcloud32;
+    package = pkgs.nextcloud33;
     hostName = "nextcloud.maximilian.pw";
 
     # Whole instance (config, data, store-apps) lives on the storage SSD.
