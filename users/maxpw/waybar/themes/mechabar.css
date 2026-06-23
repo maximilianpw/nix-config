@@ -1,0 +1,48 @@
+/* Mechabar-inspired gunmetal palette for the Stalenhag road wallpaper */
+
+@define-color rosewater #d9e2e8;
+@define-color flamingo  #d6c6bd;
+@define-color pink      #d96b62;
+@define-color mauve     #bfe8d2;
+@define-color red       #d96b62;
+@define-color maroon    #ad5e55;
+@define-color peach     #c58b63;
+@define-color yellow    #d9b46f;
+@define-color green     #9fd8c0;
+@define-color teal      #8abdbd;
+@define-color sky       #9db8c9;
+@define-color sapphire  #8fa7bd;
+@define-color blue      #70869b;
+@define-color lavender  #bfe8d2;
+@define-color text      #e2e8ed;
+@define-color subtext1  #c5d0d8;
+@define-color subtext0  #a8b5c0;
+@define-color overlay2  #80909d;
+@define-color overlay1  #647481;
+@define-color overlay0  #4d5b66;
+@define-color surface2  #34414c;
+@define-color surface1  #26323d;
+@define-color surface0  #18222d;
+@define-color base      #101720;
+@define-color mantle    #0b1118;
+@define-color crust     #06090d;
+
+@define-color accent   @lavender;
+@define-color main-br  @overlay1;
+@define-color main-bg  @base;
+@define-color main-fg  @text;
+@define-color hover-bg @surface0;
+@define-color hover-fg @rosewater;
+@define-color outline  @crust;
+
+@define-color workspaces @mantle;
+@define-color memory     @base;
+@define-color cpu        @surface0;
+@define-color time       @surface0;
+@define-color date       @base;
+@define-color tray       @mantle;
+@define-color volume     @mantle;
+
+@define-color warning  @yellow;
+@define-color critical @red;
+@define-color charging @green;

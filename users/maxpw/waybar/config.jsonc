@@ -1,13 +1,44 @@
 {
   "layer": "top",
   "position": "top",
-  "height": 38,
+  "height": 0,
+  "spacing": 0,
   "passthrough": false,
   "reload_style_on_change": true,
 
-  "modules-left": ["hyprland/workspaces"],
-  "modules-center": ["hyprland/window"],
-  "modules-right": ["pulseaudio", "network", "mullvad", "custom/notification", "clock", "custom/power"],
+  "modules-left": [
+    "custom/user",
+    "custom/left_div#1",
+    "hyprland/workspaces",
+    "custom/right_div#1",
+    "hyprland/window"
+  ],
+  "modules-center": [
+    "memory",
+    "custom/left_div#4",
+    "cpu",
+    "custom/left_inv#1",
+    "custom/left_div#5",
+    "custom/distro",
+    "custom/right_div#2",
+    "custom/right_inv#1",
+    "idle_inhibitor",
+    "clock#time",
+    "custom/right_div#3",
+    "clock#date",
+    "custom/right_div#4",
+    "network",
+    "mullvad",
+    "custom/notification",
+    "custom/right_div#5"
+  ],
+  "modules-right": [
+    "mpris",
+    "custom/left_div#6",
+    "group/pulseaudio",
+    "custom/left_inv#2",
+    "custom/power"
+  ],
 
   "include": "./modules.jsonc"
 }

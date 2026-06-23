@@ -1,7 +1,90 @@
 {
+  // Mechabar shell
+  "custom/user": {
+    "format": "󰍜",
+    "min-length": 4,
+    "max-length": 4,
+    "tooltip-format": "Waybar"
+  },
+
+  "custom/distro": {
+    "format": "",
+    "tooltip": false
+  },
+
+  // Powerline dividers
+  "custom/left_div#1": {
+    "format": "",
+    "tooltip": false
+  },
+  "custom/left_div#2": {
+    "format": "",
+    "tooltip": false
+  },
+  "custom/left_div#3": {
+    "format": "",
+    "tooltip": false
+  },
+  "custom/left_div#4": {
+    "format": "",
+    "tooltip": false
+  },
+  "custom/left_div#5": {
+    "format": "",
+    "tooltip": false
+  },
+  "custom/left_div#6": {
+    "format": "",
+    "tooltip": false
+  },
+  "custom/left_div#7": {
+    "format": "",
+    "tooltip": false
+  },
+  "custom/left_div#8": {
+    "format": "",
+    "tooltip": false
+  },
+  "custom/left_inv#1": {
+    "format": "",
+    "tooltip": false
+  },
+  "custom/left_inv#2": {
+    "format": "",
+    "tooltip": false
+  },
+  "custom/right_div#1": {
+    "format": "",
+    "tooltip": false
+  },
+  "custom/right_div#2": {
+    "format": "",
+    "tooltip": false
+  },
+  "custom/right_div#3": {
+    "format": "",
+    "tooltip": false
+  },
+  "custom/right_div#4": {
+    "format": "",
+    "tooltip": false
+  },
+  "custom/right_div#5": {
+    "format": "",
+    "tooltip": false
+  },
+  "custom/right_inv#1": {
+    "format": "",
+    "tooltip": false
+  },
+
   // Workspaces
   "hyprland/workspaces": {
-    "format": "{id}",
+    "format": "{icon}",
+    "format-icons": {
+      "active": "",
+      "default": ""
+    },
     "all-outputs": true,
     "move-to-monitor": true,
     "persistent-only": true,
@@ -14,29 +97,131 @@
   // Window title
   "hyprland/window": {
     "format": "{}",
-    "max-length": 60,
+    "max-length": 55,
     "separate-outputs": true
   },
 
+  // System stats
+  "memory": {
+    "interval": 10,
+    "format": "󰘚 {percentage}%",
+    "format-warning": "󰀧 {percentage}%",
+    "format-critical": "󰀧 {percentage}%",
+    "states": {
+      "warning": 75,
+      "critical": 90
+    },
+    "min-length": 7,
+    "max-length": 7,
+    "tooltip-format": "Memory: {used:0.1f}/{total:0.1f} GiB"
+  },
+
+  "cpu": {
+    "interval": 10,
+    "format": "󰍛 {usage}%",
+    "format-warning": "󰀨 {usage}%",
+    "format-critical": "󰀨 {usage}%",
+    "states": {
+      "warning": 75,
+      "critical": 90
+    },
+    "min-length": 7,
+    "max-length": 7,
+    "tooltip": false
+  },
+
+  "idle_inhibitor": {
+    "format": "{icon}",
+    "format-icons": {
+      "activated": "󰈈",
+      "deactivated": "󰈉"
+    },
+    "min-length": 3,
+    "max-length": 3,
+    "tooltip-format-activated": "Idle inhibitor: activated",
+    "tooltip-format-deactivated": "Idle inhibitor: deactivated",
+    "start-activated": false
+  },
+
+  // Clock
+  "clock#time": {
+    "format": "{:%H:%M}",
+    "min-length": 5,
+    "max-length": 5,
+    "tooltip-format": "{:%I:%M %p}"
+  },
+
+  "clock#date": {
+    "format": "󰸗 {:%d-%m}",
+    "min-length": 8,
+    "max-length": 8,
+    "tooltip-format": "<tt><small>{calendar}</small></tt>",
+    "calendar": {
+      "mode": "month",
+      "mode-mon-col": 3,
+      "weeks-pos": "right",
+      "format": {
+        "months": "<span color='#fab387'><b>{}</b></span>",
+        "days": "<span color='#cdd6f4'>{}</span>",
+        "weeks": "<span color='#94e2d5'><b>W{}</b></span>",
+        "weekdays": "<span color='#f9e2af'><b>{}</b></span>",
+        "today": "<span color='#f38ba8'><b><u>{}</u></b></span>"
+      }
+    },
+    "actions": {
+      "on-click": "mode"
+    }
+  },
+
   // Audio
-  "pulseaudio": {
+  "group/pulseaudio": {
+    "orientation": "horizontal",
+    "modules": ["pulseaudio#output", "pulseaudio#input"],
+    "drawer": {
+      "transition-left-to-right": false
+    }
+  },
+
+  "pulseaudio#output": {
     "scroll-step": 2,
     "format": "{icon} {volume}%",
-    "format-muted": "󰖁 muted",
+    "format-muted": "󰝟 {volume}%",
     "format-icons": {
-      "headphones": "󰋋",
-      "default": ["", ""]
+      "headphone": "󰋋",
+      "headset": "󰋎",
+      "default": ["󰕿", "󰖀", "󰕾"]
     },
+    "min-length": 7,
+    "max-length": 7,
     "on-click": "pavucontrol",
     "on-scroll-up": "wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 2%+",
-    "on-scroll-down": "wpctl set-volume @DEFAULT_AUDIO_SINK@ 2%-"
+    "on-scroll-down": "wpctl set-volume @DEFAULT_AUDIO_SINK@ 2%-",
+    "tooltip-format": "{desc}"
+  },
+
+  "pulseaudio#input": {
+    "format": "{format_source}",
+    "format-source": "󰍬 {volume}%",
+    "format-source-muted": "󰍭 {volume}%",
+    "min-length": 7,
+    "max-length": 7,
+    "on-click": "pavucontrol",
+    "on-scroll-up": "wpctl set-volume @DEFAULT_AUDIO_SOURCE@ 2%+",
+    "on-scroll-down": "wpctl set-volume @DEFAULT_AUDIO_SOURCE@ 2%-",
+    "tooltip-format": "{desc}"
   },
 
   // Network
   "network": {
-    "format-wifi": " {essid}",
+    "interval": 10,
+    "format": "󰤨",
+    "format-wifi": "{icon}",
+    "format-icons": ["󰤟", "󰤢", "󰤥", "󰤨"],
     "format-ethernet": "󰈀",
-    "format-disconnected": "󰈂",
+    "format-disconnected": "󰤯",
+    "format-disabled": "󰤮",
+    "min-length": 2,
+    "max-length": 2,
     "tooltip-format-wifi": "{essid} ({signalStrength}%)\n{ipaddr}",
     "tooltip-format-ethernet": "{ifname}\n{ipaddr}",
     "tooltip-format-disconnected": "Disconnected",
@@ -56,6 +241,21 @@
     "tooltip": true,
     "tooltip-format-connected": "VPN: {server} ({country})",
     "tooltip-format-disconnected": "VPN: Disconnected"
+  },
+
+  // Media
+  "mpris": {
+    "format": "{player_icon} {artist} - {title}",
+    "format-paused": "{status_icon} {artist} - {title}",
+    "player-icons": {
+      "default": "󰐊"
+    },
+    "status-icons": {
+      "paused": "󰏤"
+    },
+    "max-length": 42,
+    "tooltip-format": "{player}: {title} - {artist}",
+    "tooltip-format-paused": "{player}: paused"
   },
 
   // Notifications
@@ -80,29 +280,10 @@
     "escape": true
   },
 
-  // Clock
-  "clock": {
-    "format": " {:%H:%M}",
-    "format-alt": " {:%a %d %b  %H:%M}",
-    "tooltip-format": "<tt><small>{calendar}</small></tt>",
-    "calendar": {
-      "mode": "month",
-      "mode-mon-col": 3,
-      "weeks-pos": "right",
-      "format": {
-        "months": "<span color='#ffa066'><b>{}</b></span>",
-        "days": "<span color='#dcd7ba'>{}</span>",
-        "weeks": "<span color='#6a9589'><b>W{}</b></span>",
-        "weekdays": "<span color='#dca561'><b>{}</b></span>",
-        "today": "<span color='#e82424'><b><u>{}</u></b></span>"
-      }
-    }
-  },
-
   // Power
   "custom/power": {
-    "format": "⏻",
-    "tooltip": false,
+    "format": "󰤄",
+    "tooltip-format": "Power menu",
     "on-click": "wlogout -p layer-shell"
   }
 }
