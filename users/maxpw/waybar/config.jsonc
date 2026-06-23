@@ -8,7 +8,15 @@
 
   "modules-left": [
     "custom/left_div#1",
-    "hyprland/workspaces",
+    "custom/workspace_1",
+    "custom/workspace_2",
+    "custom/workspace_3",
+    "custom/workspace_4",
+    "custom/workspace_5",
+    "custom/workspace_6",
+    "custom/workspace_7",
+    "custom/workspace_8",
+    "custom/workspace_9",
     "custom/right_div#1",
     "hyprland/window"
   ],

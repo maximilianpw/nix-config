@@ -65,16 +65,80 @@
     "format": "",
     "tooltip": false
   },
-  // Workspaces
-  "hyprland/workspaces": {
-    "format": "{id}",
-    "all-outputs": true,
-    "move-to-monitor": true,
-    "persistent-only": true,
-    "sort-by": "number",
-    "persistent-workspaces": {
-      "*": [1, 2, 3, 4, 5, 6, 7, 8, 9]
-    }
+  // Workspaces. These are custom modules because this Hyprland build uses
+  // Lua dispatcher objects, while Waybar's built-in Hyprland workspace click
+  // handler sends the legacy string dispatch command.
+  "custom/workspace_1": {
+    "exec": "/home/maxpw/nix-config/users/maxpw/waybar/scripts/workspace-button 1",
+    "return-type": "json",
+    "interval": 1,
+    "format": "{text}",
+    "tooltip": false,
+    "on-click": "hyprctl eval 'hl.dispatch(hl.dsp.focus({ workspace = 1 }))'"
+  },
+  "custom/workspace_2": {
+    "exec": "/home/maxpw/nix-config/users/maxpw/waybar/scripts/workspace-button 2",
+    "return-type": "json",
+    "interval": 1,
+    "format": "{text}",
+    "tooltip": false,
+    "on-click": "hyprctl eval 'hl.dispatch(hl.dsp.focus({ workspace = 2 }))'"
+  },
+  "custom/workspace_3": {
+    "exec": "/home/maxpw/nix-config/users/maxpw/waybar/scripts/workspace-button 3",
+    "return-type": "json",
+    "interval": 1,
+    "format": "{text}",
+    "tooltip": false,
+    "on-click": "hyprctl eval 'hl.dispatch(hl.dsp.focus({ workspace = 3 }))'"
+  },
+  "custom/workspace_4": {
+    "exec": "/home/maxpw/nix-config/users/maxpw/waybar/scripts/workspace-button 4",
+    "return-type": "json",
+    "interval": 1,
+    "format": "{text}",
+    "tooltip": false,
+    "on-click": "hyprctl eval 'hl.dispatch(hl.dsp.focus({ workspace = 4 }))'"
+  },
+  "custom/workspace_5": {
+    "exec": "/home/maxpw/nix-config/users/maxpw/waybar/scripts/workspace-button 5",
+    "return-type": "json",
+    "interval": 1,
+    "format": "{text}",
+    "tooltip": false,
+    "on-click": "hyprctl eval 'hl.dispatch(hl.dsp.focus({ workspace = 5 }))'"
+  },
+  "custom/workspace_6": {
+    "exec": "/home/maxpw/nix-config/users/maxpw/waybar/scripts/workspace-button 6",
+    "return-type": "json",
+    "interval": 1,
+    "format": "{text}",
+    "tooltip": false,
+    "on-click": "hyprctl eval 'hl.dispatch(hl.dsp.focus({ workspace = 6 }))'"
+  },
+  "custom/workspace_7": {
+    "exec": "/home/maxpw/nix-config/users/maxpw/waybar/scripts/workspace-button 7",
+    "return-type": "json",
+    "interval": 1,
+    "format": "{text}",
+    "tooltip": false,
+    "on-click": "hyprctl eval 'hl.dispatch(hl.dsp.focus({ workspace = 7 }))'"
+  },
+  "custom/workspace_8": {
+    "exec": "/home/maxpw/nix-config/users/maxpw/waybar/scripts/workspace-button 8",
+    "return-type": "json",
+    "interval": 1,
+    "format": "{text}",
+    "tooltip": false,
+    "on-click": "hyprctl eval 'hl.dispatch(hl.dsp.focus({ workspace = 8 }))'"
+  },
+  "custom/workspace_9": {
+    "exec": "/home/maxpw/nix-config/users/maxpw/waybar/scripts/workspace-button 9",
+    "return-type": "json",
+    "interval": 1,
+    "format": "{text}",
+    "tooltip": false,
+    "on-click": "hyprctl eval 'hl.dispatch(hl.dsp.focus({ workspace = 9 }))'"
   },
 
   // Window title

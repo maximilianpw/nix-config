@@ -83,37 +83,67 @@ tooltip label {
   color: @workspaces;
 }
 
-#workspaces {
-  padding: 0 1px;
-  background-color: @workspaces;
-}
-
-#workspaces button {
+#custom-workspace_1,
+#custom-workspace_2,
+#custom-workspace_3,
+#custom-workspace_4,
+#custom-workspace_5,
+#custom-workspace_6,
+#custom-workspace_7,
+#custom-workspace_8,
+#custom-workspace_9 {
   color: @overlay1;
   padding: 0 7px;
   border-radius: 14px;
+  background-color: @workspaces;
   transition: all 0.2s ease;
 }
 
-#workspaces button.active,
-#workspaces button.active label,
-#workspaces button.focused,
-#workspaces button.focused label {
+#custom-workspace_1.active,
+#custom-workspace_2.active,
+#custom-workspace_3.active,
+#custom-workspace_4.active,
+#custom-workspace_5.active,
+#custom-workspace_6.active,
+#custom-workspace_7.active,
+#custom-workspace_8.active,
+#custom-workspace_9.active {
   color: @accent;
 }
 
-#workspaces button.empty,
-#workspaces button.empty label {
+#custom-workspace_1.empty,
+#custom-workspace_2.empty,
+#custom-workspace_3.empty,
+#custom-workspace_4.empty,
+#custom-workspace_5.empty,
+#custom-workspace_6.empty,
+#custom-workspace_7.empty,
+#custom-workspace_8.empty,
+#custom-workspace_9.empty {
   color: @surface2;
 }
 
-#workspaces button:hover,
-#workspaces button:hover label {
+#custom-workspace_1:hover,
+#custom-workspace_2:hover,
+#custom-workspace_3:hover,
+#custom-workspace_4:hover,
+#custom-workspace_5:hover,
+#custom-workspace_6:hover,
+#custom-workspace_7:hover,
+#custom-workspace_8:hover,
+#custom-workspace_9:hover {
   color: @hover-fg;
 }
 
-#workspaces button.urgent,
-#workspaces button.urgent label {
+#custom-workspace_1.urgent,
+#custom-workspace_2.urgent,
+#custom-workspace_3.urgent,
+#custom-workspace_4.urgent,
+#custom-workspace_5.urgent,
+#custom-workspace_6.urgent,
+#custom-workspace_7.urgent,
+#custom-workspace_8.urgent,
+#custom-workspace_9.urgent {
   color: @critical;
 }
 
@@ -159,7 +189,7 @@ window#waybar.empty #window {
 }
 
 #custom-distro {
-  padding: 0 12px 0 4px;
+  padding: 0 11px 0 5px;
   background-color: @accent;
   color: @main-bg;
   font-size: 18px;
