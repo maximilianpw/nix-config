@@ -37,11 +37,6 @@ in {
           service = "http://127.0.0.1:3002";
           originRequest.httpHostHeader = "miniflux.maximilian.pw";
         };
-        # Private archive/DM data: protect this hostname with Cloudflare Access.
-        "birdclaw.maximilian.pw" = {
-          service = "http://127.0.0.1:3003";
-          originRequest.httpHostHeader = "birdclaw.maximilian.pw";
-        };
         "syncthing.maximilian.pw" = {
           service = "http://127.0.0.1:8384";
           originRequest.httpHostHeader = "syncthing.maximilian.pw";
