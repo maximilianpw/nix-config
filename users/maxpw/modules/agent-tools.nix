@@ -29,7 +29,6 @@
     "vercel-labs/agent-skills@vercel-react-best-practices"
     "vercel-labs/skills@find-skills"
     "shadcn/improve"
-    "shadcn/ui"
   ];
 in {
   home.packages = [
