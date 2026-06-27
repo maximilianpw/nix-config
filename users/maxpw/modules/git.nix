@@ -1,17 +1,10 @@
-# Git and Jujutsu configuration
+# Git configuration
 {
   pkgs,
   lib,
   isDarwin,
   ...
 }: {
-  programs.jujutsu = {
-    enable = true;
-    # I don't use "settings" because the path is wrong on macOS at
-    # the time of writing this.
-  };
-  programs.jjui.enable = true;
-
   programs.gh.enable = true;
   programs.lazygit.enable = true;
   home.packages = [pkgs.hunkdiff];

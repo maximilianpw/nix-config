@@ -19,6 +19,7 @@ in {
     inputs.nix-index-database.homeModules.nix-index
     ./modules/fonts.nix
     ./modules/git.nix
+    ./modules/vcs/jujutsu.nix
     ./modules/agent-tools.nix
     ./modules/shells.nix
     ./modules/syncthing.nix
