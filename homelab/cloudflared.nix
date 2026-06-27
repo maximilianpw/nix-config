@@ -41,6 +41,10 @@ in {
           service = "http://127.0.0.1:8384";
           originRequest.httpHostHeader = "syncthing.maximilian.pw";
         };
+        "t3code.maximilian.pw" = {
+          service = "http://127.0.0.1:51000";
+          originRequest.httpHostHeader = "t3code.maximilian.pw";
+        };
       };
     };
   };

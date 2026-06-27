@@ -21,6 +21,7 @@ in {
     ./modules/git.nix
     ./modules/vcs/jujutsu.nix
     ./modules/agent-tools.nix
+    ./modules/t3code-server.nix
     ./modules/shells.nix
     ./modules/syncthing.nix
     ./modules/gpg.nix
