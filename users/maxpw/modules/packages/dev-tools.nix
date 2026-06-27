@@ -44,6 +44,7 @@
       pkgs.graphite-cli
 
       # Dev tools
+      pkgs.ast-grep
       pkgs.sops
       pkgs.mise
       pkgs.comma
