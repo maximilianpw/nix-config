@@ -3,7 +3,29 @@
   pkgs,
   lib,
   ...
-}: {
+}: let
+  servicePath =
+    [
+      pkgs.nodejs
+      pkgs.claude-code
+      pkgs.codex
+      pkgs.opencode
+      pkgs.git
+      pkgs.openssh
+
+      # T3 probes $SHELL with POSIX syntax; use zsh instead of the login Nu shell.
+      pkgs.zsh
+      pkgs.bash
+      pkgs.mise
+      pkgs.zoxide
+    ]
+    ++ [
+      # node-pty has no prebuild for this Node runtime and falls back to node-gyp.
+      pkgs.gcc
+      pkgs.gnumake
+      pkgs.python3
+    ];
+in {
   home.packages = lib.optionals isLinuxDesktop [
     pkgs.nodejs
   ];
@@ -20,14 +42,8 @@
       RestartSec = "5s";
       WorkingDirectory = "%h";
       Environment = [
-        "PATH=%h/.nix-profile/bin:/run/current-system/sw/bin:${lib.makeBinPath [
-          pkgs.nodejs
-          pkgs.claude-code
-          pkgs.codex
-          pkgs.opencode
-          pkgs.git
-          pkgs.openssh
-        ]}"
+        "PATH=/run/current-system/sw/bin:${lib.makeBinPath servicePath}"
+        "SHELL=${pkgs.zsh}/bin/zsh"
       ];
     };
 
