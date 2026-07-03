@@ -11,7 +11,7 @@ done.
 | Plan | Title | Priority | Effort | Depends on | Status |
 |------|-------|----------|--------|------------|--------|
 | 001 | Audit Hyprland upstream changes and config inspiration | P1 | M | - | TODO |
-| 002 | CI ghost package, darwin eval in CI, skills dedupe, fenix→unstable | P1 | S | - | TODO |
+| 002 | CI ghost package, darwin eval in CI, skills dedupe, fenix→unstable | P1 | S | - | DONE |
 | 003 | Docs refresh (CLAUDE.md / README / BOOTSTRAP match reality) | P1 | S | - | DONE |
 | 004 | Lint/format gate (statix + deadnix + alejandra, git-hooks.nix, CI) | P1 | M | 002 (flake.nix/ci.yml contention) | TODO |
 | 005 | Fleet SSH host-key pinning + homepage localhost binding | P2 | M | - (see note on untracked files) | BLOCKED (fleet hosts unreachable; no verified host keys) |

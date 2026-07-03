@@ -19,7 +19,7 @@ env:
   # Single source of truth for the default package list (schedule + dispatch).
   # Only packages defined in this repo (packages/*.nix) — skills/hunkdiff come
   # from the llm-agents input and are bumped via `nix flake update llm-agents`.
-  DEFAULT_PACKAGES: 'helium obsidian t3code coderabbit xurl'
+  DEFAULT_PACKAGES: 'helium obsidian t3code coderabbit'
 
 jobs:
   update:
