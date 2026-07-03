@@ -41,7 +41,6 @@
     pkgs.ast-grep
     pkgs.sops
     pkgs.mise
-    pkgs.comma
     pkgs.coderabbit
   ];
 }

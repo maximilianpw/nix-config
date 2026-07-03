@@ -65,6 +65,9 @@ in {
     nix-direnv.enable = true;
   };
 
+  programs.nix-index.enable = true;
+  programs.nix-index-database.comma.enable = true;
+
   programs.ssh = {
     enable = true;
     # Keep SSH defaults explicit as Home Manager changes its implicit defaults.

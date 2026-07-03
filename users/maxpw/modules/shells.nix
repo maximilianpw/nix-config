@@ -71,6 +71,8 @@
     # Nix system management aliases
     nr = "make -C ~/nix-config rebuild";
     nup = "make -C ~/nix-config update";
+    # nh rebuild pilot (plan 007) - side-by-side with `nr`
+    nhs = "nh os switch ~/nix-config";
 
     # Shortcut to setup a nix-shell with fish. This lets you do something like
     # `fnix -p go` to get an environment with Go but use the fish shell along
@@ -165,6 +167,12 @@ in {
 
   programs.starship = {
     enable = true;
+  };
+
+  programs.nix-your-shell = {
+    enable = true;
+    enableNushellIntegration = true;
+    enableFishIntegration = true;
   };
 
   programs.fish = {

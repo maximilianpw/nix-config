@@ -6,8 +6,17 @@ Unified NixOS + macOS (nix-darwin) flake with Home Manager, a Hyprland desktop m
 
 ```
 .
+├── AGENTS.md               # Agent instructions for this repository
+├── BOOTSTRAP.md            # New-system bootstrap guide
+├── CLAUDE.md               # Claude Code repository guidance
+├── Makefile                # Convenience commands for build/rebuild/update
 ├── flake.nix                # Main flake: inputs, overlays, and outputs
 ├── flake.lock
+├── docs/                    # Supplemental documentation
+│   ├── hardware-issues.md
+│   ├── remote-dev-fleet.md
+│   └── wsl-setup.md
+├── homelab/                 # 9 self-hosted services behind a Cloudflare tunnel
 ├── lib/
 │   └── mksystem.nix         # mkSystem builder (NixOS & Darwin + Home Manager)
 ├── machines/
@@ -15,40 +24,60 @@ Unified NixOS + macOS (nix-darwin) flake with Home Manager, a Hyprland desktop m
 │   ├── main-pc.nix          # NixOS desktop (Ryzen + Hyprland)
 │   ├── wsl.nix              # NixOS-WSL base
 │   └── hardware/
+│       ├── main-pc-disko.nix # Disko layout for main-pc
 │       └── main-pc.nix      # Hardware profile for main-pc
 ├── modules/
 │   ├── core/
 │   │   ├── nix-settings.nix # Shared Nix settings (experimental-features, flakes)
-│   │   └── security.nix     # Security defaults (SSH, polkit, rtkit)
+│   │   ├── remote-dev.nix   # Tailscale, mosh, and tmux for remote dev fleet
+│   │   ├── security.nix     # Security defaults (SSH, polkit, rtkit)
+│   │   ├── shells.nix       # System-level shell registration
+│   │   └── sops.nix         # sops-nix integration
 │   └── desktop/
 │       └── hyprland.nix     # Hyprland from upstream flake (+portals, env)
+├── modules/services/
+│   └── backup.nix           # Borg backup service
 ├── packages/
-│   └── helium.nix           # Custom package: Helium floating browser
+│   ├── coderabbit.nix       # Custom package: CodeRabbit CLI
+│   ├── helium.nix           # Custom package: Helium floating browser
+│   ├── obsidian.nix         # Custom package: Obsidian
+│   └── t3code.nix           # Custom package: T3 Chat code server
 ├── scripts/
 │   └── nixos-rebuild.sh     # Smart rebuild script (Darwin/NixOS autodetect)
+├── secrets/                 # sops-nix encrypted secrets
+│   ├── README.md
+│   └── secrets.yaml
+├── templates/               # Nix flake templates
+│   ├── generic/
+│   ├── node/
+│   └── rust/
 ├── users/
 │   └── maxpw/
 │       ├── home-manager.nix # Main Home Manager config (Linux & macOS)
 │       ├── nixos.nix        # NixOS user/system module
 │       ├── darwin.nix       # nix-darwin user/system module for macbook-pro-m1
-│       ├── fonts.nix        # Fonts (Nerd Fonts + defaults, fontconfig)
-│       ├── neovim.nix       # Neovim configuration with LSPs
-│       ├── packages/
-│       │   ├── dev-tools.nix      # Development packages (languages, tools)
-│       │   ├── terminal-tools.nix # CLI utilities and terminal tools
-│       │   └── linux-desktop.nix  # Linux GUI apps and Wayland tools
+│       ├── wsl.nix          # NixOS-WSL user/system module
+│       ├── modules/
+│       │   ├── fonts.nix          # Fonts (Nerd Fonts + defaults, fontconfig)
+│       │   ├── neovim.nix         # Neovim configuration with LSPs
+│       │   ├── vcs/jujutsu.nix    # Jujutsu config
+│       │   └── packages/
+│       │       ├── custom-scripts.nix # Personal scripts
+│       │       ├── dev-tools.nix      # Development packages (languages, tools)
+│       │       ├── terminal-tools.nix # CLI utilities and terminal tools
+│       │       └── linux-desktop.nix  # Linux GUI apps and Wayland tools
 │       ├── config.fish      # fish init (ssh-agent, Homebrew, starship)
 │       ├── config.nu        # nushell init (env, direnv hook, helpers)
 │       ├── ghostty.linux    # Ghostty config (Linux); linked by HM
 │       ├── RectangleConfig.json # Rectangle.app settings (macOS); linked by HM
 │       └── [various configs] # Hyprland, waybar, rofi, etc.
 ├── nixos-switch.log         # Last rebuild log (script output)
-└── docs/                    # Supplemental documentation
+└── plans/                   # Reviewed implementation plans
 ```
 
 ## Flake overview
 
-- Inputs: nixpkgs 25.11, nixpkgs-unstable (select pkgs), home-manager 25.11, nix-darwin 25.11, Hyprland, NixOS-WSL, fenix, sops-nix, llm-agents, disko, nix-index-database.
+- Inputs: nixpkgs 26.05, nixpkgs-unstable (select pkgs), home-manager 26.05, nix-darwin 26.05, Hyprland, NixOS-WSL, fenix, sops-nix, llm-agents, disko, nix-index-database.
 - Overlays: fenix (Rust toolchain); llm-agents (claude-code, codex, opencode, amp-cli, pi, skills, hunkdiff, agent-browser); unstable passthrough (`pkgs.unstable`, plus jujutsu/zig pinned to unstable) and custom packages (helium, obsidian, t3code, coderabbit).
 - mkSystem (`lib/mksystem.nix`):
   - Picks nixosSystem or darwinSystem.
@@ -87,9 +116,6 @@ Unified NixOS + macOS (nix-darwin) flake with Home Manager, a Hyprland desktop m
 - modules/core/security.nix
   - Security defaults: rtkit (for audio), polkit (privilege prompts), SSH with secure defaults.
   - Centralized security configuration.
-
-- modules/desktop/gnome.nix
-  - GDM (Wayland), GNOME desktop, popular extensions, portals; forces GNOME session vars, disables greetd/seatd.
 
 - modules/desktop/hyprland.nix
   - Hyprland from upstream input, xdg-desktop-portal-hyprland, Xwayland, greetd login manager.

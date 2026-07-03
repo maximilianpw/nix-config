@@ -27,6 +27,7 @@
     # System utilities
     pkgs.fastfetch
     pkgs.btop
+    pkgs.nh
     pkgs.cmatrix
 
     # Compression & file tools

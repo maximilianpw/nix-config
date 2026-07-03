@@ -53,8 +53,9 @@ The `userDir` parameter allows the macOS username (`max-vev`) to differ from the
 
 ```
 machines/           # Per-host: boot, hardware, services (main-pc.nix, macbook-pro-m1.nix, wsl.nix)
+homelab/            # main-pc self-hosted services exposed through Cloudflare Tunnel
 modules/
-  core/             # Shared: nix-settings.nix, security.nix, sops.nix
+  core/             # Shared: nix-settings.nix, security.nix, sops.nix, shells.nix (login shells), remote-dev.nix (Tailscale/mosh/tmux fleet)
   desktop/          # Hyprland + greetd (Linux only)
   services/         # Borg backup with retention policy
 users/maxpw/
@@ -65,19 +66,32 @@ users/maxpw/
   modules/
     shells.nix      # Nushell, Fish, Bash, Zsh; all shell aliases defined here
     git.nix         # Git + Jujutsu (jj) config
+    vcs/jujutsu.nix # Jujutsu config
+    agent-tools.nix # LLM agent CLIs + aliases
+    fleet.nix       # fleet CLI + SSH matchblocks for remote dev
+    t3code-server.nix # T3 Chat code server integration
     fonts.nix       # Nerd fonts + system fonts with fontconfig
     xdg.nix         # XDG config file management (Hyprland, Ghostty, waybar, kitty, yazi, etc.)
     neovim.nix      # Neovim config + LSP packages (called as function from home-manager.nix)
     gpg.nix         # GPG agent (Linux only)
+    syncthing.nix   # User-level Syncthing config
+    himalaya.nix    # Email client config
     tmux.nix        # Tmux with plugins
     linux-services.nix  # Polkit agent, cursor settings
     packages/
       dev-tools.nix       # Languages, formatters, cloud tools
       terminal-tools.nix  # CLI utilities (bat, eza, fzf, ripgrep, etc.)
       linux-desktop.nix   # Wayland/GUI apps (Ghostty, rofi, waybar, etc.)
+      custom-scripts.nix  # Personal helper scripts
 packages/           # Custom package definitions (helium, obsidian, t3code, coderabbit)
 secrets/            # sops-nix encrypted secrets (age encryption, key in 1Password)
 ```
+
+### Homelab Services
+
+`homelab/` is imported by `machines/main-pc.nix` and aggregates the services that run on main-pc. `homelab/cloudflared.nix` defines the Cloudflare tunnel ingress for those services, secrets are managed through sops-nix, and most service endpoints bind to `127.0.0.1`.
+
+Fleet remote-development usage is documented in `docs/remote-dev-fleet.md`; the implementation lives in `users/maxpw/modules/fleet.nix` and `modules/core/remote-dev.nix`.
 
 ### Overlays (defined in `flake.nix`)
 
@@ -101,7 +115,7 @@ Dotfiles for desktop apps (Hyprland, waybar, rofi, ghostty, kitty, yazi, etc.) l
 - **Structural code search**: Use `rg` for literal text search and file discovery. Use `ast-grep` (`sg`) for syntax-aware search, linting, and mechanical refactors where whitespace, formatting, or nesting should not matter. For broad rewrites, run search-only first, inspect matches, then apply rewrites and review the diff.
 - **Platform conditionals**: Config that diverges substantially per-OS lives in `nixos.nix`/`darwin.nix`/`wsl.nix` per user, not behind `if` statements in large shared modules. Small cross-platform Home Manager modules that are imported unconditionally (e.g. `gpg.nix`, `linux-services.nix`, `linux-desktop.nix`, `xdg.nix`) may instead guard their platform-specific bits internally using the `isDarwin`/`isWSL`/`isLinuxDesktop`/`hostname` arguments injected by `mksystem.nix` — these flags are always passed, so destructure them directly without fallback defaults.
 - **New modules**: Import them in the appropriate aggregator (`home-manager.nix`, `nixos.nix`, or `darwin.nix`). The `mksystem.nix` builder handles wiring.
-- **Nixpkgs channels**: Stable is `nixpkgs` (25.11). For bleeding-edge packages, add them to the unstable overlay in `flake.nix`. To add a new unstable package: in the third overlay in `flake.nix`, add `<pkg> = unstable.<pkg>;` alongside the existing entries (jujutsu, zig), then reference `pkgs.<pkg>` in the relevant module. For a one-off, `pkgs.unstable.<pkg>` also works without touching the overlay.
+- **Nixpkgs channels**: Stable is `nixpkgs` (26.05). For bleeding-edge packages, add them to the unstable overlay in `flake.nix`. To add a new unstable package: in the third overlay in `flake.nix`, add `<pkg> = unstable.<pkg>;` alongside the existing entries (jujutsu, zig), then reference `pkgs.<pkg>` in the relevant module. For a one-off, `pkgs.unstable.<pkg>` also works without touching the overlay.
 - **Shell aliases**: All aliases are centralized in `users/maxpw/modules/shells.nix`. The `nr` alias runs `make -C ~/nix-config rebuild`.
 - **Shell**: Nushell is the primary interactive shell. When generating commands, scripts, or one-liners for the user to run, prefer Nushell's structured-data pipelines over POSIX text-munging tools. Substitute `grep` → `where`/`find`/`str contains`, `awk`/`cut` → `get`/`select`/`columns`, `sed` → `str replace`, `wc -l` → `length`, `sort | uniq -c` → `group-by | transpose`, `xargs` → `each`, `jq` → native `from json` + `get`. Reach for the POSIX tool only when the target is a non-Nushell context (a Bash script, CI step, Makefile, README example, or a tool that shells out via `/bin/sh`).
 - **macOS GUI apps**: Managed via Homebrew casks in `darwin.nix`, not Nix packages. Homebrew `onActivation.cleanup = "zap"` removes anything not declared.

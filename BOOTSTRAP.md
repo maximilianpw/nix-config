@@ -199,7 +199,7 @@ sudo ln -sfn ~/nix-config /etc/nixos
 Check the error logs:
 ```bash
 # View recent errors
-cat ~/nix-config/nixos-switch.log
+cat ~/nix-config/nixos-switch.log  # created on first rebuild; on a fresh macOS bootstrap it won't exist yet — check `log show --last 10m --level=error` instead
 
 # Validate configuration
 nix flake check

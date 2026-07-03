@@ -163,3 +163,159 @@ Stop and report back (do not improvise) if:
   format, and commit logic — do not do it in this plan.
 - `nh clean` policies (`--keep 5`) are generation-count-based; the current
   script is purely age-based. If both run, the stricter one wins — harmless.
+
+## Spike report
+
+### Script responsibility coverage
+
+`nh` covers the build/switch engine and adds the useful nvd-style package diff
+that the custom script does not currently provide. The dry-run on this Mac
+showed the expected package diff, including `nh 4.3.2`, `nh-unwrapped 4.3.2`,
+and `nix-output-monitor 2.1.8`.
+
+`nh` does not cover the custom script's user-to-host mapping, `/etc/nixos`
+symlink upkeep, `nix flake check` gate, alejandra formatting, source diff
+preview, optional auto-commit, generation log file, or generation-report
+wrapper behavior. It can handle GC policy in principle via `nh clean all
+--keep 5 --keep-since 30d`, but the exact dry-run command tried to invoke
+`sudo` in this non-interactive session and failed before listing deletions.
+
+### Darwin support
+
+`nh darwin switch -n ~/nix-config` does not work out of the box here because
+`nh` infers the machine hostname as `Maximilians-MacBook-Pro`, while the flake
+exports `darwinConfigurations.macbook-pro-m1`. The same dry-run succeeds with
+`-H macbook-pro-m1`, which means Darwin support is usable only if the caller
+supplies the configured host name or the script keeps doing that mapping.
+
+No Determinate-daemon or switch-time sudo incompatibility was observed because
+no real switch was run. The successful dry-run printed `> Activating
+configuration`, but `/run/current-system` remained
+`/nix/store/bgh6rghw43nvlbdiv9zib1gvalvvh6h6-darwin-system-26.05.adda04f`,
+so the `-n` run did not switch the system. `nix-darwin` in this flake does not
+expose `programs.nh` (`nix eval` could not resolve
+`darwinConfigurations.macbook-pro-m1.options.programs.nh`), while the NixOS
+configuration exposes `programs.nh.enable` as a boolean option.
+
+### Recommendation
+
+(b) Adopt `nh` aliases alongside the untouched script for now. `nh` is useful
+for readable build output, package diffs, search, and an eventual GC policy,
+but the custom script still carries important repo-specific behavior: host
+mapping, formatting/check gates, symlink upkeep, commit/log behavior, and
+non-interactive ergonomics. A follow-up can revisit using `nh` inside the
+script after the Mac host mapping and clean/sudo behavior are designed
+explicitly.
+
+### Verification output notes
+
+Drift check:
+
+```text
+ users/maxpw/modules/packages/terminal-tools.nix | 7 +++++++
+ 1 file changed, 7 insertions(+)
+```
+
+The drift was compatible with the plan: it only added network/remote-access
+packages, and the `System utilities` section near `pkgs.btop` still existed.
+
+`nix flake check --no-build` exited 0. The output included the existing SSH
+option deprecation warnings and ended with:
+
+```text
+checking flake output 'devShells'...
+checking derivation devShells.aarch64-darwin.default...
+derivation evaluated to /nix/store/4zc9j61259i7n3nnladkc3n3lwwjbm7c-nix-shell.drv
+warning: The check omitted these incompatible systems: aarch64-linux, x86_64-linux
+Use '--all-systems' to check all.
+```
+
+`nix shell nixpkgs#nh -c nh --version`:
+
+```text
+nh 4.3.2
+```
+
+`nix shell nixpkgs#nh -c nh darwin switch -n ~/nix-config` exited 1:
+
+```text
+> Building Darwin configuration
+warning: Git tree '/Users/max-vev/nix-config' has uncommitted changes
+error: flake 'git+file:///Users/max-vev/nix-config' does not provide attribute 'packages.aarch64-darwin.darwinConfigurations.Maximilians-MacBook-Pro.config.system.build.toplevel', 'legacyPackages.aarch64-darwin.darwinConfigurations.Maximilians-MacBook-Pro.config.system.build.toplevel' or 'darwinConfigurations.Maximilians-MacBook-Pro.config.system.build.toplevel'
+Error:
+   0: Failed to build Darwin configuration
+   1: Command exited with status ExitStatus(Exited(1))
+```
+
+`nix shell nixpkgs#nh -c nh darwin switch -n --no-nom -H macbook-pro-m1
+~/nix-config` exited 0. The compact rerun output included:
+
+```text
+> Building Darwin configuration
+warning: Git tree '/Users/max-vev/nix-config' has uncommitted changes
+<<< /run/current-system
+>>> /nix/store/bq2lirfdvcsgnip6ddpzjxr3l5y6rb48-darwin-system-26.05.adda04f
+
+CHANGED
+[C.] comma                             2.4.1-fish-completions, <others> -> <others>
+[C.] rsync                             <others> -> 3.4.4-fish-completions, <others>
+
+ADDED
+[A.] autossh                           1.4g, 1.4g-fish-completions
+[A.] mosh                              1.4.0, 1.4.0-fish-completions
+[A.] nh                                4.3.2, 4.3.2-fish-completions
+[A.] nh-unwrapped                      4.3.2
+[A.] nix-output-monitor                2.1.8
+[A.] sshfs-fuse                        3.7.6, 3.7.6-fish-completions, 3.7.6-man
+
+REMOVED
+[R.] hm_config.yaml                    <none>
+
+SIZE: 13.4 GiB -> 13.5 GiB
+DIFF: 101 MiB
+> Activating configuration
+```
+
+`readlink /run/current-system` after the dry-run:
+
+```text
+/nix/store/bgh6rghw43nvlbdiv9zib1gvalvvh6h6-darwin-system-26.05.adda04f
+```
+
+Real switch: not run, because the dispatcher explicitly prohibited system
+switches for this execution.
+
+`nix shell nixpkgs#nh -c nh clean all --dry --keep 5 --keep-since 30d` exited
+1:
+
+```text
+sudo: a terminal is required to read the password; either use the -S option to read from standard input or configure an askpass helper
+sudo: a password is required
+```
+
+`nix shell nixpkgs#nh -c nh -e none clean all --dry --keep 5 --keep-since 30d`
+exited 101:
+
+```text
+The application panicked (crashed).
+Message:  Failed to create self-elevation command:
+   0: Failed to resolve elevation program
+   1: Elevation disabled via --elevation-strategy=none
+
+Location:
+   crates/nh-core/src/command.rs:220
+Location: crates/nh-core/src/util.rs:372
+
+Please report the bug at https://github.com/nix-community/nh/issues
+```
+
+`nix shell nixpkgs#nh -c nh search ripgrep` exited 0 and ended with:
+
+```text
+ripgrep (15.1.0)
+  Utility that combines the usability of The Silver Searcher with the raw speed
+  of grep
+  Homepage: https://github.com/BurntSushi/ripgrep
+  Defined at: pkgs/by-name/ri/ripgrep/package.nix
+  GitHub link: https://github.com/NixOS/nixpkgs/blob/nixos-unstable/pkgs/by-name/ri/ripgrep/package.nix
+```
