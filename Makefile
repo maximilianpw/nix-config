@@ -26,7 +26,7 @@ rebuild: ## Rebuild system configuration (NixOS/Darwin)
 rebuild-processes: ## Show Nix processes related to the last rebuild log
 	@echo "Nix processes related to this config or the last rebuild log:"
 	@{ \
-		pattern='nix-config|darwin-rebuild|nixos-rebuild'; \
+		pattern='nix-config|darwin-rebuild|nixos-rebuild|nh (os|darwin|clean)'; \
 		if [ -f nixos-switch.log ]; then \
 			drv_pattern=$$(sed -n 's|.*/\([^/]*\.drv\).*|\1|p' nixos-switch.log | sort -u | paste -sd '|' -); \
 			if [ -n "$$drv_pattern" ]; then \
@@ -39,7 +39,7 @@ rebuild-processes: ## Show Nix processes related to the last rebuild log
 cleanup-rebuild: ## Stop Nix build processes related to the last interrupted rebuild
 	@echo "Stopping Nix processes related to this config or the last rebuild log..."
 	@{ \
-		pattern='nix-config|darwin-rebuild|nixos-rebuild'; \
+		pattern='nix-config|darwin-rebuild|nixos-rebuild|nh (os|darwin|clean)'; \
 		if [ -f nixos-switch.log ]; then \
 			drv_pattern=$$(sed -n 's|.*/\([^/]*\.drv\).*|\1|p' nixos-switch.log | sort -u | paste -sd '|' -); \
 			if [ -n "$$drv_pattern" ]; then \
@@ -92,7 +92,7 @@ lint: ## Run Nix linters (statix, deadnix) and format check
 build: ## Build system configuration without switching
 	@echo "Building system configuration..."
 	@if [ "$$(uname -s)" = "Darwin" ]; then \
-		nix build ".#darwinConfigurations.$$(hostname | sed 's/.local//' | tr '[:upper:]' '[:lower:]').system"; \
+		nix build ".#darwinConfigurations.macbook-pro-m1.system"; \
 	else \
 		nix build ".#nixosConfigurations.$$(hostname).config.system.build.toplevel"; \
 	fi
@@ -100,11 +100,7 @@ build: ## Build system configuration without switching
 
 generations: ## List system generations
 	@echo "System generations:"
-	@if [ "$$(uname -s)" = "Darwin" ]; then \
-		nix-env --list-generations --profile "$$HOME/.nix-profile"; \
-	else \
-		sudo nix-env --list-generations --profile /nix/var/nix/profiles/system; \
-	fi
+	@sudo nix-env --list-generations --profile /nix/var/nix/profiles/system
 
 rollback: ## Rollback to previous generation
 	@echo "Rolling back to previous generation..."
