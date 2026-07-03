@@ -1,5 +1,6 @@
 {
   isDarwin,
+  isLinuxDesktop,
   inputs,
   pkgs,
   lib,
@@ -17,6 +18,7 @@
 in {
   imports = [
     inputs.nix-index-database.homeModules.nix-index
+    inputs.stylix.homeModules.stylix
     ./modules/fonts.nix
     ./modules/git.nix
     ./modules/vcs/jujutsu.nix
@@ -36,6 +38,14 @@ in {
     ./modules/packages/linux-desktop.nix
     ./modules/packages/custom-scripts.nix
   ];
+
+  stylix = lib.mkIf isLinuxDesktop {
+    enable = true;
+    autoEnable = false;
+    base16Scheme = "${inputs.stylix.inputs.tinted-schemes}/base16/gruvbox-material-dark-hard.yaml";
+    targets.ghostty.enable = true;
+    targets.waybar.enable = true;
+  };
 
   home = {
     stateVersion = "25.05";

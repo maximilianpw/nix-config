@@ -104,13 +104,13 @@ in {
       if isLinuxDesktop
       then
         {
-          "ghostty/config".text = builtins.readFile ../ghostty.linux;
+          # stylix spike (plan 009): "ghostty/config".text = builtins.readFile ../ghostty.linux;
           "gammastep/config.ini".text = builtins.readFile ../config.gammastep;
           "uwsm/env".text = uwsmEnv;
           "rofi".source = ../rofi;
           "rofi".recursive = true;
-          "waybar".source = ../waybar;
-          "waybar".recursive = true;
+          # stylix spike (plan 009): "waybar".source = ../waybar;
+          # stylix spike (plan 009): "waybar".recursive = true;
           "swaync".source = ../swaync;
           "swaync".recursive = true;
           "wlogout/layout".source = ../wlogout/layout;

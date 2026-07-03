@@ -18,7 +18,7 @@ done.
 | 006 | Wire nix-index + comma; nix-your-shell for Nushell dev shells | P2 | S | - | DONE (pending runtime verify) |
 | 007 | nh pilot (spike: rebuild-script partial replacement) | P3 | M | - | DONE (pending switch verify) |
 | 008 | nixos-hardware AMD profiles for main-pc | P3 | S | 004 (flake.nix contention) | DONE (pending hardware verify) |
-| 009 | Stylix spike (ghostty + waybar prototype) | P3 | M | 008 (flake.nix contention) | TODO |
+| 009 | Stylix spike (ghostty + waybar prototype) | P3 | M | 008 (flake.nix contention) | DONE (pending hardware verify) |
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (with one-line reason) | REJECTED (with one-line rationale)
 
