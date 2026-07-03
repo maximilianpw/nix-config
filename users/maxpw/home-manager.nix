@@ -37,44 +37,48 @@ in {
     ./modules/packages/custom-scripts.nix
   ];
 
-  home.stateVersion = "25.05";
+  home = {
+    stateVersion = "25.05";
 
-  home.sessionPath = [
-    "$HOME/.local/bin"
-  ];
+    sessionPath = [
+      "$HOME/.local/bin"
+    ];
 
-  home.sessionVariables =
-    {
-      EDITOR = "nvim";
-      VISUAL = "nvim";
-      PAGER = "less -FirSwX";
-      MANPAGER = "${manpager}/bin/manpager";
-      MANROFFOPT = "-c";
-    }
-    // (
-      if isDarwin
-      then {
-        # See: https://github.com/NixOS/nixpkgs/issues/390751
-        DISPLAY = "nixpkgs-390751";
+    sessionVariables =
+      {
+        EDITOR = "nvim";
+        VISUAL = "nvim";
+        PAGER = "less -FirSwX";
+        MANPAGER = "${manpager}/bin/manpager";
+        MANROFFOPT = "-c";
       }
-      else {}
-    );
-
-  programs.direnv = {
-    enable = true;
-    nix-direnv.enable = true;
+      // (
+        if isDarwin
+        then {
+          # See: https://github.com/NixOS/nixpkgs/issues/390751
+          DISPLAY = "nixpkgs-390751";
+        }
+        else {}
+      );
   };
 
-  programs.nix-index.enable = true;
-  programs.nix-index-database.comma.enable = true;
+  programs = {
+    direnv = {
+      enable = true;
+      nix-direnv.enable = true;
+    };
 
-  programs.ssh = {
-    enable = true;
-    # Keep SSH defaults explicit as Home Manager changes its implicit defaults.
-    enableDefaultConfig = false;
-    includes = lib.optionals isDarwin ["~/.orbstack/ssh/config"];
-    settings."*" = {
-      IdentityAgent = "%d/.1password/agent.sock";
+    nix-index.enable = true;
+    nix-index-database.comma.enable = true;
+
+    ssh = {
+      enable = true;
+      # Keep SSH defaults explicit as Home Manager changes its implicit defaults.
+      enableDefaultConfig = false;
+      includes = lib.optionals isDarwin ["~/.orbstack/ssh/config"];
+      settings."*" = {
+        IdentityAgent = "%d/.1password/agent.sock";
+      };
     };
   };
 }

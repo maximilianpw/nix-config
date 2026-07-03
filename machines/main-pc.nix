@@ -1,5 +1,4 @@
 {
-  config,
   pkgs,
   lib,
   ...
@@ -18,7 +17,6 @@
   # Firmware & performance tuning for Ryzen
   hardware.cpu.amd.updateMicrocode = lib.mkDefault true;
   powerManagement.cpuFreqGovernor = lib.mkDefault "schedutil";
-  services.power-profiles-daemon.enable = lib.mkDefault true;
 
   # Modern kernel & AMD tuning
   boot = {
@@ -63,19 +61,21 @@
 
   # Caps Lock → tap=Escape / hold=Hyper (Ctrl+Super+Alt+Shift)
   # Pairs with the hyper bindings in hyprland/conf/keybinds.lua
-  services.keyd = {
-    enable = true;
-    keyboards.default = {
-      ids = ["*"];
-      settings = {
-        main.capslock = "overload(hyper, esc)";
-        "hyper:C-M-A-S" = {};
+  services = {
+    power-profiles-daemon.enable = lib.mkDefault true;
+
+    keyd = {
+      enable = true;
+      keyboards.default = {
+        ids = ["*"];
+        settings = {
+          main.capslock = "overload(hyper, esc)";
+          "hyper:C-M-A-S" = {};
+        };
       };
     };
-  };
 
-  # Hardware enablement for a desktop workstation
-  services = {
+    # Hardware enablement for a desktop workstation
     fwupd.enable = true;
     blueman.enable = true;
     mullvad-vpn.enable = true;

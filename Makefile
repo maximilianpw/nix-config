@@ -1,4 +1,4 @@
-.PHONY: help bootstrap rebuild rebuild-check rebuild-verbose rebuild-processes cleanup-rebuild check-nvim update update-all update-packages build generations rollback wsl info
+.PHONY: help bootstrap rebuild rebuild-check rebuild-verbose rebuild-processes cleanup-rebuild check-nvim lint update update-all update-packages build generations rollback wsl info
 
 # Default target
 .DEFAULT_GOAL := help
@@ -93,6 +93,9 @@ update-packages: ## Bump repo-local custom packages (helium, obsidian, t3code, c
 
 check-nvim: ## Verify every tool the Neovim config uses is on PATH
 	@$(SCRIPT_DIR)/check-nvim-tooling.sh
+
+lint: ## Run Nix linters (statix, deadnix) and format check
+	nix build .#checks.$$(nix eval --impure --raw --expr builtins.currentSystem).pre-commit-check --no-link
 
 build: ## Build system configuration without switching
 	@echo "Building system configuration..."

@@ -91,7 +91,7 @@
     sha256 = "sha256-ms+XG5/zl4lfrdgxTuCfOyfHQCeGUav+orzI680FxDE=";
   };
 
-  inherit (lib) makeLibraryPath makeSearchPathOutput makeBinPath;
+  inherit (lib) makeLibraryPath makeSearchPathOutput;
 
   deps = [
     stdenv.cc.cc
@@ -148,7 +148,7 @@
 
   libPath =
     makeLibraryPath deps
-    + lib.optionalString (stdenv.hostPlatform.is64bit)
+    + lib.optionalString stdenv.hostPlatform.is64bit
     (":" + makeSearchPathOutput "lib" "lib64" deps)
     + ":$out/opt/helium";
 

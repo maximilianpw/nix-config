@@ -22,7 +22,7 @@
 
   # Live-link top-level Hyprland entries while allowing generated host overrides.
   symlinkDir = dir: outOfStoreDir: prefix:
-    lib.mapAttrs' (name: type: {
+    lib.mapAttrs' (name: _: {
       name = "${prefix}/${name}";
       value = {source = config.lib.file.mkOutOfStoreSymlink "${outOfStoreDir}/${name}";};
     }) (lib.filterAttrs (name: _: name != "hyprland.conf") (builtins.readDir dir));

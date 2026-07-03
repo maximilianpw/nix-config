@@ -92,7 +92,7 @@ in {
     };
 
     services.borgbackup.jobs.main = {
-      paths = cfg.paths;
+      inherit (cfg) paths;
       inherit (cfg) exclude repo;
 
       encryption = {

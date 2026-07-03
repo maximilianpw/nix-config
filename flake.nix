@@ -29,6 +29,9 @@
     disko.url = "github:nix-community/disko";
     disko.inputs.nixpkgs.follows = "nixpkgs";
 
+    git-hooks.url = "github:cachix/git-hooks.nix";
+    git-hooks.inputs.nixpkgs.follows = "nixpkgs";
+
     nix-index-database.url = "github:nix-community/nix-index-database";
     nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
   };
@@ -36,26 +39,24 @@
   outputs = inputs @ {
     self,
     fenix,
+    git-hooks,
     nixpkgs,
-    nixpkgs-unstable,
-    home-manager,
-    nix-darwin,
     ...
   }: let
     # Overlay to pull select packages from nixpkgs-unstable and add custom packages
     overlays = [
       fenix.overlays.default
-      (final: prev: let
+      (_: prev: let
         llm = inputs.llm-agents.packages.${prev.stdenv.hostPlatform.system};
       in {
-        claude-code = llm.claude-code;
-        codex = llm.codex;
-        opencode = llm.opencode;
+        inherit (llm) claude-code;
+        inherit (llm) codex;
+        inherit (llm) opencode;
         amp-cli = llm.amp;
-        pi = llm.pi;
-        skills = llm.skills;
+        inherit (llm) pi;
+        inherit (llm) skills;
         hunkdiff = llm.hunk;
-        agent-browser = llm.agent-browser;
+        inherit (llm) agent-browser;
       })
       (final: prev: let
         unstable = inputs.nixpkgs-unstable.legacyPackages.${prev.stdenv.hostPlatform.system};
@@ -65,9 +66,9 @@
         # would force mass rebuilds of everything depending on it).
         inherit unstable;
         # direnv 2.37.1 fish tests get killed during build on macOS (sandbox/OOM)
-        direnv = prev.direnv.overrideAttrs (old: {doCheck = false;});
-        jujutsu = unstable.jujutsu;
-        zig = unstable.zig;
+        direnv = prev.direnv.overrideAttrs (_: {doCheck = false;});
+        inherit (unstable) jujutsu;
+        inherit (unstable) zig;
         helium = final.callPackage ./packages/helium.nix {};
         obsidian = final.callPackage ./packages/obsidian.nix {};
         t3code = final.callPackage ./packages/t3code.nix {};
@@ -78,6 +79,21 @@
     mkSystem = import ./lib/mksystem.nix {
       inherit overlays nixpkgs inputs;
     };
+
+    mkPreCommitCheck = system:
+      git-hooks.lib.${system}.run {
+        src = ./.;
+        hooks = {
+          alejandra.enable = true;
+          statix.enable = true;
+          statix.settings.ignore = ["machines/hardware"];
+          deadnix = {
+            enable = true;
+            excludes = ["machines/hardware/.*"];
+            settings.exclude = ["machines/hardware"];
+          };
+        };
+      };
   in {
     nixosConfigurations.main-pc = mkSystem "main-pc" {
       system = "x86_64-linux";
@@ -118,9 +134,11 @@
       x86_64-linux = {
         eval-main-pc = self.nixosConfigurations.main-pc.config.system.build.toplevel;
         eval-wsl = self.nixosConfigurations.wsl.config.system.build.toplevel;
+        pre-commit-check = mkPreCommitCheck "x86_64-linux";
       };
       aarch64-darwin = {
         eval-macbook = self.darwinConfigurations.macbook-pro-m1.system;
+        pre-commit-check = mkPreCommitCheck "aarch64-darwin";
       };
     };
 
@@ -156,6 +174,7 @@
       default = pkgs.mkShell {
         buildInputs = with pkgs; [git nix];
         shellHook = ''
+          ${self.checks.${system}.pre-commit-check.shellHook or ""}
           echo "Welcome to the Nix dev shell for ${system}"
         '';
       };

@@ -1,9 +1,4 @@
-{
-  inputs,
-  pkgs,
-  lib,
-  ...
-}: let
+{pkgs, ...}: let
   settings = import ./settings.nix {inherit pkgs;};
 in {
   imports = [

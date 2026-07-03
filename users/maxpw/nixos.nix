@@ -26,30 +26,39 @@ in {
       pkgs.networkmanager-openvpn
     ];
   };
-  # Default to disabling X if no desktop module overrides; GNOME module will set true.
-  services.xserver.enable = lib.mkDefault false; # no X11 unless desktop enables it
-  # Provide XKB layout info (used by Wayland compositors like Hyprland)
-  services.xserver.xkb = {
-    layout = "us";
-    variant = "colemak"; # Colemak variant of US
-  };
-  services.printing.enable = false;
 
   hardware.graphics.enable = true;
 
-  services.pulseaudio.enable = false;
-  services.pipewire = {
-    enable = true;
-    alsa.enable = true;
-    alsa.support32Bit = true;
-    pulse.enable = true;
-
-    extraConfig.pipewire."99-high-res" = {
-      "context.properties" = {
-        "default.clock.rate" = 48000;
-        "default.clock.allowed-rates" = [44100 48000 88200 96000 176400 192000 352800 384000];
+  services = {
+    # Default to disabling X if no desktop module overrides; GNOME module will set true.
+    xserver = {
+      enable = lib.mkDefault false; # no X11 unless desktop enables it
+      # Provide XKB layout info (used by Wayland compositors like Hyprland)
+      xkb = {
+        layout = "us";
+        variant = "colemak"; # Colemak variant of US
       };
     };
+    printing.enable = false;
+
+    pulseaudio.enable = false;
+    pipewire = {
+      enable = true;
+      alsa.enable = true;
+      alsa.support32Bit = true;
+      pulse.enable = true;
+
+      extraConfig.pipewire."99-high-res" = {
+        "context.properties" = {
+          "default.clock.rate" = 48000;
+          "default.clock.allowed-rates" = [44100 48000 88200 96000 176400 192000 352800 384000];
+        };
+      };
+    };
+
+    resolved.enable = true;
+    ollama.enable = true;
+    dbus.enable = true;
   };
 
   users.users.${currentSystemUser} = {
@@ -65,14 +74,27 @@ in {
     hashedPasswordFile = config.sops.secrets.maxpw-password.path;
   };
 
-  services.resolved.enable = true;
-
   # 3) Ensure /etc/resolv.conf points at resolved's stub
   networking.resolvconf.enable = lib.mkForce false;
 
-  environment.systemPackages = [
-    pkgs.helium
-  ];
+  environment = {
+    systemPackages = [
+      pkgs.helium
+    ];
+
+    # Allow Helium (Chromium fork) to talk to the 1Password desktop app via
+    # native messaging. 1Password verifies browsers against a built-in list
+    # plus this file; it must be owned by root with mode 0755 or it's ignored.
+    etc."1password/custom_allowed_browsers" = {
+      text = ''
+        helium
+        .helium-wrapped
+      '';
+      mode = "0755";
+    };
+
+    sessionVariables.NIXOS_OZONE_WL = "1";
+  };
 
   # Keep the stateVersion at the initial install release; don't bump later.
   system.stateVersion = lib.mkDefault "24.05";
@@ -86,24 +108,9 @@ in {
     polkitPolicyOwners = [currentSystemUser];
   };
 
-  services.ollama.enable = true;
-
-  # Allow Helium (Chromium fork) to talk to the 1Password desktop app via
-  # native messaging. 1Password verifies browsers against a built-in list
-  # plus this file; it must be owned by root with mode 0755 or it's ignored.
-  environment.etc."1password/custom_allowed_browsers" = {
-    text = ''
-      helium
-      .helium-wrapped
-    '';
-    mode = "0755";
-  };
-
-  services.dbus.enable = true;
   xdg.portal = {
     enable = true;
     extraPortals = [pkgs.xdg-desktop-portal-gtk];
     config.common.default = ["hyprland" "gtk"];
   };
-  environment.sessionVariables.NIXOS_OZONE_WL = "1";
 }

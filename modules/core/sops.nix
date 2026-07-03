@@ -1,9 +1,4 @@
-{
-  config,
-  lib,
-  currentSystemUser,
-  ...
-}: {
+{currentSystemUser, ...}: {
   # Configure sops-nix
   sops = {
     # Default sops file location

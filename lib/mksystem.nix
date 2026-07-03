@@ -12,7 +12,7 @@
   darwin ? false,
   wsl ? false,
 }: let
-  lib = nixpkgs.lib;
+  inherit (nixpkgs) lib;
   machineConfig = ../machines/${name}.nix;
   userOSConfig =
     ../users/${userDir}/${
@@ -58,15 +58,17 @@ in
         userOSConfig
         homeManagerMods.home-manager
         {
-          home-manager.useGlobalPkgs = true;
-          home-manager.useUserPackages = true;
-          home-manager.backupFileExtension = "backup";
-          home-manager.extraSpecialArgs =
-            systemArgs
-            // {
-              hostname = name;
-            };
-          home-manager.users.${user} = import userHMConfig;
+          home-manager = {
+            useGlobalPkgs = true;
+            useUserPackages = true;
+            backupFileExtension = "backup";
+            extraSpecialArgs =
+              systemArgs
+              // {
+                hostname = name;
+              };
+            users.${user} = import userHMConfig;
+          };
         }
         {
           config._module.args = systemArgs;

@@ -55,7 +55,7 @@
   mkPlainBlock = name: host:
     nameValuePair (hostPatterns name host) {
       hostname = host.hostName;
-      user = host.user;
+      inherit (host) user;
       port = host.port or 22;
       extraOptions = baseSshOptions;
     };
@@ -66,7 +66,7 @@
       tmuxCommand = host.tmuxCommand or "tmux";
     in {
       hostname = host.hostName;
-      user = host.user;
+      inherit (host) user;
       port = host.port or 22;
       extraOptions =
         baseSshOptions
@@ -248,12 +248,14 @@ in {
 
   home.file.".config/fleet/hosts.json".text = builtins.toJSON fleetHosts;
 
-  programs.ssh.matchBlocks =
-    (mapAttrs' mkPlainBlock remoteHosts)
-    // (mapAttrs' mkTmuxBlock remoteHosts);
+  programs = {
+    ssh.matchBlocks =
+      (mapAttrs' mkPlainBlock remoteHosts)
+      // (mapAttrs' mkTmuxBlock remoteHosts);
 
-  programs.bash.shellAliases = fleetAliases;
-  programs.zsh.shellAliases = fleetAliases;
-  programs.fish.shellAliases = fleetAliases;
-  programs.nushell.shellAliases = fleetAliases;
+    bash.shellAliases = fleetAliases;
+    zsh.shellAliases = fleetAliases;
+    fish.shellAliases = fleetAliases;
+    nushell.shellAliases = fleetAliases;
+  };
 }

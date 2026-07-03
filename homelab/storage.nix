@@ -1,4 +1,4 @@
-{...}: {
+_: {
   # Spare 1TB internal SSD (nvme0n1p2) repurposed as bulk storage for
   # self-hosted services. Mounted by filesystem label so it survives a
   # reformat without needing a config change.

@@ -1,4 +1,4 @@
-{...}: {
+_: {
   services.home-assistant = {
     enable = true;
     # Reached only via the Cloudflare tunnel (127.0.0.1:8123); no LAN port.

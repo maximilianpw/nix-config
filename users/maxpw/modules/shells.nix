@@ -3,7 +3,6 @@
   config,
   pkgs,
   lib,
-  isDarwin,
   ...
 }: let
   # Fish shell functions
@@ -80,130 +79,132 @@
     fnix = "nix-shell --run fish";
   };
 in {
-  programs.bash = {
-    enable = true;
-    shellAliases = shellAliases;
-    initExtra = ''
-      eval "$(mise activate bash)"
+  programs = {
+    bash = {
+      enable = true;
+      inherit shellAliases;
+      initExtra = ''
+        eval "$(mise activate bash)"
 
-      if [ -z "$DISABLE_ZOXIDE" ]; then
-        eval "$(zoxide init --cmd cd bash)"
-      fi
-    '';
-  };
+        if [ -z "$DISABLE_ZOXIDE" ]; then
+          eval "$(zoxide init --cmd cd bash)"
+        fi
+      '';
+    };
 
-  programs.nushell = {
-    enable = true;
-    shellAliases = builtins.removeAttrs shellAliases ["jtp" "ls" "fnix"];
-    configFile.source = ../config.nu;
-    extraConfig = ''
-      use ($nu.default-config-dir | path join "mise.nu")
-      use ($nu.default-config-dir | path join "ghostty.nu")
-    '';
-    extraEnv = ''
-      $env.SHELL = "${pkgs.bash}/bin/bash"
+    nushell = {
+      enable = true;
+      shellAliases = builtins.removeAttrs shellAliases ["jtp" "ls" "fnix"];
+      configFile.source = ../config.nu;
+      extraConfig = ''
+        use ($nu.default-config-dir | path join "mise.nu")
+        use ($nu.default-config-dir | path join "ghostty.nu")
+      '';
+      extraEnv = ''
+        $env.SHELL = "${pkgs.bash}/bin/bash"
 
-      let mise_path = $nu.default-config-dir | path join "mise.nu"
-      ^mise activate nu | save $mise_path --force
+        let mise_path = $nu.default-config-dir | path join "mise.nu"
+        ^mise activate nu | save $mise_path --force
 
-      # Ghostty shell integration - copy to config dir so config.nu can `use` it
-      let ghostty_dest = ($nu.default-config-dir | path join "ghostty.nu")
-      if ($env | get -o GHOSTTY_RESOURCES_DIR | is-not-empty) {
-        let ghostty_src = ($env.GHOSTTY_RESOURCES_DIR | path join "shell-integration" "nushell" "ghostty.nu")
-        if ($ghostty_src | path exists) {
-          open $ghostty_src | save -f $ghostty_dest
+        # Ghostty shell integration - copy to config dir so config.nu can `use` it
+        let ghostty_dest = ($nu.default-config-dir | path join "ghostty.nu")
+        if ($env | get -o GHOSTTY_RESOURCES_DIR | is-not-empty) {
+          let ghostty_src = ($env.GHOSTTY_RESOURCES_DIR | path join "shell-integration" "nushell" "ghostty.nu")
+          if ($ghostty_src | path exists) {
+            open $ghostty_src | save -f $ghostty_dest
+          } else {
+            "# ghostty stub" | save -f $ghostty_dest
+          }
         } else {
           "# ghostty stub" | save -f $ghostty_dest
         }
-      } else {
-        "# ghostty stub" | save -f $ghostty_dest
-      }
-    '';
-    plugins = with pkgs.nushellPlugins;
-    # Plugins pinned to nushell 0.111.0 in nixpkgs-unstable (skim, hcl,
-    # semver, desktop_notifications) are ABI-incompatible with nushell
-    # 0.112.1 and have been dropped until nixpkgs catches up.
-      [
-        gstat
-        query
-      ];
-  };
-
-  programs.zsh = {
-    enable = true;
-    # nixpkgs 26.05 will move the default zsh dotDir to XDG; pin the prior
-    # (home-directory) location to keep the update behavior-neutral.
-    dotDir = config.home.homeDirectory;
-    shellAliases = shellAliases;
-    history = {
-      size = 5000;
-      save = 5000;
-      ignoreAllDups = true;
-      ignoreSpace = true;
-      share = true;
+      '';
+      plugins = with pkgs.nushellPlugins;
+      # Plugins pinned to nushell 0.111.0 in nixpkgs-unstable (skim, hcl,
+      # semver, desktop_notifications) are ABI-incompatible with nushell
+      # 0.112.1 and have been dropped until nixpkgs catches up.
+        [
+          gstat
+          query
+        ];
     };
-    completionInit = "autoload -Uz compinit && compinit -C -i";
-    initContent = ''
-      eval "$(mise activate zsh)"
 
-      if [ -z "$DISABLE_ZOXIDE" ]; then
-        eval "$(zoxide init --cmd cd zsh)"
-      fi
-    '';
-  };
+    zsh = {
+      enable = true;
+      # nixpkgs 26.05 will move the default zsh dotDir to XDG; pin the prior
+      # (home-directory) location to keep the update behavior-neutral.
+      dotDir = config.home.homeDirectory;
+      inherit shellAliases;
+      history = {
+        size = 5000;
+        save = 5000;
+        ignoreAllDups = true;
+        ignoreSpace = true;
+        share = true;
+      };
+      completionInit = "autoload -Uz compinit && compinit -C -i";
+      initContent = ''
+        eval "$(mise activate zsh)"
 
-  programs.carapace = {
-    enable = true;
-    enableFishIntegration = true;
-    enableNushellIntegration = true;
-  };
+        if [ -z "$DISABLE_ZOXIDE" ]; then
+          eval "$(zoxide init --cmd cd zsh)"
+        fi
+      '';
+    };
 
-  programs.zoxide = {
-    enable = true;
-    enableZshIntegration = false;
-    enableBashIntegration = false;
-    options = ["--cmd cd"];
-  };
+    carapace = {
+      enable = true;
+      enableFishIntegration = true;
+      enableNushellIntegration = true;
+    };
 
-  programs.starship = {
-    enable = true;
-  };
+    zoxide = {
+      enable = true;
+      enableZshIntegration = false;
+      enableBashIntegration = false;
+      options = ["--cmd cd"];
+    };
 
-  programs.nix-your-shell = {
-    enable = true;
-    enableNushellIntegration = true;
-    enableFishIntegration = true;
-  };
+    starship = {
+      enable = true;
+    };
 
-  programs.fish = {
-    enable = true;
-    shellAliases = shellAliases;
-    interactiveShellInit = lib.strings.concatStrings (lib.strings.intersperse "\n" [
-      (builtins.readFile ../config.fish)
-      "set -g SHELL ${pkgs.fish}/bin/fish"
-      "mise activate fish | source"
-      fishShellFunctions
-    ]);
+    nix-your-shell = {
+      enable = true;
+      enableNushellIntegration = true;
+      enableFishIntegration = true;
+    };
 
-    plugins = [
-      {
-        name = "fish-fzf";
-        src = pkgs.fetchFromGitHub {
-          owner = "jethrokuan";
-          repo = "fzf";
-          rev = "24f4739fc1dffafcc0da3ccfbbd14d9c7d31827a";
-          sha256 = "sha256-QyCkksUYELC+TJDZS1C8aL5MBLmDcwM8gMsfkO0p4E8=";
-        };
-      }
-      {
-        name = "fish-foreign-env";
-        src = pkgs.fetchFromGitHub {
-          owner = "oh-my-fish";
-          repo = "plugin-foreign-env";
-          rev = "dddd9213272a0ab848d474d0cbde12ad034e65bc";
-          sha256 = "sha256-er1KI2xSUtTlQd9jZl1AjqeArrfBxrgBLcw5OqinuAM=";
-        };
-      }
-    ];
+    fish = {
+      enable = true;
+      inherit shellAliases;
+      interactiveShellInit = lib.strings.concatStrings (lib.strings.intersperse "\n" [
+        (builtins.readFile ../config.fish)
+        "set -g SHELL ${pkgs.fish}/bin/fish"
+        "mise activate fish | source"
+        fishShellFunctions
+      ]);
+
+      plugins = [
+        {
+          name = "fish-fzf";
+          src = pkgs.fetchFromGitHub {
+            owner = "jethrokuan";
+            repo = "fzf";
+            rev = "24f4739fc1dffafcc0da3ccfbbd14d9c7d31827a";
+            sha256 = "sha256-QyCkksUYELC+TJDZS1C8aL5MBLmDcwM8gMsfkO0p4E8=";
+          };
+        }
+        {
+          name = "fish-foreign-env";
+          src = pkgs.fetchFromGitHub {
+            owner = "oh-my-fish";
+            repo = "plugin-foreign-env";
+            rev = "dddd9213272a0ab848d474d0cbde12ad034e65bc";
+            sha256 = "sha256-er1KI2xSUtTlQd9jZl1AjqeArrfBxrgBLcw5OqinuAM=";
+          };
+        }
+      ];
+    };
   };
 }
