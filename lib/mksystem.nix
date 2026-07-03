@@ -11,6 +11,7 @@
   userDir ? user,
   darwin ? false,
   wsl ? false,
+  extraModules ? [],
 }: let
   inherit (nixpkgs) lib;
   machineConfig = ../machines/${name}.nix;
@@ -73,5 +74,6 @@ in
         {
           config._module.args = systemArgs;
         }
-      ];
+      ]
+      ++ extraModules;
   }

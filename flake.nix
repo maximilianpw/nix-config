@@ -24,6 +24,9 @@
     nixos-wsl.url = "github:nix-community/NixOS-WSL";
     nixos-wsl.inputs.nixpkgs.follows = "nixpkgs";
 
+    nixos-hardware.url = "github:NixOS/nixos-hardware";
+    nixos-hardware.inputs.nixpkgs.follows = "nixpkgs";
+
     llm-agents.url = "github:numtide/llm-agents.nix";
 
     disko.url = "github:nix-community/disko";
@@ -98,6 +101,11 @@
     nixosConfigurations.main-pc = mkSystem "main-pc" {
       system = "x86_64-linux";
       user = "maxpw";
+      extraModules = with inputs.nixos-hardware.nixosModules; [
+        common-cpu-amd
+        common-gpu-amd
+        common-pc-ssd
+      ];
     };
 
     nixosConfigurations.wsl = mkSystem "wsl" {

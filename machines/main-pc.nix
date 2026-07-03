@@ -15,7 +15,6 @@
   networking.hostName = "main-pc";
 
   # Firmware & performance tuning for Ryzen
-  hardware.cpu.amd.updateMicrocode = lib.mkDefault true;
   powerManagement.cpuFreqGovernor = lib.mkDefault "schedutil";
 
   # Modern kernel & AMD tuning
