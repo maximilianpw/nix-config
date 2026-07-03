@@ -1,12 +1,15 @@
 #!/usr/bin/env bash
-# NixOS/Darwin rebuild script with better error handling and validation, auto-detecting host and platform
+# NixOS/Darwin rebuild script, auto-detecting host and platform.
+# Build, switch, and generation cleanup are delegated to nh (nix helper),
+# which prints a package-level generation diff after every switch and keeps
+# a rollback floor when cleaning. This script keeps the repo-specific parts:
+# user->host mapping, /etc/nixos symlink upkeep, formatting, and the log.
 set -euo pipefail
 
 # Configuration
 auto_username=$(whoami)
 CONFIG_DIR="$HOME/nix-config"
 LOG_FILE="$CONFIG_DIR/nixos-switch.log"
-FLAKE_REF="git+file://$CONFIG_DIR"
 
 # Colors for output
 RED='\033[0;31m'
@@ -21,64 +24,6 @@ warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
 error() { echo -e "${RED}[ERROR]${NC} $1"; }
 success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
 
-usage() {
-    cat << EOF
-Usage: $0 [OPTIONS]
-
-Automatically detects username and platform.
-
-Options:
-  --check      Run 'nix flake check --no-build' before rebuilding
-  --force      Continue even if flake validation fails
-  --commit     Commit repo changes after a successful rebuild
-  --verbose    Show live build logs and verbose fetch/eval progress
-               (passes -L -v --show-trace to nix build / rebuild)
-  -h, --help   Show this help message
-
-Host mapping:
-  - max-vev: macbook-pro-m1 (darwin)
-  - maxpw: main-pc (nixos)
-
-On macOS, uses darwin-rebuild. On Linux, uses nixos-rebuild.
-EOF
-}
-
-# Script flags
-FORCE=0
-AUTO_COMMIT=0
-FLAKE_CHECK=0
-VERBOSE=0
-
-while [[ $# -gt 0 ]]; do
-    case "$1" in
-        --check)
-            FLAKE_CHECK=1
-            shift
-            ;;
-        --force)
-            FORCE=1
-            shift
-            ;;
-        --commit)
-            AUTO_COMMIT=1
-            shift
-            ;;
-        --verbose)
-            VERBOSE=1
-            shift
-            ;;
-        -h|--help)
-            usage
-            exit 0
-            ;;
-        *)
-            error "Unknown option: $1"
-            usage
-            exit 1
-            ;;
-    esac
-done
-
 # Username to host mapping (map login -> flake config name)
 declare -A USER_HOST_MAP
 USER_HOST_MAP=(
@@ -88,47 +33,39 @@ USER_HOST_MAP=(
 
 HOSTNAME="${USER_HOST_MAP[$auto_username]:-default}"
 
-# Extra flags passed to nix build / *-rebuild when --verbose is set
-VERBOSE_FLAGS=()
-if [[ "$VERBOSE" == "1" ]]; then
-    VERBOSE_FLAGS=(-L -v --show-trace)
-    info "Verbose mode enabled (-L -v --show-trace)"
+# nh is installed by this very config, so the first rebuild on a fresh
+# machine won't have it on PATH yet - fall back to running it from nixpkgs.
+if command -v nh >/dev/null 2>&1; then
+    NH=(nh)
+else
+    warn "nh not on PATH yet (first rebuild?); using 'nix run nixpkgs#nh'"
+    NH=(nix run nixpkgs#nh --)
 fi
 
 # Detect platform
 UNAME_OUT="$(uname -s)"
 if [[ "$UNAME_OUT" == "Darwin" ]]; then
     PLATFORM="darwin"
-    REBUILD_CMD="darwin-rebuild"
     SYSTEM_HOSTNAME=$(scutil --get ComputerName 2>/dev/null || hostname)
     # Map current login or fallback to system name for Darwin
     HOSTNAME="${USER_HOST_MAP[$auto_username]:-$SYSTEM_HOSTNAME}"
-    FLAKE_ATTR="darwinConfigurations.$HOSTNAME"
-    FLAKE_SWITCH_ATTR="$HOSTNAME"
-    info "Using Darwin flake config: $FLAKE_ATTR"
+    NH_SWITCH=("${NH[@]}" darwin switch)
 else
     PLATFORM="nixos"
-    REBUILD_CMD="nixos-rebuild"
     # Map current login or fallback to hostname for NixOS
     HOSTNAME="${USER_HOST_MAP[$auto_username]:-$(hostname)}"
-    FLAKE_ATTR="nixosConfigurations.$HOSTNAME"
-    FLAKE_SWITCH_ATTR="$HOSTNAME"
+    NH_SWITCH=("${NH[@]}" os switch)
 
-    # WSL detection: override hostname/flake attr when running under WSL
+    # WSL detection: override hostname when running under WSL
     if [[ -e /proc/sys/fs/binfmt_misc/WSLInterp ]] || grep -qi microsoft /proc/version 2>/dev/null; then
         info "WSL environment detected, overriding to wsl config"
         HOSTNAME="wsl"
-        FLAKE_ATTR="nixosConfigurations.wsl"
-        FLAKE_SWITCH_ATTR="wsl"
     fi
 fi
 
 info "Detected user: $auto_username"
 info "Selected host: $HOSTNAME"
 info "Platform: $PLATFORM"
-info "Rebuild command: $REBUILD_CMD"
-info "Flake attribute: $FLAKE_ATTR"
-info "Flake ref: $FLAKE_REF"
 
 # Change to config directory
 if [[ ! -d "$CONFIG_DIR" ]]; then
@@ -153,21 +90,6 @@ if [[ "${SKIP_ETC_NIXOS_LINK:-0}" != "1" ]]; then
     fi
 fi
 
-# Run flake check if requested
-if [[ "$FLAKE_CHECK" == "1" ]]; then
-    info "Running nix flake check..."
-    if ! nix flake check --no-build "$FLAKE_REF" 2>&1; then
-        if [[ "$FORCE" == "1" ]]; then
-            warn "Flake check failed, continuing because --force was set."
-        else
-            error "Flake check failed. Re-run with --force to continue anyway."
-            exit 1
-        fi
-    else
-        success "Flake check passed."
-    fi
-fi
-
 # Format Nix files
 info "Formatting Nix files..."
 if command -v alejandra >/dev/null 2>&1; then
@@ -184,64 +106,23 @@ else
     git diff --color=always -U2 '*.nix' || true
 fi
 
-# For Darwin, skip explicit nix build step; let darwin-rebuild handle everything
-if [[ "$PLATFORM" == "nixos" ]]; then
-    # The flake attribute (nixosConfigurations.<host>) is a set, not a derivation.
-    # We must build its system build output.
-    BUILD_ATTR="$FLAKE_ATTR.config.system.build.toplevel"
-    info "Building NixOS system derivation: $BUILD_ATTR"
-    if ! nix build "$FLAKE_REF#$BUILD_ATTR" --no-link "${VERBOSE_FLAGS[@]}" 2>&1 | tee "$LOG_FILE"; then
-        error "Build failed! Check the log above for details."
-        exit 1
-    fi
-fi
-
-# Apply the configuration
-info "Applying configuration..."
-if [[ "$PLATFORM" == "darwin" ]]; then
-    if ! sudo -H darwin-rebuild switch --flake "$FLAKE_REF#$FLAKE_SWITCH_ATTR" "${VERBOSE_FLAGS[@]}" 2>&1 | tee -a "$LOG_FILE"; then
-        error "Rebuild failed! Check the log:"
-        grep --color=always -E "(error|Error|ERROR|warning|Warning|WARN)" "$LOG_FILE" || true
-        exit 1
-    fi
-else
-    if ! sudo -H nixos-rebuild switch --flake "$FLAKE_REF#$FLAKE_SWITCH_ATTR" "${VERBOSE_FLAGS[@]}" 2>&1 | tee -a "$LOG_FILE"; then
-        error "Rebuild failed! Check the log:"
-        grep --color=always -E "(error|Error|ERROR|warning|Warning|WARN)" "$LOG_FILE" || true
-        exit 1
-    fi
+# Build + switch via nh (elevates itself, prints an nvd generation diff).
+# Output is teed to the log; nh degrades to sequential lines when piped.
+info "Switching configuration via nh: $HOSTNAME ($PLATFORM)"
+if ! "${NH_SWITCH[@]}" -H "$HOSTNAME" "$CONFIG_DIR" 2>&1 | tee -a "$LOG_FILE"; then
+    error "Rebuild failed! Check the log:"
+    grep --color=always -E "(error|Error|ERROR|warning|Warning|WARN)" "$LOG_FILE" || true
+    exit 1
 fi
 
 success "Rebuild completed successfully!"
 
-# Get current generation metadata (both platforms use the system profile;
-# $HOME/.nix-profile is the per-user profile and unrelated to rebuilds)
-CURRENT_GEN=$(sudo -H nix-env --list-generations --profile /nix/var/nix/profiles/system | grep current | awk '{print $2 " " $3 " " $4}')
-info "Current generation: $CURRENT_GEN"
-
-# Commit changes if in a git repository
-if [[ "$AUTO_COMMIT" == "1" ]]; then
-    if git rev-parse --git-dir >/dev/null 2>&1; then
-        if ! git diff --quiet HEAD; then
-            info "Committing changes to git..."
-            git add -u
-            git commit -m "NixOS/Darwin rebuild: $HOSTNAME - Generation $CURRENT_GEN" || warn "Git commit failed"
-        else
-            info "No changes to commit"
-        fi
-    else
-        warn "Not in a git repository; skipping commit"
-    fi
-else
-    info "Skipping git commit (use --commit to enable)"
-fi
-
-# Clean up generations older than 30 days
-info "Cleaning up old generations..."
-if [[ "$PLATFORM" == "darwin" ]]; then
-    nix-collect-garbage --delete-older-than 30d 2>&1 || warn "Garbage collection failed"
-else
-    sudo -H nix-collect-garbage --delete-older-than 30d 2>&1 || warn "Garbage collection failed"
+# Clean up old generations: always keep the last 5 as a rollback floor,
+# plus anything newer than 30 days (the old age-only GC could delete
+# every rollback target after an idle month).
+info "Cleaning up old generations (keep 5, keep 30d)..."
+if ! "${NH[@]}" clean all --keep 5 --keep-since 30d 2>&1 | tee -a "$LOG_FILE"; then
+    warn "Generation cleanup failed"
 fi
 
 success "All done! System is ready."

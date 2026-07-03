@@ -16,7 +16,7 @@ done.
 | 004 | Lint/format gate (statix + deadnix + alejandra, git-hooks.nix, CI) | P1 | M | 002 (flake.nix/ci.yml contention) | DONE |
 | 005 | Fleet SSH host-key pinning + homepage localhost binding | P2 | M | - (see note on untracked files) | DONE (partial: homepage bound to localhost; per-host pinning landed with the mac key pinned — main-pc hostKey pending capture via `ssh-keyscan -t ed25519 main-pc` on the tailnet, cross-checked on the host, then rebuild) |
 | 006 | Wire nix-index + comma; nix-your-shell for Nushell dev shells | P2 | S | - | DONE (pending runtime verify) |
-| 007 | nh pilot (spike: rebuild-script partial replacement) | P3 | M | - | DONE (pending switch verify) |
+| 007 | nh pilot (spike: rebuild-script partial replacement) | P3 | M | - | DONE (follow-up executed: rebuild script now delegates switch+GC to nh, flags removed; first real `make rebuild` on each platform is the remaining verify) |
 | 008 | nixos-hardware AMD profiles for main-pc | P3 | S | 004 (flake.nix contention) | DONE (pending hardware verify) |
 | 009 | Stylix spike (ghostty + waybar prototype) | P3 | M | 008 (flake.nix contention) | DONE (pending hardware verify) |
 

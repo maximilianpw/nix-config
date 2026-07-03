@@ -13,7 +13,7 @@ A unified NixOS + nix-darwin flake managing three systems from a single codebase
 
 ```bash
 make bootstrap   # Bootstrap a new system (initial setup)
-make rebuild     # Apply configuration (auto-detects platform, formats with alejandra, runs GC; pass --commit to the script to auto-commit)
+make rebuild     # Apply configuration (auto-detects platform, formats with alejandra, switches via nh with a generation diff, cleans old generations)
 make build       # Build without switching
 make update      # Update flake inputs
 make wsl         # Build WSL tarball for import
@@ -125,5 +125,5 @@ Dotfiles for desktop apps (Hyprland, waybar, rofi, ghostty, kitty, yazi, etc.) l
 - **Never bump `stateVersion`**: `system.stateVersion` and `home.stateVersion` must stay at their initial install values. They control state migration, not the package set version.
 - **Hyprland comes from upstream flake input**, not nixpkgs. Check the `hyprland` input in `flake.nix` when debugging Hyprland issues.
 - **macOS Nix daemon**: Managed by the Determinate installer. `nix.enable = false` in `macbook-pro-m1.nix` — don't set it to `true`.
-- **Rebuild does NOT auto-commit**: committing is opt-in via `scripts/nixos-rebuild.sh --commit` (which stages tracked-file changes and commits with a generation message). `make rebuild` formats with alejandra and runs GC but leaves the repo uncommitted.
+- **Rebuild does NOT auto-commit**: `make rebuild` formats with alejandra, switches via nh (which prints a package-level generation diff), and cleans old generations (`nh clean all --keep 5 --keep-since 30d`) — but always leaves the repo uncommitted. Commit manually; the pre-commit hook lints on commit.
 - **Darwin Nix settings live in /etc/nix/nix.custom.conf**: because `nix.enable = false` on macOS, nix-darwin ignores `nix.settings`. Caches/trusted-users for the Mac are managed via `environment.etc."nix/nix.custom.conf"` in `machines/macbook-pro-m1.nix`.

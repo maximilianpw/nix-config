@@ -1,4 +1,4 @@
-.PHONY: help bootstrap rebuild rebuild-check rebuild-verbose rebuild-processes cleanup-rebuild check-nvim lint update update-all update-packages build generations rollback wsl info
+.PHONY: help bootstrap rebuild rebuild-processes cleanup-rebuild check-nvim lint update update-all update-packages build generations rollback wsl info
 
 # Default target
 .DEFAULT_GOAL := help
@@ -22,14 +22,6 @@ bootstrap: ## Bootstrap a new system (initial setup)
 rebuild: ## Rebuild system configuration (NixOS/Darwin)
 	@echo "Starting system rebuild..."
 	@$(SCRIPT_DIR)/nixos-rebuild.sh
-
-rebuild-check: ## Rebuild with flake check before switching
-	@echo "Starting system rebuild with flake check..."
-	@$(SCRIPT_DIR)/nixos-rebuild.sh --check
-
-rebuild-verbose: ## Rebuild with live build logs (-L -v --show-trace)
-	@echo "Starting system rebuild with verbose output..."
-	@$(SCRIPT_DIR)/nixos-rebuild.sh --verbose
 
 rebuild-processes: ## Show Nix processes related to the last rebuild log
 	@echo "Nix processes related to this config or the last rebuild log:"
