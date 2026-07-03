@@ -14,7 +14,6 @@ Unified NixOS + macOS (nix-darwin) flake with Home Manager, a Hyprland desktop m
 ├── flake.lock
 ├── docs/                    # Supplemental documentation
 │   ├── hardware-issues.md
-│   ├── remote-dev-fleet.md
 │   └── wsl-setup.md
 ├── homelab/                 # 9 self-hosted services behind a Cloudflare tunnel
 ├── lib/
@@ -29,14 +28,17 @@ Unified NixOS + macOS (nix-darwin) flake with Home Manager, a Hyprland desktop m
 ├── modules/
 │   ├── core/
 │   │   ├── nix-settings.nix # Shared Nix settings (experimental-features, flakes)
-│   │   ├── remote-dev.nix   # Tailscale, mosh, and tmux for remote dev fleet
 │   │   ├── security.nix     # Security defaults (SSH, polkit, rtkit)
 │   │   ├── shells.nix       # System-level shell registration
 │   │   └── sops.nix         # sops-nix integration
-│   └── desktop/
-│       └── hyprland.nix     # Hyprland from upstream flake (+portals, env)
-├── modules/services/
-│   └── backup.nix           # Borg backup service
+│   ├── desktop/
+│   │   └── hyprland.nix     # Hyprland from upstream flake (+portals, env)
+│   ├── fleet/
+│   │   ├── README.md        # Remote dev fleet usage and adding-machine notes
+│   │   ├── home-manager.nix # Fleet inventory, SSH matchblocks, and fleet CLI
+│   │   └── nixos.nix        # Tailscale, mosh, and tmux for fleet nodes
+│   └── services/
+│       └── backup.nix       # Borg backup service
 ├── packages/
 │   ├── coderabbit.nix       # Custom package: CodeRabbit CLI
 │   ├── helium.nix           # Custom package: Helium floating browser
@@ -116,6 +118,9 @@ Unified NixOS + macOS (nix-darwin) flake with Home Manager, a Hyprland desktop m
 - modules/core/security.nix
   - Security defaults: rtkit (for audio), polkit (privilege prompts), SSH with secure defaults.
   - Centralized security configuration.
+
+- modules/fleet/
+  - Remote-development fleet module: Tailscale/mosh system setup, declarative host inventory, SSH matchblocks, host-key pinning, and the `fleet` helper CLI.
 
 - modules/desktop/hyprland.nix
   - Hyprland from upstream input, xdg-desktop-portal-hyprland, Xwayland, greetd login manager.

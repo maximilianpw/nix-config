@@ -10,6 +10,7 @@ set -euo pipefail
 auto_username=$(whoami)
 CONFIG_DIR="$HOME/nix-config"
 LOG_FILE="$CONFIG_DIR/nixos-switch.log"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Colors for output
 RED='\033[0;31m'
@@ -24,15 +25,6 @@ warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
 error() { echo -e "${RED}[ERROR]${NC} $1"; }
 success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
 
-# Username to host mapping (map login -> flake config name)
-declare -A USER_HOST_MAP
-USER_HOST_MAP=(
-  ["max-vev"]="macbook-pro-m1"
-  ["maxpw"]="main-pc"
-)
-
-HOSTNAME="${USER_HOST_MAP[$auto_username]:-default}"
-
 # nh is installed by this very config, so the first rebuild on a fresh
 # machine won't have it on PATH yet - fall back to running it from nixpkgs.
 if command -v nh >/dev/null 2>&1; then
@@ -42,30 +34,41 @@ else
     NH=(nix run nixpkgs#nh --)
 fi
 
-# Detect platform
-UNAME_OUT="$(uname -s)"
-if [[ "$UNAME_OUT" == "Darwin" ]]; then
-    PLATFORM="darwin"
-    SYSTEM_HOSTNAME=$(scutil --get ComputerName 2>/dev/null || hostname)
-    # Map current login or fallback to system name for Darwin
-    HOSTNAME="${USER_HOST_MAP[$auto_username]:-$SYSTEM_HOSTNAME}"
+# Platform + host detection (login -> flake config mapping) is shared with
+# bootstrap.sh; the map lives in scripts/lib/host-detect.sh.
+# shellcheck source=lib/host-detect.sh
+source "$SCRIPT_DIR/lib/host-detect.sh"
+detect_host
+
+if [[ "$PLATFORM" == "darwin" ]]; then
     NH_SWITCH=("${NH[@]}" darwin switch)
 else
-    PLATFORM="nixos"
-    # Map current login or fallback to hostname for NixOS
-    HOSTNAME="${USER_HOST_MAP[$auto_username]:-$(hostname)}"
     NH_SWITCH=("${NH[@]}" os switch)
-
-    # WSL detection: override hostname when running under WSL
-    if [[ -e /proc/sys/fs/binfmt_misc/WSLInterp ]] || grep -qi microsoft /proc/version 2>/dev/null; then
-        info "WSL environment detected, overriding to wsl config"
-        HOSTNAME="wsl"
+    if [[ "$HOSTNAME" == "wsl" ]]; then
+        info "WSL environment detected, using wsl config"
     fi
 fi
 
 info "Detected user: $auto_username"
 info "Selected host: $HOSTNAME"
 info "Platform: $PLATFORM"
+
+# Lockout guard: on full NixOS the user password comes from a sops secret
+# (users/maxpw/nixos.nix, neededForUsers), so switching without the age key
+# leaves the user with no password. Checked without sudo to keep daily
+# rebuilds prompt-free: the key's parent dir only exists once the key has
+# been placed (see secrets/README.md), so a missing dir means a missing key.
+if [[ "$PLATFORM" == "nixos" && "$HOSTNAME" != "wsl" && "${SKIP_SOPS_CHECK:-0}" != "1" ]]; then
+    if [[ ! -e /var/lib/sops-nix/key.txt && ! -d /var/lib/sops-nix ]]; then
+        error "No sops age key at /var/lib/sops-nix/key.txt - rebuilding now would"
+        error "leave user '$auto_username' with NO password (lockout)."
+        echo ""
+        echo "Retrieve the key from 1Password (item: 'sops nixos') and place it there;"
+        echo "see secrets/README.md ('Setting up a New NixOS Machine') for the commands."
+        echo "Set SKIP_SOPS_CHECK=1 to bypass this check - NOT recommended."
+        exit 1
+    fi
+fi
 
 # Change to config directory
 if [[ ! -d "$CONFIG_DIR" ]]; then

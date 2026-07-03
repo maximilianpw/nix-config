@@ -23,9 +23,9 @@ Home Manager also writes direct SSH aliases:
 ## Adding Machines
 
 Add new trusted machines to `fleetHosts` in
-`users/maxpw/modules/fleet.nix`. Prefer the machine's Tailscale MagicDNS name as
+`modules/fleet/home-manager.nix`. Prefer the machine's Tailscale MagicDNS name as
 `hostName`, set the remote login `user`, and add short aliases you want agents
 and shells to use.
 
-Full NixOS machines import `modules/core/remote-dev.nix`, which enables
+Full NixOS machines import `modules/fleet/nixos.nix`, which enables
 Tailscale and mosh while keeping SSH hardening in `modules/core/security.nix`.

@@ -30,13 +30,25 @@ OPTIONS:
     -u, --update        Update flake inputs before the initial rebuild
                         (default: build from the committed, CI-tested flake.lock)
 
+ENVIRONMENT:
+    NIX_CONFIG_REPO_URL Override the clone URL (default: HTTPS GitHub URL;
+                        SSH only works once the 1Password agent is set up)
+    SKIP_SOPS_CHECK=1   Skip the sops age key check (NixOS only; the first
+                        rebuild will lock you out of your user if the key
+                        is genuinely missing)
+
 This script will:
-  1. Check for Nix installation (and offer to install if missing)
-  2. Clone the nix-config repository to ~/nix-config (if not present)
-  3. Set up /etc/nixos symlink (NixOS only)
-  4. Enable flakes and nix-command
-  5. Update flake inputs (only with --update)
-  6. Perform initial system rebuild
+  1. Check for Nix installation (and point at the installer if missing)
+  2. Check platform prerequisites (macOS: Xcode CLT + Homebrew)
+  3. Enable flakes and nix-command
+  4. Clone the nix-config repository to ~/nix-config (if not present)
+  5. Set up /etc/nixos symlink (NixOS only)
+  6. Verify this host has a configuration in flake.nix
+  7. Verify the sops age key is in place (NixOS only; prevents lockout)
+  8. Optionally update flake inputs (--update), then offer the initial rebuild
+
+For the full new-machine runbook (ISO to running system, secrets, new-host
+setup), see BOOTSTRAP.md.
 
 EOF
 }
@@ -80,7 +92,10 @@ else
     PLATFORM="nixos"
 fi
 
-REPO_URL="${NIX_CONFIG_REPO_URL:-git@github.com:maximilianpw/nix-config.git}"
+# HTTPS by default: a fresh machine has no SSH keys yet (they come from the
+# 1Password agent, which this config sets up). Switch the remote to SSH later:
+#   git remote set-url origin git@github.com:maximilianpw/nix-config.git
+REPO_URL="${NIX_CONFIG_REPO_URL:-https://github.com/maximilianpw/nix-config.git}"
 
 info "Detected platform: $PLATFORM"
 
@@ -90,7 +105,7 @@ if [[ "$DRY_RUN" == "true" ]]; then
 fi
 
 # Step 1: Check for Nix installation
-step "1/6: Checking Nix installation..."
+step "1/8: Checking Nix installation..."
 if ! command -v nix &> /dev/null; then
     error "Nix is not installed!"
     echo ""
@@ -108,8 +123,46 @@ else
     success "Nix is installed: $NIX_VERSION"
 fi
 
-# Step 2: Enable flakes if not already enabled
-step "2/6: Ensuring flakes are enabled..."
+# Step 2: Platform prerequisites
+if [[ "$PLATFORM" == "darwin" ]]; then
+    step "2/8: Checking macOS prerequisites (Xcode CLT, Homebrew)..."
+    PREREQS_OK=true
+
+    # git (and clang etc.) on macOS come from the Xcode Command Line Tools;
+    # without them the /usr/bin/git shim just errors out.
+    if ! xcode-select -p &> /dev/null; then
+        PREREQS_OK=false
+        error "Xcode Command Line Tools are not installed"
+        echo "  Install with:  xcode-select --install"
+    else
+        success "Xcode Command Line Tools found: $(xcode-select -p)"
+    fi
+
+    # nix-darwin's homebrew module manages casks/brews but does NOT install
+    # Homebrew itself - the first darwin-rebuild fails without it.
+    if command -v brew &> /dev/null || [[ -x /opt/homebrew/bin/brew || -x /usr/local/bin/brew ]]; then
+        success "Homebrew found"
+    else
+        PREREQS_OK=false
+        error "Homebrew is not installed (required: darwin config manages casks via Homebrew)"
+        echo "  Install with:"
+        echo '  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
+    fi
+
+    if [[ "$PREREQS_OK" == "false" ]]; then
+        if [[ "$DRY_RUN" == "true" ]]; then
+            warn "[DRY-RUN] Missing prerequisites above would abort the bootstrap"
+        else
+            error "Install the missing prerequisites above, then re-run this script"
+            exit 1
+        fi
+    fi
+else
+    step "2/8: No extra prerequisites on NixOS"
+fi
+
+# Step 3: Enable flakes if not already enabled
+step "3/8: Ensuring flakes are enabled..."
 NIX_CONF_DIR="$HOME/.config/nix"
 NIX_CONF="$NIX_CONF_DIR/nix.conf"
 
@@ -138,8 +191,8 @@ else
     fi
 fi
 
-# Step 3: Clone or verify repository
-step "3/6: Setting up nix-config repository..."
+# Step 4: Clone or verify repository
+step "4/8: Setting up nix-config repository..."
 CONFIG_DIR="$HOME/nix-config"
 
 if [[ "$SKIP_CLONE" == "true" ]]; then
@@ -171,9 +224,9 @@ else
     fi
 fi
 
-# Step 4: Set up /etc/nixos symlink (NixOS only)
+# Step 5: Set up /etc/nixos symlink (NixOS only)
 if [[ "$PLATFORM" == "nixos" ]]; then
-    step "4/6: Setting up /etc/nixos symlink..."
+    step "5/8: Setting up /etc/nixos symlink..."
     TARGET_REAL=$(readlink -f /etc/nixos 2>/dev/null || echo "")
 
     if [[ -L /etc/nixos && "$TARGET_REAL" == "$CONFIG_DIR" ]]; then
@@ -201,13 +254,79 @@ if [[ "$PLATFORM" == "nixos" ]]; then
         echo "  sudo ln -sfn $CONFIG_DIR /etc/nixos"
     fi
 else
-    step "4/6: Skipping /etc/nixos symlink (not on NixOS)"
+    step "5/8: Skipping /etc/nixos symlink (not on NixOS)"
 fi
 
-# Step 5: Optionally update flake inputs (default: keep the committed,
+# Step 6: Verify this host has a configuration in the flake
+step "6/8: Verifying this host has a flake configuration..."
+# shellcheck source=lib/host-detect.sh
+source "$CONFIG_DIR/scripts/lib/host-detect.sh"
+detect_host
+info "Detected host: $HOSTNAME ($PLATFORM)"
+
+if [[ "$PLATFORM" == "darwin" ]]; then
+    FLAKE_ATTR="darwinConfigurations"
+else
+    FLAKE_ATTR="nixosConfigurations"
+fi
+
+# Cheap textual check (avoids evaluating the flake, which would download all
+# inputs just to list attribute names). flake.nix declares hosts literally as
+# `nixosConfigurations.<name> = mkSystem ...`.
+if grep -qE "${FLAKE_ATTR}\.\"?${HOSTNAME}\"? *=" "$CONFIG_DIR/flake.nix"; then
+    success "Found ${FLAKE_ATTR}.${HOSTNAME} in flake.nix"
+else
+    error "No ${FLAKE_ATTR}.${HOSTNAME} in flake.nix - the rebuild would fail"
+    echo ""
+    echo "This looks like a new machine. To add it (see BOOTSTRAP.md, 'Adding a new host'):"
+    echo "  1. Create machines/${HOSTNAME}.nix (and hardware config under machines/hardware/)"
+    echo "  2. Add a mkSystem entry for '${HOSTNAME}' in flake.nix"
+    echo "  3. Map your login to the host in scripts/lib/host-detect.sh"
+    echo "  4. Commit, then re-run this script with --skip-clone"
+    if [[ "$DRY_RUN" == "true" ]]; then
+        warn "[DRY-RUN] This would abort the bootstrap"
+    else
+        exit 1
+    fi
+fi
+
+# Step 7: Verify the sops age key is in place (NixOS only)
+# users/maxpw/nixos.nix sets the user password from a sops secret with
+# neededForUsers = true. If the age key is missing on the first rebuild,
+# the user ends up with no password - i.e. locked out of the new system.
+# WSL and Darwin don't consume sops secrets, so only full NixOS is checked.
+if [[ "$PLATFORM" == "nixos" && "$HOSTNAME" != "wsl" && "${SKIP_SOPS_CHECK:-0}" != "1" ]]; then
+    step "7/8: Checking sops age key (prevents user lockout)..."
+    if [[ "$DRY_RUN" == "true" ]]; then
+        info "[DRY-RUN] Would check /var/lib/sops-nix/key.txt exists (needs sudo)"
+    elif sudo test -f /var/lib/sops-nix/key.txt; then
+        success "Age key found at /var/lib/sops-nix/key.txt"
+    else
+        error "No age key at /var/lib/sops-nix/key.txt"
+        echo ""
+        echo "The user password is a sops secret; rebuilding without the key would"
+        echo "leave the user with NO password (lockout). Retrieve it from 1Password"
+        echo "(vault: Personal, item: 'sops nixos') - full details in secrets/README.md:"
+        echo ""
+        echo "  mkdir -p ~/.config/sops/age"
+        echo "  nix-shell -p _1password-cli --run 'eval \$(op signin); op item get \"sops nixos\" --fields password --reveal' >> ~/.config/sops/age/keys.txt"
+        echo "  chmod 600 ~/.config/sops/age/keys.txt"
+        echo "  sudo mkdir -p /var/lib/sops-nix"
+        echo "  sudo cp ~/.config/sops/age/keys.txt /var/lib/sops-nix/key.txt"
+        echo "  sudo chmod 600 /var/lib/sops-nix/key.txt && sudo chown root:root /var/lib/sops-nix/key.txt"
+        echo ""
+        echo "Then re-run this script with --skip-clone."
+        echo "(Set SKIP_SOPS_CHECK=1 to bypass this check - NOT recommended.)"
+        exit 1
+    fi
+else
+    step "7/8: Skipping sops age key check (not needed on $HOSTNAME)"
+fi
+
+# Step 8: Optionally update flake inputs (default: keep the committed,
 # CI-tested flake.lock so the first build is a known-good input set)
 if [[ "$UPDATE_INPUTS" == "true" ]]; then
-    step "5/6: Updating flake inputs..."
+    step "8/8: Updating flake inputs..."
     pushd "$CONFIG_DIR" > /dev/null
     if [[ "$DRY_RUN" == "false" ]]; then
         if nix flake update; then
@@ -220,27 +339,26 @@ if [[ "$UPDATE_INPUTS" == "true" ]]; then
     fi
     popd > /dev/null
 else
-    step "5/6: Keeping committed flake.lock (pass --update to update inputs)"
+    step "8/8: Keeping committed flake.lock (pass --update to update inputs)"
 fi
 
-# Step 6: Perform initial rebuild
-step "6/6: Ready for initial system rebuild"
 echo ""
 info "Bootstrap preparation complete!"
 echo ""
 echo "Next steps:"
 echo "  1. Review the configuration in $CONFIG_DIR"
-echo "  2. Customize for your system (hostname, user, etc.)"
-echo "  3. Run the rebuild script:"
+echo "  2. Run the rebuild script:"
 if [[ "$PLATFORM" == "darwin" ]]; then
     echo "     ./scripts/nixos-rebuild.sh"
     echo "     OR"
-    echo "     sudo darwin-rebuild switch --flake $CONFIG_DIR#macbook-pro-m1"
+    echo "     sudo darwin-rebuild switch --flake $CONFIG_DIR#$HOSTNAME"
 else
     echo "     ./scripts/nixos-rebuild.sh"
     echo "     OR"
-    echo "     sudo nixos-rebuild switch --flake $CONFIG_DIR#main-pc"
+    echo "     sudo nixos-rebuild switch --flake $CONFIG_DIR#$HOSTNAME"
 fi
+echo "  3. After the first rebuild, follow the post-install checklist in BOOTSTRAP.md"
+echo "     (1Password + SSH agent, Tailscale, Syncthing, git remote to SSH)"
 echo ""
 
 if [[ "$DRY_RUN" == "false" ]]; then

@@ -55,8 +55,9 @@ The `userDir` parameter allows the macOS username (`max-vev`) to differ from the
 machines/           # Per-host: boot, hardware, services (main-pc.nix, macbook-pro-m1.nix, wsl.nix)
 homelab/            # main-pc self-hosted services exposed through Cloudflare Tunnel
 modules/
-  core/             # Shared: nix-settings.nix, security.nix, sops.nix, shells.nix (login shells), remote-dev.nix (Tailscale/mosh/tmux fleet)
+  core/             # Shared: nix-settings.nix, security.nix, sops.nix, shells.nix (login shells)
   desktop/          # Hyprland + greetd (Linux only)
+  fleet/            # Remote dev fleet: NixOS Tailscale/mosh/tmux + HM SSH/fleet CLI
   services/         # Borg backup with retention policy
 users/maxpw/
   home-manager.nix  # Cross-platform entry: imports all user modules
@@ -68,7 +69,6 @@ users/maxpw/
     git.nix         # Git + Jujutsu (jj) config
     vcs/jujutsu.nix # Jujutsu config
     agent-tools.nix # LLM agent CLIs + aliases
-    fleet.nix       # fleet CLI + SSH matchblocks for remote dev
     t3code-server.nix # T3 Chat code server integration
     fonts.nix       # Nerd fonts + system fonts with fontconfig
     xdg.nix         # XDG config file management (Hyprland, Ghostty, waybar, kitty, yazi, etc.)
@@ -91,7 +91,7 @@ secrets/            # sops-nix encrypted secrets (age encryption, key in 1Passwo
 
 `homelab/` is imported by `machines/main-pc.nix` and aggregates the services that run on main-pc. `homelab/cloudflared.nix` defines the Cloudflare tunnel ingress for those services, secrets are managed through sops-nix, and most service endpoints bind to `127.0.0.1`.
 
-Fleet remote-development usage is documented in `docs/remote-dev-fleet.md`; the implementation lives in `users/maxpw/modules/fleet.nix` and `modules/core/remote-dev.nix`.
+Fleet remote-development usage and implementation notes live in `modules/fleet/README.md`; implementation is split between `modules/fleet/home-manager.nix` and `modules/fleet/nixos.nix`.
 
 ### Overlays (defined in `flake.nix`)
 

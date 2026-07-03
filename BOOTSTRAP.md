@@ -1,224 +1,254 @@
 # Bootstrap Guide
 
-This guide explains how to set up nix-config on a new system.
+How to get this config running on a machine, from "blank hardware" to "daily
+driver". There are three scenarios, from most to least work:
 
-## Prerequisites
+1. [Brand-new NixOS machine from an ISO](#scenario-1-new-nixos-machine-from-an-iso)
+2. [New (or wiped) Mac](#scenario-2-new-or-wiped-mac)
+3. [Reinstalling an existing host / repo already cloned](#scenario-3-existing-host)
 
-### For NixOS
-NixOS comes with Nix pre-installed, so you're ready to go!
+In all cases the finishing move is the same: `./scripts/bootstrap.sh`, which
+checks prerequisites, enables flakes, sets up the repo and `/etc/nixos`
+symlink, verifies the host exists in the flake, verifies the sops age key
+(NixOS), and offers to run the first rebuild. Run
+`./scripts/bootstrap.sh --dry-run` to see what it would do.
 
-### For macOS
-Install Nix using the Determinate Nix Installer (recommended):
+> **The one dangerous gap to know about (NixOS):** the user password is a
+> sops secret. If the age key is not at `/var/lib/sops-nix/key.txt` before
+> the first rebuild, the user is created with **no password** — you're locked
+> out. Both `bootstrap.sh` and `nixos-rebuild.sh` check for this and refuse
+> to proceed, but do the key step early and deliberately.
+
+## Scenario 1: New NixOS machine from an ISO
+
+The bootstrap script does **not** install NixOS — these first steps are
+manual, from the installer ISO.
+
+### 1. Install NixOS
+
+Boot the ISO, then partition and install. Two options:
+
+- **Manual/graphical install**: use the installer as usual. Keep the
+  generated `hardware-configuration.nix` — you'll need it in step 3.
+- **Disko**: adapt `machines/hardware/main-pc-disko.nix` for the new
+  machine's disks and run it from the ISO:
+
+  ```bash
+  sudo nix --experimental-features "nix-command flakes" run \
+    github:nix-community/disko -- --mode disko ./your-disko.nix
+  sudo nixos-install
+  ```
+
+Create your user during install (or in the minimal config) so you can log in.
+
+### 2. First boot: clone the repo
+
+Clone over **HTTPS** — the machine has no SSH keys yet (they come from the
+1Password agent, which this config sets up later):
+
 ```bash
-curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
-```
-
-### For other Linux distributions
-Follow the official Nix installation guide at https://nixos.org/download.html
-
-## Quick Start
-
-### Option 1: Using the bootstrap script (Recommended)
-
-1. Clone this repository:
-```bash
-git clone <your-repo-url> ~/nix-config
+nix-shell -p git
+git clone https://github.com/maximilianpw/nix-config.git ~/nix-config
 cd ~/nix-config
 ```
 
-2. Run the bootstrap script:
+### 3. Add the new host to the flake (skip if reinstalling a known host)
+
+The flake only knows `main-pc`, `wsl`, and `macbook-pro-m1`. A new machine
+needs (see [Adding a new host](#adding-a-new-host)):
+
+1. `machines/<hostname>.nix` + hardware config under `machines/hardware/`
+2. A `mkSystem` entry in `flake.nix`
+3. A login→host mapping line in `scripts/lib/host-detect.sh`
+
+Commit and push these from an existing machine if possible, so the new
+machine can just pull a working config.
+
+### 4. Place the sops age key (prevents lockout)
+
+The key lives in 1Password (vault: Personal, item: "sops nixos"). Full
+details in `secrets/README.md`; the short version:
+
 ```bash
-./scripts/bootstrap.sh
+mkdir -p ~/.config/sops/age
+nix-shell -p _1password-cli --run \
+  'eval $(op signin); op item get "sops nixos" --fields password --reveal' \
+  >> ~/.config/sops/age/keys.txt
+chmod 600 ~/.config/sops/age/keys.txt
+
+sudo mkdir -p /var/lib/sops-nix
+sudo cp ~/.config/sops/age/keys.txt /var/lib/sops-nix/key.txt
+sudo chmod 600 /var/lib/sops-nix/key.txt
+sudo chown root:root /var/lib/sops-nix/key.txt
 ```
 
-The bootstrap script will:
-- Check for Nix installation
-- Enable flakes if not already enabled
-- Set up `/etc/nixos` symlink (NixOS only)
-- Update flake inputs
-- Optionally run the initial system rebuild
-
-### Option 2: Using Make commands
-
-If you have `make` installed:
+### 5. Bootstrap and rebuild
 
 ```bash
-# Clone the repository
-git clone <your-repo-url> ~/nix-config
 cd ~/nix-config
-
-# Run bootstrap
-make bootstrap
-
-# Or see what it would do first
-make bootstrap-dry-run
+./scripts/bootstrap.sh --skip-clone
 ```
 
-### Option 3: Manual setup
+Say yes to the initial rebuild at the end (or run `make rebuild` later).
+The first build is large; it uses the committed, CI-tested `flake.lock`
+(pass `--update` only if you deliberately want fresh inputs).
 
-If you prefer to set things up manually:
+### 6. Post-install checklist
 
-1. Clone the repository:
+Config is now reproduced; **data and credentials are not**. After the first
+successful rebuild:
+
+- [ ] Sign in to the 1Password app and enable the SSH agent (unlocks git
+      pushes and `fleet` SSH)
+- [ ] Switch the repo remote to SSH:
+      `git remote set-url origin git@github.com:maximilianpw/nix-config.git`
+- [ ] `sudo tailscale up` — join the tailnet (fleet/remote-dev relies on it)
+- [ ] Accept Syncthing device pairings from an existing machine (personal data)
+- [ ] Restore anything needed from Borg backups
+- [ ] Verify secrets decrypted: `ls -la /run/secrets/`
+
+## Scenario 2: New (or wiped) Mac
+
+1. **Xcode Command Line Tools** (provides real `git`):
+
+   ```bash
+   xcode-select --install
+   ```
+
+2. **Determinate Nix installer** (the config assumes it: `nix.enable = false`
+   in `machines/macbook-pro-m1.nix`, daemon managed by Determinate):
+
+   ```bash
+   curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
+   ```
+
+3. **Homebrew** — nix-darwin manages casks/brews but does not install
+   Homebrew itself; the first `darwin-rebuild` fails without it:
+
+   ```bash
+   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+   ```
+
+4. **Clone and bootstrap** (HTTPS — no SSH keys yet):
+
+   ```bash
+   git clone https://github.com/maximilianpw/nix-config.git ~/nix-config
+   cd ~/nix-config
+   ./scripts/bootstrap.sh --skip-clone
+   ```
+
+   Note: macOS Nix settings (caches, trusted-users) live in
+   `/etc/nix/nix.custom.conf`, managed by the darwin config — not
+   `nix.settings`.
+
+5. **Post-install**: same checklist as NixOS minus the sops steps (Darwin
+   doesn't consume sops secrets): 1Password app + SSH agent, switch remote
+   to SSH, Tailscale, Syncthing.
+
+## Scenario 3: Existing host
+
+Repo already cloned (or host already in the flake — e.g. reinstalling
+main-pc):
+
 ```bash
-git clone <your-repo-url> ~/nix-config
 cd ~/nix-config
+./scripts/bootstrap.sh --skip-clone   # or `make bootstrap`
 ```
 
-2. Enable flakes (if not already enabled):
-```bash
-mkdir -p ~/.config/nix
-echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
-```
+On NixOS, place the age key first (step 4 above) — the script checks and
+will tell you if it's missing.
 
-3. For NixOS, create the `/etc/nixos` symlink:
-```bash
-sudo ln -sfn ~/nix-config /etc/nixos
-```
+## Adding a new host
 
-4. Update flake inputs:
-```bash
-nix flake update
-```
+1. **Machine config**: create `machines/<hostname>.nix` (boot, hardware,
+   services). Generate hardware config on the machine with
+   `nixos-generate-config --show-hardware-config` and store it under
+   `machines/hardware/<hostname>.nix` (see `machines/main-pc.nix` for how
+   main-pc imports its hardware files).
+2. **Flake entry** in `flake.nix`:
 
-5. Build and apply the configuration:
-```bash
-# For NixOS
-sudo nixos-rebuild switch --flake .#main-pc
+   ```nix
+   nixosConfigurations.<hostname> = mkSystem "<hostname>" {
+     system = "x86_64-linux";
+     user = "maxpw";
+     # darwin = true;  # for Macs (use darwinConfigurations.<name>)
+     # wsl = true;     # for WSL
+   };
+   ```
 
-# For macOS
-sudo darwin-rebuild switch --flake .#macbook-pro-m1
-```
+3. **Host detection**: add the login→host mapping in
+   `scripts/lib/host-detect.sh` (shared by `bootstrap.sh` and
+   `nixos-rebuild.sh` — one edit covers both).
+4. **Secrets** (NixOS only): no per-host key setup needed — all hosts share
+   the age key from 1Password. If you want per-host keys instead, add the
+   host as a recipient in `.sops.yaml` and run
+   `sops updatekeys secrets/secrets.yaml`.
+5. Commit, push, and run the bootstrap on the new machine.
 
-## Customization
+For WSL specifically, see `docs/wsl-setup.md` (`make wsl` builds the import
+tarball).
 
-Before running the initial rebuild, you should customize the configuration for your system:
+## Day-to-day commands
 
-### 1. Update host configuration
-
-Edit the appropriate machine configuration:
-- NixOS: `machines/main-pc.nix`
-- macOS: `machines/macbook-pro-m1.nix`
-
-### 2. Update user configuration
-
-Edit the user configuration in `users/maxpw/`:
-- Update username and personal settings
-- Customize shell configuration
-- Adjust package selections
-
-### 3. Update flake.nix
-
-Edit `flake.nix` to add your system:
-
-```nix
-outputs = {
-  # Add your system configuration
-  nixosConfigurations.your-hostname = mkSystem "your-hostname" {
-    system = "x86_64-linux";
-    user = "your-username";
-  };
-};
-```
-
-### 4. Update the rebuild script
-
-Edit `scripts/nixos-rebuild.sh` to add your hostname mapping:
+After bootstrap (see `make help` for the full list):
 
 ```bash
-USER_HOST_MAP=(
-  ["your-username"]="your-hostname"
-)
+make rebuild      # Format, switch via nh (generation diff), clean old generations
+make build        # Build without switching
+make update       # Update shared flake inputs (skips Hyprland & NixOS-only inputs)
+make update-all   # Update all flake inputs
+make generations  # List system generations
+make rollback     # Roll back to previous generation
+make lint         # statix, deadnix, format check
+make info         # Show system information
 ```
 
-### 5. Update the bootstrap script
-
-Edit `scripts/bootstrap.sh` and update the git clone URL:
-
-```bash
-git clone https://github.com/yourusername/nix-config.git $CONFIG_DIR
-```
-
-## Available Make Commands
-
-After bootstrap, you can use these convenient commands:
-
-```bash
-make help              # Show all available commands
-make rebuild           # Rebuild system configuration
-make check             # Validate flake configuration
-make update            # Update flake inputs
-make format            # Format Nix files with alejandra
-make diff              # Show uncommitted changes
-make gc                # Run garbage collection (30 days)
-make gc-aggressive     # Delete all old generations
-make build             # Build without switching
-make generations       # List system generations
-make rollback          # Rollback to previous generation
-make skills            # Install declared agent skills (see scripts/install-skills.sh)
-make dev               # Enter development shell
-make info              # Show system information
-```
-
-## Agent Skills
-
-Agent skills (the `npx skills` ecosystem) are installed declaratively via
-`scripts/install-skills.sh`. The script holds the canonical list of
-`owner/repo@skill` entries that should exist on every machine. On a new
-system, run once after your first `make rebuild`:
-
-```bash
-make skills
-```
-
-Re-run whenever you add a new entry to the script. To pull upstream updates
-for already-installed skills, use `skills update` directly. The `skills` CLI
-comes from the `llm-agents.nix` flake input and is installed via home-manager.
+The `nr` shell alias runs `make -C ~/nix-config rebuild`. Rebuild does
+**not** auto-commit — commit manually (pre-commit hook lints).
 
 ## Troubleshooting
 
 ### Flakes not working
+
 Ensure experimental features are enabled:
+
 ```bash
-nix-shell -p nix-info --run "nix-info -m"
+nix config show | grep experimental
 ```
 
-### Permission issues on NixOS
-Make sure you're using `sudo` for system-level operations:
-```bash
-sudo nixos-rebuild switch --flake .#main-pc
-```
+### Locked out after first NixOS rebuild (no password)
+
+The rebuild ran without the sops age key. Boot the previous generation from
+the bootloader menu (or use root/installer access), place the key at
+`/var/lib/sops-nix/key.txt` (Scenario 1, step 4), and rebuild again.
 
 ### /etc/nixos is a directory
-If `/etc/nixos` exists as a directory (not a symlink), back it up first:
+
+Back it up first, then symlink:
+
 ```bash
 sudo mv /etc/nixos /etc/nixos.backup
 sudo ln -sfn ~/nix-config /etc/nixos
 ```
 
 ### Build failures
-Check the error logs:
-```bash
-# View recent errors
-cat ~/nix-config/nixos-switch.log  # created on first rebuild; on a fresh macOS bootstrap it won't exist yet — check `log show --last 10m --level=error` instead
 
-# Validate configuration
-nix flake check
+```bash
+# View the last rebuild's output (created on first rebuild)
+cat ~/nix-config/nixos-switch.log
+
+# Validate the flake without building
+nix flake check --no-build
 ```
 
-## Next Steps
+### Secrets not decrypting
 
-After successful bootstrap:
-
-1. Review and customize your configuration
-2. Run `make rebuild` to apply changes
-3. Set up secrets management (see `secrets/README.md`)
-4. Configure git to use your credentials
-5. Install additional packages as needed
+See the troubleshooting section in `secrets/README.md` — usually the age key
+is missing from `/var/lib/sops-nix/key.txt` or doesn't match `.sops.yaml`.
 
 ## Support
 
-For issues or questions:
-- Check the main [README.md](README.md) for configuration details
-- Review flake structure in `lib/mksystem.nix`
-- Consult the NixOS manual: https://nixos.org/manual/
-- For nix-darwin: https://github.com/LnL7/nix-darwin
+- Main [README.md](README.md) for configuration details
+- `lib/mksystem.nix` for how hosts are wired
+- NixOS manual: https://nixos.org/manual/
+- nix-darwin: https://github.com/nix-darwin/nix-darwin
