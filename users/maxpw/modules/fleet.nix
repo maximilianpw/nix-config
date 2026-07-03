@@ -72,29 +72,29 @@
       else {}
     );
 
+  # Values use upstream OpenSSH directive names; the attr name becomes the
+  # `Host <patterns>` line (programs.ssh.settings semantics).
   mkPlainBlock = name: host:
-    nameValuePair (hostPatterns name host) {
-      hostname = host.hostName;
-      inherit (host) user;
-      port = host.port or 22;
-      extraOptions = sshOptionsFor host;
-    };
+    nameValuePair (hostPatterns name host) ({
+        HostName = host.hostName;
+        User = host.user;
+        Port = host.port or 22;
+      }
+      // sshOptionsFor host);
 
   mkTmuxBlock = name: host:
     nameValuePair (tmuxHostPatterns name host) (let
       session = host.tmuxSession or "main";
       tmuxCommand = host.tmuxCommand or "tmux";
-    in {
-      hostname = host.hostName;
-      inherit (host) user;
-      port = host.port or 22;
-      extraOptions =
-        sshOptionsFor host
-        // {
-          RequestTTY = "yes";
-          RemoteCommand = "${tmuxCommand} new-session -A -s ${session}";
-        };
-    });
+    in
+      {
+        HostName = host.hostName;
+        User = host.user;
+        Port = host.port or 22;
+        RequestTTY = "yes";
+        RemoteCommand = "${tmuxCommand} new-session -A -s ${session}";
+      }
+      // sshOptionsFor host);
 
   remoteTmuxRows =
     mapAttrsToList (
@@ -276,7 +276,7 @@ in {
   };
 
   programs = {
-    ssh.matchBlocks =
+    ssh.settings =
       (mapAttrs' mkPlainBlock remoteHosts)
       // (mapAttrs' mkTmuxBlock remoteHosts);
 

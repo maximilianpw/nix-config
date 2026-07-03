@@ -39,13 +39,21 @@ in {
     ./modules/packages/custom-scripts.nix
   ];
 
-  stylix = lib.mkIf isLinuxDesktop {
-    enable = true;
-    autoEnable = false;
-    base16Scheme = "${inputs.stylix.inputs.tinted-schemes}/base16/gruvbox-material-dark-hard.yaml";
-    targets.ghostty.enable = true;
-    targets.waybar.enable = true;
-  };
+  stylix = lib.mkMerge [
+    {
+      # home-manager.useGlobalPkgs ignores HM-level nixpkgs.overlays, and
+      # stylix's package overlays (on by default, even with stylix disabled)
+      # trip HM's nixpkgs deprecation warning on every profile.
+      overlays.enable = false;
+    }
+    (lib.mkIf isLinuxDesktop {
+      enable = true;
+      autoEnable = false;
+      base16Scheme = "${inputs.stylix.inputs.tinted-schemes}/base16/gruvbox-material-dark-hard.yaml";
+      targets.ghostty.enable = true;
+      targets.waybar.enable = true;
+    })
+  ];
 
   home = {
     stateVersion = "25.05";
