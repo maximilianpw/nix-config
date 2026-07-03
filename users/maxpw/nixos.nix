@@ -9,6 +9,7 @@
 in {
   imports = [
     ../../modules/core/nix-settings.nix
+    ../../modules/core/remote-dev.nix
     ../../modules/core/security.nix
     ../../modules/core/sops.nix
     ../../modules/core/shells.nix
@@ -57,6 +58,9 @@ in {
     extraGroups = ["networkmanager" "wheel" "seat" "input" "video"];
     home = "/home/${currentSystemUser}";
     shell = settings.defaultShell;
+    openssh.authorizedKeys.keys = [
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB3qKWMhvPDxIo8U2S7VpC7eGtF5LATuGQ05gSlXmu+4 Main PC SSH"
+    ];
     # Password is managed via sops-nix (see secrets/README.md)
     hashedPasswordFile = config.sops.secrets.maxpw-password.path;
   };

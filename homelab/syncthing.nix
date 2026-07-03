@@ -45,22 +45,6 @@ in {
             params.cleanoutDays = "30";
           };
         };
-        "${home}/.hermes" = {
-          id = "hermes";
-          label = "Hermes";
-          path = "${home}/.hermes";
-          devices = [];
-          ignorePatterns = [
-            ".env"
-            "auth.json"
-            "*.db-wal"
-            "*.db-shm"
-          ];
-          versioning = {
-            type = "trashcan";
-            params.cleanoutDays = "30";
-          };
-        };
       };
     };
   };

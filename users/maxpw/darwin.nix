@@ -56,6 +56,7 @@ in {
       "freelens"
       "granola"
       "nextcloud"
+      "steam"
     ];
 
     onActivation = {

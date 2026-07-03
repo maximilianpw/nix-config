@@ -26,11 +26,6 @@
 
     llm-agents.url = "github:numtide/llm-agents.nix";
 
-    # Hermes Agent (Nous Research) — autonomous AI agent CLI. Left unpinned
-    # (no nixpkgs.follows) because it builds its Python deps via uv2nix against
-    # its own nixpkgs-unstable; overriding that would break the build.
-    hermes-agent.url = "github:nousresearch/hermes-agent";
-
     disko.url = "github:nix-community/disko";
     disko.inputs.nixpkgs.follows = "nixpkgs";
 
@@ -73,15 +68,6 @@
         direnv = prev.direnv.overrideAttrs (old: {doCheck = false;});
         jujutsu = unstable.jujutsu;
         zig = unstable.zig;
-        # Base CLI + only the optional groups we use: anthropic (native SDK, kept
-        # for switching back to Claude), messaging (discord.py/telegram/slack), and
-        # voice (faster-whisper/sounddevice for local STT). Browser automation has
-        # no dependency group — hermes provisions that engine at runtime via
-        # `hermes tools` (relies on nix-ld).
-        hermes = inputs.hermes-agent.packages.${prev.stdenv.hostPlatform.system}.default.override {
-          extraDependencyGroups = ["anthropic" "messaging" "voice"];
-        };
-        hermes-desktop = inputs.hermes-agent.packages.${prev.stdenv.hostPlatform.system}.desktop;
         helium = final.callPackage ./packages/helium.nix {};
         obsidian = final.callPackage ./packages/obsidian.nix {};
         t3code = final.callPackage ./packages/t3code.nix {};

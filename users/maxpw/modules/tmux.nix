@@ -1,4 +1,19 @@
-{pkgs, ...}: {
+{
+  hostname,
+  pkgs,
+  ...
+}: let
+  hostAccent =
+    ({
+      main-pc = "#9ece6a";
+      macbook-pro-m1 = "#7aa2f7";
+      wsl = "#e0af68";
+    })
+    .${
+      hostname
+    }
+    or "#7aa2f7";
+in {
   programs.tmux = {
     enable = true;
     shell = "${pkgs.nushell}/bin/nu";
@@ -119,20 +134,20 @@
       set -g status-justify left
       set -g status-style "bg=default,fg=#c0caf5"
 
-      set -g status-left-length 30
-      set -g status-left "#[fg=#1a1b26,bg=#7aa2f7,bold]  #S #[fg=#7aa2f7,bg=default,nobold] "
+      set -g status-left-length 45
+      set -g status-left "#[fg=#1a1b26,bg=${hostAccent},bold]  #H:#S #[fg=${hostAccent},bg=default,nobold] "
 
       set -g status-right-length 60
-      set -g status-right "#[fg=#565f89] %a %d %b #[fg=#7aa2f7,bold] %H:%M "
+      set -g status-right "#[fg=#565f89] %a %d %b #[fg=${hostAccent},bold] %H:%M "
 
       set -g window-status-format "#[fg=#565f89]  #I #W "
-      set -g window-status-current-format "#[fg=#1a1b26,bg=#7aa2f7,bold]  #I #W #[fg=#7aa2f7,bg=default,nobold]"
+      set -g window-status-current-format "#[fg=#1a1b26,bg=${hostAccent},bold]  #I #W #[fg=${hostAccent},bg=default,nobold]"
       set -g window-status-separator ""
 
       set -g pane-border-style "fg=#292e42"
-      set -g pane-active-border-style "fg=#7aa2f7"
+      set -g pane-active-border-style "fg=${hostAccent}"
 
-      set -g message-style "fg=#7aa2f7,bg=#1a1b26"
+      set -g message-style "fg=${hostAccent},bg=#1a1b26"
 
     '';
   };

@@ -23,6 +23,8 @@
         # === Core Tools ===
         tree-sitter # Parser generator tool
         # === LSP Servers ===
+        # Astro
+        astro-language-server
         # Bash/Shell
         bash-language-server
         # CSS/HTML

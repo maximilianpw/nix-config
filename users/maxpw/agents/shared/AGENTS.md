@@ -39,3 +39,15 @@ Nushell is the primary interactive shell for the user. Prefer Nushell only when 
 - Target is a Bash/POSIX script, CI step, Makefile, README example, or package script.
 - Tool shells out via `system()` or similar and won't pick up Nushell.
 - Piping to a tool that expects raw text on stdin in a way Nushell would mangle.
+
+## Remote Dev Fleet
+
+Use `fleet list` to see trusted development machines declared by Nix. Prefer
+`fleet ssh <host>` for interactive work because it attaches to a persistent tmux
+session, `fleet shell <host>` when a plain SSH shell is required, and
+`fleet run <host> <command...>` for non-interactive remote checks. Direct tmux
+SSH aliases also exist as `tm-<host-or-alias>`, for example `ssh tm-main-pc`.
+
+The machine inventory is written to `~/.config/fleet/hosts.json`. Treat these as
+trusted internal hosts; SSH agent forwarding is enabled for them so Git and
+agent tools can use the 1Password SSH agent from the brain machine.

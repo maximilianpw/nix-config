@@ -1,7 +1,6 @@
 {
   imports = [
     ./cloudflared.nix
-    ./hermes.nix
     ./home-assistant.nix
     ./homepage.nix
     ./miniflux.nix

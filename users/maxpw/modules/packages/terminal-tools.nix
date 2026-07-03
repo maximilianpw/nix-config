@@ -13,6 +13,13 @@
     pkgs.jq
     pkgs.uv
 
+    # Network & remote access
+    pkgs.autossh
+    pkgs.mosh
+    pkgs.rsync
+    pkgs.sshfs
+    pkgs.wakeonlan
+
     # Git tools
     pkgs.gnupg
     pkgs.lazydocker
