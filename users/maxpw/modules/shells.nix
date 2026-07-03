@@ -3,6 +3,7 @@
   config,
   pkgs,
   lib,
+  isDarwin,
   ...
 }: let
   # Fish shell functions
@@ -70,8 +71,13 @@
     # Nix system management aliases
     nr = "make -C ~/nix-config rebuild";
     nup = "make -C ~/nix-config update";
-    # nh rebuild pilot (plan 007) - side-by-side with `nr`
-    nhs = "nh os switch ~/nix-config";
+    # nh rebuild pilot (plan 007) - side-by-side with `nr`. nh has no
+    # platform-neutral switch subcommand and infers the wrong hostname on
+    # darwin, so pass the flake attr explicitly there (see plans/007 report).
+    nhs =
+      if isDarwin
+      then "nh darwin switch -H macbook-pro-m1 ~/nix-config"
+      else "nh os switch ~/nix-config";
 
     # Shortcut to setup a nix-shell with fish. This lets you do something like
     # `fnix -p go` to get an environment with Go but use the fish shell along

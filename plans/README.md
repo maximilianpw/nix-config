@@ -14,7 +14,7 @@ done.
 | 002 | CI ghost package, darwin eval in CI, skills dedupe, fenix→unstable | P1 | S | - | DONE |
 | 003 | Docs refresh (CLAUDE.md / README / BOOTSTRAP match reality) | P1 | S | - | DONE |
 | 004 | Lint/format gate (statix + deadnix + alejandra, git-hooks.nix, CI) | P1 | M | 002 (flake.nix/ci.yml contention) | DONE |
-| 005 | Fleet SSH host-key pinning + homepage localhost binding | P2 | M | - (see note on untracked files) | BLOCKED (fleet hosts unreachable; no verified host keys) |
+| 005 | Fleet SSH host-key pinning + homepage localhost binding | P2 | M | - (see note on untracked files) | DONE (partial: homepage bound to localhost; per-host pinning landed with the mac key pinned — main-pc hostKey pending capture via `ssh-keyscan -t ed25519 main-pc` on the tailnet, cross-checked on the host, then rebuild) |
 | 006 | Wire nix-index + comma; nix-your-shell for Nushell dev shells | P2 | S | - | DONE (pending runtime verify) |
 | 007 | nh pilot (spike: rebuild-script partial replacement) | P3 | M | - | DONE (pending switch verify) |
 | 008 | nixos-hardware AMD profiles for main-pc | P3 | S | 004 (flake.nix contention) | DONE (pending hardware verify) |

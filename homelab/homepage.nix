@@ -1,4 +1,10 @@
 _: {
+  # The nixpkgs module exposes no listen-address option; homepage is a
+  # Next.js standalone server and binds the address given in $HOSTNAME.
+  # Keep it loopback-only like the rest of the homelab — cloudflared
+  # reaches it at 127.0.0.1:8082.
+  systemd.services.homepage-dashboard.environment.HOSTNAME = "127.0.0.1";
+
   services.homepage-dashboard = {
     enable = true;
     listenPort = 8082;

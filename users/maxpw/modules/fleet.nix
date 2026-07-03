@@ -21,6 +21,8 @@
     macbook-pro-m1 = {
       hostName = "macbook-pro-m1";
       user = "max-vev";
+      # Read from /etc/ssh/ssh_host_ed25519_key.pub on the host itself.
+      hostKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFiHFQW6b4qbruaHM9f4rXus/BAvYQUboN95vFG5FIKI";
       aliases = ["mac" "mbp"];
       tmuxSession = "main";
       tmuxCommand = "/etc/profiles/per-user/max-vev/bin/tmux";
@@ -52,12 +54,30 @@
     StrictHostKeyChecking = "accept-new";
   };
 
+  # Hosts that declare a hostKey are pinned against the generated
+  # fleet_known_hosts file; hosts without one stay on accept-new until
+  # their key is captured (`ssh-keyscan -t ed25519 <host>`, cross-checked
+  # against /etc/ssh/ssh_host_ed25519_key.pub on the host itself).
+  pinnedHosts = filterAttrs (_: host: host ? hostKey) fleetHosts;
+  fleetKnownHostsFile = "${config.home.homeDirectory}/.ssh/fleet_known_hosts";
+
+  sshOptionsFor = host:
+    baseSshOptions
+    // (
+      if host ? hostKey
+      then {
+        StrictHostKeyChecking = "yes";
+        UserKnownHostsFile = "${fleetKnownHostsFile} ${config.home.homeDirectory}/.ssh/known_hosts";
+      }
+      else {}
+    );
+
   mkPlainBlock = name: host:
     nameValuePair (hostPatterns name host) {
       hostname = host.hostName;
       inherit (host) user;
       port = host.port or 22;
-      extraOptions = baseSshOptions;
+      extraOptions = sshOptionsFor host;
     };
 
   mkTmuxBlock = name: host:
@@ -69,7 +89,7 @@
       inherit (host) user;
       port = host.port or 22;
       extraOptions =
-        baseSshOptions
+        sshOptionsFor host
         // {
           RequestTTY = "yes";
           RemoteCommand = "${tmuxCommand} new-session -A -s ${session}";
@@ -178,7 +198,7 @@
           fi
           if [ -n "$session" ]; then
             tmux_command="$(remote_tmux_command "$host")"
-            exec ssh -t "$host" "$tmux_command new-session -A -s $session"
+            exec ssh -t "$host" "$tmux_command new-session -A -s '$session'"
           fi
           exec ssh "tm-$host"
           ;;
@@ -244,9 +264,16 @@
     fr = "fleet run";
   };
 in {
-  home.packages = [fleet];
+  home = {
+    packages = [fleet];
 
-  home.file.".config/fleet/hosts.json".text = builtins.toJSON fleetHosts;
+    file.".config/fleet/hosts.json".text = builtins.toJSON fleetHosts;
+
+    file.".ssh/fleet_known_hosts".text =
+      concatStringsSep "\n"
+      (mapAttrsToList (_: host: "${host.hostName} ${host.hostKey}") pinnedHosts)
+      + "\n";
+  };
 
   programs = {
     ssh.matchBlocks =
