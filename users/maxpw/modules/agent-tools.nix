@@ -51,6 +51,10 @@ in {
           source = source "codex/prompts";
           recursive = true;
         };
+        ".codex/skills/add-fleet-host" = {
+          source = source "codex/skills/add-fleet-host";
+          recursive = true;
+        };
         ".claude/CLAUDE.md".source = source "shared/AGENTS.md";
         ".config/opencode/AGENTS.md".source = source "shared/AGENTS.md";
         # Compose Pi context from shared cross-agent policy plus Pi-only guidance.

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Add Fleet Host"
+  short_description: "Add a trusted SSH development machine to this Nix fleet."
+  default_prompt: "Use $add-fleet-host to add a new SSH/tmux machine to this nix-config fleet."
