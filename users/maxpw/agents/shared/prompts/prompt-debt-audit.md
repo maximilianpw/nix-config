@@ -18,6 +18,7 @@ Work from `~/nix-config` and inspect:
    - `~/.config/opencode`
    - `~/.pi/agent`
    - `~/.agents/skills`
+   - `~/.agents/prompts`
 3. Fleet inventory.
    - Read `~/.config/fleet/hosts.json` if present.
    - Read `~/.config/fleet/FLEET.md` if present.

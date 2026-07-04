@@ -16,9 +16,9 @@
     (builtins.readFile ../agents/shared/AGENTS.md)
     + "\n\n---\n\n"
     + (builtins.readFile ../agents/pi/AGENTS.md);
-  codexPromptClaudeLinks = {
-    ".claude/commands/nix-config-health.md".source = source "codex/prompts/nix-config-health.md";
-    ".claude/commands/prompt-debt-audit.md".source = source "codex/prompts/prompt-debt-audit.md";
+  sharedPromptClaudeLinks = {
+    ".claude/commands/nix-config-health.md".source = source "shared/prompts/nix-config-health.md";
+    ".claude/commands/prompt-debt-audit.md".source = source "shared/prompts/prompt-debt-audit.md";
   };
 
   globalSkills = [
@@ -48,11 +48,15 @@ in {
       {
         ".codex/AGENTS.md".source = source "shared/AGENTS.md";
         ".codex/prompts" = {
-          source = source "codex/prompts";
+          source = source "shared/prompts";
           recursive = true;
         };
         ".codex/skills/add-fleet-host" = {
           source = source "codex/skills/add-fleet-host";
+          recursive = true;
+        };
+        ".agents/prompts" = {
+          source = source "shared/prompts";
           recursive = true;
         };
         ".claude/CLAUDE.md".source = source "shared/AGENTS.md";
@@ -85,7 +89,7 @@ in {
           recursive = true;
         };
       }
-      // codexPromptClaudeLinks;
+      // sharedPromptClaudeLinks;
 
     activation.installGlobalSkills = lib.hm.dag.entryAfter ["writeBoundary"] ''
       set -euo pipefail

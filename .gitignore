@@ -32,7 +32,7 @@ Thumbs.db
 # Hyprland creates this stub even when hyprland.lua is the active config.
 users/maxpw/hyprland/hyprland.conf
 
-# Home Manager materializes these Claude command links from tracked Codex prompts.
+# Home Manager materializes these Claude command links from tracked shared prompts.
 users/maxpw/agents/claude/commands/nix-config-health.md
 users/maxpw/agents/claude/commands/prompt-debt-audit.md
 

@@ -67,3 +67,10 @@ Treat fleet machines as trusted internal hosts. SSH agent forwarding is enabled
 for interactive work so Git and agent tools can use the 1Password SSH agent.
 Scheduled or unattended agent runs must not use the forwarded 1Password SSH
 agent; interactive sessions only.
+
+## Shared Prompts
+
+Reusable prompts live in `~/.agents/prompts`. Agent-specific prompt or command
+surfaces may symlink those same files into their native locations; prefer editing
+the shared source under `users/maxpw/agents/shared/prompts` instead of copying
+prompt text per agent.
