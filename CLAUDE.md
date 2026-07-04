@@ -53,7 +53,7 @@ The `userDir` parameter allows the macOS username (`max-vev`) to differ from the
 
 ```
 machines/           # Per-host: boot, hardware, services (main-pc.nix, macbook-pro-m1.nix, wsl.nix)
-homelab/            # main-pc self-hosted services exposed through Cloudflare Tunnel
+homelab/            # main-pc self-hosted services exposed through Cloudflare Tunnel and Tailscale Serve
 modules/
   core/             # Shared: nix-settings.nix, security.nix, sops.nix, shells.nix (login shells)
   desktop/          # Hyprland + greetd (Linux only)
@@ -89,7 +89,7 @@ secrets/            # sops-nix encrypted secrets (age encryption, key in 1Passwo
 
 ### Homelab Services
 
-`homelab/` is imported by `machines/main-pc.nix` and aggregates the services that run on main-pc. `homelab/cloudflared.nix` defines the Cloudflare tunnel ingress for those services, secrets are managed through sops-nix, and most service endpoints bind to `127.0.0.1`.
+`homelab/` is imported by `machines/main-pc.nix` and aggregates the services that run on main-pc. `homelab/cloudflared.nix` keeps only the public Cloudflare tunnel ingress (Nextcloud and Home Assistant), while `homelab/tailscale-serve.nix` exposes private operator/dev services to the tailnet. Secrets are managed through sops-nix, and most service endpoints bind to `127.0.0.1`.
 
 Fleet remote-development usage and implementation notes live in `modules/fleet/README.md`; implementation is split between `modules/fleet/home-manager.nix` and `modules/fleet/nixos.nix`.
 
@@ -119,6 +119,13 @@ Dotfiles for desktop apps (Hyprland, waybar, rofi, ghostty, kitty, yazi, etc.) l
 - **Shell aliases**: All aliases are centralized in `users/maxpw/modules/shells.nix`. The `nr` alias runs `make -C ~/nix-config rebuild`.
 - **Shell**: Nushell is the primary interactive shell. When generating commands, scripts, or one-liners for the user to run, prefer Nushell's structured-data pipelines over POSIX text-munging tools. Substitute `grep` → `where`/`find`/`str contains`, `awk`/`cut` → `get`/`select`/`columns`, `sed` → `str replace`, `wc -l` → `length`, `sort | uniq -c` → `group-by | transpose`, `xargs` → `each`, `jq` → native `from json` + `get`. Reach for the POSIX tool only when the target is a non-Nushell context (a Bash script, CI step, Makefile, README example, or a tool that shells out via `/bin/sh`).
 - **macOS GUI apps**: Managed via Homebrew casks in `darwin.nix`, not Nix packages. Homebrew `onActivation.cleanup = "zap"` removes anything not declared.
+
+### Verification defaults
+
+- Formatting-sensitive Nix changes: `alejandra --check .`
+- Nix module/config changes: `nix flake check --no-build`
+- Docs-only changes: `git diff --check`
+- Host rebuilds (`make rebuild`) only when explicitly requested or when applying config is the task.
 
 ## Gotchas
 
