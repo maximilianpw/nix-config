@@ -25,6 +25,7 @@ in {
     ./modules/agent-tools.nix
     ./modules/cmux.nix
     ../../modules/fleet/home-manager.nix
+    ./modules/fleet-ssh-key.nix
     ./modules/t3code-server.nix
     ./modules/shells.nix
     ./modules/syncthing.nix

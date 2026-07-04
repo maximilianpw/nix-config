@@ -33,9 +33,9 @@ OPTIONS:
 ENVIRONMENT:
     NIX_CONFIG_REPO_URL Override the clone URL (default: HTTPS GitHub URL;
                         SSH only works once the 1Password agent is set up)
-    SKIP_SOPS_CHECK=1   Skip the sops age key check (NixOS only; the first
-                        rebuild will lock you out of your user if the key
-                        is genuinely missing)
+    SKIP_SOPS_CHECK=1   Skip the sops age key check (not recommended; on NixOS
+                        the first rebuild will lock you out of your user if
+                        the system key is genuinely missing)
 
 This script will:
   1. Check for Nix installation (and point at the installer if missing)
@@ -44,7 +44,7 @@ This script will:
   4. Clone the nix-config repository to ~/nix-config (if not present)
   5. Set up /etc/nixos symlink (NixOS only)
   6. Verify this host has a configuration in flake.nix
-  7. Verify the sops age key is in place (NixOS only; prevents lockout)
+  7. Verify the sops age key is in place
   8. Optionally update flake inputs (--update), then offer the initial rebuild
 
 For the full new-machine runbook (ISO to running system, secrets, new-host
@@ -290,12 +290,37 @@ else
     fi
 fi
 
-# Step 7: Verify the sops age key is in place (NixOS only)
+# Step 7: Verify the sops age key is in place.
 # users/maxpw/nixos.nix sets the user password from a sops secret with
 # neededForUsers = true. If the age key is missing on the first rebuild,
 # the user ends up with no password - i.e. locked out of the new system.
-# WSL and Darwin don't consume sops secrets, so only full NixOS is checked.
-if [[ "$PLATFORM" == "nixos" && "$HOSTNAME" != "wsl" && "${SKIP_SOPS_CHECK:-0}" != "1" ]]; then
+# Darwin Home Manager also decrypts user secrets, including the dedicated
+# fleet SSH key used for unattended Mac -> main-pc connections.
+if [[ "${SKIP_SOPS_CHECK:-0}" == "1" ]]; then
+    step "7/8: Skipping sops age key check (SKIP_SOPS_CHECK=1)"
+elif [[ "$PLATFORM" == "darwin" ]]; then
+    step "7/8: Checking user sops age key (needed for Home Manager secrets)..."
+    USER_SOPS_KEY="$HOME/.config/sops/age/keys.txt"
+    if [[ "$DRY_RUN" == "true" ]]; then
+        info "[DRY-RUN] Would check $USER_SOPS_KEY exists"
+    elif [[ -f "$USER_SOPS_KEY" ]]; then
+        success "Age key found at $USER_SOPS_KEY"
+    else
+        error "No age key at $USER_SOPS_KEY"
+        echo ""
+        echo "Darwin Home Manager uses sops secrets for local app secrets and"
+        echo "the dedicated fleet SSH key for Mac -> main-pc. Retrieve the age"
+        echo "key from 1Password (vault: Personal, item: 'sops nixos'):"
+        echo ""
+        echo "  mkdir -p ~/.config/sops/age"
+        echo "  nix-shell -p _1password-cli --run 'eval \$(op signin); op item get \"sops nixos\" --fields password --reveal' >> ~/.config/sops/age/keys.txt"
+        echo "  chmod 600 ~/.config/sops/age/keys.txt"
+        echo ""
+        echo "Then re-run this script with --skip-clone."
+        echo "(Set SKIP_SOPS_CHECK=1 to bypass this check - NOT recommended.)"
+        exit 1
+    fi
+elif [[ "$PLATFORM" == "nixos" && "$HOSTNAME" != "wsl" ]]; then
     step "7/8: Checking sops age key (prevents user lockout)..."
     if [[ "$DRY_RUN" == "true" ]]; then
         info "[DRY-RUN] Would check /var/lib/sops-nix/key.txt exists (needs sudo)"

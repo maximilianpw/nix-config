@@ -1,6 +1,7 @@
 {
   hostname,
   homeDirectory,
+  isDarwin ? false,
   lib,
   pkgs,
 }: let
@@ -18,20 +19,6 @@
       gui = true;
       longRunningAgents = true;
       t3codePort = 51000;
-    };
-
-    macbook-pro-m1 = {
-      hostName = "macbook-pro-m1";
-      user = "max-vev";
-      # Read from /etc/ssh/ssh_host_ed25519_key.pub on the host itself.
-      hostKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFiHFQW6b4qbruaHM9f4rXus/BAvYQUboN95vFG5FIKI";
-      aliases = ["mac" "mbp"];
-      tmuxSession = "main";
-      tmuxCommand = "/etc/profiles/per-user/max-vev/bin/tmux";
-      role = "darwin-brain";
-      os = "darwin";
-      gui = true;
-      longRunningAgents = false;
     };
   };
 
@@ -108,7 +95,18 @@
   pinnedHosts = filterAttrs (_: host: host ? hostKey) hosts;
   knownHostsFile = "${homeDirectory}/.ssh/fleet_known_hosts";
 
-  sshOptionsFor = host:
+  clientSshOptionsFor = name:
+    if isDarwin && name == "main-pc"
+    then {
+      AddKeysToAgent = "no";
+      ForwardAgent = "no";
+      IdentityAgent = "none";
+      IdentitiesOnly = "yes";
+      IdentityFile = "${homeDirectory}/.ssh/fleet-main-pc_ed25519";
+    }
+    else {};
+
+  sshOptionsFor = name: host:
     baseSshOptions
     // (
       if host ? hostKey
@@ -117,7 +115,8 @@
         UserKnownHostsFile = "${knownHostsFile} ${homeDirectory}/.ssh/known_hosts";
       }
       else {}
-    );
+    )
+    // clientSshOptionsFor name;
 
   # Values use upstream OpenSSH directive names; the attr name becomes the
   # `Host <patterns>` line (programs.ssh.settings semantics).
@@ -127,7 +126,7 @@
         User = host.user;
         Port = host.port or 22;
       }
-      // sshOptionsFor host);
+      // sshOptionsFor name host);
 
   mkTmuxBlock = name: host:
     nameValuePair (tmuxHostPatterns name host) (let
@@ -141,7 +140,7 @@
         RequestTTY = "yes";
         RemoteCommand = "${tmuxCommand} new-session -A -s ${session}";
       }
-      // sshOptionsFor host);
+      // sshOptionsFor name host);
 
   remoteTmuxRows =
     mapAttrsToList (

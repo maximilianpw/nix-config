@@ -127,7 +127,6 @@
         "127.0.0.1"
         "main-pc"
         "desktop"
-        "macbook-pro-m1"
       ];
       openTerminalLinksInCmuxBrowser = true;
       interceptTerminalOpenCommandInCmuxBrowser = true;

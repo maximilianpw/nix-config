@@ -57,7 +57,9 @@ git commit -m "Add encrypted secrets"
 
 ## Usage
 
-The password is automatically decrypted and used by NixOS at build time. The decrypted secret is placed in `/run/secrets/maxpw-password` and is only readable by root.
+NixOS secrets are decrypted by system sops-nix under `/run/secrets`. Darwin
+user secrets are decrypted by Home Manager sops-nix under the user account; the
+fleet SSH key for Mac -> main-pc is linked at `~/.ssh/fleet-main-pc_ed25519`.
 
 ## Important Security Notes
 
@@ -99,14 +101,14 @@ nix-shell -p sops --run "sops secrets.yaml"
 # Rebuild your system
 ```
 
-## Setting up a New NixOS Machine
+## Setting up a New Machine
 
 When installing NixOS on a new system, you need to place the age key before rebuilding:
 
 ```bash
 # 1. Retrieve the key from 1Password
 mkdir -p ~/.config/sops/age
-nix-shell -p _1password age --run 'echo "# created: $(date -Iseconds)" > ~/.config/sops/age/keys.txt && op item get "sops nixos" --fields password --reveal >> ~/.config/sops/age/keys.txt'
+nix-shell -p _1password age --run 'echo "# created: $(date -Iseconds)" > ~/.config/sops/age/keys.txt && eval $(op signin) && op item get "sops nixos" --fields password --reveal >> ~/.config/sops/age/keys.txt'
 chmod 600 ~/.config/sops/age/keys.txt
 
 # 2. Place it in the system location for sops-nix
@@ -126,12 +128,20 @@ sudo nixos-rebuild switch --flake .#MACHINE_NAME
 ls -la /run/secrets/maxpw-password
 ```
 
+On Darwin, only the user key is needed:
+
+```bash
+mkdir -p ~/.config/sops/age
+nix-shell -p _1password age --run 'echo "# created: $(date -Iseconds)" > ~/.config/sops/age/keys.txt && eval $(op signin) && op item get "sops nixos" --fields password --reveal >> ~/.config/sops/age/keys.txt'
+chmod 600 ~/.config/sops/age/keys.txt
+```
+
 ## Troubleshooting
 
 If you get decryption errors:
 
 1. Make sure your age private key is in both:
-   - `~/.config/sops/age/keys.txt` (for local editing)
+   - `~/.config/sops/age/keys.txt` (for local editing and Darwin Home Manager secrets)
    - `/var/lib/sops-nix/key.txt` (for system decryption)
 2. Verify the public key in `.sops.yaml` matches your private key:
    ```bash

@@ -10,7 +10,7 @@ driver". There are three scenarios, from most to least work:
 In all cases the finishing move is the same: `./scripts/bootstrap.sh`, which
 checks prerequisites, enables flakes, sets up the repo and `/etc/nixos`
 symlink, verifies the host exists in the flake, verifies the sops age key
-(NixOS), and offers to run the first rebuild. Run
+(NixOS and Darwin), and offers to run the first rebuild. Run
 `./scripts/bootstrap.sh --dry-run` to see what it would do.
 
 > **The one dangerous gap to know about (NixOS):** the user password is a
@@ -134,6 +134,11 @@ successful rebuild:
    ```bash
    git clone https://github.com/maximilianpw/nix-config.git ~/nix-config
    cd ~/nix-config
+   mkdir -p ~/.config/sops/age
+   nix-shell -p _1password-cli --run \
+     'eval $(op signin); op item get "sops nixos" --fields password --reveal' \
+     >> ~/.config/sops/age/keys.txt
+   chmod 600 ~/.config/sops/age/keys.txt
    ./scripts/bootstrap.sh --skip-clone
    ```
 
@@ -141,9 +146,11 @@ successful rebuild:
    `/etc/nix/nix.custom.conf`, managed by the darwin config — not
    `nix.settings`.
 
-5. **Post-install**: same checklist as NixOS minus the sops steps (Darwin
-   doesn't consume sops secrets): 1Password app + SSH agent, switch remote
-   to SSH, Tailscale, Syncthing.
+5. **Post-install**: sign in to the 1Password app if you want GitHub SSH or
+   other personal keys from its SSH agent, switch the repo remote to SSH,
+   start Tailscale, and pair Syncthing. The dedicated `fleet ssh main-pc`
+   key is decrypted from sops into `~/.ssh/fleet-main-pc_ed25519`, so it does
+   not depend on the 1Password SSH agent after bootstrap.
 
 ## Scenario 3: Existing host
 
@@ -155,8 +162,9 @@ cd ~/nix-config
 ./scripts/bootstrap.sh --skip-clone   # or `make bootstrap`
 ```
 
-On NixOS, place the age key first (step 4 above) — the script checks and
-will tell you if it's missing.
+On NixOS, place the system age key first (Scenario 1, step 4 above). On
+Darwin, place the user age key first (Scenario 2, step 4 above). The script
+checks and will tell you if either key is missing.
 
 ## Adding a new host
 
