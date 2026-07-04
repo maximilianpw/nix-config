@@ -76,7 +76,7 @@
     # darwin, so pass the flake attr explicitly there (see plans/007 report).
     nhs =
       if isDarwin
-      then "nh darwin switch -H macbook-pro-m1 ~/nix-config"
+      then "nh darwin switch --no-nom -H macbook-pro-m1 ~/nix-config"
       else "nh os switch ~/nix-config";
 
     # Shortcut to setup a nix-shell with fish. This lets you do something like

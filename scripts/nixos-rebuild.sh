@@ -41,7 +41,10 @@ source "$SCRIPT_DIR/lib/host-detect.sh"
 detect_host
 
 if [[ "$PLATFORM" == "darwin" ]]; then
-    NH_SWITCH=("${NH[@]}" darwin switch)
+    # Determinate Nix writes `lazy-trees = true` into /etc/nix/nix.conf.
+    # nix-output-monitor links against upstream libnix, which does not know
+    # that Determinate-specific setting and warns during Darwin builds.
+    NH_SWITCH=("${NH[@]}" darwin switch --no-nom)
 else
     NH_SWITCH=("${NH[@]}" os switch)
     if [[ "$HOSTNAME" == "wsl" ]]; then
