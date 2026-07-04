@@ -8,6 +8,7 @@
     ./paperless.nix
     ./storage.nix
     ./syncthing.nix
+    ./tailscale-serve.nix
     ./uptime-kuma.nix
   ];
 }

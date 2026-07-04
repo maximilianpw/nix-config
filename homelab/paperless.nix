@@ -1,4 +1,7 @@
-{config, ...}: {
+{config, ...}: let
+  paperlessHost = "paperless.${config.homelab.tailnet.domain}";
+  paperlessUrl = "https://${paperlessHost}";
+in {
   sops.secrets.paperless-admin-password = {
     restartUnits = ["paperless-scheduler.service"];
   };
@@ -7,7 +10,7 @@
     enable = true;
     address = "127.0.0.1";
     port = 28981;
-    domain = "paperless.maximilian.pw";
+    domain = paperlessHost;
 
     # Document storage lives on the storage SSD (DB stays on the root disk).
     dataDir = "/srv/paperless";
@@ -18,8 +21,8 @@
     passwordFile = config.sops.secrets.paperless-admin-password.path;
     settings = {
       PAPERLESS_ADMIN_USER = "admin";
-      PAPERLESS_ALLOWED_HOSTS = "paperless.maximilian.pw,localhost,127.0.0.1";
-      PAPERLESS_CSRF_TRUSTED_ORIGINS = "https://paperless.maximilian.pw";
+      PAPERLESS_ALLOWED_HOSTS = "${paperlessHost},localhost,127.0.0.1";
+      PAPERLESS_CSRF_TRUSTED_ORIGINS = paperlessUrl;
       PAPERLESS_OCR_LANGUAGE = "eng+fra";
     };
     exporter = {

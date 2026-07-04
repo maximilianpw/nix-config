@@ -25,8 +25,8 @@ in {
       gui = {
         user = currentSystemUser;
         theme = "black";
-        # Reached only via the Cloudflare tunnel, which forwards a non-localhost
-        # Host header; skip Syncthing's host check so it doesn't reject those.
+        # Reached through Tailscale Serve, which forwards a non-localhost Host
+        # header; skip Syncthing's host check so it doesn't reject those.
         insecureSkipHostcheck = true;
       };
       options = {

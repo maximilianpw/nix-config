@@ -1,7 +1,10 @@
-_: {
+{config, ...}: let
+  tailnetDomain = config.homelab.tailnet.domain;
+  privateUrl = service: "https://${service}.${tailnetDomain}";
+in {
   # The nixpkgs module exposes no listen-address option; homepage is a
   # Next.js standalone server and binds the address given in $HOSTNAME.
-  # Keep it loopback-only like the rest of the homelab — cloudflared
+  # Keep it loopback-only like the rest of the homelab; Tailscale Serve
   # reaches it at 127.0.0.1:8082.
   systemd.services.homepage-dashboard.environment.HOSTNAME = "127.0.0.1";
 
@@ -9,7 +12,7 @@ _: {
     enable = true;
     listenPort = 8082;
     # Homepage refuses requests whose Host header isn't allow-listed.
-    allowedHosts = "homelab.maximilian.pw";
+    allowedHosts = "homelab.${tailnetDomain},localhost,127.0.0.1";
     openFirewall = false;
 
     settings = {
@@ -42,28 +45,28 @@ _: {
           }
           {
             Paperless = {
-              href = "https://paperless.maximilian.pw";
+              href = privateUrl "paperless";
               description = "Documents";
               siteMonitor = "http://127.0.0.1:28981";
             };
           }
           {
             Miniflux = {
-              href = "https://miniflux.maximilian.pw";
+              href = privateUrl "miniflux";
               description = "RSS reader";
               siteMonitor = "http://127.0.0.1:3002";
             };
           }
           {
             Syncthing = {
-              href = "https://syncthing.maximilian.pw";
+              href = privateUrl "syncthing";
               description = "File sync";
               siteMonitor = "http://127.0.0.1:8384";
             };
           }
           {
             "Uptime Kuma" = {
-              href = "https://kuma.maximilian.pw";
+              href = privateUrl "kuma";
               description = "Monitoring";
               siteMonitor = "http://127.0.0.1:3001";
             };

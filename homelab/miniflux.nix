@@ -1,4 +1,6 @@
-{config, ...}: {
+{config, ...}: let
+  minifluxUrl = "https://miniflux.${config.homelab.tailnet.domain}";
+in {
   sops.secrets.miniflux-admin-credentials = {
     restartUnits = ["miniflux.service"];
   };
@@ -9,7 +11,7 @@
     adminCredentialsFile = config.sops.secrets.miniflux-admin-credentials.path;
     config = {
       LISTEN_ADDR = "127.0.0.1:3002";
-      BASE_URL = "https://miniflux.maximilian.pw";
+      BASE_URL = minifluxUrl;
     };
   };
 }

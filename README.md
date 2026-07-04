@@ -15,7 +15,7 @@ Unified NixOS + macOS (nix-darwin) flake with Home Manager, a Hyprland desktop m
 ├── docs/                    # Supplemental documentation
 │   ├── hardware-issues.md
 │   └── wsl-setup.md
-├── homelab/                 # 9 self-hosted services behind a Cloudflare tunnel
+├── homelab/                 # self-hosted services; public Cloudflare + private Tailscale Serve
 ├── lib/
 │   └── mksystem.nix         # mkSystem builder (NixOS & Darwin + Home Manager)
 ├── machines/
