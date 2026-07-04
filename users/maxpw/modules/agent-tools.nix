@@ -1,17 +1,23 @@
 {
   config,
+  currentSystemUserDir,
   pkgs,
   lib,
   ...
 }: let
+  homeFiles = import ../../../lib/home-files.nix {
+    inherit lib;
+    mkOutOfStoreSymlink = config.lib.file.mkOutOfStoreSymlink;
+  };
+
   agentAliases = {
     c = "codex --yolo";
     ccc = "DISABLE_ZOXIDE=1 claude --dangerously-skip-permissions";
     oc = "opencode";
     p = "pi";
   };
-  source = path: config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/nix-config/users/maxpw/agents/${path}";
-  piConfigSource = path: config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/pi-config/${path}";
+  source = path: homeFiles.mkRepoSource config.home.homeDirectory "users/${currentSystemUserDir}/agents/${path}";
+  piConfigSource = path: homeFiles.mkHomeSource config.home.homeDirectory "pi-config/${path}";
   piAgentsText =
     (builtins.readFile ../agents/shared/AGENTS.md)
     + "\n\n---\n\n"

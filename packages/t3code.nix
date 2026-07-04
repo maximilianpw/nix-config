@@ -3,6 +3,7 @@
   lib,
   fetchurl,
 }: let
+  appimage = import ../lib/appimage.nix {inherit pkgs;};
   pname = "t3code";
   version = "0.0.27";
 
@@ -10,22 +11,10 @@
     url = "https://github.com/pingdotgg/t3code/releases/download/v${version}/T3-Code-${version}-x86_64.AppImage";
     hash = "sha256-ALkm7wSVbDlZR7TWVag3NRbP1kvGJQqmpR1mmZvSCAU=";
   };
-
-  appimageContents = pkgs.appimageTools.extractType2 {
-    inherit pname version src;
-  };
 in
-  pkgs.appimageTools.wrapType2 {
+  appimage.mkDesktopAppImage {
     inherit pname version src;
-
-    extraInstallCommands = ''
-      install -m 444 -D ${appimageContents}/t3code.desktop $out/share/applications/t3code.desktop
-      substituteInPlace $out/share/applications/t3code.desktop \
-        --replace-warn 'Exec=AppRun' "Exec=${pname}" \
-        --replace-warn 'Icon=t3code' "Icon=$out/share/pixmaps/t3code.png"
-
-      install -m 444 -D ${appimageContents}/usr/share/icons/hicolor/512x512/apps/t3code.png $out/share/pixmaps/t3code.png
-    '';
+    iconPath = "usr/share/icons/hicolor/512x512/apps/t3code.png";
 
     meta = with lib; {
       description = "T3 Code - AI-powered code editor";

@@ -9,6 +9,11 @@
   pkgs,
   ...
 }: let
+  homeFiles = import ../../../lib/home-files.nix {
+    inherit lib;
+    mkOutOfStoreSymlink = config.lib.file.mkOutOfStoreSymlink;
+  };
+
   hyprConfigPath = "${config.home.homeDirectory}/nix-config/users/${currentSystemUserDir}/hyprland";
   uwsmEnv = ''
     export GDK_SCALE=1.6
@@ -19,13 +24,6 @@
     export XCURSOR_THEME=Vanilla-DMZ
     export XCURSOR_SIZE=128
   '';
-
-  # Live-link top-level Hyprland entries while allowing generated host overrides.
-  symlinkDir = dir: outOfStoreDir: prefix:
-    lib.mapAttrs' (name: _: {
-      name = "${prefix}/${name}";
-      value = {source = config.lib.file.mkOutOfStoreSymlink "${outOfStoreDir}/${name}";};
-    }) (lib.filterAttrs (name: _: name != "hyprland.conf") (builtins.readDir dir));
 
   hasLockScreen = hostname != "main-pc";
 
@@ -127,7 +125,12 @@ in {
           # HMAC-signed so it cannot be set declaratively.
         }
         // heliumNativeMessagingFiles
-        // (symlinkDir ../hyprland hyprConfigPath "hypr")
+        // (homeFiles.symlinkDir {
+          dir = ../hyprland;
+          outOfStoreDir = hyprConfigPath;
+          prefix = "hypr";
+          exclude = ["hyprland.conf"];
+        })
         // {
           "hypr/host.lua".text = hostLua;
           "hypr/hypridle.conf".text = hypridleConfig;

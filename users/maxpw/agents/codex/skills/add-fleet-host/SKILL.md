@@ -14,6 +14,7 @@ Use this workflow to add one trusted machine to the declarative fleet without ed
 Read these files before making changes:
 
 - `modules/fleet/README.md`
+- `lib/fleet.nix`
 - `modules/fleet/home-manager.nix`
 - `users/maxpw/cmux/sidebars/fleet.swift.tpl`
 - `users/maxpw/modules/tmux.nix`
@@ -41,7 +42,7 @@ If key facts are missing, ask for them. Do not guess `longRunningAgents = true`.
 
 ## Implementation
 
-1. Add the host to `fleetHosts` in `modules/fleet/home-manager.nix`.
+1. Add the host to `hosts` in `lib/fleet.nix`.
 2. Use `hostName`, `user`, `aliases`, `tmuxSession = "main"`, `tmuxCommand`, `role`, `os`, `gui`, and `longRunningAgents` explicitly.
 3. Leave `hostKey` absent only when the key has not been verified; the generated SSH config will use `StrictHostKeyChecking = "accept-new"` until it is pinned.
 4. For NixOS machines managed by this repo, confirm the machine imports `modules/fleet/nixos.nix`.
@@ -61,8 +62,8 @@ Button(action: { cmux("workspace.create", title: "HOST", initial_command: "fleet
 Run the smallest relevant checks after editing:
 
 ```bash
-alejandra --check modules/fleet/home-manager.nix users/maxpw/modules/tmux.nix users/maxpw/modules/cmux.nix
-git diff --check -- modules/fleet/home-manager.nix users/maxpw/cmux/sidebars/fleet.swift.tpl users/maxpw/modules/tmux.nix users/maxpw/modules/cmux.nix
+alejandra --check lib/fleet.nix modules/fleet/home-manager.nix users/maxpw/modules/tmux.nix users/maxpw/modules/cmux.nix
+git diff --check -- lib/fleet.nix modules/fleet/home-manager.nix users/maxpw/cmux/sidebars/fleet.swift.tpl users/maxpw/modules/tmux.nix users/maxpw/modules/cmux.nix
 nix build --no-link '.#darwinConfigurations.macbook-pro-m1.system'
 ```
 

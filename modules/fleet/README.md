@@ -22,8 +22,9 @@ Home Manager also writes direct SSH aliases:
 
 ## Agent Fleet Contract
 
-Home Manager generates `~/.config/fleet/FLEET.md` from the same `fleetHosts`
-attrset that drives SSH aliases and `~/.config/fleet/hosts.json`; do not edit
+Home Manager generates `~/.config/fleet/FLEET.md` from the same `hosts`
+attrset in `lib/fleet.nix` that drives SSH aliases and
+`~/.config/fleet/hosts.json`; do not edit
 the generated file directly.
 
 Capability fields:
@@ -38,8 +39,7 @@ Every new host must set `os`, `gui`, and `longRunningAgents` explicitly.
 
 ## Adding Machines
 
-Add new trusted machines to `fleetHosts` in
-`modules/fleet/home-manager.nix`. Prefer the machine's Tailscale MagicDNS name as
+Add new trusted machines to `hosts` in `lib/fleet.nix`. Prefer the machine's Tailscale MagicDNS name as
 `hostName`, set the remote login `user`, and add short aliases you want agents
 and shells to use.
 
