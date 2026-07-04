@@ -5,6 +5,7 @@
 }: {
   imports = [
     ./hardware/main-pc.nix
+    # TODO: Extract reusable Beelink SER9 hardware quirks into a local profile.
     ../homelab
     ../modules/services/backup.nix
   ];
@@ -12,6 +13,7 @@
   custom.backup.enable = true;
 
   # Core system identity
+  # TODO: Consider renaming this host and flake config from main-pc to beest.
   networking.hostName = "main-pc";
 
   # Firmware & performance tuning for Ryzen
