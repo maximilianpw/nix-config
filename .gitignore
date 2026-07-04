@@ -32,6 +32,10 @@ Thumbs.db
 # Hyprland creates this stub even when hyprland.lua is the active config.
 users/maxpw/hyprland/hyprland.conf
 
+# Home Manager materializes these Claude command links from tracked Codex prompts.
+users/maxpw/agents/claude/commands/nix-config-health.md
+users/maxpw/agents/claude/commands/prompt-debt-audit.md
+
 # Secrets management
 # IMPORTANT: Only commit encrypted .yaml files, never plaintext or private keys
 secrets/secrets.yaml.dec
