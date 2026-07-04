@@ -23,6 +23,7 @@ in {
     ./modules/git.nix
     ./modules/vcs/jujutsu.nix
     ./modules/agent-tools.nix
+    ./modules/cmux.nix
     ../../modules/fleet/home-manager.nix
     ./modules/t3code-server.nix
     ./modules/shells.nix
