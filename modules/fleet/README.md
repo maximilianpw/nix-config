@@ -20,6 +20,22 @@ Home Manager also writes direct SSH aliases:
 - `ssh main-pc`, `ssh main`, `ssh desktop` are plain SSH aliases.
 - `ssh tm-main-pc`, `ssh tm-main`, `ssh tm-desktop` attach to tmux immediately.
 
+## Agent Fleet Contract
+
+Home Manager generates `~/.config/fleet/FLEET.md` from the same `fleetHosts`
+attrset that drives SSH aliases and `~/.config/fleet/hosts.json`; do not edit
+the generated file directly.
+
+Capability fields:
+
+- `os`: the target platform family agents should expect.
+- `gui`: whether the host has a GUI/screenshot surface.
+- `longRunningAgents`: whether unattended or multi-hour agent work should run
+  there.
+- `t3codePort`: optional T3 Code port exposed through `fleet t3`.
+
+Every new host must set `os`, `gui`, and `longRunningAgents` explicitly.
+
 ## Adding Machines
 
 Add new trusted machines to `fleetHosts` in

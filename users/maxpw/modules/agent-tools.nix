@@ -16,6 +16,10 @@
     (builtins.readFile ../agents/shared/AGENTS.md)
     + "\n\n---\n\n"
     + (builtins.readFile ../agents/pi/AGENTS.md);
+  codexPromptClaudeLinks = {
+    ".claude/commands/nix-config-health.md".source = source "codex/prompts/nix-config-health.md";
+    ".claude/commands/prompt-debt-audit.md".source = source "codex/prompts/prompt-debt-audit.md";
+  };
 
   globalSkills = [
     "mattpocock/skills@tdd"
@@ -40,42 +44,44 @@ in {
       pkgs.skills
     ];
 
-    file = {
-      ".codex/AGENTS.md".source = source "shared/AGENTS.md";
-      ".claude/CLAUDE.md".source = source "shared/AGENTS.md";
-      ".config/opencode/AGENTS.md".source = source "shared/AGENTS.md";
-      # Compose Pi context from shared cross-agent policy plus Pi-only guidance.
-      ".pi/agent/AGENTS.md".text = piAgentsText;
-      # Small Pi-specific system prompt nudge. Larger operating policy belongs in
-      # the composed AGENTS.md above.
-      ".pi/agent/APPEND_SYSTEM.md".source = piConfigSource "APPEND_SYSTEM.md";
+    file =
+      {
+        ".codex/AGENTS.md".source = source "shared/AGENTS.md";
+        ".codex/prompts" = {
+          source = source "codex/prompts";
+          recursive = true;
+        };
+        ".claude/CLAUDE.md".source = source "shared/AGENTS.md";
+        ".config/opencode/AGENTS.md".source = source "shared/AGENTS.md";
+        # Compose Pi context from shared cross-agent policy plus Pi-only guidance.
+        ".pi/agent/AGENTS.md".text = piAgentsText;
+        # Small Pi-specific system prompt nudge. Larger operating policy belongs in
+        # the composed AGENTS.md above.
+        ".pi/agent/APPEND_SYSTEM.md".source = piConfigSource "APPEND_SYSTEM.md";
 
-      ".claude/settings.json".source = source "claude/settings.json";
-      ".claude/commands" = {
-        source = source "claude/commands";
-        recursive = true;
-      };
-      ".claude/skills/lint-wiki" = {
-        source = source "claude/skills/lint-wiki";
-        recursive = true;
-      };
+        ".claude/settings.json".source = source "claude/settings.json";
+        ".claude/skills/lint-wiki" = {
+          source = source "claude/skills/lint-wiki";
+          recursive = true;
+        };
 
-      ".config/opencode/opencode.json".source = source "opencode/opencode.json";
+        ".config/opencode/opencode.json".source = source "opencode/opencode.json";
 
-      ".pi/agent/settings.json".source = piConfigSource "settings.json";
-      ".pi/agent/extensions" = {
-        source = piConfigSource "extensions";
-        recursive = true;
-      };
-      ".pi/agent/prompts" = {
-        source = piConfigSource "prompts";
-        recursive = true;
-      };
-      ".pi/agent/themes" = {
-        source = piConfigSource "themes";
-        recursive = true;
-      };
-    };
+        ".pi/agent/settings.json".source = piConfigSource "settings.json";
+        ".pi/agent/extensions" = {
+          source = piConfigSource "extensions";
+          recursive = true;
+        };
+        ".pi/agent/prompts" = {
+          source = piConfigSource "prompts";
+          recursive = true;
+        };
+        ".pi/agent/themes" = {
+          source = piConfigSource "themes";
+          recursive = true;
+        };
+      }
+      // codexPromptClaudeLinks;
 
     activation.installGlobalSkills = lib.hm.dag.entryAfter ["writeBoundary"] ''
       set -euo pipefail

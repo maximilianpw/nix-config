@@ -15,6 +15,12 @@ Do not jump straight into implementation for substantial or ambiguous work:
 
 A "trivial" change is a one-liner, a typo fix, a small config/content edit, or something the user explicitly tells you to just do. Trivial changes can be implemented directly. Do not wait for explicit approval after presenting a plan unless the user asked for planning only, the change is risky, or the next step is genuinely ambiguous.
 
+## Verification
+
+Before saying work is complete, run the smallest relevant verification command
+available. Prefer fast local checks first. If verification cannot be run, say
+exactly what was skipped and why.
+
 ## Shells
 
 Use POSIX-compatible shell syntax for normal agent tool calls and commands that need to run reliably in project scripts, CI, Makefiles, package scripts, or other standard shell contexts. Use Bash-specific syntax only when the target context is Bash.
@@ -42,12 +48,22 @@ Nushell is the primary interactive shell for the user. Prefer Nushell only when 
 
 ## Remote Dev Fleet
 
-Use `fleet list` to see trusted development machines declared by Nix. Prefer
-`fleet ssh <host>` for interactive work because it attaches to a persistent tmux
-session, `fleet shell <host>` when a plain SSH shell is required, and
-`fleet run <host> <command...>` for non-interactive remote checks. Direct tmux
-SSH aliases also exist as `tm-<host-or-alias>`, for example `ssh tm-main-pc`.
+Use `fleet list` to see trusted development machines declared by Nix, and read
+`~/.config/fleet/FLEET.md` for host capabilities and placement decisions.
+Prefer `fleet ssh <host>` for interactive tmux work, `fleet shell <host>` for a
+plain SSH shell, and `fleet run <host> <command...>` for non-interactive checks.
+Direct tmux SSH aliases also exist as `tm-<host-or-alias>`, for example
+`ssh tm-main-pc`.
 
-The machine inventory is written to `~/.config/fleet/hosts.json`. Treat these as
-trusted internal hosts; SSH agent forwarding is enabled for them so Git and
-agent tools can use the 1Password SSH agent from the brain machine.
+Use `fleet forward <host> <local-port> <remote-port> [remote-host]` for port
+forwards and `fleet t3 <host> [local-port]` for remote T3 Code access.
+
+Fleet inventory is generated from `modules/fleet/home-manager.nix`; do not edit
+generated `~/.config/fleet/hosts.json`, `~/.config/fleet/FLEET.md`, or SSH
+config directly. Read `modules/fleet/README.md` before adding a host or
+changing the workflow.
+
+Treat fleet machines as trusted internal hosts. SSH agent forwarding is enabled
+for interactive work so Git and agent tools can use the 1Password SSH agent.
+Scheduled or unattended agent runs must not use the forwarded 1Password SSH
+agent; interactive sessions only.
