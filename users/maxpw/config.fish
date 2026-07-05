@@ -18,7 +18,10 @@ end
 # which make it so that we can't use the auto-injection. We have to source
 # manually.
 if set -q GHOSTTY_RESOURCES_DIR
-    source "$GHOSTTY_RESOURCES_DIR/shell-integration/fish/vendor_conf.d/ghostty-shell-integration.fish"
+    set -l ghostty_fish "$GHOSTTY_RESOURCES_DIR/shell-integration/fish/vendor_conf.d/ghostty-shell-integration.fish"
+    if test -f "$ghostty_fish"
+        source "$ghostty_fish"
+    end
 end
 
 #-------------------------------------------------------------------------------
