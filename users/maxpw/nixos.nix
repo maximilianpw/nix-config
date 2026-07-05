@@ -6,6 +6,7 @@
   ...
 }: let
   settings = import ./settings.nix {inherit pkgs;};
+  loginShellPath = "${settings.loginShell}/bin/fish";
 in {
   imports = [
     ../../modules/core/nix-settings.nix
@@ -73,6 +74,14 @@ in {
     ];
     # Password is managed via sops-nix (see secrets/README.md)
     hashedPasswordFile = config.sops.secrets.maxpw-password.path;
+  };
+
+  system.activationScripts.ensureUserLoginShell = {
+    deps = ["users"];
+    # mutableUsers can preserve a stale passwd shell across rebuilds.
+    text = ''
+      ${pkgs.shadow}/bin/usermod --shell ${loginShellPath} ${lib.escapeShellArg currentSystemUser}
+    '';
   };
 
   # 3) Ensure /etc/resolv.conf points at resolved's stub
