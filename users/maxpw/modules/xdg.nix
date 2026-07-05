@@ -107,8 +107,8 @@ in {
           "uwsm/env".text = uwsmEnv;
           "rofi".source = ../rofi;
           "rofi".recursive = true;
-          # stylix spike (plan 009): "waybar".source = ../waybar;
-          # stylix spike (plan 009): "waybar".recursive = true;
+          "waybar".source = ../waybar;
+          "waybar".recursive = true;
           "swaync".source = ../swaync;
           "swaync".recursive = true;
           "wlogout/layout".source = ../wlogout/layout;

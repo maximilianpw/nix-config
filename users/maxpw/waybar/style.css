@@ -61,7 +61,6 @@ tooltip label {
 #idle_inhibitor,
 #clock,
 #network,
-#mullvad,
 #custom-notification,
 #mpris,
 #pulseaudio,
@@ -223,7 +222,6 @@ window#waybar.empty #window {
 }
 
 #network,
-#mullvad,
 #custom-notification {
   padding: 0 6px;
   background-color: @tray;
@@ -258,7 +256,6 @@ window#waybar.empty #window {
 
 #pulseaudio,
 #network,
-#mullvad,
 #custom-notification,
 #clock,
 #custom-power {
@@ -267,7 +264,6 @@ window#waybar.empty #window {
 
 #pulseaudio:hover,
 #network:hover,
-#mullvad:hover,
 #custom-notification:hover,
 #clock:hover,
 #custom-power:hover {
@@ -300,11 +296,6 @@ window#waybar.empty #window {
 #memory.critical,
 #cpu.critical,
 #network.disconnected,
-#network.disabled,
-#mullvad.disconnected {
+#network.disabled {
   color: @critical;
-}
-
-#mullvad.connected {
-  color: @charging;
 }
