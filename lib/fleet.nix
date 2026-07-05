@@ -99,8 +99,7 @@
     if isDarwin && name == "main-pc"
     then {
       AddKeysToAgent = "no";
-      ForwardAgent = "no";
-      IdentityAgent = "none";
+      IdentityAgent = "${homeDirectory}/.1password/agent.sock";
       IdentitiesOnly = "yes";
       IdentityFile = "${homeDirectory}/.ssh/fleet-main-pc_ed25519";
     }
@@ -196,6 +195,16 @@
         esac
       }
 
+      ssh_forward() {
+        exec ssh \
+          -o ExitOnForwardFailure=yes \
+          -o ControlMaster=no \
+          -o ControlPath=none \
+          -N \
+          -L "$1" \
+          "$2"
+      }
+
       remote_tmux_command() {
         case "$1" in
           ${concatStringsSep "\n        " remoteTmuxRows}
@@ -280,7 +289,7 @@
           local_port="$3"
           remote_port="$4"
           remote_host="''${5:-127.0.0.1}"
-          exec ssh -N -L "127.0.0.1:$local_port:$remote_host:$remote_port" "$host"
+          ssh_forward "127.0.0.1:$local_port:$remote_host:$remote_port" "$host"
           ;;
         t3)
           if [ "$#" -lt 2 ]; then
@@ -289,7 +298,7 @@
           fi
           host="$2"
           local_port="''${3:-51000}"
-          exec ssh -N -L "127.0.0.1:$local_port:127.0.0.1:51000" "$host"
+          ssh_forward "127.0.0.1:$local_port:127.0.0.1:51000" "$host"
           ;;
         -h|--help|help)
           usage

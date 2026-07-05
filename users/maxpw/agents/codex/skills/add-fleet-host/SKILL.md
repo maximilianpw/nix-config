@@ -49,7 +49,7 @@ If key facts are missing, ask for them. Do not guess `longRunningAgents = true`.
 5. Add a machine button in `users/maxpw/cmux/sidebars/fleet.swift.tpl` using:
 
 ```swift
-Button(action: { cmux("workspace.create", title: "HOST", initial_command: "fleet ssh HOST", focus: true) }) {
+Button(action: { cmux("workspace.create", title: "HOST", initial_command: "/bin/sh -lc 'exec /etc/profiles/per-user/$(/usr/bin/id -un)/bin/fleet ssh HOST'", focus: true) }) {
   ...
 }
 ```

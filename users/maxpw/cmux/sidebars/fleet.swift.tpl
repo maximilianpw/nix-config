@@ -25,7 +25,7 @@ VStack(alignment: .leading, spacing: 10) {
   Divider()
 
   Section("Machines") {
-    Button(action: { cmux("workspace.create", title: "main-pc", initial_command: "fleet ssh main-pc", focus: true) }) {
+    Button(action: { cmux("workspace.create", title: "main-pc", initial_command: "/bin/sh -lc 'exec /etc/profiles/per-user/$(/usr/bin/id -un)/bin/fleet ssh main-pc'", focus: true) }) {
       HStack(alignment: .top, spacing: 8) {
         Rectangle()
           .fill("#9ECE6A")

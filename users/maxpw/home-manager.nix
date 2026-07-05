@@ -96,7 +96,7 @@ in {
       # Keep SSH defaults explicit as Home Manager changes its implicit defaults.
       enableDefaultConfig = false;
       includes = lib.optionals isDarwin ["~/.orbstack/ssh/config"];
-      settings."*" = {
+      settings."Match host * exec \"test -z $SSH_TTY\"" = {
         IdentityAgent = "%d/.1password/agent.sock";
       };
     };
