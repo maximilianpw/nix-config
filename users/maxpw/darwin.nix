@@ -127,7 +127,7 @@ in {
   # account remains max-vev. This indirection is handled via userDir in mksystem.nix.
   users.users.max-vev = {
     home = "/Users/max-vev";
-    shell = settings.defaultShell;
+    shell = settings.loginShell;
   };
 
   # Obsidian CLI (installed via Homebrew cask)

@@ -17,7 +17,7 @@ in {
     description = lib.mkDefault "Maximilian PINDER-WHITE";
     extraGroups = ["wheel" "docker"];
     home = "/home/maxpw";
-    shell = settings.defaultShell;
+    shell = settings.loginShell;
   };
 
   system.stateVersion = lib.mkDefault "24.05";

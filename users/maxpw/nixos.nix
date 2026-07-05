@@ -66,7 +66,7 @@ in {
     description = lib.mkDefault "Maximilian PINDER-WHITE";
     extraGroups = ["networkmanager" "wheel" "seat" "input" "video"];
     home = "/home/${currentSystemUser}";
-    shell = settings.defaultShell;
+    shell = settings.loginShell;
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB3qKWMhvPDxIo8U2S7VpC7eGtF5LATuGQ05gSlXmu+4 Main PC SSH"
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIO6WVItwXm6ybS0EbZY+URCvIqdhZMhj/cwU2d4RBDFl fleet main-pc from macbook-pro-m1"
