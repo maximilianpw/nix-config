@@ -11,7 +11,9 @@ development machines.
 - `fleet shell <host>` opens a plain SSH shell with no forced tmux command.
 - `fleet run <host> <command...>` runs a non-interactive command remotely.
 - `fleet forward <host> <local-port> <remote-port> [remote-host]` opens an SSH
-  local forward.
+  local forward. The default remote host is `localhost`, which covers services
+  bound to either IPv4 or IPv6 loopback; pass `[remote-host]` for non-loopback
+  targets.
 - `fleet t3 <host> [local-port]` forwards the remote T3 Code server on port
   `51000`.
 
