@@ -42,8 +42,7 @@ Unified NixOS + macOS (nix-darwin) flake with Home Manager, a Hyprland desktop m
 ├── packages/
 │   ├── coderabbit.nix       # Custom package: CodeRabbit CLI
 │   ├── helium.nix           # Custom package: Helium floating browser
-│   ├── obsidian.nix         # Custom package: Obsidian
-│   └── t3code.nix           # Custom package: T3 Chat code server
+│   └── obsidian.nix         # Custom package: Obsidian
 ├── scripts/
 │   └── nixos-rebuild.sh     # Smart rebuild script (Darwin/NixOS autodetect)
 ├── secrets/                 # sops-nix encrypted secrets
@@ -80,7 +79,7 @@ Unified NixOS + macOS (nix-darwin) flake with Home Manager, a Hyprland desktop m
 ## Flake overview
 
 - Inputs: nixpkgs 26.05, nixpkgs-unstable (select pkgs), home-manager 26.05, nix-darwin 26.05, Hyprland, NixOS-WSL, fenix, sops-nix, llm-agents, disko, nix-index-database.
-- Overlays: fenix (Rust toolchain); llm-agents (claude-code, codex, opencode, amp-cli, pi, skills, hunkdiff, agent-browser); unstable passthrough (`pkgs.unstable`, plus jujutsu/zig pinned to unstable) and custom packages (helium, obsidian, t3code, coderabbit).
+- Overlays: fenix (Rust toolchain); llm-agents (claude-code, codex, opencode, amp-cli, pi, skills, hunkdiff, agent-browser); unstable passthrough (`pkgs.unstable`, plus jujutsu/zig pinned to unstable) and custom packages (helium, obsidian, coderabbit).
 - mkSystem (`lib/mksystem.nix`):
   - Picks nixosSystem or darwinSystem.
   - Adds NixOS-WSL module when `wsl = true`.

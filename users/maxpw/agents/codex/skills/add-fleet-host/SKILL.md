@@ -35,7 +35,7 @@ Collect or infer these values before editing:
 - `longRunningAgents`: set `true` only for machines intended for unattended or multi-hour agent work.
 - `tmuxCommand`: absolute path is best for NixOS or nix-darwin hosts.
 - Optional `hostKey`: pin only after cross-checking the host's real ED25519 public key.
-- Optional `port` and `t3codePort`.
+- Optional `port`.
 - Sidebar accent color and SF Symbol icon.
 
 If key facts are missing, ask for them. Do not guess `longRunningAgents = true`.

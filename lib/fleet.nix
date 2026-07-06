@@ -5,7 +5,7 @@
   lib,
   pkgs,
 }: let
-  inherit (lib) concatStringsSep escapeShellArg filterAttrs mapAttrs' mapAttrsToList nameValuePair optionalString;
+  inherit (lib) concatStringsSep escapeShellArg filterAttrs mapAttrs' mapAttrsToList nameValuePair;
 
   hosts = {
     main-pc = {
@@ -18,7 +18,6 @@
       os = "nixos";
       gui = false;
       longRunningAgents = true;
-      t3codePort = 51000;
     };
   };
 
@@ -45,7 +44,6 @@
         - Target: ${host.hostName}
         - GUI/screenshot surface: ${boolText host.gui}
         - Long-running agents: ${boolText host.longRunningAgents}
-        ${optionalString (host ? t3codePort) "- T3 Code port: ${toString host.t3codePort}\n"}
       ''
     )
     hosts;
@@ -60,7 +58,6 @@
 
     - Use `fleet run <host> <command...>` for non-interactive remote checks.
     - Use `fleet ssh <host>` for persistent tmux sessions.
-    - Use `fleet t3 <host>` for T3 Code port forwards when the host declares a T3 Code port.
     - Use `fleet forward list [local-port]` to inspect active SSH local forwards, then `fleet forward delete PID` to stop one.
     - Run long-running or unattended agent work only on hosts with `longRunningAgents = true`.
   '';
@@ -434,15 +431,13 @@
           '  fleet forward list [LOCAL_PORT]' \
           '  fleet forward stop PID...' \
           '  fleet forward delete PID...' \
-          '  fleet t3 HOST [LOCAL_PORT]' \
           "" \
           'examples:' \
           '  fleet ssh main-pc' \
           '  fleet run main-pc btop' \
           '  fleet forward main-pc 3000 3000' \
           '  fleet forward list 3000' \
-          '  fleet forward delete 12345' \
-          '  fleet t3 main-pc 51001'
+          '  fleet forward delete 12345'
       }
 
       cmd="''${1:-list}"
@@ -523,16 +518,6 @@
               ssh_forward "127.0.0.1:$local_port:$remote_host:$remote_port" "$host"
               ;;
           esac
-          ;;
-        t3)
-          if [ "$#" -lt 2 ]; then
-            usage >&2
-            exit 2
-          fi
-          host="$2"
-          local_port="''${3:-51000}"
-          ensure_no_forward_on_port "$local_port"
-          ssh_forward "127.0.0.1:$local_port:127.0.0.1:51000" "$host"
           ;;
         -h|--help|help)
           usage

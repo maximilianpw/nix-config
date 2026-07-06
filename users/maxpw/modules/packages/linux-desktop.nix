@@ -34,7 +34,6 @@
       pkgs.protonmail-desktop
       pkgs.mullvad-vpn
       pkgs.obsidian
-      pkgs.t3code
 
       # System utilities
       pkgs.pavucontrol

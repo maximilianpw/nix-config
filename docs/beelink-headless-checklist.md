@@ -65,9 +65,8 @@ systemctl status nextcloud-setup home-assistant miniflux uptime-kuma
 # Docker back with the old containers/volumes intact
 docker ps -a && docker volume ls
 
-# Ollama and the T3 Code user service running
+# Ollama service running
 systemctl status ollama
-systemctl --user status t3code
 ```
 
 From the MacBook:
@@ -77,8 +76,6 @@ From the MacBook:
 # unlocked. Confirm it still reaches the box:
 fleet ssh main-pc
 
-# T3 Code forward still works
-fleet t3 main-pc
 ```
 
 If `Wake-on: g` did **not** stick, set it on the NetworkManager connection:

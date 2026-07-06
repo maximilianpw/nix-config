@@ -45,7 +45,6 @@ in {
       "monero-wallet"
       "cursor"
       "cmux"
-      "t3-code"
       "linear"
       "wispr-flow"
       "freelens"

@@ -77,7 +77,6 @@
         inherit (unstable) zig;
         helium = final.callPackage ./packages/helium.nix {};
         obsidian = final.callPackage ./packages/obsidian.nix {};
-        t3code = final.callPackage ./packages/t3code.nix {};
         coderabbit = final.callPackage ./packages/coderabbit.nix {};
       })
     ];
@@ -166,7 +165,7 @@
       x86_64-linux = let
         pkgs = mkPkgs "x86_64-linux";
       in {
-        inherit (pkgs) helium obsidian t3code skills coderabbit hunkdiff;
+        inherit (pkgs) helium obsidian skills coderabbit hunkdiff;
       };
       aarch64-darwin = let
         pkgs = mkPkgs "aarch64-darwin";

@@ -69,7 +69,6 @@ users/maxpw/
     git.nix         # Git + Jujutsu (jj) config
     vcs/jujutsu.nix # Jujutsu config
     agent-tools.nix # LLM agent CLIs + aliases
-    t3code-server.nix # T3 Chat code server integration
     fonts.nix       # Nerd fonts + system fonts with fontconfig
     xdg.nix         # XDG config file management (Hyprland, Ghostty, waybar, kitty, yazi, etc.)
     neovim.nix      # Neovim config + LSP packages (called as function from home-manager.nix)
@@ -83,7 +82,7 @@ users/maxpw/
       terminal-tools.nix  # CLI utilities (bat, eza, fzf, ripgrep, etc.)
       linux-desktop.nix   # Wayland/GUI apps (Ghostty, rofi, waybar, etc.)
       custom-scripts.nix  # Personal helper scripts
-packages/           # Custom package definitions (helium, obsidian, t3code, coderabbit)
+packages/           # Custom package definitions (helium, obsidian, coderabbit)
 secrets/            # sops-nix encrypted secrets (age encryption, key in 1Password)
 ```
 
@@ -98,7 +97,7 @@ Fleet remote-development usage and implementation notes live in `modules/fleet/R
 Three overlays applied in order:
 1. **fenix** - Rust toolchain
 2. **llm-agents** - AI CLI tools (claude-code, codex, opencode, amp-cli, pi, skills, hunkdiff, agent-browser) from the `numtide/llm-agents.nix` flake input
-3. **unstable + custom** - Exposes the full unstable channel as `pkgs.unstable`, pulls select packages from `nixpkgs-unstable` (jujutsu, zig), and defines the custom packages (helium, obsidian, t3code, coderabbit)
+3. **unstable + custom** - Exposes the full unstable channel as `pkgs.unstable`, pulls select packages from `nixpkgs-unstable` (jujutsu, zig), and defines the custom packages (helium, obsidian, coderabbit)
 
 ### Secrets
 

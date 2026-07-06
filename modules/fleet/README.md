@@ -18,8 +18,6 @@ development machines.
   `fleet forward delete <pid>` commands for stopping them.
 - `fleet forward stop <pid...>` or `fleet forward delete <pid...>` stops active
   SSH local forward processes.
-- `fleet t3 <host> [local-port]` forwards the remote T3 Code server on port
-  `51000`.
 
 Home Manager also writes direct SSH aliases:
 
@@ -39,7 +37,6 @@ Capability fields:
 - `gui`: whether the host has a GUI/screenshot surface.
 - `longRunningAgents`: whether unattended or multi-hour agent work should run
   there.
-- `t3codePort`: optional T3 Code port exposed through `fleet t3`.
 
 Every new host must set `os`, `gui`, and `longRunningAgents` explicitly.
 
