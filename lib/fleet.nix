@@ -288,7 +288,7 @@
           host="$2"
           local_port="$3"
           remote_port="$4"
-          remote_host="''${5:-127.0.0.1}"
+          remote_host="''${5:-localhost}"
           ssh_forward "127.0.0.1:$local_port:$remote_host:$remote_port" "$host"
           ;;
         t3)
