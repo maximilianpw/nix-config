@@ -1,4 +1,5 @@
 {
+  config,
   isDarwin,
   isLinuxDesktop,
   inputs,
@@ -6,6 +7,7 @@
   lib,
   ...
 }: let
+  settings = import ./settings.nix {inherit pkgs;};
   # For our MANPAGER env var
   # https://github.com/sharkdp/bat/issues/1145
   manpager = pkgs.writeShellScriptBin "manpager" ''
@@ -58,6 +60,25 @@ in {
   home = {
     stateVersion = "25.05";
 
+    activation.ensureOnePasswordAgentSymlink = lib.hm.dag.entryBefore ["checkLinkTargets"] ''
+      if [ ${lib.escapeShellArg (
+        if isDarwin
+        then "1"
+        else "0"
+      )} = 1 ]; then
+        agent_dir="${config.home.homeDirectory}/.1password"
+        agent_target="${config.home.homeDirectory}/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
+
+        mkdir -p "$agent_dir"
+        ln -sfn "$agent_target" "$agent_dir/agent.sock"
+      fi
+    '';
+
+    file = lib.mkIf isDarwin {
+      ".ssh/github-authentication_ed25519.pub".text = settings.sshKeys.githubAuthentication + "\n";
+      ".ssh/main-pc_1password_ed25519.pub".text = settings.sshKeys.mainPcUser + "\n";
+    };
+
     sessionPath = [
       "$HOME/.local/bin"
     ];
@@ -75,6 +96,7 @@ in {
         then {
           # See: https://github.com/NixOS/nixpkgs/issues/390751
           DISPLAY = "nixpkgs-390751";
+          SSH_AUTH_SOCK = "${config.home.homeDirectory}/.1password/agent.sock";
         }
         else {}
       );
@@ -94,12 +116,15 @@ in {
       # Keep SSH defaults explicit as Home Manager changes its implicit defaults.
       enableDefaultConfig = false;
       includes = lib.optionals isDarwin ["~/.orbstack/ssh/config"];
-      settings."github.com" = {
-        HostName = "github.com";
-        User = "git";
-        IdentityFile = "~/.ssh/id_ed25519_github";
-        IdentitiesOnly = "yes";
-        AddKeysToAgent = "yes";
+      settings = lib.mkIf isDarwin {
+        "github.com" = {
+          HostName = "github.com";
+          User = "git";
+          IdentityAgent = "%d/.1password/agent.sock";
+          IdentityFile = "~/.ssh/github-authentication_ed25519.pub";
+          IdentitiesOnly = "yes";
+          AddKeysToAgent = "no";
+        };
       };
     };
   };

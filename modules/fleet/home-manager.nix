@@ -3,10 +3,11 @@
   lib,
   pkgs,
   hostname,
+  isDarwin,
   ...
 }: let
   fleet = import ../../lib/fleet.nix {
-    inherit hostname lib pkgs;
+    inherit hostname isDarwin lib pkgs;
     homeDirectory = config.home.homeDirectory;
   };
 in {
