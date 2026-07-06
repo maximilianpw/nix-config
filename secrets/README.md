@@ -61,7 +61,9 @@ NixOS secrets are decrypted by system sops-nix under `/run/secrets`. Darwin
 user secrets are decrypted by Home Manager sops-nix under the user account.
 A legacy `fleet-main-pc-ssh-key` entry may still exist in `secrets.yaml`; the
 configuration no longer references it, so it can be removed during the next
-normal `sops` edit.
+normal `sops` edit. `github-ssh-private-key` is the GitHub authentication key
+used by non-desktop NixOS hosts; desktop hosts use the 1Password SSH agent
+instead.
 
 ## Important Security Notes
 

@@ -1,4 +1,9 @@
-{currentSystemUser, ...}: {
+{
+  currentSystemUser,
+  isLinuxDesktop,
+  lib,
+  ...
+}: {
   # Configure sops-nix
   sops = {
     # Default sops file location
@@ -24,6 +29,10 @@
         # Proton Bridge password for this host; read at runtime by himalaya,
         # which runs as the user, so it must be owned by the user (not root).
         owner = currentSystemUser;
+      };
+      github-ssh-private-key = lib.mkIf (!isLinuxDesktop) {
+        owner = currentSystemUser;
+        mode = "0600";
       };
     };
   };

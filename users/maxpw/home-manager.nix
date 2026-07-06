@@ -2,12 +2,14 @@
   config,
   isDarwin,
   isLinuxDesktop,
+  isWSL,
   inputs,
   pkgs,
   lib,
   ...
 }: let
   settings = import ./settings.nix {inherit pkgs;};
+  useSopsGithubSshKey = !isDarwin && !isLinuxDesktop && !isWSL;
   # For our MANPAGER env var
   # https://github.com/sharkdp/bat/issues/1145
   manpager = pkgs.writeShellScriptBin "manpager" ''
@@ -116,16 +118,27 @@ in {
       # Keep SSH defaults explicit as Home Manager changes its implicit defaults.
       enableDefaultConfig = false;
       includes = lib.optionals isDarwin ["~/.orbstack/ssh/config"];
-      settings = lib.mkIf isDarwin {
-        "github.com" = {
-          HostName = "github.com";
-          User = "git";
-          IdentityAgent = "%d/.1password/agent.sock";
-          IdentityFile = "~/.ssh/github-authentication_ed25519.pub";
-          IdentitiesOnly = "yes";
-          AddKeysToAgent = "no";
-        };
-      };
+      settings = lib.mkMerge [
+        (lib.mkIf isDarwin {
+          "github.com" = {
+            HostName = "github.com";
+            User = "git";
+            IdentityAgent = "%d/.1password/agent.sock";
+            IdentityFile = "~/.ssh/github-authentication_ed25519.pub";
+            IdentitiesOnly = "yes";
+            AddKeysToAgent = "no";
+          };
+        })
+        (lib.mkIf useSopsGithubSshKey {
+          "github.com" = {
+            HostName = "github.com";
+            User = "git";
+            IdentityFile = "/run/secrets/github-ssh-private-key";
+            IdentitiesOnly = "yes";
+            AddKeysToAgent = "no";
+          };
+        })
+      ];
     };
   };
 }
