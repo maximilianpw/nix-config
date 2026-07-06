@@ -58,8 +58,12 @@ git commit -m "Add encrypted secrets"
 ## Usage
 
 NixOS secrets are decrypted by system sops-nix under `/run/secrets`. Darwin
-user secrets are decrypted by Home Manager sops-nix under the user account; the
-fleet SSH key for Mac -> main-pc is linked at `~/.ssh/fleet-main-pc_ed25519`.
+user secrets are decrypted by Home Manager sops-nix under the user account.
+Fleet SSH from Mac -> main-pc uses the 1Password SSH agent; Home Manager writes
+only the public-key selector at `~/.ssh/fleet-main-pc_ed25519.pub`.
+A legacy `fleet-main-pc-ssh-key` entry may still exist in `secrets.yaml`; the
+configuration no longer references it, so it can be removed during the next
+normal `sops` edit.
 
 ## Important Security Notes
 

@@ -1,9 +1,13 @@
 {
+  hostname,
   isLinuxDesktop,
   pkgs,
   lib,
   ...
 }: let
+  # The server itself is headless: run it on Linux desktops and on the
+  # main-pc homelab box, where it is reached via `fleet t3`.
+  runServer = isLinuxDesktop || hostname == "main-pc";
   servicePath =
     [
       pkgs.nodejs
@@ -26,11 +30,11 @@
       pkgs.python3
     ];
 in {
-  home.packages = lib.optionals isLinuxDesktop [
+  home.packages = lib.optionals runServer [
     pkgs.nodejs
   ];
 
-  systemd.user.services.t3code = lib.mkIf isLinuxDesktop {
+  systemd.user.services.t3code = lib.mkIf runServer {
     Unit = {
       Description = "T3 Code headless server";
       After = ["network-online.target"];

@@ -21,6 +21,7 @@ in {
         "${homeDir}/.local/share"
         "${homeDir}/.ssh"
         "${homeDir}/.gnupg"
+        "/srv"
         "/var/lib"
       ];
       description = "Paths to back up";

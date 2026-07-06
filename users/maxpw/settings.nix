@@ -4,4 +4,9 @@
   # wrapper used by tools like Codex remote SSH; Nushell rejects that syntax.
   loginShell = pkgs.fish;
   interactiveShell = pkgs.nushell;
+
+  sshKeys = {
+    mainPcUser = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB3qKWMhvPDxIo8U2S7VpC7eGtF5LATuGQ05gSlXmu+4 Main PC SSH";
+    fleetMacbookToMainPc = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIO6WVItwXm6ybS0EbZY+URCvIqdhZMhj/cwU2d4RBDFl fleet main-pc from macbook-pro-m1";
+  };
 }

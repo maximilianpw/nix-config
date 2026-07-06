@@ -104,9 +104,9 @@
     nixosConfigurations.main-pc = mkSystem "main-pc" {
       system = "x86_64-linux";
       user = "maxpw";
+      linuxDesktop = false;
       extraModules = with inputs.nixos-hardware.nixosModules; [
         common-cpu-amd
-        common-gpu-amd
         common-pc-ssd
       ];
     };

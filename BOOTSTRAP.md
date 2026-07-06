@@ -146,11 +146,11 @@ successful rebuild:
    `/etc/nix/nix.custom.conf`, managed by the darwin config — not
    `nix.settings`.
 
-5. **Post-install**: sign in to the 1Password app if you want GitHub SSH or
-   other personal keys from its SSH agent, switch the repo remote to SSH,
-   start Tailscale, and pair Syncthing. The dedicated `fleet ssh main-pc`
-   key is decrypted from sops into `~/.ssh/fleet-main-pc_ed25519`, so it does
-   not depend on the 1Password SSH agent after bootstrap.
+5. **Post-install**: sign in to the 1Password app and enable its SSH agent for
+   GitHub SSH, `fleet ssh main-pc`, or other personal keys, switch the repo
+   remote to SSH, start Tailscale, and pair Syncthing. Home Manager writes only
+   the public-key selector for `fleet ssh main-pc` at
+   `~/.ssh/fleet-main-pc_ed25519.pub`; the private key lives in 1Password.
 
 ## Scenario 3: Existing host
 

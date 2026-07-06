@@ -5,7 +5,6 @@
 }: {
   imports = [
     ./hardware/main-pc.nix
-    # TODO: Extract reusable Beelink SER9 hardware quirks into a local profile.
     ../homelab
     ../modules/services/backup.nix
   ];
@@ -16,18 +15,22 @@
   # TODO: Consider renaming this host and flake config from main-pc to beest.
   networking.hostName = "main-pc";
 
-  # Firmware & performance tuning for Ryzen
+  # Wake-on-LAN on the Realtek RTL8125, so the box can be powered back up
+  # remotely after a manual shutdown.
+  networking.interfaces.enp194s0.wakeOnLan.enable = true;
+
+  # schedutil idles low under amd_pstate=guided but still clocks up for nix
+  # builds and long-running agents; powersave would pin the box to min freq.
   powerManagement.cpuFreqGovernor = lib.mkDefault "schedutil";
 
-  # Modern kernel & AMD tuning
   boot = {
-    kernelPackages = pkgs.linuxPackages_zen;
     kernelModules = ["amd_pmc"];
+    # Ethernet-only box: drop the AX200 Wi-Fi and Bluetooth radios; the AX200
+    # was the source of the old iwlwifi power-save workarounds.
+    blacklistedKernelModules = ["iwlwifi" "btusb"];
     kernelParams = [
       "amd_pstate=guided"
-      "resume=UUID=ba998885-222e-4dd5-963a-895933322128"
     ];
-    resumeDevice = "/dev/disk/by-uuid/ba998885-222e-4dd5-963a-895933322128";
     loader = {
       systemd-boot.enable = lib.mkDefault true;
       efi.canTouchEfiVariables = lib.mkDefault true;
@@ -35,73 +38,54 @@
     };
   };
 
-  # Beelink SER9: disable suspend paths (broken s2idle) and allow hibernate only
+  # Always-on server: avoid accidental suspend or hibernation.
   systemd.sleep.settings.Sleep = {
     AllowSuspend = "no";
-    AllowHibernation = "yes";
+    AllowHibernation = "no";
     AllowHybridSleep = "no";
-    HibernateMode = "shutdown";
+    AllowSuspendThenHibernate = "no";
   };
 
-  # Restore networking and USB audio after hibernate resume
-  systemd.services.network-resume = {
-    description = "Restore services after hibernate";
-    wantedBy = ["suspend.target" "hibernate.target" "hybrid-sleep.target"];
-    after = ["systemd-suspend.service" "systemd-hibernate.service" "systemd-hybrid-sleep.service"];
-    serviceConfig = {
-      Type = "oneshot";
-      ExecStart = "${pkgs.bash}/bin/bash -c '${pkgs.kmod}/bin/modprobe -r snd_usb_audio || true && ${pkgs.kmod}/bin/modprobe snd_usb_audio && ${pkgs.systemd}/bin/systemctl restart NetworkManager && ${pkgs.systemd}/bin/systemctl restart mullvad-daemon'";
-    };
+  # Hardware watchdog (SP5100 TCO): auto-reboot if the kernel hard-hangs,
+  # instead of staying down until someone walks over to the box.
+  systemd.watchdog = {
+    runtimeTime = "30s";
+    rebootTime = "10m";
   };
 
-  # Disable Intel WiFi power saving to prevent connectivity loss after suspend
-  boot.extraModprobeConfig = ''
-    options iwlwifi power_save=0
-    options iwlmvm power_scheme=1
-  '';
+  hardware.bluetooth.enable = lib.mkDefault false;
 
-  # Caps Lock → tap=Escape / hold=Hyper (Ctrl+Super+Alt+Shift)
-  # Pairs with the hyper bindings in hyprland/conf/keybinds.lua
-  services = {
-    power-profiles-daemon.enable = lib.mkDefault true;
-
-    keyd = {
-      enable = true;
-      keyboards.default = {
-        ids = ["*"];
-        settings = {
-          main.capslock = "overload(hyper, esc)";
-          "hyper:C-M-A-S" = {};
-        };
-      };
-    };
-
-    # Hardware enablement for a desktop workstation
-    fwupd.enable = true;
-    blueman.enable = true;
-    mullvad-vpn.enable = true;
-  };
-  hardware.bluetooth.enable = true;
-
-  # Container & virtualization stack
-  virtualisation = {
-    docker.enable = true;
-    # Default docker (28.x) is unmaintained and marked insecure in nixpkgs 25.11
-    docker.package = pkgs.docker_29;
-    libvirtd.enable = true;
-  };
-  programs.virt-manager.enable = true;
-  programs.steam = {
+  # Container stack for dev databases and ad-hoc services.
+  virtualisation.docker = {
     enable = true;
-    gamescopeSession.enable = true;
+    # Default docker (28.x) is unmaintained and marked insecure in nixpkgs 25.11
+    package = pkgs.docker_29;
   };
-  users.users.maxpw.extraGroups = lib.mkAfter ["docker" "libvirtd" "kvm"];
+  users.users.maxpw.extraGroups = lib.mkAfter ["docker"];
+
+  # Start user services (t3code, syncthing) at boot instead of first SSH login.
+  users.users.maxpw.linger = true;
+
+  services = {
+    # Firmware updates are still useful on a headless box.
+    fwupd.enable = true;
+
+    # Weekly TRIM; matters more than usual for the DRAM-less Micron 2550s.
+    fstrim.enable = true;
+
+    # SMART monitoring for both NVMe drives.
+    smartd.enable = true;
+  };
 
   # System-scoped packages
   environment.systemPackages = [
     pkgs.cachix
+    pkgs.ethtool
+    pkgs.hdparm
     pkgs.lm_sensors
+    pkgs.nvme-cli
     pkgs.pciutils
+    pkgs.smartmontools
     pkgs.usbutils
   ];
 }

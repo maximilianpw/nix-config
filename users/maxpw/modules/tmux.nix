@@ -1,8 +1,13 @@
 {
   hostname,
+  lib,
   pkgs,
   ...
 }: let
+  settings = import ../settings.nix {inherit pkgs;};
+  # Panes are human-facing: use the interactive shell (nushell), not the
+  # compatibility login shell (fish) that sshd and tools exec into.
+  interactiveShellPath = lib.getExe settings.interactiveShell;
   hostAccent =
     {
       main-pc = "#9ece6a";
@@ -16,7 +21,7 @@
 in {
   programs.tmux = {
     enable = true;
-    shell = "${pkgs.nushell}/bin/nu";
+    shell = interactiveShellPath;
     terminal = "tmux-256color";
     prefix = "C-Space";
     baseIndex = 1;
@@ -74,7 +79,7 @@ in {
 
     extraConfig = ''
       # Override default-command set by tmux-sensible (which uses reattach-to-user-namespace with zsh)
-      set -g default-command "${pkgs.nushell}/bin/nu"
+      set -g default-command "${interactiveShellPath}"
 
       # True color, undercurl, and modified key support
       set -g extended-keys on

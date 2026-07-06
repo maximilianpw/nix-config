@@ -34,7 +34,7 @@ VStack(alignment: .leading, spacing: 10) {
 
         VStack(alignment: .leading, spacing: 3) {
           HStack(spacing: 6) {
-            Image(systemName: "desktopcomputer")
+            Image(systemName: "server.rack")
               .foregroundColor("#9ECE6A")
             Text("main-pc")
               .font(.headline)
@@ -45,7 +45,7 @@ VStack(alignment: .leading, spacing: 10) {
               .foregroundColor("#9ECE6A")
           }
 
-          Text("Linux workhorse")
+          Text("NixOS homelab")
             .font(.caption)
             .foregroundColor(.secondary)
             .lineLimit(1)

@@ -11,6 +11,7 @@
   userDir ? user,
   darwin ? false,
   wsl ? false,
+  linuxDesktop ? (!darwin && !wsl),
   extraModules ? [],
 }: let
   inherit (nixpkgs) lib;
@@ -41,7 +42,7 @@
     currentSystemUserDir = userDir;
     isDarwin = darwin;
     isWSL = wsl;
-    isLinuxDesktop = !darwin && !wsl;
+    isLinuxDesktop = linuxDesktop;
     inherit inputs;
   };
 in

@@ -3,10 +3,11 @@
   pkgs,
   lib,
   currentSystemUser,
+  isLinuxDesktop,
   ...
 }: let
   settings = import ./settings.nix {inherit pkgs;};
-  loginShellPath = "${settings.loginShell}/bin/fish";
+  loginShellPath = lib.getExe settings.loginShell;
 in {
   imports = [
     ../../modules/core/nix-settings.nix
@@ -18,7 +19,7 @@ in {
     ./modules/linux-common.nix
   ];
 
-  custom.hyprland.enable = true;
+  custom.hyprland.enable = lib.mkDefault isLinuxDesktop;
   # --- Base (yours) ---
   networking.networkmanager = {
     enable = true;
@@ -28,7 +29,7 @@ in {
     ];
   };
 
-  hardware.graphics.enable = true;
+  hardware.graphics.enable = lib.mkDefault isLinuxDesktop;
 
   services = {
     # Default to disabling X if no desktop module overrides; GNOME module will set true.
@@ -43,7 +44,7 @@ in {
     printing.enable = false;
 
     pulseaudio.enable = false;
-    pipewire = {
+    pipewire = lib.mkIf isLinuxDesktop {
       enable = true;
       alsa.enable = true;
       alsa.support32Bit = true;
@@ -62,18 +63,22 @@ in {
     dbus.enable = true;
   };
 
-  users.users.${currentSystemUser} = {
-    isNormalUser = true;
-    description = lib.mkDefault "Maximilian PINDER-WHITE";
-    extraGroups = ["networkmanager" "wheel" "seat" "input" "video"];
-    home = "/home/${currentSystemUser}";
-    shell = settings.loginShell;
-    openssh.authorizedKeys.keys = [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB3qKWMhvPDxIo8U2S7VpC7eGtF5LATuGQ05gSlXmu+4 Main PC SSH"
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIO6WVItwXm6ybS0EbZY+URCvIqdhZMhj/cwU2d4RBDFl fleet main-pc from macbook-pro-m1"
-    ];
-    # Password is managed via sops-nix (see secrets/README.md)
-    hashedPasswordFile = config.sops.secrets.maxpw-password.path;
+  users = {
+    defaultUserShell = settings.loginShell;
+
+    users.${currentSystemUser} = {
+      isNormalUser = true;
+      description = lib.mkDefault "Maximilian PINDER-WHITE";
+      extraGroups = ["networkmanager" "wheel"] ++ lib.optionals isLinuxDesktop ["seat" "input" "video"];
+      home = "/home/${currentSystemUser}";
+      shell = settings.loginShell;
+      openssh.authorizedKeys.keys = [
+        settings.sshKeys.mainPcUser
+        settings.sshKeys.fleetMacbookToMainPc
+      ];
+      # Password is managed via sops-nix (see secrets/README.md)
+      hashedPasswordFile = config.sops.secrets.maxpw-password.path;
+    };
   };
 
   system.activationScripts.ensureUserLoginShell = {
@@ -88,22 +93,26 @@ in {
   networking.resolvconf.enable = lib.mkForce false;
 
   environment = {
-    systemPackages = [
+    systemPackages = lib.optionals isLinuxDesktop [
       pkgs.helium
     ];
 
     # Allow Helium (Chromium fork) to talk to the 1Password desktop app via
     # native messaging. 1Password verifies browsers against a built-in list
     # plus this file; it must be owned by root with mode 0755 or it's ignored.
-    etc."1password/custom_allowed_browsers" = {
-      text = ''
-        helium
-        .helium-wrapped
-      '';
-      mode = "0755";
+    etc = lib.mkIf isLinuxDesktop {
+      "1password/custom_allowed_browsers" = {
+        text = ''
+          helium
+          .helium-wrapped
+        '';
+        mode = "0755";
+      };
     };
 
-    sessionVariables.NIXOS_OZONE_WL = "1";
+    sessionVariables = lib.mkIf isLinuxDesktop {
+      NIXOS_OZONE_WL = "1";
+    };
   };
 
   # Keep the stateVersion at the initial install release; don't bump later.
@@ -112,13 +121,14 @@ in {
   # Console (TTY) keymap for Colemak
   console.keyMap = "colemak";
 
+  # The op CLI is useful headless too; only the GUI is desktop-gated.
   programs._1password.enable = true;
-  programs._1password-gui = {
+  programs._1password-gui = lib.mkIf isLinuxDesktop {
     enable = true;
     polkitPolicyOwners = [currentSystemUser];
   };
 
-  xdg.portal = {
+  xdg.portal = lib.mkIf isLinuxDesktop {
     enable = true;
     extraPortals = [pkgs.xdg-desktop-portal-gtk];
     config.common.default = ["hyprland" "gtk"];

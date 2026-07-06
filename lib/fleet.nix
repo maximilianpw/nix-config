@@ -14,9 +14,9 @@
       aliases = ["main" "desktop"];
       tmuxSession = "main";
       tmuxCommand = "/run/current-system/sw/bin/tmux";
-      role = "nixos-desktop";
+      role = "nixos-homelab";
       os = "nixos";
-      gui = true;
+      gui = false;
       longRunningAgents = true;
       t3codePort = 51000;
     };
@@ -101,7 +101,7 @@
       AddKeysToAgent = "no";
       IdentityAgent = "${homeDirectory}/.1password/agent.sock";
       IdentitiesOnly = "yes";
-      IdentityFile = "${homeDirectory}/.ssh/fleet-main-pc_ed25519";
+      IdentityFile = "${homeDirectory}/.ssh/fleet-main-pc_ed25519.pub";
     }
     else {};
 

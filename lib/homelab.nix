@@ -7,7 +7,6 @@
     miniflux.port = 3002;
     syncthing.port = 8384;
     kuma.port = 3001;
-    t3code.port = 51000;
   };
 
   privateHost = tailnetDomain: service: "${service}.${tailnetDomain}";

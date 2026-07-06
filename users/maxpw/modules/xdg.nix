@@ -82,6 +82,15 @@
     "helium/NativeMessagingHosts/com.1password.1password.json"
     "net.imput.helium/NativeMessagingHosts/com.1password.1password.json"
   ] (_: {text = onePasswordNativeMessagingHost;});
+
+  settings = import ../settings.nix {inherit pkgs;};
+  # Login shell for session environment, then hand off to the interactive
+  # shell (same shape as the old `bash -l -c nu`).
+  ghosttyConfig =
+    ''
+      command = ${lib.getExe settings.loginShell} -l -c ${lib.getExe settings.interactiveShell}
+    ''
+    + builtins.readFile ../ghostty.linux;
 in {
   xdg.enable = true;
 
@@ -102,7 +111,7 @@ in {
       if isLinuxDesktop
       then
         {
-          # stylix spike (plan 009): "ghostty/config".text = builtins.readFile ../ghostty.linux;
+          "ghostty/config".text = ghosttyConfig;
           "gammastep/config.ini".text = builtins.readFile ../config.gammastep;
           "uwsm/env".text = uwsmEnv;
           "rofi".source = ../rofi;
