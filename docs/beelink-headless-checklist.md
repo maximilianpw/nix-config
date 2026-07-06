@@ -72,8 +72,7 @@ systemctl status ollama
 From the MacBook:
 
 ```sh
-# Fleet SSH now goes through the 1Password agent — 1Password must be
-# unlocked. Confirm it still reaches the box:
+# Confirm fleet SSH still reaches the box:
 fleet ssh main-pc
 
 ```

@@ -1,14 +1,9 @@
 #-------------------------------------------------------------------------------
-# SSH Agent (1Password)
+# SSH
 #-------------------------------------------------------------------------------
 if not test -d $HOME/.ssh
     mkdir -p $HOME/.ssh
     chmod 0700 $HOME/.ssh
-end
-
-set -l op_agent "$HOME/.1password/agent.sock"
-if test -e "$op_agent"
-    set -gx SSH_AUTH_SOCK "$op_agent"
 end
 
 #-------------------------------------------------------------------------------

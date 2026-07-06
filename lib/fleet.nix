@@ -1,7 +1,6 @@
 {
   hostname,
   homeDirectory,
-  isDarwin ? false,
   lib,
   pkgs,
 }: let
@@ -93,17 +92,7 @@
   pinnedHosts = filterAttrs (_: host: host ? hostKey) hosts;
   knownHostsFile = "${homeDirectory}/.ssh/fleet_known_hosts";
 
-  clientSshOptionsFor = name:
-    if isDarwin && name == "main-pc"
-    then {
-      AddKeysToAgent = "no";
-      IdentityAgent = "${homeDirectory}/.1password/agent.sock";
-      IdentitiesOnly = "yes";
-      IdentityFile = "${homeDirectory}/.ssh/fleet-main-pc_ed25519.pub";
-    }
-    else {};
-
-  sshOptionsFor = name: host:
+  sshOptionsFor = host:
     baseSshOptions
     // (
       if host ? hostKey
@@ -112,8 +101,7 @@
         UserKnownHostsFile = "${knownHostsFile} ${homeDirectory}/.ssh/known_hosts";
       }
       else {}
-    )
-    // clientSshOptionsFor name;
+    );
 
   # Values use upstream OpenSSH directive names; the attr name becomes the
   # `Host <patterns>` line (programs.ssh.settings semantics).
@@ -123,7 +111,7 @@
         User = host.user;
         Port = host.port or 22;
       }
-      // sshOptionsFor name host);
+      // sshOptionsFor host);
 
   mkTmuxBlock = name: host:
     nameValuePair (tmuxHostPatterns name host) (let
@@ -137,7 +125,7 @@
         RequestTTY = "yes";
         RemoteCommand = "${tmuxCommand} new-session -A -s ${session}";
       }
-      // sshOptionsFor name host);
+      // sshOptionsFor host);
 
   remoteTmuxRows =
     mapAttrsToList (

@@ -64,9 +64,9 @@ config directly. Read `modules/fleet/README.md` before adding a host or
 changing the workflow.
 
 Treat fleet machines as trusted internal hosts. SSH agent forwarding is enabled
-for interactive work so Git and agent tools can use the 1Password SSH agent.
-Scheduled or unattended agent runs must not use the forwarded 1Password SSH
-agent; interactive sessions only.
+for interactive work so Git and agent tools can use your local SSH credentials.
+Scheduled or unattended agent runs must not rely on forwarded SSH credentials;
+interactive sessions only.
 
 ## Shared Prompts
 

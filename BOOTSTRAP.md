@@ -43,8 +43,7 @@ Create your user during install (or in the minimal config) so you can log in.
 
 ### 2. First boot: clone the repo
 
-Clone over **HTTPS** — the machine has no SSH keys yet (they come from the
-1Password agent, which this config sets up later):
+Clone over **HTTPS** — the machine has no GitHub SSH key yet:
 
 ```bash
 nix-shell -p git
@@ -146,11 +145,8 @@ successful rebuild:
    `/etc/nix/nix.custom.conf`, managed by the darwin config — not
    `nix.settings`.
 
-5. **Post-install**: sign in to the 1Password app and enable its SSH agent for
-   GitHub SSH, `fleet ssh main-pc`, or other personal keys, switch the repo
-   remote to SSH, start Tailscale, and pair Syncthing. Home Manager writes only
-   the public-key selector for `fleet ssh main-pc` at
-   `~/.ssh/fleet-main-pc_ed25519.pub`; the private key lives in 1Password.
+5. **Post-install**: create and upload a GitHub SSH key if needed, switch the
+   repo remote to SSH, start Tailscale, and pair Syncthing.
 
 ## Scenario 3: Existing host
 

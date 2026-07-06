@@ -32,7 +32,7 @@ OPTIONS:
 
 ENVIRONMENT:
     NIX_CONFIG_REPO_URL Override the clone URL (default: HTTPS GitHub URL;
-                        SSH only works once the 1Password agent is set up)
+                        SSH only works once a GitHub SSH key exists locally)
     SKIP_SOPS_CHECK=1   Skip the sops age key check (not recommended; on NixOS
                         the first rebuild will lock you out of your user if
                         the system key is genuinely missing)
@@ -92,8 +92,8 @@ else
     PLATFORM="nixos"
 fi
 
-# HTTPS by default: a fresh machine has no SSH keys yet (they come from the
-# 1Password agent, which this config sets up). Switch the remote to SSH later:
+# HTTPS by default: a fresh machine has no GitHub SSH key yet. Switch the
+# remote to SSH later after creating and uploading a key:
 #   git remote set-url origin git@github.com:maximilianpw/nix-config.git
 REPO_URL="${NIX_CONFIG_REPO_URL:-https://github.com/maximilianpw/nix-config.git}"
 

@@ -112,11 +112,6 @@ if not ($ssh_dir | path exists) {
   ^chmod 0700 $ssh_dir
 }
 
-let op_agent = ($env.HOME | path join '.1password' 'agent.sock')
-if ($op_agent | path exists) {
-  $env.SSH_AUTH_SOCK = $op_agent
-}
-
 #-------------------------------------------------------------------------------
 # Programs
 #-------------------------------------------------------------------------------

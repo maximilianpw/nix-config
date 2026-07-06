@@ -25,7 +25,6 @@ in {
     ./modules/agent-tools.nix
     ./modules/cmux.nix
     ../../modules/fleet/home-manager.nix
-    ./modules/fleet-ssh-key.nix
     ./modules/shells.nix
     ./modules/syncthing.nix
     ./modules/gpg.nix
@@ -95,8 +94,12 @@ in {
       # Keep SSH defaults explicit as Home Manager changes its implicit defaults.
       enableDefaultConfig = false;
       includes = lib.optionals isDarwin ["~/.orbstack/ssh/config"];
-      settings."Match host * exec \"test -z $SSH_TTY\"" = {
-        IdentityAgent = "%d/.1password/agent.sock";
+      settings."github.com" = {
+        HostName = "github.com";
+        User = "git";
+        IdentityFile = "~/.ssh/id_ed25519_github";
+        IdentitiesOnly = "yes";
+        AddKeysToAgent = "yes";
       };
     };
   };
