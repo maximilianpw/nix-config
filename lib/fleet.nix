@@ -61,6 +61,7 @@
     - Use `fleet run <host> <command...>` for non-interactive remote checks.
     - Use `fleet ssh <host>` for persistent tmux sessions.
     - Use `fleet t3 <host>` for T3 Code port forwards when the host declares a T3 Code port.
+    - Use `fleet forward list [local-port]` to inspect active SSH local forwards, then `fleet forward delete PID` to stop one.
     - Run long-running or unattended agent work only on hosts with `longRunningAgents = true`.
   '';
 
@@ -195,6 +196,216 @@
         esac
       }
 
+      validate_port() {
+        case "$1" in
+          ""|*[!0-9]*)
+            echo "fleet: ports must be numeric" >&2
+            exit 2
+            ;;
+        esac
+      }
+
+      forward_local_port() {
+        spec="$1"
+        first="''${spec%%:*}"
+        rest="''${spec#*:}"
+        if [ "$rest" = "$spec" ]; then
+          return 1
+        fi
+
+        case "$first" in
+          ""|*[!0-9]*)
+            port="''${rest%%:*}"
+            ;;
+          *)
+            port="$first"
+            ;;
+        esac
+
+        case "$port" in
+          ""|*[!0-9]*)
+            return 1
+            ;;
+        esac
+
+        printf '%s\n' "$port"
+      }
+
+      forward_row() {
+        pid="$1"
+        spec="$2"
+        local_port="$(forward_local_port "$spec" || true)"
+        [ -n "$local_port" ] || return 0
+        printf '%s|%s|%s\n' "$pid" "$local_port" "$spec"
+      }
+
+      collect_forward_rows() {
+        if ps_output="$(ps axww -o pid=,command= 2>/dev/null)"; then
+          :
+        else
+          ps_output="$(ps -eww -o pid=,args= 2>/dev/null || true)"
+        fi
+
+        while IFS= read -r line; do
+          # Intentionally split the ps line back into argv-like fields so -L
+          # and its value can be detected in both "-L spec" and "-Lspec" forms.
+          # shellcheck disable=SC2086
+          set -- $line
+          if [ "$#" -lt 2 ]; then
+            continue
+          fi
+
+          pid="$1"
+          shift
+          case "$pid" in
+            ""|*[!0-9]*)
+              continue
+              ;;
+          esac
+
+          program="$1"
+          shift
+          case "$program" in
+            ssh|*/ssh)
+              ;;
+            *)
+              continue
+              ;;
+          esac
+
+          while [ "$#" -gt 0 ]; do
+            arg="$1"
+            shift
+            if [ "$arg" = "-L" ]; then
+              if [ "$#" -gt 0 ]; then
+                forward_row "$pid" "$1"
+                shift
+              fi
+              continue
+            fi
+
+            case "$arg" in
+              -L?*)
+                forward_row "$pid" "''${arg#-L}"
+                ;;
+            esac
+          done
+        done <<EOF
+      $ps_output
+      EOF
+      }
+
+      list_forwards() {
+        filter_port="''${1:-}"
+        rows="$(collect_forward_rows)"
+        found=0
+
+        if [ -n "$filter_port" ]; then
+          validate_port "$filter_port"
+          printf 'Active SSH local forwards for port %s:\n' "$filter_port"
+        else
+          printf '%s\n' 'Active SSH local forwards:'
+        fi
+        printf '%-8s %-10s %-36s %s\n' PID LOCAL_PORT FORWARD DELETE_COMMAND
+
+        while IFS='|' read -r pid local_port spec; do
+          [ -n "$pid" ] || continue
+          if [ -n "$filter_port" ] && [ "$local_port" != "$filter_port" ]; then
+            continue
+          fi
+
+          found=1
+          printf '%-8s %-10s %-36s %s\n' "$pid" "$local_port" "$spec" "fleet forward delete $pid"
+        done <<EOF
+      $rows
+      EOF
+
+        if [ "$found" -eq 0 ]; then
+          if [ -n "$filter_port" ]; then
+            printf 'No active SSH local forwards found for local port %s.\n' "$filter_port"
+          else
+            printf '%s\n' 'No active SSH local forwards found.'
+          fi
+        fi
+      }
+
+      port_has_forward() {
+        filter_port="$1"
+        rows="$(collect_forward_rows)"
+
+        while IFS='|' read -r pid local_port spec; do
+          [ -n "$pid" ] || continue
+          [ -n "$spec" ] || continue
+          if [ "$local_port" = "$filter_port" ]; then
+            return 0
+          fi
+        done <<EOF
+      $rows
+      EOF
+
+        return 1
+      }
+
+      pid_has_forward() {
+        wanted_pid="$1"
+        rows="$(collect_forward_rows)"
+
+        while IFS='|' read -r pid local_port spec; do
+          [ -n "$pid" ] || continue
+          [ -n "$local_port" ] || continue
+          [ -n "$spec" ] || continue
+          if [ "$pid" = "$wanted_pid" ]; then
+            return 0
+          fi
+        done <<EOF
+      $rows
+      EOF
+
+        return 1
+      }
+
+      ensure_no_forward_on_port() {
+        local_port="$1"
+        validate_port "$local_port"
+
+        if port_has_forward "$local_port"; then
+          printf 'fleet: local port %s already has an active SSH forward.\n' "$local_port" >&2
+          printf '%s\n' 'fleet: stop the existing forward before opening another one:' >&2
+          list_forwards "$local_port" >&2
+          exit 1
+        fi
+      }
+
+      stop_forwards() {
+        if [ "$#" -eq 0 ]; then
+          echo "fleet: expected one or more forward PIDs" >&2
+          exit 2
+        fi
+
+        for pid in "$@"; do
+          case "$pid" in
+            ""|*[!0-9]*)
+              echo "fleet: forward PID must be numeric: $pid" >&2
+              exit 2
+              ;;
+          esac
+
+          if ! pid_has_forward "$pid"; then
+            echo "fleet: PID $pid is not an active SSH local forward" >&2
+            exit 1
+          fi
+        done
+
+        for pid in "$@"; do
+          if kill "$pid"; then
+            printf 'fleet: stopped SSH forward process %s\n' "$pid"
+          else
+            echo "fleet: failed to stop SSH forward process $pid" >&2
+            exit 1
+          fi
+        done
+      }
+
       ssh_forward() {
         exec ssh \
           -o ExitOnForwardFailure=yes \
@@ -220,12 +431,17 @@
           '  fleet shell HOST' \
           '  fleet run HOST COMMAND...' \
           '  fleet forward HOST LOCAL_PORT REMOTE_PORT [REMOTE_HOST]' \
+          '  fleet forward list [LOCAL_PORT]' \
+          '  fleet forward stop PID...' \
+          '  fleet forward delete PID...' \
           '  fleet t3 HOST [LOCAL_PORT]' \
           "" \
           'examples:' \
           '  fleet ssh main-pc' \
           '  fleet run main-pc btop' \
           '  fleet forward main-pc 3000 3000' \
+          '  fleet forward list 3000' \
+          '  fleet forward delete 12345' \
           '  fleet t3 main-pc 51001'
       }
 
@@ -281,15 +497,32 @@
           exec ssh "$host" "$@"
           ;;
         forward)
-          if [ "$#" -lt 4 ]; then
-            usage >&2
-            exit 2
-          fi
-          host="$2"
-          local_port="$3"
-          remote_port="$4"
-          remote_host="''${5:-localhost}"
-          ssh_forward "127.0.0.1:$local_port:$remote_host:$remote_port" "$host"
+          case "''${2:-}" in
+            list|ls)
+              if [ "$#" -gt 3 ]; then
+                usage >&2
+                exit 2
+              fi
+              list_forwards "''${3:-}"
+              ;;
+            stop|delete|rm)
+              shift 2
+              stop_forwards "$@"
+              ;;
+            *)
+              if [ "$#" -lt 4 ]; then
+                usage >&2
+                exit 2
+              fi
+              host="$2"
+              local_port="$3"
+              remote_port="$4"
+              remote_host="''${5:-localhost}"
+              validate_port "$remote_port"
+              ensure_no_forward_on_port "$local_port"
+              ssh_forward "127.0.0.1:$local_port:$remote_host:$remote_port" "$host"
+              ;;
+          esac
           ;;
         t3)
           if [ "$#" -lt 2 ]; then
@@ -298,6 +531,7 @@
           fi
           host="$2"
           local_port="''${3:-51000}"
+          ensure_no_forward_on_port "$local_port"
           ssh_forward "127.0.0.1:$local_port:127.0.0.1:51000" "$host"
           ;;
         -h|--help|help)

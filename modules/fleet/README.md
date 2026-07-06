@@ -14,6 +14,10 @@ development machines.
   local forward. The default remote host is `localhost`, which covers services
   bound to either IPv4 or IPv6 loopback; pass `[remote-host]` for non-loopback
   targets.
+- `fleet forward list [local-port]` shows active SSH local forwards and prints
+  `fleet forward delete <pid>` commands for stopping them.
+- `fleet forward stop <pid...>` or `fleet forward delete <pid...>` stops active
+  SSH local forward processes.
 - `fleet t3 <host> [local-port]` forwards the remote T3 Code server on port
   `51000`.
 
