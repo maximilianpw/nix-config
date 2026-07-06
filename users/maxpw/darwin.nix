@@ -16,7 +16,6 @@ in {
       "gnupg"
       "pinentry-mac"
       "ollama"
-      "tailscale"
       "ffmpeg"
     ];
 
