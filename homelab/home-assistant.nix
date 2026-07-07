@@ -1,7 +1,10 @@
-_: {
+{lib, ...}: let
+  homelab = import ../lib/homelab.nix {inherit lib;};
+  inherit (homelab.publicEndpoints) homeassistant;
+in {
   services.home-assistant = {
     enable = true;
-    # Reached only via the Cloudflare tunnel (127.0.0.1:8123); no LAN port.
+    # Reached only via the Cloudflare tunnel; no LAN port.
     openFirewall = false;
 
     extraPackages = ps:
@@ -40,10 +43,12 @@ _: {
         name = "Home";
         unit_system = "metric";
         time_zone = "Europe/Paris";
-        external_url = "https://homeassistant.maximilian.pw";
-        internal_url = "http://127.0.0.1:8123";
+        external_url = homeassistant.url;
+        internal_url = homeassistant.monitorUrl;
       };
       http = {
+        server_host = "127.0.0.1";
+        server_port = homeassistant.port;
         use_x_forwarded_for = true;
         trusted_proxies = ["127.0.0.1" "::1"];
       };

@@ -1,4 +1,10 @@
-{config, ...}: let
+{
+  config,
+  lib,
+  ...
+}: let
+  homelab = import ../lib/homelab.nix {inherit lib;};
+  public = homelab.publicEndpoints;
   tunnelId = "5b712ae4-3ce4-4499-9cb7-a57cde1c571f";
 in {
   sops.secrets."cloudflared-creds.json" = {
@@ -13,13 +19,13 @@ in {
       default = "http_status:404";
 
       ingress = {
-        "nextcloud.maximilian.pw" = {
-          service = "http://127.0.0.1:8080";
-          originRequest.httpHostHeader = "nextcloud.maximilian.pw";
+        ${public.nextcloud.host} = {
+          service = homelab.loopbackUrl public.nextcloud.port;
+          originRequest.httpHostHeader = public.nextcloud.host;
         };
-        "homeassistant.maximilian.pw" = {
-          service = "http://127.0.0.1:8123";
-          originRequest.httpHostHeader = "homeassistant.maximilian.pw";
+        ${public.homeassistant.host} = {
+          service = homelab.loopbackUrl public.homeassistant.port;
+          originRequest.httpHostHeader = public.homeassistant.host;
         };
       };
     };

@@ -2,11 +2,22 @@
   loopbackUrl = port: "http://127.0.0.1:${toString port}";
 
   privateServices = {
-    homelab.port = 8082;
+    homelab.port = 19082;
     paperless.port = 28981;
-    miniflux.port = 3002;
-    syncthing.port = 8384;
-    kuma.port = 3001;
+    miniflux.port = 19002;
+    syncthing.port = 19384;
+    kuma.port = 19001;
+  };
+
+  publicServices = {
+    nextcloud = {
+      host = "nextcloud.maximilian.pw";
+      port = 19080;
+    };
+    homeassistant = {
+      host = "homeassistant.maximilian.pw";
+      port = 19123;
+    };
   };
 
   privateHost = tailnetDomain: service: "${service}.${tailnetDomain}";
@@ -19,37 +30,39 @@
     url = privateUrl tailnetDomain service;
     monitorUrl = loopbackUrl serviceConfig.port;
   };
+  publicEndpoint = service: let
+    serviceConfig = publicServices.${service};
+  in {
+    inherit (serviceConfig) host port;
+    url = "https://${serviceConfig.host}";
+    monitorUrl = loopbackUrl serviceConfig.port;
+  };
+  publicEndpoints = lib.mapAttrs (service: _: publicEndpoint service) publicServices;
 in {
   defaultTailnetDomain = "tail7161c3.ts.net";
-  inherit loopbackUrl privateHost privateServices privateUrl;
+  inherit loopbackUrl privateHost privateServices privateUrl publicEndpoints publicServices;
 
   allowedHosts = host: "${host},localhost,127.0.0.1";
 
   endpoints = tailnetDomain:
     lib.mapAttrs (service: _: privateEndpoint tailnetDomain service) privateServices;
 
-  tailscaleServeServices =
-    lib.mapAttrs (_: service: {
-      advertised = true;
-      endpoints."tcp:443" = loopbackUrl service.port;
-    })
-    privateServices;
-
   homepageServices = tailnetDomain: let
     private = lib.mapAttrs (service: _: privateEndpoint tailnetDomain service) privateServices;
+    public = publicEndpoints;
   in [
     {
       Nextcloud = {
-        href = "https://nextcloud.maximilian.pw";
+        href = public.nextcloud.url;
         description = "Files & sync";
-        siteMonitor = "https://nextcloud.maximilian.pw";
+        siteMonitor = public.nextcloud.url;
       };
     }
     {
       "Home Assistant" = {
-        href = "https://homeassistant.maximilian.pw";
+        href = public.homeassistant.url;
         description = "Smart home";
-        siteMonitor = loopbackUrl 8123;
+        siteMonitor = public.homeassistant.monitorUrl;
       };
     }
     {

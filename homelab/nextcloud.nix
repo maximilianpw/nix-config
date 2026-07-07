@@ -1,8 +1,12 @@
 {
   config,
+  lib,
   pkgs,
   ...
-}: {
+}: let
+  homelab = import ../lib/homelab.nix {inherit lib;};
+  inherit (homelab.publicEndpoints) nextcloud;
+in {
   sops.secrets.nextcloud-admin-password = {};
 
   services.nextcloud = {
@@ -48,7 +52,7 @@
   services.nginx.virtualHosts."nextcloud.maximilian.pw".listen = [
     {
       addr = "127.0.0.1";
-      port = 8080;
+      inherit (nextcloud) port;
     }
   ];
 }

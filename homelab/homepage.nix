@@ -10,12 +10,12 @@ in {
   # The nixpkgs module exposes no listen-address option; homepage is a
   # Next.js standalone server and binds the address given in $HOSTNAME.
   # Keep it loopback-only like the rest of the homelab; Tailscale Serve
-  # reaches it at 127.0.0.1:8082.
+  # reaches it at the configured homelab endpoint.
   systemd.services.homepage-dashboard.environment.HOSTNAME = "127.0.0.1";
 
   services.homepage-dashboard = {
     enable = true;
-    listenPort = 8082;
+    listenPort = endpoints.homelab.port;
     # Homepage refuses requests whose Host header isn't allow-listed.
     allowedHosts = homelab.allowedHosts endpoints.homelab.host;
     openFirewall = false;

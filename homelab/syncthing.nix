@@ -1,9 +1,12 @@
 {
   config,
   currentSystemUser,
+  lib,
   ...
 }: let
+  homelab = import ../lib/homelab.nix {inherit lib;};
   home = "/home/${currentSystemUser}";
+  inherit (homelab.privateServices) syncthing;
 in {
   sops.secrets.syncthing-gui-password = {
     owner = currentSystemUser;
@@ -16,7 +19,7 @@ in {
     group = "users";
     dataDir = home;
     configDir = "${home}/.config/syncthing";
-    guiAddress = "127.0.0.1:8384";
+    guiAddress = "127.0.0.1:${toString syncthing.port}";
     guiPasswordFile = config.sops.secrets.syncthing-gui-password.path;
     openDefaultPorts = true;
     overrideDevices = false;
