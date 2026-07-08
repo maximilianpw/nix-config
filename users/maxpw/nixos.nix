@@ -72,10 +72,14 @@ in {
       extraGroups = ["networkmanager" "wheel"] ++ lib.optionals isLinuxDesktop ["seat" "input" "video"];
       home = "/home/${currentSystemUser}";
       shell = settings.loginShell;
-      openssh.authorizedKeys.keys = [
-        settings.sshKeys.mainPcUser
-        settings.sshKeys.fleetMacbookToMainPc
-      ];
+      openssh.authorizedKeys.keys =
+        [
+          settings.sshKeys.mainPcUser
+          settings.sshKeys.fleetMacbookToMainPc
+        ]
+        ++ lib.optionals (settings.sshKeys.wslToMainPc != "") [
+          settings.sshKeys.wslToMainPc
+        ];
       # Password is managed via sops-nix (see secrets/README.md)
       hashedPasswordFile = config.sops.secrets.maxpw-password.path;
     };
