@@ -13,6 +13,9 @@
     age = {
       # This will be the path on the system where the age key is located
       keyFile = "/var/lib/sops-nix/key.txt";
+      # Also decrypt with the machine identity. Its public half is a second
+      # recipient in .sops.yaml; the private host key never leaves main-pc.
+      sshKeyPaths = ["/etc/ssh/ssh_host_ed25519_key"];
       # Alternatively, for per-user keys:
       # keyFile = "/home/${config.users.users.maxpw.name}/.config/sops/age/keys.txt";
     };

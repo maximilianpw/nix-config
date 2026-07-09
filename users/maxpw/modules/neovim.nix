@@ -33,9 +33,8 @@
         # Go
         gopls
         delve # Go debugger
-        # golangci-lint comes from packages/dev-tools.nix (also a CLI tool)
-        # Note: goimports/gofumpt are installed imperatively by go.nvim's
-        # update_all_sync build step (into ~/go/bin); gofmt ships with `go`.
+        # Formatters, linters, and Go source tools live in dev-tools.nix so
+        # terminal editors and VCS hooks can use the same binaries.
         # Lua
         lua-language-server
         # Nix
@@ -50,26 +49,11 @@
         # Zig (the zig compiler itself comes from packages/dev-tools.nix)
         zls
         # TOML
-        taplo # TOML LSP
+        # taplo (TOML LSP + formatter) comes from dev-tools.nix.
         # YAML
         yaml-language-server
         # === Debug Adapters ===
         # (delve for Go and vscode-js-debug for JS/TS are listed above)
-        # === Formatters ===
-        # JavaScript/TypeScript/Web
-        prettier
-        prettierd # Faster prettier daemon
-        # Lua
-        stylua
-        # Python (conform: ruff_format then black)
-        ruff
-        black
-        # C/C++ (conform: clang_format)
-        clang-tools
-        # Shell (sh/bash/zsh)
-        shfmt
-        # General
-        alejandra # Nix formatter
         # === Linters ===
         eslint_d # Fast ESLint daemon
         hadolint # Dockerfile linter

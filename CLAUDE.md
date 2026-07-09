@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## What This Is
 
 A unified NixOS + nix-darwin flake managing three systems from a single codebase:
-- **main-pc**: NixOS x86_64-linux desktop (AMD Ryzen, Hyprland/Wayland)
+- **main-pc**: headless NixOS x86_64-linux homelab (AMD Ryzen); the Hyprland profile remains parked and eval-tested
 - **macbook-pro-m1**: nix-darwin aarch64-darwin (Apple Silicon, Homebrew for GUI apps)
 - **wsl**: NixOS x86_64-linux under WSL (minimal, no desktop)
 
@@ -16,10 +16,12 @@ make bootstrap   # Bootstrap a new system (initial setup)
 make rebuild     # Apply configuration (auto-detects platform, formats with alejandra, switches via nh with a generation diff, cleans old generations)
 make build       # Build without switching
 make update      # Update flake inputs
-make wsl         # Build WSL tarball for import
+make wsl         # Build .artifacts/nixos.wsl for import
 make generations # List system generations
 make rollback    # Rollback to previous generation
 make info        # Show system information
+make check-scripts    # ShellCheck + host/key/process safety regressions
+make chezmoi-preview  # Preview dotfile changes without writing
 ```
 
 To validate Nix syntax without building: `nix flake check --no-build`
@@ -30,7 +32,13 @@ The Nix formatter is **alejandra** (run automatically during rebuild). The rebui
 
 ### System Builder (`lib/mksystem.nix`)
 
-The core abstraction. Called as `mkSystem "<hostname>" { system, user, userDir?, darwin?, wsl? }` in `flake.nix`. It:
+`lib/hosts.nix` is the canonical typed, data-only host inventory. `flake.nix`
+maps it into NixOS/Darwin outputs, and `lib/fleet.nix` consumes nested fleet
+records. Profile lists are labels and a migration seam; platform flags still
+select modules.
+
+The core builder is called from the inventory mapper as `mkSystem
+"<hostname>" { system, user, userDir?, darwin?, wsl?, profiles? }`. It:
 - Selects `nixosSystem` or `darwinSystem` based on the `darwin` flag
 - Loads `machines/<hostname>.nix` for hardware/system config
 - Loads `users/<userDir>/nixos.nix`, `darwin.nix`, or `wsl.nix` based on platform flags
@@ -101,11 +109,30 @@ Three overlays applied in order:
 
 ### Secrets
 
-Uses sops-nix with age encryption. Keys stored in 1Password. Secrets file: `secrets/secrets.yaml`. Only used on NixOS (for user password and borg backup passphrase).
+Uses sops-nix with age encryption. The admin identity is stored in 1Password;
+main-pc's SSH host identity is also a recipient. Secrets file:
+`secrets/secrets.yaml`. The host recipient helps with temporary admin-key loss
+but is not independent disaster recovery. See
+`docs/config-ownership-and-recovery.md` for the required offline recipient and
+off-site backup work.
 
 ### XDG config management (`users/maxpw/modules/xdg.nix`)
 
 Dotfiles for desktop apps (Hyprland, waybar, rofi, ghostty, kitty, yazi, etc.) live as plain files under `users/maxpw/` and are symlinked into `~/.config/` via `xdg.configFile`. The `symlinkDir` helper auto-links all files in a directory. Hyprland configs use per-host overrides via the `hostname` argument (e.g., lock screen only on non-main-pc hosts).
+
+### Chezmoi bootstrap boundary
+
+The Nix rebuild installs chezmoi and editor executables but does not clone or
+apply dotfile content. On a new host run `make chezmoi-bootstrap`, review
+`make chezmoi-preview`, then explicitly run the interactive
+`make chezmoi-apply`. This split is intentional and fail-safe.
+
+### Agent skills
+
+Third-party global skills in `users/maxpw/modules/agent-tools.nix` use
+`fetchFromGitHub` with immutable revisions and Nix hashes. Home Manager links
+those store paths into each agent surface; activation must not fetch mutable
+repository heads. Update each revision and hash together.
 
 ## Conventions
 
@@ -116,6 +143,10 @@ Dotfiles for desktop apps (Hyprland, waybar, rofi, ghostty, kitty, yazi, etc.) l
 - **New modules**: Import them in the appropriate aggregator (`home-manager.nix`, `nixos.nix`, or `darwin.nix`). The `mksystem.nix` builder handles wiring.
 - **Nixpkgs channels**: Stable is `nixpkgs` (26.05). For bleeding-edge packages, add them to the unstable overlay in `flake.nix`. To add a new unstable package: in the third overlay in `flake.nix`, add `<pkg> = unstable.<pkg>;` alongside the existing entries (jujutsu, zig), then reference `pkgs.<pkg>` in the relevant module. For a one-off, `pkgs.unstable.<pkg>` also works without touching the overlay.
 - **Shell aliases**: All aliases are centralized in `users/maxpw/modules/shells.nix`. The `nr` alias runs `make -C ~/nix-config rebuild`.
+- **Dotfile ownership**: Nix/Home Manager owns systems, packages, shells, and
+  editor executables. Chezmoi owns Neovim/app content. Never declare the same
+  destination in both. A chezmoi `private_` prefix changes permissions only;
+  it does not encrypt content.
 - **Shell**: Nushell is the primary interactive shell. When generating commands, scripts, or one-liners for the user to run, prefer Nushell's structured-data pipelines over POSIX text-munging tools. Substitute `grep` → `where`/`find`/`str contains`, `awk`/`cut` → `get`/`select`/`columns`, `sed` → `str replace`, `wc -l` → `length`, `sort | uniq -c` → `group-by | transpose`, `xargs` → `each`, `jq` → native `from json` + `get`. Reach for the POSIX tool only when the target is a non-Nushell context (a Bash script, CI step, Makefile, README example, or a tool that shells out via `/bin/sh`).
 - **macOS GUI apps**: Managed via Homebrew casks in `darwin.nix`, not Nix packages. Homebrew `onActivation.cleanup = "zap"` removes anything not declared.
 

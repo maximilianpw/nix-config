@@ -36,18 +36,120 @@
     ".claude/commands/prompt-debt-audit.md".source = source "shared/prompts/prompt-debt-audit.md";
   };
 
-  globalSkills = [
-    "mattpocock/skills@tdd"
-    "mattpocock/skills@grill-me"
-    "mattpocock/skills@improve-codebase-architecture"
-    "mattpocock/skills@to-issues"
-    "mattpocock/skills@diagnose"
-    "obra/superpowers@verification-before-completion"
-    "obra/superpowers@receiving-code-review"
-    "vercel-labs/agent-skills@vercel-react-best-practices"
-    "vercel-labs/skills@find-skills"
-    "shadcn/improve"
+  # Shared skills are fixed-output Nix sources, so activation never fetches
+  # mutable repository heads. Update rev and hash together when upgrading.
+  mattSkills = pkgs.fetchFromGitHub {
+    owner = "mattpocock";
+    repo = "skills";
+    rev = "d574778f94cf620fcc8ce741584093bc650a61d3";
+    hash = "sha256-XqF709Y9GMKINzZITlbCTyatG9AxRZh0qn2vcv1Z8yo=";
+  };
+  superpowers = pkgs.fetchFromGitHub {
+    owner = "obra";
+    repo = "superpowers";
+    rev = "d884ae04edebef577e82ff7c4e143debd0bbec99";
+    hash = "sha256-kHdQ9e44doBk2yYW88tMSCqVG8ycYcvJSZlrIziXhpA=";
+  };
+  vercelAgentSkills = pkgs.fetchFromGitHub {
+    owner = "vercel-labs";
+    repo = "agent-skills";
+    rev = "f8a72b9603728bb92a217a879b7e62e43ad76c81";
+    hash = "sha256-LSFC0Zxc4Lgisu5/r6qBF1R0X36hePkVPfbvbx48YdY=";
+  };
+  vercelSkills = pkgs.fetchFromGitHub {
+    owner = "vercel-labs";
+    repo = "skills";
+    rev = "4ce6d48ac44c8b637db87b2102fea3baca719df1";
+    hash = "sha256-dMz4M7WAtjlKVrEePsPbS6v4EV6VpG5wBKUrysAIhYw=";
+  };
+  shadcnImprove = pkgs.fetchFromGitHub {
+    owner = "shadcn";
+    repo = "improve";
+    rev = "03369ee6d7cafbfcecc4346539b05b3dc0a603bb";
+    hash = "sha256-m0a1n8xguDI2nooJ856sWPofh+tZI5VvIrVZrQH6XgY=";
+  };
+
+  # Preserve the familiar local invocation names while following upstream's
+  # renamed implementations.
+  mkRenamedSkill = {
+    source,
+    path,
+    upstreamName,
+    localName,
+  }:
+    pkgs.runCommand "agent-skill-${localName}" {} ''
+      cp -R "${source}/${path}" "$out"
+      chmod -R u+w "$out"
+      substituteInPlace "$out/SKILL.md" \
+        --replace-fail "name: ${upstreamName}" "name: ${localName}"
+    '';
+
+  pinnedSkills = [
+    {
+      name = "tdd";
+      source = "${mattSkills}/skills/engineering/tdd";
+    }
+    {
+      name = "grill-me";
+      source = "${mattSkills}/skills/productivity/grill-me";
+    }
+    {
+      name = "improve-codebase-architecture";
+      source = "${mattSkills}/skills/engineering/improve-codebase-architecture";
+    }
+    {
+      name = "to-issues";
+      source = mkRenamedSkill {
+        source = mattSkills;
+        path = "skills/engineering/to-tickets";
+        upstreamName = "to-tickets";
+        localName = "to-issues";
+      };
+    }
+    {
+      name = "diagnose";
+      source = mkRenamedSkill {
+        source = mattSkills;
+        path = "skills/engineering/diagnosing-bugs";
+        upstreamName = "diagnosing-bugs";
+        localName = "diagnose";
+      };
+    }
+    {
+      name = "verification-before-completion";
+      source = "${superpowers}/skills/verification-before-completion";
+    }
+    {
+      name = "receiving-code-review";
+      source = "${superpowers}/skills/receiving-code-review";
+    }
+    {
+      name = "vercel-react-best-practices";
+      source = "${vercelAgentSkills}/skills/react-best-practices";
+    }
+    {
+      name = "find-skills";
+      source = "${vercelSkills}/skills/find-skills";
+    }
+    {
+      name = "improve";
+      source = "${shadcnImprove}/skills/improve";
+    }
   ];
+
+  pinnedSkillFiles = lib.listToAttrs (lib.concatMap (skill:
+    map (prefix: {
+      name = "${prefix}/${skill.name}";
+      value = {
+        inherit (skill) source;
+        force = true;
+      };
+    }) [
+      ".agents/skills"
+      ".claude/skills"
+      ".pi/agent/skills"
+    ])
+  pinnedSkills);
 in {
   home = {
     packages = [
@@ -104,34 +206,8 @@ in {
           recursive = true;
         };
       }
-      // sharedPromptClaudeLinks;
-
-    activation.installGlobalSkills = lib.hm.dag.entryAfter ["writeBoundary"] ''
-      set -euo pipefail
-
-      export PATH=${lib.makeBinPath [pkgs.git pkgs.openssh]}:$PATH
-      export GIT_TERMINAL_PROMPT=0
-      export GIT_SSH_COMMAND="${pkgs.openssh}/bin/ssh"
-
-      install_skill() {
-        local skill="$1"
-        local skill_name="''${skill##*@}"
-        local shared_skill_path="$HOME/.agents/skills/$skill_name/SKILL.md"
-        local claude_skill_path="$HOME/.claude/skills/$skill_name/SKILL.md"
-        local pi_skill_path="$HOME/.pi/agent/skills/$skill_name/SKILL.md"
-
-        if [ -e "$shared_skill_path" ] && [ -e "$claude_skill_path" ] && [ -e "$pi_skill_path" ]; then
-          return 0
-        fi
-
-        if ! ${pkgs.skills}/bin/skills add "$skill" -g --agent claude-code pi codex amp -y 2>&1; then
-          # Network fetch during activation; never abort the rebuild over it.
-          echo "installGlobalSkills: warning: failed to install $skill (skipping)" >&2
-        fi
-      }
-
-      ${lib.concatMapStringsSep "\n      " (s: ''install_skill "${s}"'') globalSkills}
-    '';
+      // sharedPromptClaudeLinks
+      // pinnedSkillFiles;
   };
 
   programs = {

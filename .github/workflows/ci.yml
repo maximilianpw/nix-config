@@ -6,38 +6,74 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   flake-health:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: DeterminateSystems/determinate-nix-action@v3
-      - uses: DeterminateSystems/flake-checker-action@v12
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: DeterminateSystems/determinate-nix-action@c70cb8ae92d68c66953db28a26a63db1665bc837 # v3
+      - uses: DeterminateSystems/flake-checker-action@3164002371bc90729c68af0e24d5aacf20d7c9f6 # v12
 
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: DeterminateSystems/determinate-nix-action@v3
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: DeterminateSystems/determinate-nix-action@c70cb8ae92d68c66953db28a26a63db1665bc837 # v3
       - run: nix build .#checks.x86_64-linux.pre-commit-check --no-link
 
-  build-linux:
+  shell-safety:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        config: [main-pc, wsl]
     steps:
-      - uses: actions/checkout@v4
-      - uses: DeterminateSystems/determinate-nix-action@v3
-      - uses: cachix/cachix-action@v15
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: DeterminateSystems/determinate-nix-action@c70cb8ae92d68c66953db28a26a63db1665bc837 # v3
+      - run: nix develop --command make check-scripts
+
+  eval-profiles:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: DeterminateSystems/determinate-nix-action@c70cb8ae92d68c66953db28a26a63db1665bc837 # v3
+      - name: Evaluate headless and parked desktop profiles
+        run: |
+          nix eval --raw .#checks.x86_64-linux.eval-main-pc.drvPath
+          nix eval --raw .#checks.x86_64-linux.eval-main-pc-desktop.drvPath
+
+  build-main-pc:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: DeterminateSystems/determinate-nix-action@c70cb8ae92d68c66953db28a26a63db1665bc837 # v3
+      - uses: cachix/cachix-action@ad2ddac53f961de1989924296a1f236fcfbaa4fc # v15
         with:
           name: maximilianpw
           authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
-      - run: nix build .#nixosConfigurations.${{ matrix.config }}.config.system.build.toplevel --no-link
+      - run: nix build .#nixosConfigurations.main-pc.config.system.build.toplevel --no-link
 
-  eval-darwin:
+  build-wsl-image:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: DeterminateSystems/determinate-nix-action@v3
-      - run: nix eval --raw .#darwinConfigurations.macbook-pro-m1.system.drvPath
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: DeterminateSystems/determinate-nix-action@c70cb8ae92d68c66953db28a26a63db1665bc837 # v3
+      - uses: cachix/cachix-action@ad2ddac53f961de1989924296a1f236fcfbaa4fc # v15
+        with:
+          name: maximilianpw
+          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+      - name: Build and execute WSL image builder
+        run: |
+          nix build .#nixosConfigurations.wsl.config.system.build.tarballBuilder --out-link result-wsl-builder
+          sudo ./result-wsl-builder/bin/nixos-wsl-tarball-builder "$RUNNER_TEMP/nixos.wsl"
+          test -s "$RUNNER_TEMP/nixos.wsl"
+
+  build-darwin:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: DeterminateSystems/determinate-nix-action@c70cb8ae92d68c66953db28a26a63db1665bc837 # v3
+      - run: nix build .#darwinConfigurations.macbook-pro-m1.system --no-link

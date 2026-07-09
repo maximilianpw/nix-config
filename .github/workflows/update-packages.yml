@@ -29,11 +29,11 @@ jobs:
       contents: write
       pull-requests: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
-      - uses: DeterminateSystems/determinate-nix-action@v3
+      - uses: DeterminateSystems/determinate-nix-action@c70cb8ae92d68c66953db28a26a63db1665bc837 # v3
 
-      - uses: DeterminateSystems/magic-nix-cache-action@v14
+      - uses: DeterminateSystems/magic-nix-cache-action@908b263ff629f4cc17666315b7fd3ec127c6244d # v14
         with:
           use-flakehub: false
 
@@ -45,7 +45,7 @@ jobs:
           failed=()
           for pkg in $packages; do
             echo "::group::nix-update $pkg"
-            if nix run nixpkgs#nix-update -- --flake --use-update-script "$pkg"; then
+            if nix run .#nix-update -- --flake --use-update-script "$pkg"; then
               echo "ok: $pkg"
             else
               echo "failed: $pkg"
@@ -69,7 +69,7 @@ jobs:
 
       - name: Open pull request
         if: steps.diff.outputs.has_changes == 'true'
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@22a9089034f40e5a961c8808d113e2c98fb63676 # v7
         with:
           branch: automated/update-packages
           base: main
@@ -79,11 +79,8 @@ jobs:
             Automated version bumps from `nix-update`, run by
             `.github/workflows/update-packages.yml`.
 
-            CI builds the two NixOS configs (`main-pc`, `wsl`) on Linux
-            runners, so a green check means the Linux package set still
-            evaluates and builds. The Darwin config is **not** built in CI
-            (no macOS runner), so macOS-only packages are unverified here —
-            smoke-test them locally before merging.
+            CI builds `main-pc`, produces the WSL import image, and builds the
+            Darwin system on a macOS runner.
 
             ${{ steps.bump.outputs.failed_packages && format('> [!WARNING]\n> Packages that failed to update: `{0}`', steps.bump.outputs.failed_packages) || '' }}
           delete-branch: true

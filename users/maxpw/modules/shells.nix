@@ -90,8 +90,6 @@ in {
       enable = true;
       inherit shellAliases;
       initExtra = ''
-        eval "$(mise activate bash)"
-
         if [ -z "$DISABLE_ZOXIDE" ]; then
           eval "$(zoxide init --cmd cd bash)"
         fi
@@ -103,14 +101,10 @@ in {
       shellAliases = builtins.removeAttrs shellAliases ["jtp" "ls" "fnix"];
       configFile.source = ../config.nu;
       extraConfig = ''
-        use ($nu.default-config-dir | path join "mise.nu")
         use ($nu.default-config-dir | path join "ghostty.nu")
       '';
       extraEnv = ''
         $env.SHELL = "${pkgs.bash}/bin/bash"
-
-        let mise_path = $nu.default-config-dir | path join "mise.nu"
-        ^mise activate nu | save $mise_path --force
 
         # Ghostty shell integration - copy to config dir so config.nu can `use` it
         let ghostty_dest = ($nu.default-config-dir | path join "ghostty.nu")
@@ -150,8 +144,6 @@ in {
       };
       completionInit = "autoload -Uz compinit && compinit -C -i";
       initContent = ''
-        eval "$(mise activate zsh)"
-
         if [ -z "$DISABLE_ZOXIDE" ]; then
           eval "$(zoxide init --cmd cd zsh)"
         fi
@@ -187,7 +179,6 @@ in {
       interactiveShellInit = lib.strings.concatStrings (lib.strings.intersperse "\n" [
         (builtins.readFile ../config.fish)
         "set -g SHELL ${pkgs.fish}/bin/fish"
-        "mise activate fish | source"
         fishShellFunctions
       ]);
 

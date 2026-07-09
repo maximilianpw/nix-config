@@ -27,9 +27,11 @@ chmod 600 ~/.config/sops/age/keys.txt
 age-keygen -y ~/.config/sops/age/keys.txt
 ```
 
-### 2. Add your public key to .sops.yaml
+### 2. Verify your public key in .sops.yaml
 
-Edit `../.sops.yaml` and replace `YOUR_AGE_PUBLIC_KEY_HERE` with the public key from step 1.
+Confirm the key printed in step 1 matches the `admin_max` recipient in
+`../.sops.yaml`. If intentionally rotating it, update the public recipient and
+run `sops updatekeys secrets/secrets.yaml` while the old key is still available.
 
 ### 3. Create your secrets file
 
@@ -59,11 +61,8 @@ git commit -m "Add encrypted secrets"
 
 NixOS secrets are decrypted by system sops-nix under `/run/secrets`. Darwin
 user secrets are decrypted by Home Manager sops-nix under the user account.
-A legacy `fleet-main-pc-ssh-key` entry may still exist in `secrets.yaml`; the
-configuration no longer references it, so it can be removed during the next
-normal `sops` edit. `github-ssh-private-key` is the GitHub authentication key
-used by non-desktop NixOS hosts; desktop hosts use the 1Password SSH agent
-instead.
+`github-ssh-private-key` is the GitHub authentication key used by non-desktop
+NixOS hosts; desktop hosts use the 1Password SSH agent instead.
 
 ## Important Security Notes
 
@@ -73,27 +72,33 @@ instead.
 - The age private key is backed up in **1Password** (vault: Personal, item: "sops nixos")
 - Keep the 1Password account secure with a strong master password and 2FA
 
-## TODO: Add a second recipient (avoid 1Password single point of failure)
+## Recipient and disaster-recovery status
 
-Currently `.sops.yaml` has a single age recipient whose private key lives only
-in 1Password. Losing 1Password access would permanently lock the secrets —
-including the borg passphrase that protects the backups. To fix, add the
-NixOS host's own key as a second recipient (run on main-pc):
+The encrypted file currently has two recipients:
+
+- `admin_max`, whose private age key is stored in 1Password and is used for
+  editing and bootstrapping machines.
+- `main_pc`, derived from main-pc's ED25519 SSH host key. sops-nix reads the
+  private half directly from `/etc/ssh/ssh_host_ed25519_key`, so the server can
+  keep decrypting secrets if the copied admin key is unavailable.
+
+The host recipient is an operational fallback, not independent disaster
+recovery: the host key is on the same root disk as the system. Loss of both the
+machine and 1Password would still make the secrets, including the Borg
+passphrase, unrecoverable.
+
+The remaining manual recovery task is to create an offline age key, store its
+private half outside both main-pc and 1Password (for example on encrypted
+removable media held separately), add only its public recipient to `.sops.yaml`,
+and rewrap the data key:
 
 ```bash
-# Derive an age public key from the host's SSH host key
-nix-shell -p ssh-to-age --run 'ssh-to-age < /etc/ssh/ssh_host_ed25519_key.pub'
-
-# Add it under `keys:` in ../.sops.yaml (e.g. &host_main_pc) and include it in
-# the creation_rules key group, then re-encrypt to all recipients:
+# After adding the offline public recipient to .sops.yaml:
 nix-shell -p sops --run 'sops updatekeys secrets/secrets.yaml'
-
-# Point sops-nix at the host key in modules/core/sops.nix:
-#   sops.age.sshKeyPaths = ["/etc/ssh/ssh_host_ed25519_key"];
 ```
 
-Also consider keeping an offline copy of the borg passphrase (it guards the
-backups that would be needed in exactly the scenario where 1Password is gone).
+Keep an independently secured offline copy of the Borg passphrase as part of
+the same recovery kit; the backups are needed in exactly this failure mode.
 
 ## Rotating Secrets
 

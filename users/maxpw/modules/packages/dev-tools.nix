@@ -9,6 +9,7 @@
     # Rust via fenix (stable, project flakes provide full toolchains)
     (pkgs.fenix.stable.withComponents [
       "cargo"
+      "clippy"
       "rustc"
       "rustfmt" # conform formats Rust via the rustfmt binary
     ])
@@ -18,12 +19,22 @@
     pkgs.openjdk
     pkgs.golangci-lint
 
-    # Language servers & formatters
-    # (prettierd is editor-only; it lives in modules/neovim.nix extraPackages)
-    pkgs.eslint
+    # Shared editor tooling. Keep these on the normal PATH so Neovim, Zed,
+    # Jujutsu hooks, and terminal workflows all resolve the same binaries.
     pkgs.biome
-    pkgs.oxlint
+    pkgs.black
     pkgs.checkstyle
+    pkgs.clang-tools
+    pkgs.eslint
+    pkgs.gofumpt
+    pkgs.gotools # goimports and other Go source tools
+    pkgs.oxlint
+    pkgs.prettier
+    pkgs.prettierd
+    pkgs.ruff
+    pkgs.shfmt
+    pkgs.stylua
+    pkgs.taplo
 
     # Build tools & dependencies
     pkgs.gnumake
@@ -40,7 +51,6 @@
     # Dev tools
     pkgs.ast-grep
     pkgs.sops
-    pkgs.mise
     pkgs.coderabbit
   ];
 }

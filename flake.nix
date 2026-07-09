@@ -49,6 +49,45 @@
     nixpkgs,
     ...
   }: let
+    inherit (nixpkgs) lib;
+    hosts = import ./lib/hosts.nix;
+
+    requiredHostFields = [
+      "system"
+      "user"
+      "userDir"
+      "darwin"
+      "wsl"
+      "linuxDesktop"
+      "hardwareModules"
+      "profiles"
+      "role"
+      "os"
+      "gui"
+      "longRunningAgents"
+      "fleet"
+    ];
+
+    validateHost = name: host:
+      lib.assertMsg
+      (lib.all (field: builtins.hasAttr field host) requiredHostFields)
+      "host '${name}' is missing a required field in lib/hosts.nix"
+      && lib.assertMsg
+      (lib.isString host.system && lib.isString host.user && lib.isString host.userDir)
+      "host '${name}' has invalid system/user fields"
+      && lib.assertMsg
+      (lib.isBool host.darwin && lib.isBool host.wsl && lib.isBool host.linuxDesktop)
+      "host '${name}' has invalid platform flags"
+      && lib.assertMsg
+      (!(host.darwin && host.wsl) && !(host.darwin && host.linuxDesktop))
+      "host '${name}' declares incompatible platform flags"
+      && lib.assertMsg
+      (lib.isList host.hardwareModules && lib.all lib.isString host.hardwareModules)
+      "host '${name}' has invalid hardwareModules"
+      && lib.assertMsg
+      (lib.isList host.profiles && lib.all lib.isString host.profiles)
+      "host '${name}' has invalid profiles";
+
     # Overlay to pull select packages from nixpkgs-unstable and add custom packages
     overlays = [
       fenix.overlays.default
@@ -85,6 +124,21 @@
       inherit overlays nixpkgs inputs;
     };
 
+    mkConfiguredSystem = name: host:
+      assert validateHost name host;
+        mkSystem name {
+          inherit (host) darwin linuxDesktop profiles system user userDir wsl;
+          extraModules = map (moduleName: inputs.nixos-hardware.nixosModules.${moduleName}) host.hardwareModules;
+        };
+
+    nixosHosts = lib.filterAttrs (_: host: !host.darwin) hosts;
+    darwinHosts = lib.filterAttrs (_: host: host.darwin) hosts;
+    desktopMainPc = mkConfiguredSystem "main-pc" (hosts.main-pc
+      // {
+        linuxDesktop = true;
+        profiles = hosts.main-pc.profiles ++ ["desktop"];
+      });
+
     mkPreCommitCheck = system:
       git-hooks.lib.${system}.run {
         src = ./.;
@@ -100,29 +154,10 @@
         };
       };
   in {
-    nixosConfigurations.main-pc = mkSystem "main-pc" {
-      system = "x86_64-linux";
-      user = "maxpw";
-      linuxDesktop = false;
-      extraModules = with inputs.nixos-hardware.nixosModules; [
-        common-cpu-amd
-        common-pc-ssd
-      ];
-    };
-
-    nixosConfigurations.wsl = mkSystem "wsl" {
-      system = "x86_64-linux";
-      user = "maxpw";
-      wsl = true;
-    };
-
-    darwinConfigurations.macbook-pro-m1 = mkSystem "macbook-pro-m1" {
-      system = "aarch64-darwin";
-      # macOS login is max-vev but repo directory uses maxpw for shared configs
-      user = "max-vev";
-      userDir = "maxpw";
-      darwin = true;
-    };
+    # Host outputs and fleet metadata derive from one typed, data-only source.
+    lib.hosts = hosts;
+    nixosConfigurations = lib.mapAttrs mkConfiguredSystem nixosHosts;
+    darwinConfigurations = lib.mapAttrs mkConfiguredSystem darwinHosts;
 
     templates = {
       generic = {
@@ -139,10 +174,19 @@
       };
     };
 
+    # Locked reprovisioning tool. The layout itself remains intentionally
+    # separate from live mounts and must only be run after a manual disk review.
+    apps.x86_64-linux.disko = {
+      type = "app";
+      program = "${inputs.disko.packages.x86_64-linux.disko}/bin/disko";
+    };
+
     # Eval-only checks: catch typos, missing modules, type errors without building
     checks = {
       x86_64-linux = {
         eval-main-pc = self.nixosConfigurations.main-pc.config.system.build.toplevel;
+        # Keep the parked Hyprland profile evaluable while main-pc is headless.
+        eval-main-pc-desktop = desktopMainPc.config.system.build.toplevel;
         eval-wsl = self.nixosConfigurations.wsl.config.system.build.toplevel;
         pre-commit-check = mkPreCommitCheck "x86_64-linux";
       };
@@ -165,12 +209,12 @@
       x86_64-linux = let
         pkgs = mkPkgs "x86_64-linux";
       in {
-        inherit (pkgs) helium obsidian skills coderabbit hunkdiff;
+        inherit (pkgs) helium obsidian skills coderabbit hunkdiff nix-update;
       };
       aarch64-darwin = let
         pkgs = mkPkgs "aarch64-darwin";
       in {
-        inherit (pkgs) skills coderabbit hunkdiff;
+        inherit (pkgs) skills coderabbit hunkdiff nix-update;
       };
     };
 
@@ -182,7 +226,7 @@
       pkgs = nixpkgs.legacyPackages.${system};
     in {
       default = pkgs.mkShell {
-        buildInputs = with pkgs; [git nix];
+        buildInputs = with pkgs; [git nix shellcheck];
         shellHook = ''
           ${self.checks.${system}.pre-commit-check.shellHook or ""}
           echo "Welcome to the Nix dev shell for ${system}"

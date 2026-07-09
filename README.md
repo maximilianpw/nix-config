@@ -1,6 +1,7 @@
 # Nix-Config
 
-Unified NixOS + macOS (nix-darwin) flake with Home Manager, a Hyprland desktop module, and a smart rebuild script.
+Unified NixOS + macOS (nix-darwin) flake for a headless homelab, Apple Silicon
+workstation, WSL environment, and a parked/tested Hyprland desktop profile.
 
 ## Repository layout
 
@@ -17,10 +18,11 @@ Unified NixOS + macOS (nix-darwin) flake with Home Manager, a Hyprland desktop m
 │   └── wsl-setup.md
 ├── homelab/                 # self-hosted services; public Cloudflare + private Tailscale Serve
 ├── lib/
+│   ├── hosts.nix            # Canonical typed host/profile/fleet inventory
 │   └── mksystem.nix         # mkSystem builder (NixOS & Darwin + Home Manager)
 ├── machines/
 │   ├── macbook-pro-m1.nix   # macOS (nix-darwin) host
-│   ├── main-pc.nix          # NixOS desktop (Ryzen + Hyprland)
+│   ├── main-pc.nix          # Headless NixOS homelab (Ryzen)
 │   ├── wsl.nix              # NixOS-WSL base
 │   └── hardware/
 │       ├── main-pc-disko.nix # Disko layout for main-pc
@@ -80,14 +82,19 @@ Unified NixOS + macOS (nix-darwin) flake with Home Manager, a Hyprland desktop m
 
 - Inputs: nixpkgs 26.05, nixpkgs-unstable (select pkgs), home-manager 26.05, nix-darwin 26.05, Hyprland, NixOS-WSL, fenix, sops-nix, llm-agents, disko, nix-index-database.
 - Overlays: fenix (Rust toolchain); llm-agents (claude-code, codex, opencode, amp-cli, pi, skills, hunkdiff, agent-browser); unstable passthrough (`pkgs.unstable`, plus jujutsu/zig pinned to unstable) and custom packages (helium, obsidian, coderabbit).
+- `lib/hosts.nix` is the data-only source for system outputs, profile labels,
+  platform metadata, and fleet hosts. Its profile labels are a typed migration
+  seam; platform flags still select modules today rather than a new role-module
+  framework.
 - mkSystem (`lib/mksystem.nix`):
   - Picks nixosSystem or darwinSystem.
   - Adds NixOS-WSL module when `wsl = true`.
   - Integrates Home Manager at `home-manager.users.<user>` using `users/<userDir>/home-manager.nix`.
   - Injects convenience args: `currentSystem*`, `isWSL`, `inputs`.
-- Outputs:
+- Outputs (derived from `lib/hosts.nix`):
   - `nixosConfigurations.main-pc` (x86_64-linux; user: `maxpw`).
   - `darwinConfigurations.macbook-pro-m1` (aarch64-darwin; login `max-vev`, userDir `maxpw`).
+  - Eval check for the parked `main-pc` Hyprland profile.
   - `devShells` for aarch64/x86_64 Linux and aarch64 Darwin.
 
 ## What each file/module does
@@ -100,7 +107,7 @@ Unified NixOS + macOS (nix-darwin) flake with Home Manager, a Hyprland desktop m
   - Optional Linux builder (currently disabled); zsh program enable; basic tools (e.g., cachix).
   - Imports core modules for shared nix settings.
 
-- machines/main-pc.nix (NixOS Desktop)
+- machines/main-pc.nix (headless NixOS homelab)
   - Imports `hardware/main-pc.nix` for hardware configuration.
   - AMD Ryzen setup with zen kernel, power management, and firmware updates.
   - Docker and libvirtd for virtualization.
@@ -146,8 +153,12 @@ Unified NixOS + macOS (nix-darwin) flake with Home Manager, a Hyprland desktop m
   - Installs Nerd Fonts and common font families; enables fontconfig and defaults.
 
 - scripts/nixos-rebuild.sh
-  - Autodetects Darwin vs NixOS and host from user; validates flake, formats with alejandra, shows diffs, builds/applies, commits, runs GC.
-  - Uses `darwin-rebuild` on macOS and `nixos-rebuild` on NixOS.
+  - Uses the actual Linux hostname (WSL is detected explicitly), validates it
+    against the inventory, enforces safe SOPS key metadata, then switches with
+    `nh` and cleans old generations.
+  - Records an identity-checked process tree under the user state directory;
+    `make rebuild-processes` and `make cleanup-rebuild` never regex-match
+    unrelated Nix jobs.
 
 ## Using this flake
 
@@ -165,6 +176,15 @@ cd ~/nix-config
 Or with Make:
 ```bash
 make bootstrap
+```
+
+After the first rebuild, initialize dotfiles without applying them, inspect the
+diff, then opt into an interactive apply:
+
+```bash
+make chezmoi-bootstrap
+make chezmoi-preview
+make chezmoi-apply
 ```
 
 ### For existing systems
@@ -185,6 +205,7 @@ Optional checks
 
 ```bash
 nix flake check --no-build
+make check-scripts   # shell syntax, ShellCheck, safety regression tests
 make update           # update inputs
 nix develop           # enter dev shell
 make help             # show all make targets
@@ -196,6 +217,8 @@ make help             # show all make targets
 - The Hyprland Lua config is installed by Home Manager at the documented default path, `$XDG_CONFIG_HOME/hypr/hyprland.lua` (`~/.config/hypr/hyprland.lua` in practice). The greetd session starts `start-hyprland` without `--config`; live edits can be reloaded with `hyprctl reload`.
 - Because Hyprland is launched with UWSM, Wayland toolkit and cursor environment variables are managed in `$XDG_CONFIG_HOME/uwsm/env` instead of the Lua config.
 - On macOS, Nix is managed by the Determinate installer; nix-darwin’s `nix.enable` is disabled accordingly.
+- Nix/Home Manager owns systems and executables; chezmoi owns Neovim/app
+  content. See [configuration ownership and recovery](docs/config-ownership-and-recovery.md).
 
 ## License
 
