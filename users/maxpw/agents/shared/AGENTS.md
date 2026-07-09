@@ -1,25 +1,45 @@
 # Global Agents Config
 
+## Personal Preferences
+
+- Avoid `any` in TypeScript unless it is necessary or explicitly requested.
+- Do not start dev servers or run build commands unless asked. Prefer fast checks such as `bun run typecheck` and `bun run lint`.
+- Use pnpm if the project already uses it; otherwise use bun. Never use npm or yarn.
+- When choosing a frontend stack, prefer Tailwind, TypeScript, Bun, React, Convex, Clerk, and Vercel.
+
+## Model Preferences
+
+Use these rankings only when choosing models for workflows or subagents. Higher is better; cost reflects my actual cost, not list price.
+
+| model | cost | intelligence | taste |
+| --- | --- | --- | --- |
+| gpt-5.5 | 9 | 8 | 5 |
+| sonnet-5 | 5 | 5 | 7 |
+| opus-4.8 | 4 | 7 | 8 |
+| fable-5 | 2 | 9 | 9 |
+
+- Cost is only a tie-breaker. For work that ships, prefer intelligence > taste > cost.
+- If a cheaper model's output does not meet the bar, rerun or redo the work with a smarter model without asking.
+- Bulk/mechanical work (clear-spec implementation, data analysis, migrations): gpt-5.5.
+- Anything user-facing (UI, copy, API design) needs taste >= 7.
+- Reviews of plans and implementations: fable-5 or opus-4.8, optionally gpt-5.5 as an extra independent perspective.
+- Never use Haiku.
+
 ## Version Control: prefer jj over git
 
 When a repo has a `.jj/` directory (run `jj root` to check), use `jj` instead of `git` for VCS operations. Most of my repos are jj-colocated with git — assume jj unless `jj root` fails.
 
 ## Planning First
 
-Do not jump straight into implementation for substantial or ambiguous work:
+For substantial or ambiguous work, read the relevant code and draft a lightweight plan before implementing. A plan can be only two or three bullets when the path is clear.
 
-1. **Understand the problem** — read the relevant code, ask clarifying questions, and make sure you know what's actually going on before proposing changes.
-2. **Draft a lightweight plan** — outline the approach, files involved, and key decisions when the task is non-trivial. A plan can be only two or three bullets when the path is clear.
-3. **Stress-test only when warranted** — use the grill-me skill or equivalent workflow only for complex, high-risk, product/design-heavy, or explicitly requested planning. Do not invoke it for routine code edits, small refactors, simple bug fixes, or tasks where the path is obvious.
-4. **Then implement** — after the plan is clear enough for the task size.
+Use the grill-me skill or equivalent workflow only for complex, high-risk, product/design-heavy, or explicitly requested planning. Do not invoke it for routine code edits, small refactors, simple bug fixes, or tasks where the path is obvious.
 
-A "trivial" change is a one-liner, a typo fix, a small config/content edit, or something the user explicitly tells you to just do. Trivial changes can be implemented directly. Do not wait for explicit approval after presenting a plan unless the user asked for planning only, the change is risky, or the next step is genuinely ambiguous.
+Trivial changes can be implemented directly: one-liners, typo fixes, small config/content edits, or requests the user explicitly says to just do. Do not wait for explicit approval after presenting a plan unless the user asked for planning only, the change is risky, or the next step is genuinely ambiguous.
 
 ## Verification
 
-Before saying work is complete, run the smallest relevant verification command
-available. Prefer fast local checks first. If verification cannot be run, say
-exactly what was skipped and why.
+Before saying work is complete, run the smallest relevant verification command available. Prefer fast local checks first. If verification cannot be run, say exactly what was skipped and why.
 
 ## Shells
 

@@ -18,8 +18,17 @@
   };
   source = path: homeFiles.mkRepoSource config.home.homeDirectory "users/${currentSystemUserDir}/agents/${path}";
   piConfigSource = path: homeFiles.mkHomeSource config.home.homeDirectory "pi-config/${path}";
+  sharedAgentsText = builtins.readFile ../agents/shared/AGENTS.md;
+  claudeAgentsText =
+    sharedAgentsText
+    + "\n\n---\n\n"
+    + (builtins.readFile ../agents/claude/CLAUDE.md);
+  codexAgentsText =
+    sharedAgentsText
+    + "\n\n---\n\n"
+    + (builtins.readFile ../agents/codex/AGENTS.md);
   piAgentsText =
-    (builtins.readFile ../agents/shared/AGENTS.md)
+    sharedAgentsText
     + "\n\n---\n\n"
     + (builtins.readFile ../agents/pi/AGENTS.md);
   sharedPromptClaudeLinks = {
@@ -52,7 +61,7 @@ in {
 
     file =
       {
-        ".codex/AGENTS.md".source = source "shared/AGENTS.md";
+        ".codex/AGENTS.md".text = codexAgentsText;
         ".codex/prompts" = {
           source = source "shared/prompts";
           recursive = true;
@@ -65,7 +74,7 @@ in {
           source = source "shared/prompts";
           recursive = true;
         };
-        ".claude/CLAUDE.md".source = source "shared/AGENTS.md";
+        ".claude/CLAUDE.md".text = claudeAgentsText;
         ".config/opencode/AGENTS.md".source = source "shared/AGENTS.md";
         # Compose Pi context from shared cross-agent policy plus Pi-only guidance.
         ".pi/agent/AGENTS.md".text = piAgentsText;
