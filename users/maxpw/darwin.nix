@@ -47,7 +47,6 @@ in {
       "wispr-flow"
       "freelens"
       "nextcloud"
-      "steam"
     ];
 
     onActivation = {
