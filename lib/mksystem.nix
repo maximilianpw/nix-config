@@ -12,6 +12,7 @@
   darwin ? false,
   wsl ? false,
   linuxDesktop ? (!darwin && !wsl),
+  profiles ? [],
   extraModules ? [],
 }: let
   inherit (nixpkgs) lib;
@@ -43,6 +44,7 @@
     isDarwin = darwin;
     isWSL = wsl;
     isLinuxDesktop = linuxDesktop;
+    currentSystemProfiles = profiles;
     inherit inputs;
   };
 in

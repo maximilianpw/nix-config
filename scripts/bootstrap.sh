@@ -264,24 +264,17 @@ source "$CONFIG_DIR/scripts/lib/host-detect.sh"
 detect_host
 info "Detected host: $HOSTNAME ($PLATFORM)"
 
-if [[ "$PLATFORM" == "darwin" ]]; then
-    FLAKE_ATTR="darwinConfigurations"
+# The data-only inventory is the single source used to generate flake outputs
+# and fleet metadata. Evaluating one string also validates the flake shape.
+if validate_host_configuration "$CONFIG_DIR"; then
+    success "Found $HOSTNAME in lib/hosts.nix for $PLATFORM"
 else
-    FLAKE_ATTR="nixosConfigurations"
-fi
-
-# Cheap textual check (avoids evaluating the flake, which would download all
-# inputs just to list attribute names). flake.nix declares hosts literally as
-# `nixosConfigurations.<name> = mkSystem ...`.
-if grep -qE "${FLAKE_ATTR}\.\"?${HOSTNAME}\"? *=" "$CONFIG_DIR/flake.nix"; then
-    success "Found ${FLAKE_ATTR}.${HOSTNAME} in flake.nix"
-else
-    error "No ${FLAKE_ATTR}.${HOSTNAME} in flake.nix - the rebuild would fail"
+    error "Host detection did not resolve to a compatible inventory entry"
     echo ""
     echo "This looks like a new machine. To add it (see BOOTSTRAP.md, 'Adding a new host'):"
     echo "  1. Create machines/${HOSTNAME}.nix (and hardware config under machines/hardware/)"
-    echo "  2. Add a mkSystem entry for '${HOSTNAME}' in flake.nix"
-    echo "  3. Map your login to the host in scripts/lib/host-detect.sh"
+    echo "  2. Add '${HOSTNAME}' to lib/hosts.nix"
+    echo "  3. On Darwin, add the login mapping in scripts/lib/host-detect.sh"
     echo "  4. Commit, then re-run this script with --skip-clone"
     if [[ "$DRY_RUN" == "true" ]]; then
         warn "[DRY-RUN] This would abort the bootstrap"
@@ -303,46 +296,35 @@ elif [[ "$PLATFORM" == "darwin" ]]; then
     USER_SOPS_KEY="$HOME/.config/sops/age/keys.txt"
     if [[ "$DRY_RUN" == "true" ]]; then
         info "[DRY-RUN] Would check $USER_SOPS_KEY exists"
-    elif [[ -f "$USER_SOPS_KEY" ]]; then
-        success "Age key found at $USER_SOPS_KEY"
     else
-        error "No age key at $USER_SOPS_KEY"
-        echo ""
-        echo "Darwin Home Manager uses sops secrets for local app secrets and"
-        echo "the dedicated fleet SSH key for Mac -> main-pc. Retrieve the age"
-        echo "key from 1Password (vault: Personal, item: 'sops nixos'):"
-        echo ""
-        echo "  mkdir -p ~/.config/sops/age"
-        echo "  nix-shell -p _1password-cli --run 'eval \$(op signin); op item get \"sops nixos\" --fields password --reveal' >> ~/.config/sops/age/keys.txt"
-        echo "  chmod 600 ~/.config/sops/age/keys.txt"
-        echo ""
-        echo "Then re-run this script with --skip-clone."
-        echo "(Set SKIP_SOPS_CHECK=1 to bypass this check - NOT recommended.)"
-        exit 1
+        # shellcheck source=lib/sops-key.sh
+        source "$CONFIG_DIR/scripts/lib/sops-key.sh"
+        export SOPS_KEY_USE_SUDO=0
+        if validate_sops_key "$USER_SOPS_KEY" "$(id -u)" "$(id -g)"; then
+            success "Age key is a user-owned 0600 regular file"
+        else
+            error "The age key is missing or has unsafe metadata: $USER_SOPS_KEY"
+            echo "Expected the current user to own a non-symlink regular file with mode 0600."
+            exit 1
+        fi
     fi
 elif [[ "$PLATFORM" == "nixos" && "$HOSTNAME" != "wsl" ]]; then
     step "7/8: Checking sops age key (prevents user lockout)..."
     if [[ "$DRY_RUN" == "true" ]]; then
-        info "[DRY-RUN] Would check /var/lib/sops-nix/key.txt exists (needs sudo)"
-    elif sudo test -f /var/lib/sops-nix/key.txt; then
-        success "Age key found at /var/lib/sops-nix/key.txt"
+        info "[DRY-RUN] Would validate /var/lib/sops-nix/key.txt is a root-owned 0600 regular file"
     else
-        error "No age key at /var/lib/sops-nix/key.txt"
-        echo ""
-        echo "The user password is a sops secret; rebuilding without the key would"
-        echo "leave the user with NO password (lockout). Retrieve it from 1Password"
-        echo "(vault: Personal, item: 'sops nixos') - full details in secrets/README.md:"
-        echo ""
-        echo "  mkdir -p ~/.config/sops/age"
-        echo "  nix-shell -p _1password-cli --run 'eval \$(op signin); op item get \"sops nixos\" --fields password --reveal' >> ~/.config/sops/age/keys.txt"
-        echo "  chmod 600 ~/.config/sops/age/keys.txt"
-        echo "  sudo mkdir -p /var/lib/sops-nix"
-        echo "  sudo cp ~/.config/sops/age/keys.txt /var/lib/sops-nix/key.txt"
-        echo "  sudo chmod 600 /var/lib/sops-nix/key.txt && sudo chown root:root /var/lib/sops-nix/key.txt"
-        echo ""
-        echo "Then re-run this script with --skip-clone."
-        echo "(Set SKIP_SOPS_CHECK=1 to bypass this check - NOT recommended.)"
-        exit 1
+        # shellcheck source=lib/sops-key.sh
+        source "$CONFIG_DIR/scripts/lib/sops-key.sh"
+        export SOPS_KEY_USE_SUDO=1
+        if validate_sops_key /var/lib/sops-nix/key.txt 0 0; then
+            success "Age key is a root-owned 0600 regular file"
+        else
+            error "The sops age key is missing or has unsafe metadata"
+            echo "Expected: /var/lib/sops-nix/key.txt, root:root, mode 0600, not a symlink."
+            echo "See secrets/README.md for recovery commands."
+            echo "Set SKIP_SOPS_CHECK=1 only for a deliberate emergency bypass."
+            exit 1
+        fi
     fi
 else
     step "7/8: Skipping sops age key check (not needed on $HOSTNAME)"
@@ -383,7 +365,9 @@ else
     echo "     sudo nixos-rebuild switch --flake $CONFIG_DIR#$HOSTNAME"
 fi
 echo "  3. After the first rebuild, follow the post-install checklist in BOOTSTRAP.md"
-echo "     (1Password + SSH agent, Tailscale, Syncthing, git remote to SSH)"
+echo "     Start with 'make chezmoi-bootstrap' then 'make chezmoi-preview'."
+echo "     Applying dotfiles is deliberately separate: 'make chezmoi-apply'."
+echo "     Then finish 1Password, Tailscale, Syncthing, and the git remote."
 echo ""
 
 if [[ "$DRY_RUN" == "false" ]]; then

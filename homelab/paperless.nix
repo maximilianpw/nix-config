@@ -31,7 +31,9 @@ in {
     };
     exporter = {
       enable = true;
-      onCalendar = "03:30:00";
+      # Borg starts the exporter synchronously before quiescing the remaining
+      # applications, so its supported restore format is part of each archive.
+      onCalendar = null;
     };
   };
 }

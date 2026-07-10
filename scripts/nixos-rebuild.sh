@@ -40,6 +40,25 @@ fi
 source "$SCRIPT_DIR/lib/host-detect.sh"
 detect_host
 
+if [[ ! -d "$CONFIG_DIR" ]]; then
+    error "Config directory not found: $CONFIG_DIR"
+    exit 1
+fi
+if ! validate_host_configuration "$CONFIG_DIR"; then
+    error "Refusing to rebuild an unknown or platform-incompatible host"
+    exit 1
+fi
+FLAKE_REF=$(config_flake_ref "$CONFIG_DIR")
+
+# Track only this rebuild root and its descendants. Make targets inspect or
+# stop this state instead of regex-matching unrelated Nix processes.
+# shellcheck source=lib/rebuild-state.sh
+source "$SCRIPT_DIR/lib/rebuild-state.sh"
+register_rebuild_process
+trap remove_rebuild_state EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+
 if [[ "$PLATFORM" == "darwin" ]]; then
     # Determinate Nix writes `lazy-trees = true` into /etc/nix/nix.conf.
     # nix-output-monitor links against upstream libnix, which does not know
@@ -58,12 +77,15 @@ info "Platform: $PLATFORM"
 
 # Lockout guard: on full NixOS the user password comes from a sops secret
 # (users/maxpw/nixos.nix, neededForUsers), so switching without the age key
-# leaves the user with no password. Checked without sudo to keep daily
-# rebuilds prompt-free: the key's parent dir only exists once the key has
-# been placed (see secrets/README.md), so a missing dir means a missing key.
+# leaves the user with no password. Validate the privileged file itself with
+# sudo, including type, ownership, mode, readability, and symlink refusal.
 if [[ "$PLATFORM" == "nixos" && "$HOSTNAME" != "wsl" && "${SKIP_SOPS_CHECK:-0}" != "1" ]]; then
-    if [[ ! -e /var/lib/sops-nix/key.txt && ! -d /var/lib/sops-nix ]]; then
-        error "No sops age key at /var/lib/sops-nix/key.txt - rebuilding now would"
+    # shellcheck source=lib/sops-key.sh
+    source "$SCRIPT_DIR/lib/sops-key.sh"
+    export SOPS_KEY_USE_SUDO=1
+    if ! validate_sops_key /var/lib/sops-nix/key.txt 0 0; then
+        error "The sops age key is absent or not a root-owned 0600 regular file."
+        error "Rebuilding now would"
         error "leave user '$auto_username' with NO password (lockout)."
         echo ""
         echo "Retrieve the key from 1Password (item: 'sops nixos') and place it there;"
@@ -71,12 +93,6 @@ if [[ "$PLATFORM" == "nixos" && "$HOSTNAME" != "wsl" && "${SKIP_SOPS_CHECK:-0}" 
         echo "Set SKIP_SOPS_CHECK=1 to bypass this check - NOT recommended."
         exit 1
     fi
-fi
-
-# Change to config directory
-if [[ ! -d "$CONFIG_DIR" ]]; then
-    error "Config directory not found: $CONFIG_DIR"
-    exit 1
 fi
 
 pushd "$CONFIG_DIR" >/dev/null
@@ -115,7 +131,7 @@ fi
 # Build + switch via nh (elevates itself, prints an nvd generation diff).
 # Output is teed to the log; nh degrades to sequential lines when piped.
 info "Switching configuration via nh: $HOSTNAME ($PLATFORM)"
-if ! "${NH_SWITCH[@]}" -H "$HOSTNAME" "$CONFIG_DIR" 2>&1 | tee -a "$LOG_FILE"; then
+if ! "${NH_SWITCH[@]}" -H "$HOSTNAME" "$FLAKE_REF" 2>&1 | tee -a "$LOG_FILE"; then
     error "Rebuild failed! Check the log:"
     grep --color=always -E "(error|Error|ERROR|warning|Warning|WARN)" "$LOG_FILE" || true
     exit 1

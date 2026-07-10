@@ -113,6 +113,15 @@ in {
     nix-index.enable = true;
     nix-index-database.comma.enable = true;
 
+    mise = {
+      enable = true;
+      enableBashIntegration = true;
+      enableFishIntegration = true;
+      enableNushellIntegration = true;
+      enableZshIntegration = true;
+      globalConfig.settings.node.compile = false;
+    };
+
     ssh = {
       enable = true;
       # Keep SSH defaults explicit as Home Manager changes its implicit defaults.
@@ -141,4 +150,7 @@ in {
       ];
     };
   };
+
+  # Migrate the former chezmoi-owned file to programs.mise on first activation.
+  xdg.configFile."mise/config.toml".force = true;
 }

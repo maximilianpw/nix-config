@@ -1,6 +1,7 @@
-# Beelink → Headless Homelab: What You Have To Do
+# Beelink Headless Homelab Operations Checklist
 
-The config work is done. These are the remaining manual steps, in order.
+The host is configured as a headless homelab. Use this checklist after hardware
+changes, reinstallations, or recovery work.
 
 ## 1. Before rebuilding
 
@@ -11,11 +12,12 @@ The config work is done. These are the remaining manual steps, in order.
   sudo virsh list --all
   ```
 
-- [ ] **Commit the current config** so the rebuild generation maps to a clean
-      commit you can return to:
+- [ ] **Keep the current config recoverable** so the rebuild generation maps
+      to reviewed history you can return to. This checkout currently uses Git;
+      inspect it before rebuilding.
 
   ```sh
-  git add -A && git commit -m "main-pc: convert to headless homelab"
+  git status --short
   ```
 
 ## 2. BIOS settings (needs a reboot + monitor/keyboard one last time)
@@ -85,12 +87,12 @@ sudo nmcli connection modify <connection-name> 802-3-ethernet.wake-on-lan magic
 
 ## 5. Cleanup
 
-- [ ] **Remove the legacy fleet SSH key from sops** (nothing references it
-      anymore):
-
-  ```sh
-  sops secrets/secrets.yaml   # delete the fleet-main-pc-ssh-key entry
-  ```
+- [ ] Run `sudo borg-job-main list` and stage a small restore with
+      `borg-restore-main`; do not restore over live service paths.
+- [ ] Verify both the Paperless export and PostgreSQL dump exist in the staged
+      archive.
+- [ ] Confirm the independent offline Age recipient and off-site Borg copy
+      described in `docs/config-ownership-and-recovery.md` are current.
 
 - [ ] **Test WoL once** before going fully headless — shut the box down and
       wake it from the Mac:

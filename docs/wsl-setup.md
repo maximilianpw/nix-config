@@ -3,7 +3,7 @@
 ## Prerequisites
 
 - Windows 10 (2004+) or Windows 11
-- The `nixos-wsl.tar.gz` tarball built from main-pc
+- The `nixos.wsl` import image produced by `make wsl`
 
 ## 1. Enable WSL
 
@@ -15,10 +15,10 @@ wsl --install --no-distribution
 
 Reboot if prompted.
 
-## 2. Import the tarball
+## 2. Import the image
 
 ```powershell
-wsl --import NixOS $env:USERPROFILE\NixOS C:\path\to\nixos-wsl.tar.gz
+wsl --import NixOS $env:USERPROFILE\NixOS C:\path\to\nixos.wsl
 wsl -d NixOS
 ```
 
@@ -31,6 +31,9 @@ git clone <your-repo-url> ~/nix-config
 cd ~/nix-config
 sudo nixos-rebuild switch --flake .#wsl
 ```
+
+`make wsl` writes the image to `.artifacts/nixos.wsl` and verifies it is
+non-empty after running the NixOS-WSL builder.
 
 Log out and back in for shell/user changes to take effect:
 
@@ -60,10 +63,10 @@ make rebuild
 ## Troubleshooting
 
 **"NixOS" not appearing in `wsl -l -v`:**
-Re-run the import command. Make sure the tarball path is correct.
+Re-run the import command. Make sure the image path is correct.
 
 **Permission errors on rebuild:**
 The first rebuild must use `sudo nixos-rebuild switch --flake .#wsl` directly. `make rebuild` works for subsequent rebuilds.
 
 **Slow first rebuild:**
-Normal. Nix needs to fetch/build derivations not included in the tarball. Subsequent rebuilds are incremental.
+Normal. Nix needs to fetch/build derivations not included in the image. Subsequent rebuilds are incremental.

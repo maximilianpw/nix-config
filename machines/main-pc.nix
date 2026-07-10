@@ -48,9 +48,9 @@
 
   # Hardware watchdog (SP5100 TCO): auto-reboot if the kernel hard-hangs,
   # instead of staying down until someone walks over to the box.
-  systemd.watchdog = {
-    runtimeTime = "30s";
-    rebootTime = "10m";
+  systemd.settings.Manager = {
+    RuntimeWatchdogSec = "30s";
+    RebootWatchdogSec = "10m";
   };
 
   hardware.bluetooth.enable = lib.mkDefault false;

@@ -4,6 +4,7 @@ nixos-switch.log
 # Nix build artifacts
 result
 result-*
+/.artifacts/
 
 # Backup files
 *-backup.nix

@@ -10,6 +10,7 @@
     lazygit.enable = true;
     git = {
       enable = true;
+      lfs.enable = true;
       signing = {
         key = "992CF94F12CF7405147D81FD4AB37B87F45FAC60";
         signByDefault = true;
@@ -33,7 +34,6 @@
           if isDarwin
           then "osxkeychain"
           else "cache --timeout=3600";
-        lfs.enable = true;
         branch.autosetuprebase = "always";
         color.ui = true;
         github.user = "maximilianpw";

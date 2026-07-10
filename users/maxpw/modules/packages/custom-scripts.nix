@@ -5,6 +5,12 @@
       text = ''
         set -euo pipefail
 
+        if [[ $# -eq 0 ]]; then
+          echo "usage: npmrc-token <command> [args...]" >&2
+          echo "runs a command with NODE_AUTH_TOKEN loaded from a local dotenv file" >&2
+          exit 2
+        fi
+
         token=""
         token_source=""
         fallback_dir="$HOME/local/vev platform services/vev-docker-compose/submodules/vev-server"
@@ -29,14 +35,11 @@
           exit 1
         fi
 
-        if [[ ! -f .npmrc ]]; then
-          echo "error: .npmrc not found in $(pwd)" >&2
-          exit 1
-        fi
-
-        sed -i.bak "s|\''${NODE_AUTH_TOKEN}|$token|g" .npmrc
-        rm -f .npmrc.bak
-        echo "replaced \''${NODE_AUTH_TOKEN} in ./.npmrc using $token_source"
+        # Export inside this process and exec directly: the token is never
+        # written to .npmrc and never becomes a command-line argument.
+        export NODE_AUTH_TOKEN="$token"
+        echo "running $1 with NODE_AUTH_TOKEN from $token_source" >&2
+        exec "$@"
       '';
     })
   ];

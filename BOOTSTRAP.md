@@ -30,12 +30,17 @@ Boot the ISO, then partition and install. Two options:
 
 - **Manual/graphical install**: use the installer as usual. Keep the
   generated `hardware-configuration.nix` — you'll need it in step 3.
-- **Disko**: adapt `machines/hardware/main-pc-disko.nix` for the new
-  machine's disks and run it from the ISO:
+- **Disko**: from a reviewed checkout, adapt
+  `machines/hardware/main-pc-disko.nix` for the new machine's stable disk
+  by-id. Evaluate the locked app first; run destructive mode only after
+  checking the plan and `lsblk` on that exact machine:
 
   ```bash
-  sudo nix --experimental-features "nix-command flakes" run \
-    github:nix-community/disko -- --mode disko ./your-disko.nix
+  sudo nix --experimental-features "nix-command flakes" run .#disko -- \
+    --dry-run ./machines/hardware/main-pc-disko.nix
+  # DESTRUCTIVE: erases the disk declared in the reviewed layout
+  sudo nix --experimental-features "nix-command flakes" run .#disko -- \
+    --mode disko ./machines/hardware/main-pc-disko.nix
   sudo nixos-install
   ```
 
@@ -57,8 +62,9 @@ The flake only knows `main-pc`, `wsl`, and `macbook-pro-m1`. A new machine
 needs (see [Adding a new host](#adding-a-new-host)):
 
 1. `machines/<hostname>.nix` + hardware config under `machines/hardware/`
-2. A `mkSystem` entry in `flake.nix`
-3. A login→host mapping line in `scripts/lib/host-detect.sh`
+2. A typed entry in `lib/hosts.nix`
+3. A Darwin login mapping in `scripts/lib/host-detect.sh` (Linux uses its
+   actual hostname; WSL is detected explicitly)
 
 Commit and push these from an existing machine if possible, so the new
 machine can just pull a working config.
@@ -104,6 +110,8 @@ successful rebuild:
 - [ ] `sudo tailscale up` — join the tailnet (fleet/remote-dev relies on it)
 - [ ] Accept Syncthing device pairings from an existing machine (personal data)
 - [ ] Restore anything needed from Borg backups
+- [ ] `make chezmoi-bootstrap`, inspect `make chezmoi-preview`, then run the
+      interactive `make chezmoi-apply`
 - [ ] Verify secrets decrypted: `ls -la /run/secrets/`
 
 ## Scenario 2: New (or wiped) Mac
@@ -145,8 +153,10 @@ successful rebuild:
    `/etc/nix/nix.custom.conf`, managed by the darwin config — not
    `nix.settings`.
 
-5. **Post-install**: create and upload a GitHub SSH key if needed, switch the
-   repo remote to SSH, start Tailscale, and pair Syncthing.
+5. **Post-install**: run `make chezmoi-bootstrap` and
+   `make chezmoi-preview`; use `make chezmoi-apply` only after reviewing the
+   diff. Then create/upload a GitHub SSH key if needed, switch the repo remote
+   to SSH, start Tailscale, and pair Syncthing.
 
 ## Scenario 3: Existing host
 
@@ -169,28 +179,36 @@ checks and will tell you if either key is missing.
    `nixos-generate-config --show-hardware-config` and store it under
    `machines/hardware/<hostname>.nix` (see `machines/main-pc.nix` for how
    main-pc imports its hardware files).
-2. **Flake entry** in `flake.nix`:
+2. **Inventory entry** in `lib/hosts.nix` (flake outputs are derived from it):
 
    ```nix
-   nixosConfigurations.<hostname> = mkSystem "<hostname>" {
+   <hostname> = {
      system = "x86_64-linux";
      user = "maxpw";
-     # darwin = true;  # for Macs (use darwinConfigurations.<name>)
-     # wsl = true;     # for WSL
+     userDir = "maxpw";
+     darwin = false;
+     wsl = false;
+     linuxDesktop = false;
+     hardwareModules = [];
+     profiles = ["base" "dev"];
+     role = "nixos-server";
+     os = "nixos";
+     gui = false;
+     longRunningAgents = false;
+     fleet = null;
    };
    ```
 
-3. **Host detection**: add the login→host mapping in
-   `scripts/lib/host-detect.sh` (shared by `bootstrap.sh` and
-   `nixos-rebuild.sh` — one edit covers both).
-4. **Secrets** (NixOS only): no per-host key setup needed — all hosts share
-   the age key from 1Password. If you want per-host keys instead, add the
-   host as a recipient in `.sops.yaml` and run
-   `sops updatekeys secrets/secrets.yaml`.
+3. **Host detection**: Linux must report the same hostname as the inventory
+   key. Only Darwin needs a login mapping in `scripts/lib/host-detect.sh`.
+4. **Secrets** (NixOS only): place the admin Age identity from 1Password. To
+   add the new machine's SSH host identity as an additional recipient, derive
+   and verify its public Age recipient, add only that recipient to
+   `.sops.yaml`, then run `sops updatekeys secrets/secrets.yaml`.
 5. Commit, push, and run the bootstrap on the new machine.
 
 For WSL specifically, see `docs/wsl-setup.md` (`make wsl` builds the import
-tarball).
+image at `.artifacts/nixos.wsl`).
 
 ## Day-to-day commands
 
@@ -204,6 +222,8 @@ make update-all   # Update all flake inputs
 make generations  # List system generations
 make rollback     # Roll back to previous generation
 make lint         # statix, deadnix, format check
+make check-scripts # ShellCheck and safety regression tests
+make chezmoi-preview # Preview dotfile changes without applying
 make info         # Show system information
 ```
 
@@ -249,6 +269,10 @@ nix flake check --no-build
 
 See the troubleshooting section in `secrets/README.md` — usually the age key
 is missing from `/var/lib/sops-nix/key.txt` or doesn't match `.sops.yaml`.
+
+For the Nix/chezmoi ownership boundary and the remaining off-site/offline
+recovery prerequisites, see
+[docs/config-ownership-and-recovery.md](docs/config-ownership-and-recovery.md).
 
 ## Support
 

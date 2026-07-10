@@ -1,4 +1,4 @@
-.PHONY: help bootstrap rebuild rebuild-processes cleanup-rebuild check-nvim lint update update-all update-packages build generations rollback wsl info
+.PHONY: help bootstrap chezmoi-bootstrap chezmoi-check chezmoi-preview chezmoi-apply rebuild rebuild-processes cleanup-rebuild check-nvim check-scripts lint update update-all update-packages build generations rollback wsl info
 
 # Default target
 .DEFAULT_GOAL := help
@@ -19,47 +19,27 @@ bootstrap: ## Bootstrap a new system (initial setup)
 	@echo "Starting bootstrap process..."
 	@$(SCRIPT_DIR)/bootstrap.sh
 
+chezmoi-bootstrap: ## Clone dotfiles source without applying it
+	@$(SCRIPT_DIR)/chezmoi.sh bootstrap
+
+chezmoi-check: ## Validate chezmoi source with a no-write dry run
+	@$(SCRIPT_DIR)/chezmoi.sh check
+
+chezmoi-preview: ## Show changes chezmoi would apply
+	@$(SCRIPT_DIR)/chezmoi.sh preview
+
+chezmoi-apply: ## Review and interactively apply chezmoi dotfiles
+	@$(SCRIPT_DIR)/chezmoi.sh apply
+
 rebuild: ## Rebuild system configuration (NixOS/Darwin)
 	@echo "Starting system rebuild..."
 	@$(SCRIPT_DIR)/nixos-rebuild.sh
 
-rebuild-processes: ## Show Nix processes related to the last rebuild log
-	@echo "Nix processes related to this config or the last rebuild log:"
-	@{ \
-		pattern='nix-config|darwin-rebuild|nixos-rebuild|nh (os|darwin|clean)'; \
-		if [ -f nixos-switch.log ]; then \
-			drv_pattern=$$(sed -n 's|.*/\([^/]*\.drv\).*|\1|p' nixos-switch.log | sort -u | paste -sd '|' -); \
-			if [ -n "$$drv_pattern" ]; then \
-				pattern="$$pattern|nix-build-($$drv_pattern)-"; \
-			fi; \
-		fi; \
-		ps -axo pid,ppid,pgid,stat,etime,command | grep -E "$$pattern" | grep -v grep || true; \
-	}
+rebuild-processes: ## Show the identity-checked active rebuild process tree
+	@$(SCRIPT_DIR)/lib/rebuild-state.sh list
 
-cleanup-rebuild: ## Stop Nix build processes related to the last interrupted rebuild
-	@echo "Stopping Nix processes related to this config or the last rebuild log..."
-	@{ \
-		pattern='nix-config|darwin-rebuild|nixos-rebuild|nh (os|darwin|clean)'; \
-		if [ -f nixos-switch.log ]; then \
-			drv_pattern=$$(sed -n 's|.*/\([^/]*\.drv\).*|\1|p' nixos-switch.log | sort -u | paste -sd '|' -); \
-			if [ -n "$$drv_pattern" ]; then \
-				pattern="$$pattern|nix-build-($$drv_pattern)-"; \
-			fi; \
-		fi; \
-		pids=$$(ps -axo pid,command | grep -E "$$pattern" | grep -v grep | awk '{print $$1}'); \
-		if [ -z "$$pids" ]; then \
-			echo "No matching rebuild processes found."; \
-			exit 0; \
-		fi; \
-		echo "Sending TERM to: $$pids"; \
-		sudo kill -TERM $$pids 2>/dev/null || true; \
-		sleep 3; \
-		remaining=$$(ps -axo pid,command | grep -E "$$pattern" | grep -v grep | awk '{print $$1}'); \
-		if [ -n "$$remaining" ]; then \
-			echo "Still running; sending KILL to: $$remaining"; \
-			sudo kill -KILL $$remaining 2>/dev/null || true; \
-		fi; \
-	}
+cleanup-rebuild: ## Stop only the tracked active rebuild process tree
+	@$(SCRIPT_DIR)/lib/rebuild-state.sh cleanup
 
 update: ## Update flake inputs (skips Hyprland & NixOS-only inputs)
 	@echo "Updating shared flake inputs (skipping hyprland, sops-nix, nixos-wsl, disko)..."
@@ -79,12 +59,17 @@ update-packages: ## Bump repo-local custom packages (helium, obsidian, coderabbi
 	@echo "(skills/hunkdiff come from the llm-agents input: use 'make update')"
 	@for pkg in helium obsidian coderabbit; do \
 		echo ">> nix-update $$pkg"; \
-		nix run nixpkgs#nix-update -- --flake "$$pkg" || echo "(skipped: $$pkg)"; \
+		nix run .#nix-update -- --flake "$$pkg" || echo "(skipped: $$pkg)"; \
 	done
 
 
 check-nvim: ## Verify every tool the Neovim config uses is on PATH
 	@$(SCRIPT_DIR)/check-nvim-tooling.sh
+
+check-scripts: ## Run shell syntax, ShellCheck, and safety regression tests
+	@bash -n $(SCRIPT_DIR)/*.sh $(SCRIPT_DIR)/lib/*.sh $(SCRIPT_DIR)/tests/*.sh
+	@shellcheck --severity=warning $(SCRIPT_DIR)/*.sh $(SCRIPT_DIR)/lib/*.sh $(SCRIPT_DIR)/tests/*.sh
+	@for test in $(SCRIPT_DIR)/tests/*-test.sh; do bash "$$test"; done
 
 lint: ## Run Nix linters (statix, deadnix) and format check
 	nix build .#checks.$$(nix eval --impure --raw --expr builtins.currentSystem).pre-commit-check --no-link
@@ -111,10 +96,14 @@ rollback: ## Rollback to previous generation
 	fi
 	@echo "Rollback complete!"
 
-wsl: ## Build WSL tarball for import
-	@echo "Building WSL tarball..."
-	@nix build ".#nixosConfigurations.wsl.config.system.build.tarballBuilder" --no-link
-	@echo "WSL tarball build complete!"
+wsl: ## Build the WSL import image
+	@echo "Building WSL import image..."
+	@mkdir -p .artifacts
+	@nix build ".#nixosConfigurations.wsl.config.system.build.tarballBuilder" --out-link .artifacts/wsl-builder
+	@sudo rm -f .artifacts/nixos.wsl
+	@sudo .artifacts/wsl-builder/bin/nixos-wsl-tarball-builder "$(CONFIG_DIR)/.artifacts/nixos.wsl"
+	@test -s .artifacts/nixos.wsl
+	@echo "WSL image: $(CONFIG_DIR)/.artifacts/nixos.wsl"
 
 info: ## Show system information
 	@echo "System Information:"

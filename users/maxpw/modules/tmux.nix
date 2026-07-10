@@ -1,4 +1,5 @@
 {
+  config,
   hostname,
   lib,
   pkgs,
@@ -8,6 +9,7 @@
   # Panes are human-facing: use the interactive shell (nushell), not the
   # compatibility login shell (fish) that sshd and tools exec into.
   interactiveShellPath = lib.getExe settings.interactiveShell;
+  resurrectDir = "${config.xdg.stateHome}/tmux/resurrect";
   hostAccent =
     {
       main-pc = "#9ece6a";
@@ -64,8 +66,9 @@ in {
       {
         plugin = resurrect;
         extraConfig = ''
+          set -g @resurrect-dir '${resurrectDir}'
           set -g @resurrect-strategy-nvim 'session'
-          set -g @resurrect-capture-pane-contents 'on'
+          set -g @resurrect-capture-pane-contents 'off'
         '';
       }
       {
@@ -157,5 +160,28 @@ in {
     '';
   };
 
-  home.packages = [pkgs.tmuxinator];
+  home = {
+    packages = [pkgs.tmuxinator];
+
+    # Resurrect state contains commands and working directories. Keep it
+    # private, and remove pane-content archives/extractions from the old config.
+    activation.secureTmuxResurrect = lib.hm.dag.entryAfter ["writeBoundary"] ''
+      secure_resurrect_dir() {
+        local dir="$1"
+        if [ -d "$dir" ]; then
+          $DRY_RUN_CMD find "$dir" -type d -exec chmod 700 {} +
+          $DRY_RUN_CMD find "$dir" -type f -exec chmod 600 {} +
+          $DRY_RUN_CMD rm -rf \
+            "$dir/pane_contents.tar.gz" \
+            "$dir/save/pane_contents" \
+            "$dir/restore/pane_contents" \
+            "$dir/restore/._pane_contents"
+        fi
+      }
+
+      $DRY_RUN_CMD mkdir -p "${resurrectDir}"
+      secure_resurrect_dir "${resurrectDir}"
+      secure_resurrect_dir "$HOME/.tmux/resurrect"
+    '';
+  };
 }
