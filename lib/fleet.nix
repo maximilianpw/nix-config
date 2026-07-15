@@ -505,12 +505,12 @@
                 exit 2
               fi
               host="$2"
-              local_port="$3"
+              requested_local_port="$3"
               remote_port="$4"
               remote_host="''${5:-localhost}"
               validate_port "$remote_port"
-              ensure_no_forward_on_port "$local_port"
-              ssh_forward "127.0.0.1:$local_port:$remote_host:$remote_port" "$host"
+              ensure_no_forward_on_port "$requested_local_port"
+              ssh_forward "127.0.0.1:$requested_local_port:$remote_host:$remote_port" "$host"
               ;;
           esac
           ;;
