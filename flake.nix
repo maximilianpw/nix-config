@@ -189,6 +189,10 @@
         eval-main-pc-desktop = desktopMainPc.config.system.build.toplevel;
         eval-wsl = self.nixosConfigurations.wsl.config.system.build.toplevel;
         pre-commit-check = mkPreCommitCheck "x86_64-linux";
+        tailscale-serve-regression = import ./tests/tailscale-serve-regression.nix {
+          inherit lib;
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        };
       };
       aarch64-darwin = {
         eval-macbook = self.darwinConfigurations.macbook-pro-m1.system;
