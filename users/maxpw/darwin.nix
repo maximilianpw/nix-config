@@ -1,9 +1,45 @@
-{pkgs, ...}: let
+{
+  currentSystemUser,
+  pkgs,
+  ...
+}: let
   settings = import ./settings.nix {inherit pkgs;};
+  inherit (settings) cliProxy;
 in {
   imports = [
     ../../modules/core/shells.nix
   ];
+
+  # Homebrew owns the CLIProxyAPI binary; nix-darwin owns its configuration
+  # and LaunchAgent so the service never falls back to Homebrew's sample keys.
+  environment.etc."cliproxyapi.conf".text = ''
+    host: "${cliProxy.host}"
+    port: ${toString cliProxy.port}
+    auth-dir: "/Users/${currentSystemUser}/.cli-proxy-api"
+
+    api-keys:
+      - "${cliProxy.apiKey}"
+
+    remote-management:
+      allow-remote: false
+      secret-key: ""
+
+    usage-statistics-enabled: false
+  '';
+
+  launchd.user.agents.cliproxyapi.serviceConfig = {
+    ProgramArguments = [
+      "/opt/homebrew/opt/cliproxyapi/bin/cliproxyapi"
+      "-config"
+      "/etc/cliproxyapi.conf"
+    ];
+    RunAtLoad = true;
+    KeepAlive = true;
+    ProcessType = "Background";
+    ThrottleInterval = 5;
+    StandardOutPath = "/Users/${currentSystemUser}/Library/Logs/cliproxyapi.log";
+    StandardErrorPath = "/Users/${currentSystemUser}/Library/Logs/cliproxyapi.log";
+  };
 
   # Fonts come from Home Manager (users/maxpw/modules/fonts.nix), which
   # installs them to ~/Library/Fonts/HomeManager on macOS.
@@ -11,12 +47,13 @@ in {
     enable = true;
 
     brews = [
-      "zsh"
-      "jsonlint"
-      "gnupg"
-      "pinentry-mac"
-      "ollama"
+      "cliproxyapi"
       "ffmpeg"
+      "gnupg"
+      "jsonlint"
+      "ollama"
+      "pinentry-mac"
+      "zsh"
     ];
 
     casks = [

@@ -93,14 +93,32 @@
       fenix.overlays.default
       (_: prev: let
         llm = inputs.llm-agents.packages.${prev.stdenv.hostPlatform.system};
+        resignBunBinary = package: binaryPath:
+          if prev.stdenv.hostPlatform.isDarwin
+          then
+            package.overrideAttrs (old: {
+              # Nix rewrites Bun's Mach-O dependencies during fixup, which
+              # invalidates the embedded signature and makes macOS kill it.
+              nativeBuildInputs =
+                (old.nativeBuildInputs or [])
+                ++ [prev.darwin.sigtool];
+              postFixup =
+                (old.postFixup or "")
+                + ''
+                  codesign --force --sign - "$out/${binaryPath}"
+                '';
+            })
+          else package;
+        hunk = resignBunBinary llm.hunk "bin/hunk";
+        pi = resignBunBinary llm.pi "libexec/pi/pi";
       in {
         inherit (llm) claude-code;
         inherit (llm) codex;
         inherit (llm) opencode;
         amp-cli = llm.amp;
-        inherit (llm) pi;
+        inherit pi;
         inherit (llm) skills;
-        hunkdiff = llm.hunk;
+        hunkdiff = hunk;
         inherit (llm) agent-browser;
       })
       (final: prev: let

@@ -45,8 +45,8 @@
   #   sudo mv /etc/nix/nix.custom.conf /etc/nix/nix.custom.conf.before-nix-darwin
   environment.etc."nix/nix.custom.conf".text = ''
     trusted-users = root max-vev
-    extra-substituters = https://devenv.cachix.org https://maximilianpw.cachix.org https://numtide.cachix.org
-    extra-trusted-public-keys = devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw= maximilianpw.cachix.org-1:RgUBJCLYTHNEeg67Pht2cf6VGG2NQnyxmn6jTCU+TsA= numtide.cachix.org-1:2ps1kLBUWjxIneOy1Ik6cQjb41X0iXVXeHigGmycPPE=
+    extra-substituters = https://devenv.cachix.org https://maximilianpw.cachix.org https://cache.numtide.com
+    extra-trusted-public-keys = devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw= maximilianpw.cachix.org-1:RgUBJCLYTHNEeg67Pht2cf6VGG2NQnyxmn6jTCU+TsA= niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g=
   '';
 
   # zsh is the default shell on Mac and we want to make sure that we're

@@ -1,4 +1,12 @@
 {pkgs}: {
+  cliProxy = rec {
+    host = "127.0.0.1";
+    port = 8317;
+    baseUrl = "http://${host}:${toString port}";
+    apiKey = "cliproxyapi-local-claudex";
+    model = "gpt-5.6-sol";
+  };
+
   # SSH remote commands are parsed by the account login shell before any
   # interactive shell config can run. Fish can launch the `/bin/sh -c ...`
   # wrapper used by tools like Codex remote SSH; Nushell rejects that syntax.
