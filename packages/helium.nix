@@ -74,7 +74,7 @@
   flags ? [],
 }: let
   pname = "helium";
-  version = "0.14.3.1";
+  version = "0.14.7.1";
 
   suffix =
     {
@@ -88,7 +88,7 @@
 
   src = fetchurl {
     url = "https://github.com/imputnet/helium-linux/releases/download/${version}/helium-bin_${version}-1_${suffix}.deb";
-    sha256 = "sha256-Vd83SY+tSPEJ1UiclNrzbe0GRd+yfOoIZ3ts9oDTtNc=";
+    sha256 = "sha256-FSSqAA2q64ubpGTBcd6l2VGK4DmSY0FVRNRhu4ZOfIc=";
   };
 
   inherit (lib) makeLibraryPath makeSearchPathOutput;
