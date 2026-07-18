@@ -31,6 +31,7 @@
       ];
       tmuxSession = "main";
       tmuxCommand = "/run/current-system/sw/bin/tmux";
+      t3codePort = 51000;
       # Cross-checked against the host's public key, ssh-keyscan over
       # Tailscale, and the existing known_hosts entry on 2026-07-09.
       hostKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIO9tCTFAEd4W4eywYE3GJuYSh4mVbtImMtXIjQ3IIuhO";

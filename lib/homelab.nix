@@ -6,6 +6,7 @@
     paperless.port = 28981;
     miniflux.port = 19002;
     syncthing.port = 19384;
+    t3code.port = 51000;
     kuma.port = 19001;
   };
 
@@ -84,6 +85,13 @@ in {
         href = private.syncthing.url;
         description = "File sync";
         siteMonitor = private.syncthing.monitorUrl;
+      };
+    }
+    {
+      "T3 Code" = {
+        href = private.t3code.url;
+        description = "Remote AI coding";
+        siteMonitor = private.t3code.monitorUrl;
       };
     }
     {

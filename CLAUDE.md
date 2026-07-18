@@ -77,6 +77,7 @@ users/maxpw/
     git.nix         # Git + Jujutsu (jj) config
     vcs/jujutsu.nix # Jujutsu config
     agent-tools.nix # LLM agent CLIs + aliases
+    t3code-server.nix # Headless T3 Code server integration
     fonts.nix       # Nerd fonts + system fonts with fontconfig
     xdg.nix         # XDG config file management (Hyprland, Ghostty, waybar, kitty, yazi, etc.)
     neovim.nix      # Neovim config + LSP packages (called as function from home-manager.nix)

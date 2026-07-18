@@ -18,6 +18,7 @@ development machines.
   `fleet forward delete <pid>` commands for stopping them.
 - `fleet forward stop <pid...>` or `fleet forward delete <pid...>` stops active
   SSH local forward processes.
+- `fleet t3 <host> [local-port]` forwards a host's declared T3 Code server port.
 
 Home Manager also writes direct SSH aliases:
 
@@ -37,8 +38,26 @@ Capability fields:
 - `gui`: whether the host has a GUI/screenshot surface.
 - `longRunningAgents`: whether unattended or multi-hour agent work should run
   there.
+- `t3codePort`: optional T3 Code port exposed through `fleet t3`.
 
 Every new host must set `os`, `gui`, and `longRunningAgents` explicitly.
+
+## T3 Code
+
+`main-pc` runs the pinned stable T3 Code server on loopback port `51000`.
+The homelab Tailscale Serve configuration exposes it only within the tailnet at
+`https://t3code.tail7161c3.ts.net`.
+
+After a service start, retrieve the one-time pairing token from the user journal:
+
+```sh
+fleet run main-pc journalctl --user -u t3code -b -o cat --no-pager
+```
+
+In T3 Code's remote-environment flow, enter the HTTPS URL and the
+printed `Token` separately. Once paired, the desktop app uses its saved session;
+the token is only needed again for another client. `fleet t3 main-pc` remains
+available as an SSH-tunnel fallback.
 
 ## Adding Machines
 

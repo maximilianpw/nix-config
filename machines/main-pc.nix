@@ -63,7 +63,7 @@
   };
   users.users.maxpw.extraGroups = lib.mkAfter ["docker"];
 
-  # Start user services at boot instead of first SSH login.
+  # Start user services (including t3code) at boot instead of first SSH login.
   users.users.maxpw.linger = true;
 
   services = {

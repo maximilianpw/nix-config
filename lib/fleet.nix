@@ -5,7 +5,7 @@
   lib,
   pkgs,
 }: let
-  inherit (lib) concatStringsSep escapeShellArg filterAttrs mapAttrs mapAttrs' mapAttrsToList nameValuePair;
+  inherit (lib) concatStringsSep escapeShellArg filterAttrs mapAttrs mapAttrs' mapAttrsToList nameValuePair optionalString;
 
   inventory = import ./hosts.nix;
   fleetHosts = filterAttrs (_: host: host.fleet != null) inventory;
@@ -39,6 +39,7 @@
         - Target: ${host.hostName}
         - GUI/screenshot surface: ${boolText host.gui}
         - Long-running agents: ${boolText host.longRunningAgents}
+        ${optionalString (host ? t3codePort) "- T3 Code port: ${toString host.t3codePort}\n"}
       ''
     )
     hosts;
@@ -53,6 +54,7 @@
 
     - Use `fleet run <host> <command...>` for non-interactive remote checks.
     - Use `fleet ssh <host>` for persistent tmux sessions.
+    - Use `fleet t3 <host>` for T3 Code port forwards when the host declares a T3 Code port.
     - Use `fleet forward list [local-port]` to inspect active SSH local forwards, then `fleet forward delete PID` to stop one.
     - Run long-running or unattended agent work only on hosts with `longRunningAgents = true`.
   '';
@@ -143,6 +145,14 @@
       ''
     )
     hosts;
+
+  t3codePortRows =
+    mapAttrsToList (
+      name: host: ''
+        ${caseHostPatterns name host}) printf '%s\n' ${escapeShellArg (toString host.t3codePort)} ;;
+      ''
+    )
+    (filterAttrs (_: host: host ? t3codePort) hosts);
 
   hostRows =
     mapAttrsToList (
@@ -415,6 +425,16 @@
         esac
       }
 
+      t3code_port() {
+        case "$1" in
+          ${concatStringsSep "\n        " t3codePortRows}
+          *)
+            echo "fleet: host does not declare a T3 Code port: $1" >&2
+            exit 2
+            ;;
+        esac
+      }
+
       usage() {
         printf '%s\n' \
           'usage:' \
@@ -426,13 +446,15 @@
           '  fleet forward list [LOCAL_PORT]' \
           '  fleet forward stop PID...' \
           '  fleet forward delete PID...' \
+          '  fleet t3 HOST [LOCAL_PORT]' \
           "" \
           'examples:' \
           '  fleet ssh main-pc' \
           '  fleet run main-pc btop' \
           '  fleet forward main-pc 3000 3000' \
           '  fleet forward list 3000' \
-          '  fleet forward delete 12345'
+          '  fleet forward delete 12345' \
+          '  fleet t3 main-pc 51001'
       }
 
       cmd="''${1:-list}"
@@ -513,6 +535,17 @@
               ssh_forward "127.0.0.1:$requested_local_port:$remote_host:$remote_port" "$host"
               ;;
           esac
+          ;;
+        t3)
+          if [ "$#" -lt 2 ]; then
+            usage >&2
+            exit 2
+          fi
+          host="$2"
+          remote_port="$(t3code_port "$host")"
+          local_port="''${3:-$remote_port}"
+          ensure_no_forward_on_port "$local_port"
+          ssh_forward "127.0.0.1:$local_port:127.0.0.1:$remote_port" "$host"
           ;;
         -h|--help|help)
           usage

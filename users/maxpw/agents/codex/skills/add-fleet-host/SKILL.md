@@ -35,14 +35,14 @@ Collect or infer these values before editing:
 - `longRunningAgents`: set `true` only for machines intended for unattended or multi-hour agent work.
 - `tmuxCommand`: absolute path is best for NixOS or nix-darwin hosts.
 - Optional `hostKey`: pin only after cross-checking the host's real ED25519 public key.
-- Optional `port`.
+- Optional `port` and `t3codePort`.
 - Sidebar accent color and SF Symbol icon.
 
 If key facts are missing, ask for them. Do not guess `longRunningAgents = true`.
 
 ## Implementation
 
-1. Add the host to `hosts` in `lib/fleet.nix`.
+1. Add the host to `lib/hosts.nix` and set its nested `fleet` record.
 2. Use `hostName`, `user`, `aliases`, `tmuxSession = "main"`, `tmuxCommand`, `role`, `os`, `gui`, and `longRunningAgents` explicitly.
 3. Leave `hostKey` absent only when the key has not been verified; the generated SSH config will use `StrictHostKeyChecking = "accept-new"` until it is pinned.
 4. For NixOS machines managed by this repo, confirm the machine imports `modules/fleet/nixos.nix`.

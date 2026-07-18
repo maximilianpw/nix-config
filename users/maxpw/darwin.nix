@@ -80,6 +80,7 @@ in {
       "obsidian"
       "tidal"
       "cmux"
+      "t3-code"
       "linear"
       "wispr-flow"
       "freelens"
