@@ -20,6 +20,7 @@
     "ask": [],
     "defaultMode": "auto"
   },
+  "model": "kimi-k3",
   "enabledPlugins": {
     "rust-analyzer-lsp@claude-plugins-official": true,
     "typescript-lsp@claude-plugins-official": true,
@@ -43,6 +44,5 @@
   "theme": "dark",
   "preferredNotifChannel": "ghostty",
   "agentPushNotifEnabled": true,
-  "skipAutoPermissionPrompt": true,
-  "model": "claude-fable-5[1m]"
+  "skipAutoPermissionPrompt": true
 }
