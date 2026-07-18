@@ -95,8 +95,11 @@ sudo nmcli connection modify <connection-name> 802-3-ethernet.wake-on-lan magic
 
 - [ ] Run `sudo borg-job-main list` and stage a small restore with
       `borg-restore-main`; do not restore over live service paths.
-- [ ] Verify both the Paperless export and PostgreSQL dump exist in the staged
-      archive.
+- [ ] Verify the Home Assistant config archive, Paperless export, and PostgreSQL
+      dump exist in the staged archive.
+- [ ] Run the version-matched Paperless import and application checks in
+      `docs/paperless.md`; the existence of an export alone is not a restore
+      test.
 - [ ] Confirm the independent offline Age recipient and off-site Borg copy
       described in `docs/config-ownership-and-recovery.md` are current.
 

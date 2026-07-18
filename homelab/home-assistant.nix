@@ -1,7 +1,22 @@
-{lib, ...}: let
+{
+  lib,
+  pkgs,
+  ...
+}: let
   homelab = import ../lib/homelab.nix {inherit lib;};
   inherit (homelab.publicEndpoints) homeassistant;
 in {
+  services.postgresql = {
+    enable = true;
+    ensureDatabases = ["hass"];
+    ensureUsers = [
+      {
+        name = "hass";
+        ensureDBOwnership = true;
+      }
+    ];
+  };
+
   services.home-assistant = {
     enable = true;
     # Reached only via the Cloudflare tunnel; no LAN port.
@@ -11,9 +26,17 @@ in {
       with ps; [
         gtts
         isal
-        roonapi
+        psycopg2
         pyatv
+        roonapi
       ];
+
+    customLovelaceModules = with pkgs.home-assistant-custom-lovelace-modules; [
+      apexcharts-card
+      auto-entities
+      mini-media-player
+      mushroom
+    ];
 
     extraComponents = [
       "default_config"
@@ -44,14 +67,25 @@ in {
         unit_system = "metric";
         time_zone = "Europe/Paris";
         external_url = homeassistant.url;
-        internal_url = homeassistant.monitorUrl;
       };
       http = {
         server_host = "127.0.0.1";
         server_port = homeassistant.port;
         use_x_forwarded_for = true;
         trusted_proxies = ["127.0.0.1" "::1"];
+        ip_ban_enabled = true;
+        login_attempts_threshold = 5;
+      };
+      recorder = {
+        # Peer authentication maps the systemd service user to the local
+        # PostgreSQL role, so the connection needs no stored password.
+        db_url = "postgresql://@/hass";
       };
     };
+  };
+
+  systemd.services.home-assistant = {
+    after = ["postgresql.service"];
+    requires = ["postgresql.service"];
   };
 }

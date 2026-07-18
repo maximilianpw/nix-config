@@ -30,9 +30,11 @@ personal data. Recovery currently has these layers:
 - `main-pc`'s SSH host identity is a second SOPS recipient, allowing that live
   host to decrypt if the admin identity is temporarily unavailable.
 - Borg writes application-consistent exports/dumps and file data to the local
-  removable repository. Use `sudo borg-job-main list`, then
+  removable repository. This includes a quiesced Home Assistant config archive
+  and its PostgreSQL recorder dump. Use `sudo borg-job-main list`, then
   `sudo borg-restore-main <archive> <existing-empty-directory> [path ...]` to
-  stage a restore without overwriting live data.
+  stage a restore without overwriting live data. Follow the version-matched
+  [Paperless restore drill](paperless.md) for its supported exporter format.
 - Syncthing replicates selected user data but is not a versioned backup or a
   substitute for Borg.
 
@@ -50,6 +52,8 @@ they cannot safely be invented in this public configuration:
    check running only on `main-pc` cannot report total host or network loss.
 
 Test recovery quarterly: list archives, run Borg consistency checks, extract a
-small sample to an empty staging directory, validate a PostgreSQL dump and the
-Paperless export, and confirm the offline Age identity can decrypt a copy of
-the SOPS file.
+small sample to an empty staging directory, validate the Home Assistant config
+archive, a PostgreSQL dump, and the Paperless export, and confirm the offline
+Age identity can decrypt a copy of the SOPS file. Complete the Paperless import
+and application checks described in its restore drill rather than treating the
+presence of an export as sufficient.

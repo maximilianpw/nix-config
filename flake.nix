@@ -131,8 +131,15 @@
         inherit unstable;
         # direnv 2.37.1 fish tests get killed during build on macOS (sandbox/OOM)
         direnv = prev.direnv.overrideAttrs (_: {doCheck = false;});
-        inherit (unstable) jujutsu;
-        inherit (unstable) zig;
+        # Home Assistant integrations move on a monthly cadence, so keep Core
+        # and its declarative extensions on the same current package set.
+        inherit
+          (unstable)
+          home-assistant
+          home-assistant-custom-lovelace-modules
+          jujutsu
+          zig
+          ;
         helium = final.callPackage ./packages/helium.nix {};
         obsidian = final.callPackage ./packages/obsidian.nix {};
         coderabbit = final.callPackage ./packages/coderabbit.nix {};
@@ -209,6 +216,16 @@
         eval-wsl = self.nixosConfigurations.wsl.config.system.build.toplevel;
         pre-commit-check = mkPreCommitCheck "x86_64-linux";
         tailscale-serve-regression = import ./tests/tailscale-serve-regression.nix {
+          inherit lib;
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        };
+        paperless-backup-regression = import ./tests/paperless-backup-regression.nix {
+          config = self.nixosConfigurations.main-pc.config;
+          inherit lib;
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        };
+        paperless-config-regression = import ./tests/paperless-config-regression.nix {
+          config = self.nixosConfigurations.main-pc.config;
           inherit lib;
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
         };

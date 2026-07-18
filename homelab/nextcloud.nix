@@ -21,6 +21,11 @@ in {
     https = true;
 
     autoUpdateApps.enable = true;
+    # Keep existing app-store apps available alongside the immutable packaged
+    # Paperless integration.
+    appstoreEnable = true;
+    extraApps.integration_paperless =
+      pkgs.nextcloud33Packages.apps.integration_paperless;
     configureRedis = true;
     caching.redis = true;
     maxUploadSize = "16G";

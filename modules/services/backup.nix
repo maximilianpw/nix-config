@@ -8,8 +8,10 @@
   cfg = config.custom.backup;
   homeDir = "/home/${currentSystemUser}";
   borg = lib.getExe config.services.borgbackup.package;
-  occ = lib.getExe config.services.nextcloud.occ;
+  tar = lib.getExe pkgs.gnutar;
+  homeAssistantBackupDir = "/var/backup/home-assistant";
   databaseApplicationUnits = [
+    "home-assistant.service"
     "miniflux.service"
     "paperless-consumer.service"
     "paperless-scheduler.service"
@@ -75,7 +77,6 @@ in {
       default = [
         "${homeDir}/nix-config"
         "${homeDir}/Documents"
-        "${homeDir}/Projects"
         "${homeDir}/Sync"
         "${homeDir}/.config"
         "${homeDir}/.local/share"
@@ -83,6 +84,7 @@ in {
         "${homeDir}/.gnupg"
         "/srv/nextcloud"
         "/srv/paperless/export"
+        homeAssistantBackupDir
         "/var/backup/postgresql"
         "/var/lib"
       ];
@@ -103,6 +105,9 @@ in {
         "/var/lib/libvirt/images"
         "/var/lib/private/ollama"
         "/var/lib/ollama"
+        # Home Assistant is archived while quiesced before Borg starts. Avoid
+        # also capturing its live config tree after the service restarts.
+        "/var/lib/hass"
         # PostgreSQL is recovered from the consistent logical dump produced
         # immediately before Borg starts, never from live database files.
         "/var/lib/postgresql"
@@ -184,36 +189,40 @@ in {
       preHook = ''
         echo "Starting backup at $(date)"
 
-        # Paperless' exporter provides the supported application-level restore
-        # format. Its unit temporarily stops the workers while exporting and
-        # starts them again when it exits.
-        systemctl start paperless-exporter.service
-
-        maintenance_was_enabled="$(${occ} config:system:get maintenance 2>/dev/null || true)"
-        maintenance_changed=0
-        case "$maintenance_was_enabled" in
-          1|true) ;;
-          *)
-            ${occ} maintenance:mode --on
-            maintenance_changed=1
-            ;;
-        esac
-
         stopped_database_units=()
         for unit in ${lib.escapeShellArgs databaseApplicationUnits}; do
           if systemctl is-active --quiet "$unit"; then
-            systemctl stop "$unit"
             stopped_database_units+=("$unit")
           fi
         done
+        if [ "''${#stopped_database_units[@]}" -gt 0 ]; then
+          systemctl stop "''${stopped_database_units[@]}"
+        fi
 
         stopped_file_units=()
         for unit in ${lib.escapeShellArgs fileApplicationUnits}; do
           if systemctl is-active --quiet "$unit"; then
-            systemctl stop "$unit"
             stopped_file_units+=("$unit")
           fi
         done
+        if [ "''${#stopped_file_units[@]}" -gt 0 ]; then
+          systemctl stop "''${stopped_file_units[@]}"
+        fi
+
+        # Paperless' exporter is the supported application-level restore
+        # format. The local override makes this a synchronous oneshot and
+        # leaves application recovery under this hook's control.
+        systemctl start paperless-exporter.service
+
+        # Home Assistant keeps UI-managed configuration and credentials below
+        # /var/lib/hass. Snapshot that tree while the service is stopped; its
+        # recorder history is captured separately by the PostgreSQL dump.
+        install -d -m 0700 ${lib.escapeShellArg homeAssistantBackupDir}
+        home_assistant_archive=${lib.escapeShellArg "${homeAssistantBackupDir}/config.tar"}
+        rm -f "$home_assistant_archive.tmp"
+        ${tar} --create --sparse --file "$home_assistant_archive.tmp" --directory /var/lib hass
+        chmod 0600 "$home_assistant_archive.tmp"
+        mv -f "$home_assistant_archive.tmp" "$home_assistant_archive"
 
         # Logical dumps are portable across PostgreSQL storage and package
         # changes. The service is ordered after the application quiesce above.
@@ -245,12 +254,6 @@ in {
             fi
           fi
         done
-        if [ "''${maintenance_changed:-0}" = "1" ]; then
-          if ! ${occ} maintenance:mode --off; then
-            echo "Failed to disable Nextcloud maintenance mode after backup" >&2
-            cleanup_failed=1
-          fi
-        fi
 
         if [ "$backup_exit_status" -eq 0 ] && [ "$cleanup_failed" -eq 0 ]; then
           echo "Backup finished successfully at $(date)"
