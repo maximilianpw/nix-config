@@ -161,6 +161,7 @@ in {
       pkgs.claude-code
       pkgs.codex
       pkgs.opencode
+      pkgs.grok
       pkgs.amp-cli
       pkgs.pi
       pkgs.skills

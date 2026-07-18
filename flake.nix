@@ -115,6 +115,7 @@
         inherit (llm) claude-code;
         inherit (llm) codex;
         inherit (llm) opencode;
+        inherit (llm) grok;
         amp-cli = llm.amp;
         inherit pi;
         inherit (llm) skills;

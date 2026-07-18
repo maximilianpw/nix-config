@@ -15,6 +15,7 @@
       pkgs.claude-code
       pkgs.codex
       pkgs.opencode
+      pkgs.grok
       pkgs.git
       pkgs.openssh
 
