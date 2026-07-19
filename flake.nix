@@ -143,6 +143,7 @@
         helium = final.callPackage ./packages/helium.nix {};
         obsidian = final.callPackage ./packages/obsidian.nix {};
         coderabbit = final.callPackage ./packages/coderabbit.nix {};
+        cliproxyapi = final.callPackage ./packages/cliproxyapi.nix {};
       })
     ];
 
@@ -249,7 +250,7 @@
       x86_64-linux = let
         pkgs = mkPkgs "x86_64-linux";
       in {
-        inherit (pkgs) helium obsidian skills coderabbit hunkdiff nix-update;
+        inherit (pkgs) helium obsidian skills coderabbit cliproxyapi hunkdiff nix-update;
       };
       aarch64-darwin = let
         pkgs = mkPkgs "aarch64-darwin";

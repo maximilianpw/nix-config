@@ -11,7 +11,7 @@ in {
 
   services.nextcloud = {
     enable = true;
-    package = pkgs.nextcloud33;
+    package = pkgs.nextcloud34;
     hostName = "nextcloud.maximilian.pw";
 
     # Whole instance (config, data, store-apps) lives on the storage SSD.
@@ -25,7 +25,7 @@ in {
     # Paperless integration.
     appstoreEnable = true;
     extraApps.integration_paperless =
-      pkgs.nextcloud33Packages.apps.integration_paperless;
+      pkgs.nextcloud34Packages.apps.integration_paperless;
     configureRedis = true;
     caching.redis = true;
     maxUploadSize = "16G";
@@ -38,6 +38,8 @@ in {
     };
 
     settings = {
+      # The Paperless integration calls its tailnet-only endpoint server-side.
+      allow_local_remote_servers = true;
       trusted_proxies = ["127.0.0.1" "::1"];
       trusted_domains = ["nextcloud.maximilian.pw"];
       overwriteprotocol = "https";

@@ -93,26 +93,61 @@ in {
     '';
   };
 
+  # Match the macOS LaunchAgent: keep the local API proxy available at boot
+  # while storing provider OAuth credentials in the user's home directory.
+  systemd.services.cliproxyapi = {
+    description = "CLIProxyAPI local AI provider proxy";
+    wantedBy = ["multi-user.target"];
+    wants = ["network-online.target"];
+    after = ["network-online.target"];
+    serviceConfig = {
+      User = currentSystemUser;
+      ExecStart = "${lib.getExe pkgs.cliproxyapi} -config /etc/cliproxyapi.conf";
+      Restart = "always";
+      RestartSec = 5;
+      WorkingDirectory = "/home/${currentSystemUser}";
+    };
+  };
+
   # 3) Ensure /etc/resolv.conf points at resolved's stub
   networking.resolvconf.enable = lib.mkForce false;
 
   environment = {
-    systemPackages = lib.optionals isLinuxDesktop [
-      pkgs.helium
-    ];
+    systemPackages =
+      [pkgs.cliproxyapi]
+      ++ lib.optionals isLinuxDesktop [
+        pkgs.helium
+      ];
 
-    # Allow Helium (Chromium fork) to talk to the 1Password desktop app via
-    # native messaging. 1Password verifies browsers against a built-in list
-    # plus this file; it must be owned by root with mode 0755 or it's ignored.
-    etc = lib.mkIf isLinuxDesktop {
-      "1password/custom_allowed_browsers" = {
-        text = ''
-          helium
-          .helium-wrapped
+    etc =
+      {
+        "cliproxyapi.conf".text = ''
+          host: "${settings.cliProxy.host}"
+          port: ${toString settings.cliProxy.port}
+          auth-dir: "/home/${currentSystemUser}/.cli-proxy-api"
+
+          api-keys:
+            - "${settings.cliProxy.apiKey}"
+
+          remote-management:
+            allow-remote: false
+            secret-key: ""
+
+          usage-statistics-enabled: false
         '';
-        mode = "0755";
+      }
+      // lib.optionalAttrs isLinuxDesktop {
+        # Allow Helium (Chromium fork) to talk to the 1Password desktop app via
+        # native messaging. 1Password verifies browsers against a built-in list
+        # plus this file; it must be owned by root with mode 0755 or it's ignored.
+        "1password/custom_allowed_browsers" = {
+          text = ''
+            helium
+            .helium-wrapped
+          '';
+          mode = "0755";
+        };
       };
-    };
 
     sessionVariables = lib.mkIf isLinuxDesktop {
       NIXOS_OZONE_WL = "1";

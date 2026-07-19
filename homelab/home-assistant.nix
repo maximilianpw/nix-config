@@ -38,30 +38,39 @@ in {
       mushroom
     ];
 
+    # Make these integrations available to UI/YAML configuration. Listing an
+    # integration here packages it, but does not activate it by itself.
     extraComponents = [
+      # Provides Home Assistant's standard bundle of built-in integrations.
       "default_config"
-      "met" # weather
+      # Provides weather forecasts from the Norwegian Meteorological Institute.
+      "met"
+      # Browses and plays stations from the Radio Browser internet directory.
       "radio_browser"
-      "hue"
+      # Connects Companion apps and provides their sensors and push notifications.
       "mobile_app"
-      "roon"
+      # Exposes host CPU, memory, disk, network, and process sensors.
       "systemmonitor"
-      "apple_tv"
-      "homekit"
-      "homekit_controller"
-      "icloud"
+      # Reads WAN status and traffic statistics from UPnP/IGD routers.
       "upnp"
+      # Measures internet latency and bandwidth through Speedtest.net.
       "speedtestdotnet"
-      "ping"
+      # Wakes network devices by sending Wake-on-LAN magic packets.
       "wake_on_lan"
+      # Discovers local services advertised through mDNS/DNS-SD.
       "zeroconf"
+      # Discovers UPnP devices and services through SSDP multicast.
       "ssdp"
+      # Integrates an SFR Box router and its network information.
       "sfr_box"
+      # Creates entities and actions backed by HTTP REST endpoints.
       "rest"
+      # Creates entities that read data or control devices through local commands.
       "command_line"
     ];
 
     config = {
+      mobile_app = {};
       homeassistant = {
         name = "Home";
         unit_system = "metric";
