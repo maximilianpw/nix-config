@@ -51,7 +51,6 @@ in {
       "ffmpeg"
       "gnupg"
       "jsonlint"
-      "ollama"
       "pinentry-mac"
       "zsh"
     ];

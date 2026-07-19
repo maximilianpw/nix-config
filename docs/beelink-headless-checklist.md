@@ -67,8 +67,7 @@ systemctl status nextcloud-setup home-assistant miniflux uptime-kuma
 # Docker back with the old containers/volumes intact
 docker ps -a && docker volume ls
 
-# Ollama and the T3 Code user service running
-systemctl status ollama
+# T3 Code user service running
 systemctl --user status t3code
 ```
 

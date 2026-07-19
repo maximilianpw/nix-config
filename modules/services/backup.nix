@@ -103,8 +103,6 @@ in {
         "/var/lib/docker"
         "/var/lib/containers"
         "/var/lib/libvirt/images"
-        "/var/lib/private/ollama"
-        "/var/lib/ollama"
         # Home Assistant is archived while quiesced before Borg starts. Avoid
         # also capturing its live config tree after the service restarts.
         "/var/lib/hass"

@@ -59,7 +59,6 @@ in {
     };
 
     resolved.enable = true;
-    ollama.enable = true;
     dbus.enable = true;
   };
 
