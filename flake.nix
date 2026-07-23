@@ -230,6 +230,11 @@
           inherit lib;
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
         };
+        buzz-config-regression = import ./tests/buzz-config-regression.nix {
+          config = self.nixosConfigurations.main-pc.config;
+          inherit lib;
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        };
       };
       aarch64-darwin = {
         eval-macbook = self.darwinConfigurations.macbook-pro-m1.system;

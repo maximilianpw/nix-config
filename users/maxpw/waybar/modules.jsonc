@@ -259,20 +259,18 @@
   },
 
   // Network
-  "network": {
-    "interval": 10,
-    "format": "󰤨",
-    "format-wifi": "{icon}",
-    "format-icons": ["󰤟", "󰤢", "󰤥", "󰤨"],
-    "format-ethernet": "󰈀",
-    "format-disconnected": "󰤯",
-    "format-disabled": "󰤮",
+  "custom/network": {
+    "exec": "$HOME/.config/waybar/scripts/network status",
+    "return-type": "json",
+    "interval": 5,
+    "signal": 9,
+    "format": "{text}",
+    "escape": true,
     "min-length": 2,
     "max-length": 2,
-    "tooltip-format-wifi": "{essid} ({signalStrength}%)\n{ipaddr}",
-    "tooltip-format-ethernet": "{ifname}\n{ipaddr}",
-    "tooltip-format-disconnected": "Disconnected",
-    "on-click": "nm-connection-editor"
+    "on-click": "$HOME/.config/waybar/scripts/network menu",
+    "on-click-right": "$HOME/.config/waybar/scripts/network editor",
+    "on-click-middle": "$HOME/.config/waybar/scripts/network refresh"
   },
 
   // Tailscale

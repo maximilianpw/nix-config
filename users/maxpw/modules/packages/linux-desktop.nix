@@ -22,6 +22,7 @@
       pkgs.slurp
       pkgs.hyprpaper
       pkgs.hypridle
+      pkgs.libnotify
       pkgs.swaynotificationcenter
       pkgs.gammastep
       pkgs.wlogout

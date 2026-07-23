@@ -2,6 +2,7 @@
   loopbackUrl = port: "http://127.0.0.1:${toString port}";
 
   privateServices = {
+    buzz.port = 19003;
     homelab.port = 19082;
     paperless.port = 28981;
     miniflux.port = 19002;
@@ -64,6 +65,13 @@ in {
         href = public.homeassistant.url;
         description = "Smart home";
         siteMonitor = public.homeassistant.monitorUrl;
+      };
+    }
+    {
+      Buzz = {
+        href = private.buzz.url;
+        description = "Human and agent workspace";
+        siteMonitor = private.buzz.monitorUrl;
       };
     }
     {

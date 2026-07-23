@@ -222,7 +222,7 @@ window#waybar.empty #window {
   color: @date;
 }
 
-#network,
+#custom-network,
 #custom-tailscale,
 #custom-notification {
   padding: 0 6px;
@@ -257,7 +257,7 @@ window#waybar.empty #window {
 }
 
 #pulseaudio,
-#network,
+#custom-network,
 #custom-tailscale,
 #custom-notification,
 #clock,
@@ -266,7 +266,7 @@ window#waybar.empty #window {
 }
 
 #pulseaudio:hover,
-#network:hover,
+#custom-network:hover,
 #custom-tailscale:hover,
 #custom-notification:hover,
 #clock:hover,
@@ -315,7 +315,14 @@ window#waybar.empty #window {
 
 #memory.critical,
 #cpu.critical,
-#network.disconnected,
-#network.disabled {
+#custom-network.disconnected,
+#custom-network.disabled,
+#custom-network.no-internet,
+#custom-network.unavailable {
   color: @critical;
+}
+
+#custom-network.wifi,
+#custom-network.ethernet {
+  color: @accent;
 }
