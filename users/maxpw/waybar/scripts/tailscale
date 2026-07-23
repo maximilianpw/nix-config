@@ -1,0 +1,468 @@
+#!/usr/bin/env sh
+set -eu
+
+# Waybar port of Omarchy's native Tailscale bar widget:
+# https://github.com/basecamp/omarchy/tree/1b6ab15331bfc88eb66746021d9e32c976ed438a/shell/plugins/panels/tailscale
+
+icon="⠿"
+waybar_signal=8
+
+notify() {
+  if command -v notify-send >/dev/null 2>&1; then
+    notify-send "$1" "$2"
+  fi
+}
+
+refresh_waybar() {
+  pkill "-RTMIN+$waybar_signal" -x waybar 2>/dev/null || true
+}
+
+status_json() {
+  tailscale status --json 2>/dev/null || true
+}
+
+backend_state() {
+  status_json | jq -r '.BackendState // "Unavailable"' 2>/dev/null || printf 'Unavailable\n'
+}
+
+print_unavailable() {
+  message="$1"
+
+  if command -v jq >/dev/null 2>&1; then
+    jq -cn \
+      --arg text "$icon" \
+      --arg tooltip "$message" \
+      '{text: $text, tooltip: $tooltip, class: "unavailable", alt: "unavailable"}'
+  else
+    printf '{"text":"%s","tooltip":"Tailscale unavailable","class":"unavailable","alt":"unavailable"}\n' "$icon"
+  fi
+}
+
+print_status() {
+  if ! command -v tailscale >/dev/null 2>&1; then
+    print_unavailable "Tailscale is not installed"
+    return
+  fi
+
+  if ! command -v jq >/dev/null 2>&1; then
+    print_unavailable "jq is required for the Tailscale module"
+    return
+  fi
+
+  data="$(status_json)"
+  if ! printf '%s' "$data" | jq -e 'type == "object"' >/dev/null 2>&1; then
+    print_unavailable "Tailscale service is unavailable"
+    return
+  fi
+
+  printf '%s' "$data" | jq -c --arg icon "$icon" '
+    def clean_dns:
+      rtrimstr(".");
+
+    def display_name:
+      (.HostName // "") as $host
+      | if $host != "" and ($host | ascii_downcase) != "localhost" then
+          $host
+        else
+          (.DNSName // "" | clean_dns | split(".")[0]) as $dns
+          | if $dns != "" then $dns
+            elif $host != "" then $host
+            else "Unknown"
+            end
+        end;
+
+    def tailscale_ipv4:
+      map(select(startswith("100."))) | first // "";
+
+    def os_icon:
+      ascii_downcase as $os
+      | if $os == "linux" then "󰌽"
+        elif $os == "macos" or $os == "ios" then "󰀵"
+        elif $os == "windows" then "󰍲"
+        elif $os == "android" then "󰀲"
+        else "󰟀"
+        end;
+
+    (.BackendState // "Unknown") as $state
+    | (.Self // {}) as $self
+    | [
+        (.Peer // {} | to_entries[] | .value)
+        | select(.Online == true)
+        | select(
+            ((.DNSName // "" | clean_dns | endswith(".mullvad.ts.net")) | not)
+          )
+        | {
+            name: display_name,
+            ip: ((.TailscaleIPs // []) | tailscale_ipv4),
+            os: ((.OS // "") | os_icon)
+          }
+      ]
+    | sort_by(.name) as $peers
+    | ($self | display_name) as $self_name
+    | (($self.TailscaleIPs // .TailscaleIPs // []) | tailscale_ipv4) as $self_ip
+    | if $state == "Running" then
+        {
+          text: $icon,
+          class: "connected",
+          alt: "connected",
+          tooltip: (
+            "Tailscale: Connected"
+            + (if $self_name != "" then
+                "\n" + $self_name
+                + (if $self_ip != "" then " · " + $self_ip else "" end)
+              else "" end)
+            + (if ($peers | length) > 0 then
+                "\n\nOnline machines (" + (($peers | length) | tostring) + "):\n"
+                + ($peers | map(
+                    .os + " " + .name
+                    + (if .ip != "" then " · " + .ip else "" end)
+                  ) | join("\n"))
+              else
+                "\n\nNo other machines online"
+              end)
+          )
+        }
+      elif $state == "NeedsLogin" then
+        {
+          text: $icon,
+          class: "needs-login",
+          alt: "needs-login",
+          tooltip: "Tailscale: Login required\nRight-click to authenticate"
+        }
+      elif $state == "Stopped" then
+        {
+          text: $icon,
+          class: "disconnected",
+          alt: "disconnected",
+          tooltip: "Tailscale: Disconnected\nRight-click to connect"
+        }
+      else
+        {
+          text: $icon,
+          class: "unavailable",
+          alt: "unavailable",
+          tooltip: ("Tailscale: " + $state)
+        }
+      end
+  '
+}
+
+run_action() {
+  if output="$("$@" 2>&1)"; then
+    return 0
+  fi
+
+  if [ -z "$output" ]; then
+    output="Command failed"
+  fi
+  notify "Tailscale" "$output"
+  return 1
+}
+
+open_auth_url() {
+  url="$1"
+
+  if [ -z "$url" ]; then
+    return 1
+  fi
+
+  if command -v xdg-open >/dev/null 2>&1; then
+    xdg-open "$url" >/dev/null 2>&1 &
+    return 0
+  fi
+
+  notify "Tailscale" "Open this URL to authenticate: $url"
+  return 0
+}
+
+login() {
+  data="$(status_json)"
+  auth_url="$(printf '%s' "$data" | jq -r '.AuthURL // empty' 2>/dev/null || true)"
+
+  if open_auth_url "$auth_url"; then
+    return
+  fi
+
+  tailscale up >/dev/null 2>&1 &
+
+  for _attempt in 1 2 3 4 5 6 7 8 9 10; do
+    sleep 1
+    data="$(status_json)"
+    auth_url="$(printf '%s' "$data" | jq -r '.AuthURL // empty' 2>/dev/null || true)"
+
+    if open_auth_url "$auth_url"; then
+      return
+    fi
+
+    if [ "$(printf '%s' "$data" | jq -r '.BackendState // empty' 2>/dev/null || true)" = "Running" ]; then
+      return
+    fi
+  done
+
+  notify "Tailscale" "The login URL is not available yet"
+}
+
+toggle() {
+  if ! command -v tailscale >/dev/null 2>&1 || ! command -v jq >/dev/null 2>&1; then
+    notify "Tailscale" "Tailscale and jq are required"
+    return
+  fi
+
+  case "$(backend_state)" in
+    Running)
+      run_action tailscale down || true
+      ;;
+    NeedsLogin)
+      login
+      ;;
+    *)
+      run_action tailscale up || true
+      ;;
+  esac
+
+  refresh_waybar
+}
+
+pick_index() {
+  prompt="$1"
+  rofi -dmenu -i -p "$prompt" -format i
+}
+
+accounts_json() {
+  tailscale switch --list --json 2>/dev/null
+}
+
+switch_account() {
+  data="$(accounts_json || true)"
+  if ! printf '%s' "$data" | jq -e 'type == "array"' >/dev/null 2>&1; then
+    notify "Tailscale" "Could not list Tailscale connections"
+    return
+  fi
+
+  labels="$(
+    printf '%s' "$data" | jq -r '
+      .[]
+      | (
+          .nickname // .Nickname // .name // .Name
+          // .tailnet // .Tailnet
+          // .account // .Account // .loginName // .LoginName
+          // .id // .ID // "Unknown connection"
+        ) as $label
+      | (if .selected == true or .Selected == true then "● " else "  " end) + ($label | tostring)
+    '
+  )"
+  index="$(printf '%s\n' "$labels" | pick_index "Tailscale connection" || true)"
+
+  case "$index" in
+    '' | *[!0-9]*)
+      return
+      ;;
+  esac
+
+  account_id="$(
+    printf '%s' "$data" |
+      jq -r --argjson index "$index" '.[$index] | .id // .ID // empty'
+  )"
+  if [ -n "$account_id" ]; then
+    run_action tailscale switch "$account_id" || true
+    refresh_waybar
+  fi
+}
+
+peers_json() {
+  jq -c '
+    def clean_dns:
+      rtrimstr(".");
+
+    def display_name:
+      (.HostName // "") as $host
+      | if $host != "" and ($host | ascii_downcase) != "localhost" then
+          $host
+        else
+          (.DNSName // "" | clean_dns | split(".")[0]) as $dns
+          | if $dns != "" then $dns
+            elif $host != "" then $host
+            else "Unknown"
+            end
+        end;
+
+    def tailscale_ipv4:
+      map(select(startswith("100."))) | first // "";
+
+    def tailscale_ipv6:
+      map(select(startswith("fd7a:115c:a1e0:"))) | first // "";
+
+    def os_icon:
+      ascii_downcase as $os
+      | if $os == "linux" then "󰌽"
+        elif $os == "macos" or $os == "ios" then "󰀵"
+        elif $os == "windows" then "󰍲"
+        elif $os == "android" then "󰀲"
+        else "󰟀"
+        end;
+
+    [
+      (.Peer // {} | to_entries[] | .value)
+      | select(.Online == true)
+      | select(
+          ((.DNSName // "" | clean_dns | endswith(".mullvad.ts.net")) | not)
+        )
+      | {
+          name: display_name,
+          dns: (.DNSName // "" | clean_dns),
+          ipv4: ((.TailscaleIPs // []) | tailscale_ipv4),
+          ipv6: ((.TailscaleIPs // []) | tailscale_ipv6),
+          icon: ((.OS // "") | os_icon)
+        }
+    ]
+    | sort_by(.name)
+  '
+}
+
+copy_value() {
+  value="$1"
+  label="$2"
+
+  if ! command -v wl-copy >/dev/null 2>&1; then
+    notify "Tailscale" "wl-copy is required for clipboard actions"
+    return
+  fi
+
+  printf '%s' "$value" | wl-copy
+  notify "Tailscale" "Copied $label"
+}
+
+browse_machines() {
+  data="$(status_json | peers_json)"
+  labels="$(
+    printf '%s' "$data" |
+      jq -r '.[] | .icon + " " + .name + (if .ipv4 != "" then "  " + .ipv4 else "" end)'
+  )"
+  index="$(printf '%s\n' "$labels" | pick_index "Tailscale machine" || true)"
+
+  case "$index" in
+    '' | *[!0-9]*)
+      return
+      ;;
+  esac
+
+  peer="$(printf '%s' "$data" | jq -c --argjson index "$index" '.[$index]')"
+  name="$(printf '%s' "$peer" | jq -r '.name // empty')"
+  dns="$(printf '%s' "$peer" | jq -r '.dns // empty')"
+  ipv4="$(printf '%s' "$peer" | jq -r '.ipv4 // empty')"
+  ipv6="$(printf '%s' "$peer" | jq -r '.ipv6 // empty')"
+
+  actions="Copy machine name"
+  [ -n "$dns" ] && actions="$actions\nCopy DNS name"
+  [ -n "$ipv4" ] && actions="$actions\nCopy IPv4 address"
+  [ -n "$ipv6" ] && actions="$actions\nCopy IPv6 address"
+
+  choice="$(printf '%b\n' "$actions" | rofi -dmenu -i -p "$name" || true)"
+  case "$choice" in
+    "Copy machine name")
+      copy_value "$name" "$name"
+      ;;
+    "Copy DNS name")
+      copy_value "$dns" "$name DNS name"
+      ;;
+    "Copy IPv4 address")
+      copy_value "$ipv4" "$name IPv4 address"
+      ;;
+    "Copy IPv6 address")
+      copy_value "$ipv6" "$name IPv6 address"
+      ;;
+  esac
+}
+
+authorize_operator() {
+  user_name="${USER:-${LOGNAME:-}}"
+  if [ -z "$user_name" ]; then
+    notify "Tailscale" "Could not determine the current user"
+    return
+  fi
+
+  if ! command -v pkexec >/dev/null 2>&1; then
+    notify "Tailscale" "pkexec is required to authorize the Tailscale operator"
+    return
+  fi
+
+  run_action pkexec tailscale set "--operator=$user_name" || true
+  refresh_waybar
+}
+
+show_menu() {
+  if ! command -v rofi >/dev/null 2>&1; then
+    notify "Tailscale" "rofi is required for the Tailscale menu"
+    return
+  fi
+
+  if ! command -v tailscale >/dev/null 2>&1 || ! command -v jq >/dev/null 2>&1; then
+    notify "Tailscale" "Tailscale and jq are required"
+    return
+  fi
+
+  data="$(status_json)"
+  if ! printf '%s' "$data" | jq -e 'type == "object"' >/dev/null 2>&1; then
+    data='{}'
+  fi
+  state="$(printf '%s' "$data" | jq -r '.BackendState // "Unavailable"' 2>/dev/null || true)"
+  peers="$(printf '%s' "$data" | peers_json)"
+  peer_count="$(printf '%s' "$peers" | jq 'length')"
+
+  connections="$(accounts_json || true)"
+  if printf '%s' "$connections" | jq -e 'type == "array"' >/dev/null 2>&1; then
+    account_count="$(printf '%s' "$connections" | jq 'length')"
+    accounts_access_denied=false
+  else
+    account_count=0
+    accounts_access_denied=true
+  fi
+
+  if [ "$state" = "Running" ]; then
+    options="Turn Tailscale off"
+  else
+    options="Turn Tailscale on"
+  fi
+  [ "$account_count" -gt 1 ] && options="$options\nSwitch connection…"
+  [ "$state" = "Running" ] && [ "$peer_count" -gt 0 ] && options="$options\nBrowse machines…"
+  [ "$accounts_access_denied" = true ] && options="$options\nAuthorize operator…"
+  options="$options\nRefresh"
+
+  choice="$(printf '%b\n' "$options" | rofi -dmenu -i -p "Tailscale" || true)"
+  case "$choice" in
+    "Turn Tailscale off" | "Turn Tailscale on")
+      toggle
+      ;;
+    "Switch connection…")
+      switch_account
+      ;;
+    "Browse machines…")
+      browse_machines
+      ;;
+    "Authorize operator…")
+      authorize_operator
+      ;;
+    "Refresh")
+      refresh_waybar
+      ;;
+  esac
+}
+
+case "${1:-status}" in
+  status)
+    print_status
+    ;;
+  toggle)
+    toggle
+    ;;
+  menu)
+    show_menu
+    ;;
+  refresh)
+    refresh_waybar
+    ;;
+  *)
+    printf 'Usage: %s {status|toggle|menu|refresh}\n' "$0" >&2
+    exit 2
+    ;;
+esac

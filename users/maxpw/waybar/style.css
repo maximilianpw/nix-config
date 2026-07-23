@@ -61,6 +61,7 @@ tooltip label {
 #idle_inhibitor,
 #clock,
 #network,
+#custom-tailscale,
 #custom-notification,
 #mpris,
 #pulseaudio,
@@ -222,6 +223,7 @@ window#waybar.empty #window {
 }
 
 #network,
+#custom-tailscale,
 #custom-notification {
   padding: 0 6px;
   background-color: @tray;
@@ -256,6 +258,7 @@ window#waybar.empty #window {
 
 #pulseaudio,
 #network,
+#custom-tailscale,
 #custom-notification,
 #clock,
 #custom-power {
@@ -264,6 +267,7 @@ window#waybar.empty #window {
 
 #pulseaudio:hover,
 #network:hover,
+#custom-tailscale:hover,
 #custom-notification:hover,
 #clock:hover,
 #custom-power:hover {
@@ -286,6 +290,22 @@ window#waybar.empty #window {
 #pulseaudio.output.muted,
 #pulseaudio.input.source-muted {
   color: @hover-fg;
+}
+
+#custom-tailscale.connected {
+  color: @accent;
+}
+
+#custom-tailscale.disconnected {
+  color: @hover-fg;
+}
+
+#custom-tailscale.needs-login {
+  color: @warning;
+}
+
+#custom-tailscale.unavailable {
+  color: @critical;
 }
 
 #memory.warning,

@@ -34,6 +34,7 @@
     "clock#date",
     "custom/right_div#4",
     "network",
+    "custom/tailscale",
     "custom/notification",
     "custom/right_div#5"
   ],

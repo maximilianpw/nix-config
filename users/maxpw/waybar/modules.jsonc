@@ -275,6 +275,19 @@
     "on-click": "nm-connection-editor"
   },
 
+  // Tailscale
+  "custom/tailscale": {
+    "exec": "$HOME/.config/waybar/scripts/tailscale status",
+    "return-type": "json",
+    "interval": 30,
+    "signal": 8,
+    "format": "{text}",
+    "escape": true,
+    "on-click": "$HOME/.config/waybar/scripts/tailscale menu",
+    "on-click-right": "$HOME/.config/waybar/scripts/tailscale toggle",
+    "on-click-middle": "$HOME/.config/waybar/scripts/tailscale refresh"
+  },
+
   // Media
   "mpris": {
     "format": "{player_icon} {artist} - {title}",
