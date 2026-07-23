@@ -20,7 +20,6 @@
     "ask": [],
     "defaultMode": "auto"
   },
-  "model": "kimi-k3",
   "enabledPlugins": {
     "rust-analyzer-lsp@claude-plugins-official": true,
     "typescript-lsp@claude-plugins-official": true,
