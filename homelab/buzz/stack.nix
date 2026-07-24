@@ -97,7 +97,9 @@
 
       pairing-relay = {
         image = images.pairingRelay;
-        command = ["/usr/local/bin/buzz-pair-relay"];
+        # The image ENTRYPOINT is buzz-relay. Compose `command` only replaces
+        # CMD, so the sidecar binary must replace the entrypoint itself.
+        entrypoint = ["/usr/local/bin/buzz-pair-relay"];
         environment.BUZZ_PAIR_RELAY_BIND_ADDR = "0.0.0.0:5000";
         ports = ["127.0.0.1:${toString pairingPort}:5000"];
         healthcheck = {
@@ -222,7 +224,10 @@
   compose = "${docker} compose ${composeArgs}";
 
   startScript = pkgs.writeShellScript "buzz-start" ''
-    exec ${lib.getExe' pkgs.util-linux "flock"} ${lockFile} ${compose} up --detach --wait --remove-orphans
+    if ! ${lib.getExe' pkgs.util-linux "flock"} ${lockFile} ${compose} up --detach --wait --remove-orphans; then
+      echo "Buzz did not become healthy; retrying the stateless application services" >&2
+      exec ${lib.getExe' pkgs.util-linux "flock"} ${lockFile} ${compose} up --detach --wait --no-deps --force-recreate relay pairing-relay
+    fi
   '';
   stopScript = pkgs.writeShellScript "buzz-stop" ''
     exec ${lib.getExe' pkgs.util-linux "flock"} ${lockFile} ${compose} stop
@@ -309,7 +314,7 @@
           exec ${compose} logs --follow "''${@:-relay}"
           ;;
         restart)
-          exec ${lib.getExe' pkgs.util-linux "flock"} ${lockFile} ${compose} up --detach --wait --force-recreate relay pairing-relay
+          exec ${lib.getExe' pkgs.util-linux "flock"} ${lockFile} ${compose} up --detach --wait --no-deps --force-recreate relay pairing-relay
           ;;
         add-member)
           pubkey="''${2:?Usage: buzzctl add-member <npub-or-hex> [--role member|admin]}"

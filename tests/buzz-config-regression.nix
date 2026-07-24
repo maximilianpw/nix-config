@@ -9,6 +9,8 @@
   runsExporter = lib.hasInfix "systemctl start buzz-backup-export.service" backup.preHook;
   usesGeneratedCompose = lib.hasSuffix "-buzz-compose.yml" (toString (builtins.head composeFile));
   channels = config.systemd.services.buzz-channels;
+  buzzStart = config.systemd.services.buzz.serviceConfig.ExecStart;
+  buzzEnv = config.sops.templates."buzz.env".content;
   generatedCompose = builtins.head composeFile;
 in
   assert lib.assertMsg (builtins.length composeFile == 1)
@@ -31,13 +33,31 @@ in
   "Declarative channels must not restore the removed architect agent";
   assert lib.assertMsg (!(config.systemd.services ? buzz-nix-builder))
   "Declarative channels must not restore the removed builder agent";
+  assert lib.assertMsg (lib.hasInfix "BUZZ_GIT_CONFORMANCE_PROBE=true" buzzEnv)
+  "Buzz must keep the object-store correctness gate enabled";
     pkgs.runCommand "buzz-config-regression" {} ''
-      if ! grep -Fq '/usr/local/bin/buzz-pair-relay' ${generatedCompose}; then
-        echo "Buzz Compose must run the dedicated mobile pairing relay" >&2
+      awk '
+        /^  pairing-relay:/ { in_pairing_relay = 1; next }
+        in_pairing_relay && /^  [^ ]/ { exit }
+        in_pairing_relay { print }
+      ' ${generatedCompose} > pairing-relay.yml
+
+      if ! grep -Fq 'entrypoint:' pairing-relay.yml ||
+        ! grep -Fq '/usr/local/bin/buzz-pair-relay' pairing-relay.yml; then
+        echo "Buzz Compose must replace the image entrypoint with the dedicated pairing relay" >&2
         exit 1
       fi
-      if ! grep -Fq '127.0.0.1:19005:5000' ${generatedCompose}; then
+      if grep -Fq 'command:' pairing-relay.yml; then
+        echo "Buzz pairing relay must not use Compose command; the image entrypoint is buzz-relay" >&2
+        exit 1
+      fi
+      if ! grep -Fq '127.0.0.1:19005:5000' pairing-relay.yml; then
         echo "Buzz pairing relay must remain bound to the declared loopback port" >&2
+        exit 1
+      fi
+      if ! grep -Fq 'if !' ${buzzStart} ||
+        ! grep -Fq -- '--no-deps --force-recreate relay pairing-relay' ${buzzStart}; then
+        echo "Buzz startup must retry only the stateless application services" >&2
         exit 1
       fi
       if grep -Eq 'channels (add-member|remove-member)' ${channels.serviceConfig.ExecStart}; then
