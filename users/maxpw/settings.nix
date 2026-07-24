@@ -16,7 +16,7 @@
   sshKeys = {
     githubAuthentication = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKSE4irNaEh8R1RxL0/839aKlA9KgdKIZl/uKgGCvMzs GitHub Authentication Key";
     kimUser = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB3qKWMhvPDxIo8U2S7VpC7eGtF5LATuGQ05gSlXmu+4 Kim SSH";
-    fleetHarryToKim = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIO6WVItwXm6ybS0EbZY+URCvIqdhZMhj/cwU2d4RBDFl fleet kim from harry";
+    fleetJoyceToKim = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIO6WVItwXm6ybS0EbZY+URCvIqdhZMhj/cwU2d4RBDFl fleet kim from joyce";
     # Paste Cuno's public key here after generating it with:
     #   ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519 -C "cuno-to-kim"
     cunoToKim = "";

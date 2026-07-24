@@ -6,7 +6,7 @@
 
 map_darwin_user_to_host() {
     case "$1" in
-        max-vev) printf '%s\n' "harry" ;;
+        max-vev) printf '%s\n' "joyce" ;;
         *) return 1 ;;
     esac
 }
@@ -14,7 +14,7 @@ map_darwin_user_to_host() {
 canonical_host_name() {
     case "$1" in
         main-pc) printf '%s\n' "kim" ;;
-        macbook-pro-m1) printf '%s\n' "harry" ;;
+        macbook-pro-m1) printf '%s\n' "joyce" ;;
         wsl) printf '%s\n' "cuno" ;;
         *) printf '%s\n' "$1" ;;
     esac

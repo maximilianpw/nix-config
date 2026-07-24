@@ -66,7 +66,7 @@ Nushell is the primary interactive shell for the user. Prefer Nushell only when 
 - Tool shells out via `system()` or similar and won't pick up Nushell.
 - Piping to a tool that expects raw text on stdin in a way Nushell would mangle.
 
-## Remote Dev Fleet
+## Revachol Remote Dev Fleet
 
 Use `fleet list` to see trusted development machines declared by Nix, and read
 `~/.config/fleet/FLEET.md` for host capabilities and placement decisions.

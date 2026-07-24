@@ -77,7 +77,7 @@ lint: ## Run Nix linters (statix, deadnix) and format check
 build: ## Build system configuration without switching
 	@echo "Building system configuration..."
 	@if [ "$$(uname -s)" = "Darwin" ]; then \
-		nix build ".#darwinConfigurations.harry.system"; \
+		nix build ".#darwinConfigurations.joyce.system"; \
 	else \
 		host="$$(hostname -s)"; \
 		case "$$host" in main-pc) host=kim ;; wsl) host=cuno ;; esac; \

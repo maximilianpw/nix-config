@@ -375,7 +375,7 @@ A restore drill should validate more than the presence of files:
 
 ## Phase 2: Desktop Client
 
-The primary human client should run on `harry`.
+The primary human client should run on `joyce`.
 
 For the trial, manually install the signed upstream Apple Silicon DMG. This
 avoids building a packaging system before confirming the client is useful.

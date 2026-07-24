@@ -60,7 +60,7 @@
     fleet = null;
   };
 
-  harry = {
+  joyce = {
     system = "aarch64-darwin";
     user = "max-vev";
     userDir = "maxpw";

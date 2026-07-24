@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A unified NixOS + nix-darwin flake managing three systems from a single codebase:
 - **kim**: headless NixOS x86_64-linux homelab (AMD Ryzen); the Hyprland profile remains parked and eval-tested
-- **harry**: nix-darwin aarch64-darwin (Apple Silicon, Homebrew for GUI apps)
+- **joyce**: nix-darwin aarch64-darwin (Apple Silicon, Homebrew for GUI apps)
 - **cuno**: NixOS x86_64-linux under WSL (minimal, no desktop)
 
 ## Commands
@@ -60,7 +60,7 @@ The `userDir` parameter allows the macOS username (`max-vev`) to differ from the
 ### Module Layout
 
 ```
-machines/           # Per-host: boot, hardware, services (kim.nix, harry.nix, cuno.nix)
+machines/           # Per-host: boot, hardware, services (kim.nix, joyce.nix, cuno.nix)
 homelab/            # kim self-hosted services exposed through Cloudflare Tunnel and Tailscale Serve
 modules/
   core/             # Shared: nix-settings.nix, security.nix, sops.nix, shells.nix (login shells)
@@ -99,7 +99,10 @@ secrets/            # sops-nix encrypted secrets (age encryption, key in 1Passwo
 
 `homelab/` is imported by `machines/kim.nix` and aggregates the services that run on Kim. `homelab/cloudflared.nix` keeps only the public Cloudflare tunnel ingress (Nextcloud and Home Assistant), while `homelab/tailscale-serve.nix` exposes private operator/dev services to the tailnet. Secrets are managed through sops-nix, and most service endpoints bind to `127.0.0.1`.
 
-Fleet remote-development usage and implementation notes live in `modules/fleet/README.md`; implementation is split between `modules/fleet/home-manager.nix` and `modules/fleet/nixos.nix`.
+The remote-development fleet is named Revachol, while its operational CLI
+remains `fleet`. Usage and implementation notes live in
+`modules/fleet/README.md`; implementation is split between
+`modules/fleet/home-manager.nix` and `modules/fleet/nixos.nix`.
 
 ### Overlays (defined in `flake.nix`)
 
@@ -162,6 +165,6 @@ repository heads. Update each revision and hash together.
 
 - **Never bump `stateVersion`**: `system.stateVersion` and `home.stateVersion` must stay at their initial install values. They control state migration, not the package set version.
 - **Hyprland comes from upstream flake input**, not nixpkgs. Check the `hyprland` input in `flake.nix` when debugging Hyprland issues.
-- **macOS Nix daemon**: Managed by the Determinate installer. `nix.enable = false` in `harry.nix` — don't set it to `true`.
+- **macOS Nix daemon**: Managed by the Determinate installer. `nix.enable = false` in `joyce.nix` — don't set it to `true`.
 - **Rebuild does NOT auto-commit**: `make rebuild` formats with alejandra, switches via nh (which prints a package-level generation diff), and cleans old generations (`nh clean all --keep 5 --keep-since 30d`) — but always leaves the repo uncommitted. Commit manually; the pre-commit hook lints on commit.
-- **Darwin Nix settings live in /etc/nix/nix.custom.conf**: because `nix.enable = false` on macOS, nix-darwin ignores `nix.settings`. Caches/trusted-users for Harry are managed via `environment.etc."nix/nix.custom.conf"` in `machines/harry.nix`.
+- **Darwin Nix settings live in /etc/nix/nix.custom.conf**: because `nix.enable = false` on macOS, nix-darwin ignores `nix.settings`. Caches/trusted-users for Joyce are managed via `environment.etc."nix/nix.custom.conf"` in `machines/joyce.nix`.

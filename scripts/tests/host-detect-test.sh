@@ -32,7 +32,7 @@ expect_host nixos kim Linux kim maxpw 0
 expect_host nixos kim Linux main-pc maxpw 0
 expect_host nixos build-box Linux build-box maxpw 0
 expect_host nixos cuno Linux arbitrary maxpw 1
-expect_host darwin harry Darwin "Maxs-MacBook-Pro" max-vev 0
+expect_host darwin joyce Darwin "Maxs-MacBook-Pro" max-vev 0
 
 unset NIX_CONFIG_HOST
 export NIX_CONFIG_TEST_WSL=0
@@ -56,9 +56,9 @@ fi
 # Validation and rebuilds must use an explicit path flake. A plain repository
 # path is treated as a Git flake and silently excludes new, untracked modules.
 PLATFORM="darwin"
-HOSTNAME="harry"
+HOSTNAME="joyce"
 nix() {
-    if [[ "${1:-}" == "eval" && "${2:-}" == "--raw" && "${3:-}" == 'path:/tmp/nix config#lib.hosts."harry".os' ]]; then
+    if [[ "${1:-}" == "eval" && "${2:-}" == "--raw" && "${3:-}" == 'path:/tmp/nix config#lib.hosts."joyce".os' ]]; then
         printf '%s\n' "darwin"
         return 0
     fi

@@ -1,7 +1,7 @@
-# Remote Dev Fleet
+# Revachol Fleet
 
-This repo declares the SSH/tmux workflow used for local and mesh-networked
-development machines.
+Revachol is the name of this repo's remote development fleet. The operational
+CLI remains `fleet`.
 
 ## Commands
 

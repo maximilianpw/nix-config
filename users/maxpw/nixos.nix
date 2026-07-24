@@ -74,7 +74,7 @@ in {
       openssh.authorizedKeys.keys =
         [
           settings.sshKeys.kimUser
-          settings.sshKeys.fleetHarryToKim
+          settings.sshKeys.fleetJoyceToKim
         ]
         ++ lib.optionals (settings.sshKeys.cunoToKim != "") [
           settings.sshKeys.cunoToKim

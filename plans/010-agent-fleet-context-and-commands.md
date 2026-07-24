@@ -51,7 +51,7 @@ them — run this plan in the main working tree, or commit the WIP first.
   - `fleetHosts` attrset starts at line 10. Two hosts today:
     - `kim`: `role = "nixos-desktop"`, `t3codePort = 51000`, aliases
       `main`/`desktop`, tmux via `/run/current-system/sw/bin/tmux`.
-    - `harry`: `role = "darwin-brain"`, pinned `hostKey`, aliases
+    - `joyce`: `role = "darwin-brain"`, pinned `hostKey`, aliases
       `mac`/`mbp`, tmux via `/etc/profiles/per-user/max-vev/bin/tmux`.
   - Line 270: `file.".config/fleet/hosts.json".text = builtins.toJSON fleetHosts;`
     — hosts.json is **write-only**; nothing in the repo parses it at runtime
@@ -87,7 +87,7 @@ In `modules/fleet/home-manager.nix`, add to **each** host in `fleetHosts`:
 ```nix
 os = "nixos";               # or "darwin"
 gui = true;                 # GUI/screenshot surface available
-longRunningAgents = true;   # kim: true; harry: false
+longRunningAgents = true;   # kim: true; joyce: false
 ```
 
 Rationale for values: kim is the Linux workhorse (offload target);
@@ -126,7 +126,7 @@ Keep the generator simple — string concatenation with `concatStringsSep` and
 
 **Verify**: `nix flake check --no-build`; then render the text without
 switching:
-`nix eval --raw .#darwinConfigurations.harry.config.home-manager.users.max-vev.home.file.".config/fleet/FLEET.md".text`
+`nix eval --raw .#darwinConfigurations.joyce.config.home-manager.users.max-vev.home.file.".config/fleet/FLEET.md".text`
 (adjust attr path if evaluating on Linux:
 `.#nixosConfigurations.kim.config.home-manager.users.maxpw...`).
 Expected: readable markdown listing both hosts with correct fields.

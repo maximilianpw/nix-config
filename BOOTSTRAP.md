@@ -58,7 +58,7 @@ cd ~/nix-config
 
 ### 3. Add the new host to the flake (skip if reinstalling a known host)
 
-The flake only knows `kim`, `cuno`, and `harry`. A new machine
+The flake only knows `kim`, `cuno`, and `joyce`. A new machine
 needs (see [Adding a new host](#adding-a-new-host)):
 
 1. `machines/<hostname>.nix` + hardware config under `machines/hardware/`
@@ -123,7 +123,7 @@ successful rebuild:
    ```
 
 2. **Determinate Nix installer** (the config assumes it: `nix.enable = false`
-   in `machines/harry.nix`, daemon managed by Determinate):
+   in `machines/joyce.nix`, daemon managed by Determinate):
 
    ```bash
    curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install

@@ -64,7 +64,7 @@ Run the smallest relevant checks after editing:
 ```bash
 alejandra --check lib/fleet.nix modules/fleet/home-manager.nix users/maxpw/modules/tmux.nix users/maxpw/modules/cmux.nix
 git diff --check -- lib/fleet.nix modules/fleet/home-manager.nix users/maxpw/cmux/sidebars/fleet.swift.tpl users/maxpw/modules/tmux.nix users/maxpw/modules/cmux.nix
-nix build --no-link '.#darwinConfigurations.harry.system'
+nix build --no-link '.#darwinConfigurations.joyce.system'
 ```
 
 After applying the rebuild, verify the live workflow:

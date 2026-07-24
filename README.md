@@ -2,6 +2,7 @@
 
 Unified NixOS + macOS (nix-darwin) flake for a headless homelab, Apple Silicon
 workstation, WSL environment, and a parked/tested Hyprland desktop profile.
+The remote development fleet is named Revachol; its CLI remains `fleet`.
 
 ## Repository layout
 
@@ -22,7 +23,7 @@ workstation, WSL environment, and a parked/tested Hyprland desktop profile.
 │   └── mksystem.nix         # mkSystem builder (NixOS & Darwin + Home Manager)
 ├── machines/
 │   ├── cuno.nix             # NixOS-WSL host
-│   ├── harry.nix            # macOS (nix-darwin) workstation
+│   ├── joyce.nix            # macOS (nix-darwin) workstation
 │   ├── kim.nix              # Headless NixOS homelab (Ryzen)
 │   └── hardware/
 │       ├── kim-disko.nix    # Disko layout for kim
@@ -58,7 +59,7 @@ workstation, WSL environment, and a parked/tested Hyprland desktop profile.
 │   └── maxpw/
 │       ├── home-manager.nix # Main Home Manager config (Linux & macOS)
 │       ├── nixos.nix        # NixOS user/system module
-│       ├── darwin.nix       # nix-darwin user/system module for harry
+│       ├── darwin.nix       # nix-darwin user/system module for joyce
 │       ├── wsl.nix          # NixOS-WSL user/system module
 │       ├── modules/
 │       │   ├── fonts.nix          # Fonts (Nerd Fonts + defaults, fontconfig)
@@ -94,7 +95,7 @@ workstation, WSL environment, and a parked/tested Hyprland desktop profile.
 - Outputs (derived from `lib/hosts.nix`):
   - `nixosConfigurations.kim` (x86_64-linux homelab; user: `maxpw`).
   - `nixosConfigurations.cuno` (x86_64-linux under WSL; user: `maxpw`).
-  - `darwinConfigurations.harry` (aarch64-darwin; login `max-vev`, userDir `maxpw`).
+  - `darwinConfigurations.joyce` (aarch64-darwin; login `max-vev`, userDir `maxpw`).
   - Eval check for the parked `kim` Hyprland profile.
   - `devShells` for aarch64/x86_64 Linux and aarch64 Darwin.
 
@@ -103,7 +104,7 @@ workstation, WSL environment, and a parked/tested Hyprland desktop profile.
 - lib/mksystem.nix
   - Chooses NixOS or Darwin system function, wires Home Manager and optional WSL, passes `currentSystem*` args.
 
-- machines/harry.nix (nix-darwin)
+- machines/joyce.nix (nix-darwin)
   - stateVersion = 6; leaves Nix daemon to Determinate installer (`nix.enable = false`).
   - Optional Linux builder (currently disabled); zsh program enable; basic tools (e.g., cachix).
   - Imports core modules for shared nix settings.
@@ -193,7 +194,7 @@ make chezmoi-apply
 Suggested clone path: `~/nix-config` (the rebuild script assumes this).
 
 - macOS (Apple Silicon)
-  - Apply: `sudo darwin-rebuild switch --flake .#harry`
+  - Apply: `sudo darwin-rebuild switch --flake .#joyce`
   - Or run: `./scripts/nixos-rebuild.sh`
   - Or use: `make rebuild`
 

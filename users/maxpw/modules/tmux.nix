@@ -13,7 +13,7 @@
   hostAccent =
     {
       kim = "#9ece6a";
-      harry = "#7aa2f7";
+      joyce = "#7aa2f7";
       cuno = "#e0af68";
     }
     .${

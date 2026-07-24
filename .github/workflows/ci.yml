@@ -76,4 +76,4 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - uses: DeterminateSystems/determinate-nix-action@c70cb8ae92d68c66953db28a26a63db1665bc837 # v3
-      - run: nix build .#darwinConfigurations.harry.system --no-link
+      - run: nix build .#darwinConfigurations.joyce.system --no-link

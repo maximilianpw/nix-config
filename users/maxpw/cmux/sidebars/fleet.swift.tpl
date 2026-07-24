@@ -2,7 +2,7 @@ VStack(alignment: .leading, spacing: 10) {
   HStack(spacing: 8) {
     Image(systemName: "network")
       .foregroundColor("#7DD3FC")
-    Text("Fleet")
+    Text("Revachol Fleet")
       .font(.headline)
       .bold()
     Spacer()

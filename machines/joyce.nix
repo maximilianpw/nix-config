@@ -1,7 +1,7 @@
 {pkgs, ...}: {
   networking = {
-    hostName = "harry";
-    computerName = "harry";
+    hostName = "joyce";
+    computerName = "joyce";
   };
 
   # Note: ../modules/core/nix-settings.nix is intentionally NOT imported here.

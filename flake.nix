@@ -238,7 +238,7 @@
         };
       };
       aarch64-darwin = {
-        eval-harry = self.darwinConfigurations.harry.system;
+        eval-joyce = self.darwinConfigurations.joyce.system;
         pre-commit-check = mkPreCommitCheck "aarch64-darwin";
       };
     };
