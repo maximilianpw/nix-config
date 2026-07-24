@@ -51,9 +51,9 @@ The homelab Tailscale Serve configuration exposes it only within the tailnet at
 
 `users/maxpw/settings.nix` contains the shared release lock for Kim's npm server
 and Joyce's Homebrew-installed desktop app. Joyce installs the exact arm64
-release through a generated private cask and pins it before Homebrew Bundle
-runs. To upgrade, update both the version and DMG SHA-256 in that file, then
-rebuild Joyce and Kim from the same configuration revision.
+release through a generated private Homebrew tap and pins it after Homebrew
+Bundle runs. To upgrade, update both the version and DMG SHA-256 in that file,
+then rebuild Joyce and Kim from the same configuration revision.
 
 After a service start, retrieve the one-time pairing token from the user journal:
 
