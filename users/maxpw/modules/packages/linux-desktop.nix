@@ -61,7 +61,7 @@
         fi
       '')
     ]
-    ++ lib.optionals (isLinuxDesktop && hostname != "main-pc") [
+    ++ lib.optionals (isLinuxDesktop && hostname != "kim") [
       pkgs.hyprlock
     ];
 }

@@ -4,7 +4,7 @@
   pkgs,
   ...
 }: let
-  homelab = import ../lib/homelab.nix {inherit lib;};
+  homelab = import ../../lib/homelab.nix {inherit lib;};
   inherit ((homelab.endpoints config.homelab.tailnet.domain)) buzz;
   healthPort = 19004;
   docker = lib.getExe config.virtualisation.docker.package;
@@ -317,40 +317,45 @@ in {
     }
   ];
 
-  sops.secrets = lib.genAttrs secretNames (_: {});
-  sops.templates."buzz.env" = {
-    mode = "0400";
-    restartUnits = ["buzz.service"];
-    content = let
-      placeholder = config.sops.placeholder;
-    in ''
-      BUZZ_DOMAIN=${buzz.host}
-      RELAY_URL=wss://${buzz.host}
-      BUZZ_MEDIA_BASE_URL=https://${buzz.host}/media
-      BUZZ_MEDIA_SERVER_DOMAIN=${buzz.host}
-      BUZZ_CORS_ORIGINS=https://${buzz.host}
-      BUZZ_REQUIRE_AUTH_TOKEN=true
-      BUZZ_REQUIRE_RELAY_MEMBERSHIP=true
-      BUZZ_ALLOW_NIP_OA_AUTH=true
-      BUZZ_AUTO_MIGRATE=true
-      BUZZ_GIT_CONFORMANCE_PROBE=true
-      RUST_LOG=buzz_relay=info,buzz_db=info,buzz_auth=info,buzz_pubsub=info,tower_http=info
-      RELAY_OWNER_PUBKEY=${placeholder.buzz-owner-public-key}
-      BUZZ_RELAY_PRIVATE_KEY=${placeholder.buzz-relay-private-key}
-      BUZZ_GIT_HOOK_HMAC_SECRET=${placeholder.buzz-git-hook-hmac-secret}
-      POSTGRES_DB=buzz
-      POSTGRES_USER=buzz
-      POSTGRES_PASSWORD=${placeholder.buzz-postgres-password}
-      PGPASSWORD=${placeholder.buzz-postgres-password}
-      DATABASE_URL=postgres://buzz:${placeholder.buzz-postgres-password}@postgres:5432/buzz
-      REDIS_PASSWORD=${placeholder.buzz-redis-password}
-      REDIS_URL=redis://:${placeholder.buzz-redis-password}@redis:6379
-      BUZZ_S3_ACCESS_KEY=${placeholder.buzz-s3-access-key}
-      BUZZ_S3_SECRET_KEY=${placeholder.buzz-s3-secret-key}
-      BUZZ_S3_BUCKET=buzz-media
-      MINIO_ROOT_USER=${placeholder.buzz-s3-access-key}
-      MINIO_ROOT_PASSWORD=${placeholder.buzz-s3-secret-key}
-    '';
+  sops = {
+    secrets = lib.genAttrs secretNames (_: {});
+
+    templates = {
+      "buzz.env" = {
+        mode = "0400";
+        restartUnits = ["buzz.service"];
+        content = let
+          placeholder = config.sops.placeholder;
+        in ''
+          BUZZ_DOMAIN=${buzz.host}
+          RELAY_URL=wss://${buzz.host}
+          BUZZ_MEDIA_BASE_URL=https://${buzz.host}/media
+          BUZZ_MEDIA_SERVER_DOMAIN=${buzz.host}
+          BUZZ_CORS_ORIGINS=https://${buzz.host}
+          BUZZ_REQUIRE_AUTH_TOKEN=true
+          BUZZ_REQUIRE_RELAY_MEMBERSHIP=true
+          BUZZ_ALLOW_NIP_OA_AUTH=true
+          BUZZ_AUTO_MIGRATE=true
+          BUZZ_GIT_CONFORMANCE_PROBE=true
+          RUST_LOG=buzz_relay=info,buzz_db=info,buzz_auth=info,buzz_pubsub=info,tower_http=info
+          RELAY_OWNER_PUBKEY=${placeholder.buzz-owner-public-key}
+          BUZZ_RELAY_PRIVATE_KEY=${placeholder.buzz-relay-private-key}
+          BUZZ_GIT_HOOK_HMAC_SECRET=${placeholder.buzz-git-hook-hmac-secret}
+          POSTGRES_DB=buzz
+          POSTGRES_USER=buzz
+          POSTGRES_PASSWORD=${placeholder.buzz-postgres-password}
+          PGPASSWORD=${placeholder.buzz-postgres-password}
+          DATABASE_URL=postgres://buzz:${placeholder.buzz-postgres-password}@postgres:5432/buzz
+          REDIS_PASSWORD=${placeholder.buzz-redis-password}
+          REDIS_URL=redis://:${placeholder.buzz-redis-password}@redis:6379
+          BUZZ_S3_ACCESS_KEY=${placeholder.buzz-s3-access-key}
+          BUZZ_S3_SECRET_KEY=${placeholder.buzz-s3-secret-key}
+          BUZZ_S3_BUCKET=buzz-media
+          MINIO_ROOT_USER=${placeholder.buzz-s3-access-key}
+          MINIO_ROOT_PASSWORD=${placeholder.buzz-s3-secret-key}
+        '';
+      };
+    };
   };
 
   systemd.services = {

@@ -1,4 +1,4 @@
-# Beelink SER9 (main-pc) Hardware Issues
+# Beelink SER9 (Kim) Hardware Issues
 
 ## AMD Radeon 880M/890M — DCN 3.5 Display Controller Bug
 
@@ -21,7 +21,7 @@ amdgpu 0000:c5:00.0: [drm] REG_WAIT timeout 1us * 100000 tries - optc35_disable_
 
 The Beelink SER9 has broken s2idle (S0 idle / Modern Standby) firmware. The kernel reports `Low-power S0 idle used by default for system suspend` but it doesn't work reliably. The config comment says "broken s2idle firmware".
 
-**Current config:** `SuspendState=disk` + `HibernateMode=shutdown` in `machines/main-pc.nix`, but systemd rejects this: `Sleep state 'disk' is not supported by operation suspend, ignoring.`
+**Current config:** `SuspendState=disk` + `HibernateMode=shutdown` in `machines/kim.nix`, but systemd rejects this: `Sleep state 'disk' is not supported by operation suspend, ignoring.`
 
 ## Combined Result: No Sleep Mode Works
 
@@ -31,7 +31,7 @@ The Beelink SER9 has broken s2idle (S0 idle / Modern Standby) firmware. The kern
 - DPMS off/on: crashes the AMD GPU display controller
 - Monitor disable/enable: crashes the AMD GPU display controller
 
-**Current workaround (2026-03-04):** All idle display/sleep actions removed from hypridle on main-pc. The system stays fully on until manually shut down. The `network-resume` service was also fixed (`|| true` on `modprobe -r snd_usb_audio`) so it no longer fails when the audio module is busy.
+**Current workaround (2026-03-04):** All idle display/sleep actions removed from hypridle on Kim. The system stays fully on until manually shut down. The `network-resume` service was also fixed (`|| true` on `modprobe -r snd_usb_audio`) so it no longer fails when the audio module is busy.
 
 ## Potential Future Fixes
 

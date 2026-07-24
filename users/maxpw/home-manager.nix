@@ -79,7 +79,7 @@ in {
 
     file = lib.mkIf isDarwin {
       ".ssh/github-authentication_ed25519.pub".text = settings.sshKeys.githubAuthentication + "\n";
-      ".ssh/main-pc_1password_ed25519.pub".text = settings.sshKeys.mainPcUser + "\n";
+      ".ssh/kim_1password_ed25519.pub".text = settings.sshKeys.kimUser + "\n";
     };
 
     sessionPath = [

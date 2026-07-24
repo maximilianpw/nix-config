@@ -1,7 +1,7 @@
 # Canonical host inventory. Keep this file data-only so flake outputs, fleet
 # metadata, bootstrap validation, and documentation can all consume it.
 {
-  main-pc = {
+  kim = {
     system = "x86_64-linux";
     user = "maxpw";
     userDir = "maxpw";
@@ -23,9 +23,10 @@
     gui = false;
     longRunningAgents = true;
     fleet = {
-      hostName = "main-pc";
+      hostName = "kim";
       user = "maxpw";
       aliases = [
+        "main-pc"
         "main"
         "desktop"
       ];
@@ -38,7 +39,7 @@
     };
   };
 
-  wsl = {
+  cuno = {
     system = "x86_64-linux";
     user = "maxpw";
     userDir = "maxpw";
@@ -59,7 +60,7 @@
     fleet = null;
   };
 
-  macbook-pro-m1 = {
+  harry = {
     system = "aarch64-darwin";
     user = "max-vev";
     userDir = "maxpw";

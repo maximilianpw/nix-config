@@ -25,7 +25,7 @@ VStack(alignment: .leading, spacing: 10) {
   Divider()
 
   Section("Machines") {
-    Button(action: { cmux("workspace.create", title: "main-pc", initial_command: "/bin/sh -lc 'exec /etc/profiles/per-user/$(/usr/bin/id -un)/bin/fleet ssh main-pc'", focus: true) }) {
+    Button(action: { cmux("workspace.create", title: "kim", initial_command: "/bin/sh -lc 'exec /etc/profiles/per-user/$(/usr/bin/id -un)/bin/fleet ssh kim'", focus: true) }) {
       HStack(alignment: .top, spacing: 8) {
         Rectangle()
           .fill("#9ECE6A")
@@ -36,7 +36,7 @@ VStack(alignment: .leading, spacing: 10) {
           HStack(spacing: 6) {
             Image(systemName: "server.rack")
               .foregroundColor("#9ECE6A")
-            Text("main-pc")
+            Text("kim")
               .font(.headline)
               .lineLimit(1)
             Spacer()
@@ -50,7 +50,7 @@ VStack(alignment: .leading, spacing: 10) {
             .foregroundColor(.secondary)
             .lineLimit(1)
 
-          Text("fleet ssh main-pc")
+          Text("fleet ssh kim")
             .font(.caption)
             .foregroundColor(.secondary)
             .lineLimit(1)

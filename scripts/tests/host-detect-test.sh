@@ -28,10 +28,11 @@ expect_host() {
     fi
 }
 
-expect_host nixos main-pc Linux main-pc maxpw 0
+expect_host nixos kim Linux kim maxpw 0
+expect_host nixos kim Linux main-pc maxpw 0
 expect_host nixos build-box Linux build-box maxpw 0
-expect_host nixos wsl Linux arbitrary maxpw 1
-expect_host darwin macbook-pro-m1 Darwin "Maxs-MacBook-Pro" max-vev 0
+expect_host nixos cuno Linux arbitrary maxpw 1
+expect_host darwin harry Darwin "Maxs-MacBook-Pro" max-vev 0
 
 unset NIX_CONFIG_HOST
 export NIX_CONFIG_TEST_WSL=0
@@ -41,8 +42,8 @@ if detect_host Darwin unknown stranger 2>/dev/null; then
 fi
 
 export NIX_CONFIG_HOST=wsl
-if ! detect_host Linux ignored maxpw || [[ "$HOSTNAME" != "wsl" ]]; then
-    echo "FAIL: explicit host override was not honored" >&2
+if ! detect_host Linux ignored maxpw || [[ "$HOSTNAME" != "cuno" ]]; then
+    echo "FAIL: legacy explicit host override was not canonicalized" >&2
     failures=$((failures + 1))
 fi
 
@@ -55,9 +56,9 @@ fi
 # Validation and rebuilds must use an explicit path flake. A plain repository
 # path is treated as a Git flake and silently excludes new, untracked modules.
 PLATFORM="darwin"
-HOSTNAME="macbook-pro-m1"
+HOSTNAME="harry"
 nix() {
-    if [[ "${1:-}" == "eval" && "${2:-}" == "--raw" && "${3:-}" == 'path:/tmp/nix config#lib.hosts."macbook-pro-m1".os' ]]; then
+    if [[ "${1:-}" == "eval" && "${2:-}" == "--raw" && "${3:-}" == 'path:/tmp/nix config#lib.hosts."harry".os' ]]; then
         printf '%s\n' "darwin"
         return 0
     fi

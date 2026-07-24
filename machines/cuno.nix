@@ -10,7 +10,7 @@
     wslConf.automount.root = "/mnt";
   };
 
-  networking.hostName = "wsl";
+  networking.hostName = "cuno";
 
   virtualisation.docker.enable = true;
   # Default docker (28.x) is unmaintained and marked insecure in nixpkgs 25.11

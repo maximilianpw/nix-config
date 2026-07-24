@@ -21,7 +21,7 @@ model is not "replace GitHub." It is:
 
 The recommended first implementation is deliberately conservative:
 
-1. Run the official Buzz relay image and its required services on `main-pc`.
+1. Run the official Buzz relay image and its required services on `kim`.
 2. Let NixOS own configuration, secrets, lifecycle, private routing, and
    backups.
 3. Expose the relay only through Tailscale Serve.
@@ -133,7 +133,7 @@ The target model needs both layers:
 ```mermaid
 flowchart LR
   Mac["MacBook<br/>Buzz Desktop"] -->|WSS over tailnet| TS["Tailscale Serve"]
-  TS --> Relay["Buzz relay<br/>main-pc"]
+  TS --> Relay["Buzz relay<br/>kim"]
 
   Relay --> PG["Postgres"]
   Relay --> Redis["Redis"]
@@ -171,7 +171,7 @@ isolated services are the execution plane.
 | Agent binaries | future Nix derivation from a pinned Buzz source revision |
 | Agent execution restrictions | systemd hardening, dedicated users, containers, or fleet VMs |
 
-## Phase 1: Private Relay on `main-pc`
+## Phase 1: Private Relay on `kim`
 
 ### Proposed files
 
@@ -375,7 +375,7 @@ A restore drill should validate more than the presence of files:
 
 ## Phase 2: Desktop Client
 
-The primary human client should run on `macbook-pro-m1`.
+The primary human client should run on `harry`.
 
 For the trial, manually install the signed upstream Apple Silicon DMG. This
 avoids building a packaging system before confirming the client is useful.
@@ -431,7 +431,7 @@ agent key:
 - `codex-builder`
 - `fable-reviewer`
 - `claude-designer`
-- `main-pc-operator`
+- `kim-operator`
 - Project-specific identities for sensitive repositories
 
 Reusing the same identity across multiple ordinary project channels may be
@@ -646,7 +646,7 @@ Do not automatically advance a `main` tag on the homelab.
 The relay deployment is successful when:
 
 - `nix flake check --no-build` passes.
-- `main-pc` evaluates and builds.
+- `kim` evaluates and builds.
 - Buzz binds only to the selected loopback port.
 - The relay is reachable through its Tailscale Serve hostname.
 - Postgres, Redis, and MinIO are not exposed on the LAN.
@@ -683,7 +683,7 @@ The agent slice is successful when:
    migrate to native NixOS services after the pilot?
 5. Is an application-level export under `/var/backup/buzz` sufficient, and
    what exact MinIO/Git restore format should be standardized?
-6. Should the agent harness run on `main-pc`, dedicated fleet machines, or
+6. Should the agent harness run on `kim`, dedicated fleet machines, or
    disposable VMs?
 7. What minimum systemd/container restrictions preserve Codex and Claude
    functionality while enforcing useful project isolation?

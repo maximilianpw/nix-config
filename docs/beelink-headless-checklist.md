@@ -75,10 +75,10 @@ From the MacBook:
 
 ```sh
 # Confirm fleet SSH still reaches the box:
-fleet ssh main-pc
+fleet ssh kim
 
 # T3 Code forward still works
-fleet t3 main-pc
+fleet t3 kim
 
 # Tailnet-only desktop endpoint responds over HTTPS
 curl --fail https://t3code.tail7161c3.ts.net/.well-known/t3/environment

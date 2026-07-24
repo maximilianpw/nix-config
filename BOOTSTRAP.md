@@ -31,16 +31,16 @@ Boot the ISO, then partition and install. Two options:
 - **Manual/graphical install**: use the installer as usual. Keep the
   generated `hardware-configuration.nix` — you'll need it in step 3.
 - **Disko**: from a reviewed checkout, adapt
-  `machines/hardware/main-pc-disko.nix` for the new machine's stable disk
+  `machines/hardware/kim-disko.nix` for the new machine's stable disk
   by-id. Evaluate the locked app first; run destructive mode only after
   checking the plan and `lsblk` on that exact machine:
 
   ```bash
   sudo nix --experimental-features "nix-command flakes" run .#disko -- \
-    --dry-run ./machines/hardware/main-pc-disko.nix
+    --dry-run ./machines/hardware/kim-disko.nix
   # DESTRUCTIVE: erases the disk declared in the reviewed layout
   sudo nix --experimental-features "nix-command flakes" run .#disko -- \
-    --mode disko ./machines/hardware/main-pc-disko.nix
+    --mode disko ./machines/hardware/kim-disko.nix
   sudo nixos-install
   ```
 
@@ -58,7 +58,7 @@ cd ~/nix-config
 
 ### 3. Add the new host to the flake (skip if reinstalling a known host)
 
-The flake only knows `main-pc`, `wsl`, and `macbook-pro-m1`. A new machine
+The flake only knows `kim`, `cuno`, and `harry`. A new machine
 needs (see [Adding a new host](#adding-a-new-host)):
 
 1. `machines/<hostname>.nix` + hardware config under `machines/hardware/`
@@ -123,7 +123,7 @@ successful rebuild:
    ```
 
 2. **Determinate Nix installer** (the config assumes it: `nix.enable = false`
-   in `machines/macbook-pro-m1.nix`, daemon managed by Determinate):
+   in `machines/harry.nix`, daemon managed by Determinate):
 
    ```bash
    curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
@@ -161,7 +161,7 @@ successful rebuild:
 ## Scenario 3: Existing host
 
 Repo already cloned (or host already in the flake — e.g. reinstalling
-main-pc):
+Kim):
 
 ```bash
 cd ~/nix-config
@@ -177,8 +177,8 @@ checks and will tell you if either key is missing.
 1. **Machine config**: create `machines/<hostname>.nix` (boot, hardware,
    services). Generate hardware config on the machine with
    `nixos-generate-config --show-hardware-config` and store it under
-   `machines/hardware/<hostname>.nix` (see `machines/main-pc.nix` for how
-   main-pc imports its hardware files).
+   `machines/hardware/<hostname>.nix` (see `machines/kim.nix` for how
+   Kim imports its hardware files).
 2. **Inventory entry** in `lib/hosts.nix` (flake outputs are derived from it):
 
    ```nix

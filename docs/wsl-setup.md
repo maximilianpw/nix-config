@@ -1,4 +1,4 @@
-# NixOS-WSL Setup Guide
+# Cuno NixOS-WSL Setup Guide
 
 ## Prerequisites
 
@@ -18,8 +18,8 @@ Reboot if prompted.
 ## 2. Import the image
 
 ```powershell
-wsl --import NixOS $env:USERPROFILE\NixOS C:\path\to\nixos.wsl
-wsl -d NixOS
+wsl --import Cuno $env:USERPROFILE\Cuno C:\path\to\nixos.wsl
+wsl -d Cuno
 ```
 
 ## 3. Clone and apply config
@@ -29,7 +29,7 @@ Inside the WSL shell:
 ```bash
 git clone <your-repo-url> ~/nix-config
 cd ~/nix-config
-sudo nixos-rebuild switch --flake .#wsl
+sudo nixos-rebuild switch --flake .#cuno
 ```
 
 `make wsl` writes the image to `.artifacts/nixos.wsl` and verifies it is
@@ -42,13 +42,13 @@ exit
 ```
 
 ```powershell
-wsl -d NixOS
+wsl -d Cuno
 ```
 
 ## 4. Set as default WSL distro (optional)
 
 ```powershell
-wsl --set-default NixOS
+wsl --set-default Cuno
 ```
 
 ## Ongoing usage
@@ -62,11 +62,11 @@ make rebuild
 
 ## Troubleshooting
 
-**"NixOS" not appearing in `wsl -l -v`:**
+**"Cuno" not appearing in `wsl -l -v`:**
 Re-run the import command. Make sure the image path is correct.
 
 **Permission errors on rebuild:**
-The first rebuild must use `sudo nixos-rebuild switch --flake .#wsl` directly. `make rebuild` works for subsequent rebuilds.
+The first rebuild must use `sudo nixos-rebuild switch --flake .#cuno` directly. `make rebuild` works for subsequent rebuilds.
 
 **Slow first rebuild:**
 Normal. Nix needs to fetch/build derivations not included in the image. Subsequent rebuilds are incremental.

@@ -77,9 +77,11 @@ lint: ## Run Nix linters (statix, deadnix) and format check
 build: ## Build system configuration without switching
 	@echo "Building system configuration..."
 	@if [ "$$(uname -s)" = "Darwin" ]; then \
-		nix build ".#darwinConfigurations.macbook-pro-m1.system"; \
+		nix build ".#darwinConfigurations.harry.system"; \
 	else \
-		nix build ".#nixosConfigurations.$$(hostname).config.system.build.toplevel"; \
+		host="$$(hostname -s)"; \
+		case "$$host" in main-pc) host=kim ;; wsl) host=cuno ;; esac; \
+		nix build ".#nixosConfigurations.$$host.config.system.build.toplevel"; \
 	fi
 	@echo "Build complete!"
 
@@ -99,7 +101,7 @@ rollback: ## Rollback to previous generation
 wsl: ## Build the WSL import image
 	@echo "Building WSL import image..."
 	@mkdir -p .artifacts
-	@nix build ".#nixosConfigurations.wsl.config.system.build.tarballBuilder" --out-link .artifacts/wsl-builder
+	@nix build ".#nixosConfigurations.cuno.config.system.build.tarballBuilder" --out-link .artifacts/wsl-builder
 	@sudo rm -f .artifacts/nixos.wsl
 	@sudo .artifacts/wsl-builder/bin/nixos-wsl-tarball-builder "$(CONFIG_DIR)/.artifacts/nixos.wsl"
 	@test -s .artifacts/nixos.wsl

@@ -49,9 +49,9 @@ them — run this plan in the main working tree, or commit the WIP first.
 
 - `modules/fleet/home-manager.nix` (288 lines):
   - `fleetHosts` attrset starts at line 10. Two hosts today:
-    - `main-pc`: `role = "nixos-desktop"`, `t3codePort = 51000`, aliases
+    - `kim`: `role = "nixos-desktop"`, `t3codePort = 51000`, aliases
       `main`/`desktop`, tmux via `/run/current-system/sw/bin/tmux`.
-    - `macbook-pro-m1`: `role = "darwin-brain"`, pinned `hostKey`, aliases
+    - `harry`: `role = "darwin-brain"`, pinned `hostKey`, aliases
       `mac`/`mbp`, tmux via `/etc/profiles/per-user/max-vev/bin/tmux`.
   - Line 270: `file.".config/fleet/hosts.json".text = builtins.toJSON fleetHosts;`
     — hosts.json is **write-only**; nothing in the repo parses it at runtime
@@ -87,10 +87,10 @@ In `modules/fleet/home-manager.nix`, add to **each** host in `fleetHosts`:
 ```nix
 os = "nixos";               # or "darwin"
 gui = true;                 # GUI/screenshot surface available
-longRunningAgents = true;   # main-pc: true; macbook-pro-m1: false
+longRunningAgents = true;   # kim: true; harry: false
 ```
 
-Rationale for values: main-pc is the Linux workhorse (offload target);
+Rationale for values: kim is the Linux workhorse (offload target);
 the mac is the interactive "brain" — per the handoff doc, long-running agent
 loops should not run on the primary laptop. Do not change any existing field.
 `hosts.json` will gain these fields automatically via `builtins.toJSON` —
@@ -126,9 +126,9 @@ Keep the generator simple — string concatenation with `concatStringsSep` and
 
 **Verify**: `nix flake check --no-build`; then render the text without
 switching:
-`nix eval --raw .#darwinConfigurations.macbook-pro-m1.config.home-manager.users.max-vev.home.file.".config/fleet/FLEET.md".text`
+`nix eval --raw .#darwinConfigurations.harry.config.home-manager.users.max-vev.home.file.".config/fleet/FLEET.md".text`
 (adjust attr path if evaluating on Linux:
-`.#nixosConfigurations.main-pc.config.home-manager.users.maxpw...`).
+`.#nixosConfigurations.kim.config.home-manager.users.maxpw...`).
 Expected: readable markdown listing both hosts with correct fields.
 
 ### Step 3 — Create the two commands as Codex prompts (canonical)
@@ -275,5 +275,5 @@ Add a short "Agent fleet contract" subsection: FLEET.md is generated from
   repeatedly finds the same classes of issue.
 - **Agent secret isolation / `agent-runner` role** — deferred until the first
   unattended scheduled loop exists. The one-sentence credential rule in
-  step 6 is the placeholder. Candidate host when it happens: main-pc.
+  step 6 is the placeholder. Candidate host when it happens: kim.
 - **Pi prompt changes in `~/pi-config`** — separate repo; out of scope here.

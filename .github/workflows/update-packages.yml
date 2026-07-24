@@ -79,7 +79,7 @@ jobs:
             Automated version bumps from `nix-update`, run by
             `.github/workflows/update-packages.yml`.
 
-            CI builds `main-pc`, produces the WSL import image, and builds the
+            CI builds `kim`, produces Cuno's WSL import image, and builds the
             Darwin system on a macOS runner.
 
             ${{ steps.bump.outputs.failed_packages && format('> [!WARNING]\n> Packages that failed to update: `{0}`', steps.bump.outputs.failed_packages) || '' }}

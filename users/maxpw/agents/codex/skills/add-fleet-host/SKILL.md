@@ -25,7 +25,7 @@ Run `fleet list` if available to see current host names and aliases.
 
 Collect or infer these values before editing:
 
-- Inventory key, for example `main-pc` or `build-box`.
+- Inventory key, for example `kim` or `build-box`.
 - SSH target, preferably Tailscale MagicDNS, as `hostName`.
 - Remote login `user`.
 - Short `aliases` for shells and agents.
@@ -64,7 +64,7 @@ Run the smallest relevant checks after editing:
 ```bash
 alejandra --check lib/fleet.nix modules/fleet/home-manager.nix users/maxpw/modules/tmux.nix users/maxpw/modules/cmux.nix
 git diff --check -- lib/fleet.nix modules/fleet/home-manager.nix users/maxpw/cmux/sidebars/fleet.swift.tpl users/maxpw/modules/tmux.nix users/maxpw/modules/cmux.nix
-nix build --no-link '.#darwinConfigurations.macbook-pro-m1.system'
+nix build --no-link '.#darwinConfigurations.harry.system'
 ```
 
 After applying the rebuild, verify the live workflow:

@@ -27,7 +27,7 @@ Recorded so they are not re-audited next run (2026-07-03 audit):
 
 - Unquoted `$session` in fleet home-manager module — already constrained by
   `validate_session` regex upstream; quote opportunistically if editing the file.
-- `bash -c` command chain in machines/main-pc.nix — quoting is correct;
+- `bash -c` command chain in machines/kim.nix — quoting is correct;
   readability-only.
 - Shell aliases spread across shells.nix / agent-tools.nix / fleet modules —
   HM merges attrsets safely; consolidation not worth the churn.

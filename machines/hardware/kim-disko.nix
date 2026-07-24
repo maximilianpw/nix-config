@@ -1,11 +1,11 @@
-# Declarative root-disk layout for main-pc (Beelink SER9).
+# Declarative root-disk layout for kim (Beelink SER9).
 # The device is pinned by serial because Linux currently assigns the root disk
 # as nvme1n1 and the /srv storage disk as nvme0n1. Using the kernel name here
 # would erase the storage disk during reprovisioning.
-# NOT imported into the live config — the hardware/main-pc.nix UUID-based mounts remain in use.
+# NOT imported into the live config — the hardware/kim.nix UUID-based mounts remain in use.
 #
 # Review this file against `lsblk` and inspect the locked plan first:
-#   nix run .#disko -- --dry-run --mode disko ./machines/hardware/main-pc-disko.nix
+#   nix run .#disko -- --dry-run --mode disko ./machines/hardware/kim-disko.nix
 # The same command without `--dry-run` is destructive. Never substitute a
 # /dev/nvmeXnY kernel name for the pinned device below.
 {

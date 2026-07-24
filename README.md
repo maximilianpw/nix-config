@@ -21,12 +21,12 @@ workstation, WSL environment, and a parked/tested Hyprland desktop profile.
 │   ├── hosts.nix            # Canonical typed host/profile/fleet inventory
 │   └── mksystem.nix         # mkSystem builder (NixOS & Darwin + Home Manager)
 ├── machines/
-│   ├── macbook-pro-m1.nix   # macOS (nix-darwin) host
-│   ├── main-pc.nix          # Headless NixOS homelab (Ryzen)
-│   ├── wsl.nix              # NixOS-WSL base
+│   ├── cuno.nix             # NixOS-WSL host
+│   ├── harry.nix            # macOS (nix-darwin) workstation
+│   ├── kim.nix              # Headless NixOS homelab (Ryzen)
 │   └── hardware/
-│       ├── main-pc-disko.nix # Disko layout for main-pc
-│       └── main-pc.nix      # Hardware profile for main-pc
+│       ├── kim-disko.nix    # Disko layout for kim
+│       └── kim.nix          # Hardware profile for kim
 ├── modules/
 │   ├── core/
 │   │   ├── nix-settings.nix # Shared Nix settings (experimental-features, flakes)
@@ -58,7 +58,7 @@ workstation, WSL environment, and a parked/tested Hyprland desktop profile.
 │   └── maxpw/
 │       ├── home-manager.nix # Main Home Manager config (Linux & macOS)
 │       ├── nixos.nix        # NixOS user/system module
-│       ├── darwin.nix       # nix-darwin user/system module for macbook-pro-m1
+│       ├── darwin.nix       # nix-darwin user/system module for harry
 │       ├── wsl.nix          # NixOS-WSL user/system module
 │       ├── modules/
 │       │   ├── fonts.nix          # Fonts (Nerd Fonts + defaults, fontconfig)
@@ -92,9 +92,10 @@ workstation, WSL environment, and a parked/tested Hyprland desktop profile.
   - Integrates Home Manager at `home-manager.users.<user>` using `users/<userDir>/home-manager.nix`.
   - Injects convenience args: `currentSystem*`, `isWSL`, `inputs`.
 - Outputs (derived from `lib/hosts.nix`):
-  - `nixosConfigurations.main-pc` (x86_64-linux; user: `maxpw`).
-  - `darwinConfigurations.macbook-pro-m1` (aarch64-darwin; login `max-vev`, userDir `maxpw`).
-  - Eval check for the parked `main-pc` Hyprland profile.
+  - `nixosConfigurations.kim` (x86_64-linux homelab; user: `maxpw`).
+  - `nixosConfigurations.cuno` (x86_64-linux under WSL; user: `maxpw`).
+  - `darwinConfigurations.harry` (aarch64-darwin; login `max-vev`, userDir `maxpw`).
+  - Eval check for the parked `kim` Hyprland profile.
   - `devShells` for aarch64/x86_64 Linux and aarch64 Darwin.
 
 ## What each file/module does
@@ -102,18 +103,18 @@ workstation, WSL environment, and a parked/tested Hyprland desktop profile.
 - lib/mksystem.nix
   - Chooses NixOS or Darwin system function, wires Home Manager and optional WSL, passes `currentSystem*` args.
 
-- machines/macbook-pro-m1.nix (nix-darwin)
+- machines/harry.nix (nix-darwin)
   - stateVersion = 6; leaves Nix daemon to Determinate installer (`nix.enable = false`).
   - Optional Linux builder (currently disabled); zsh program enable; basic tools (e.g., cachix).
   - Imports core modules for shared nix settings.
 
-- machines/main-pc.nix (headless NixOS homelab)
-  - Imports `hardware/main-pc.nix` for hardware configuration.
+- machines/kim.nix (headless NixOS homelab)
+  - Imports `hardware/kim.nix` for hardware configuration.
   - AMD Ryzen setup with zen kernel, power management, and firmware updates.
   - Docker and libvirtd for virtualization.
   - System packages and optional GUI applications.
 
-- machines/wsl.nix (NixOS-WSL)
+- machines/cuno.nix (NixOS-WSL)
   - Enables WSL module, sets default user; stateVersion 24.05.
   - Imports shared nix-settings module.
 
@@ -192,12 +193,12 @@ make chezmoi-apply
 Suggested clone path: `~/nix-config` (the rebuild script assumes this).
 
 - macOS (Apple Silicon)
-  - Apply: `sudo darwin-rebuild switch --flake .#macbook-pro-m1`
+  - Apply: `sudo darwin-rebuild switch --flake .#harry`
   - Or run: `./scripts/nixos-rebuild.sh`
   - Or use: `make rebuild`
 
-- NixOS Desktop
-  - Apply: `sudo nixos-rebuild switch --flake .#main-pc`
+- NixOS homelab
+  - Apply: `sudo nixos-rebuild switch --flake .#kim`
   - Or run: `./scripts/nixos-rebuild.sh`
   - Or use: `make rebuild`
 

@@ -78,7 +78,7 @@ The encrypted file currently has two recipients:
 
 - `admin_max`, whose private age key is stored in 1Password and is used for
   editing and bootstrapping machines.
-- `main_pc`, derived from main-pc's ED25519 SSH host key. sops-nix reads the
+- `kim`, derived from Kim's ED25519 SSH host key. sops-nix reads the
   private half directly from `/etc/ssh/ssh_host_ed25519_key`, so the server can
   keep decrypting secrets if the copied admin key is unavailable.
 
@@ -88,7 +88,7 @@ machine and 1Password would still make the secrets, including the Borg
 passphrase, unrecoverable.
 
 The remaining manual recovery task is to create an offline age key, store its
-private half outside both main-pc and 1Password (for example on encrypted
+private half outside both Kim and 1Password (for example on encrypted
 removable media held separately), add only its public recipient to `.sops.yaml`,
 and rewrap the data key:
 

@@ -6,8 +6,17 @@
 
 map_darwin_user_to_host() {
     case "$1" in
-        max-vev) printf '%s\n' "macbook-pro-m1" ;;
+        max-vev) printf '%s\n' "harry" ;;
         *) return 1 ;;
+    esac
+}
+
+canonical_host_name() {
+    case "$1" in
+        main-pc) printf '%s\n' "kim" ;;
+        macbook-pro-m1) printf '%s\n' "harry" ;;
+        wsl) printf '%s\n' "cuno" ;;
+        *) printf '%s\n' "$1" ;;
     esac
 }
 
@@ -48,7 +57,7 @@ detect_host() {
             echo "Invalid NIX_CONFIG_HOST: '$NIX_CONFIG_HOST'" >&2
             return 1
         fi
-        HOSTNAME="$NIX_CONFIG_HOST"
+        HOSTNAME=$(canonical_host_name "$NIX_CONFIG_HOST")
         if [[ "$os" == "Darwin" ]]; then
             PLATFORM="darwin"
         else
@@ -70,20 +79,20 @@ detect_host() {
 
     PLATFORM="nixos"
     if detect_wsl; then
-        HOSTNAME="wsl"
+        HOSTNAME="cuno"
         return 0
     fi
 
-    # Strip a DNS suffix but do not map all Linux logins to main-pc. A new or
+    # Strip a DNS suffix but do not map all Linux logins to kim. A new or
     # misnamed Linux host must fail later inventory validation instead of
-    # accidentally switching main-pc's configuration.
+    # accidentally switching kim's configuration.
     detected_hostname="${detected_hostname%%.*}"
     if ! valid_host_name "$detected_hostname"; then
         echo "Could not derive a safe flake host name from '$detected_hostname'." >&2
         echo "Set NIX_CONFIG_HOST explicitly after checking lib/hosts.nix." >&2
         return 1
     fi
-    HOSTNAME="$detected_hostname"
+    HOSTNAME=$(canonical_host_name "$detected_hostname")
 }
 
 validate_host_configuration() {

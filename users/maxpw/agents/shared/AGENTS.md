@@ -73,7 +73,7 @@ Use `fleet list` to see trusted development machines declared by Nix, and read
 Prefer `fleet ssh <host>` for interactive tmux work, `fleet shell <host>` for a
 plain SSH shell, and `fleet run <host> <command...>` for non-interactive checks.
 Direct tmux SSH aliases also exist as `tm-<host-or-alias>`, for example
-`ssh tm-main-pc`.
+`ssh tm-kim`.
 
 Use `fleet forward <host> <local-port> <remote-port> [remote-host]` for port
 forwards and `fleet t3 <host> [local-port]` for remote T3 Code access.

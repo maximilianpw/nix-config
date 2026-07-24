@@ -73,11 +73,11 @@ in {
       shell = settings.loginShell;
       openssh.authorizedKeys.keys =
         [
-          settings.sshKeys.mainPcUser
-          settings.sshKeys.fleetMacbookToMainPc
+          settings.sshKeys.kimUser
+          settings.sshKeys.fleetHarryToKim
         ]
-        ++ lib.optionals (settings.sshKeys.wslToMainPc != "") [
-          settings.sshKeys.wslToMainPc
+        ++ lib.optionals (settings.sshKeys.cunoToKim != "") [
+          settings.sshKeys.cunoToKim
         ];
       # Password is managed via sops-nix (see secrets/README.md)
       hashedPasswordFile = config.sops.secrets.maxpw-password.path;

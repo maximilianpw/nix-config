@@ -22,8 +22,9 @@ development machines.
 
 Home Manager also writes direct SSH aliases:
 
-- `ssh main-pc`, `ssh main`, `ssh desktop` are plain SSH aliases.
-- `ssh tm-main-pc`, `ssh tm-main`, `ssh tm-desktop` attach to tmux immediately.
+- `ssh kim`, `ssh main`, `ssh desktop` are plain SSH aliases.
+- `ssh tm-kim`, `ssh tm-main`, `ssh tm-desktop` attach to tmux immediately.
+- The old `main-pc` name remains a migration alias.
 
 ## Agent Fleet Contract
 
@@ -44,19 +45,19 @@ Every new host must set `os`, `gui`, and `longRunningAgents` explicitly.
 
 ## T3 Code
 
-`main-pc` runs the pinned stable T3 Code server on loopback port `51000`.
+`kim` runs the pinned stable T3 Code server on loopback port `51000`.
 The homelab Tailscale Serve configuration exposes it only within the tailnet at
 `https://t3code.tail7161c3.ts.net`.
 
 After a service start, retrieve the one-time pairing token from the user journal:
 
 ```sh
-fleet run main-pc journalctl --user -u t3code -b -o cat --no-pager
+fleet run kim journalctl --user -u t3code -b -o cat --no-pager
 ```
 
 In T3 Code's remote-environment flow, enter the HTTPS URL and the
 printed `Token` separately. Once paired, the desktop app uses its saved session;
-the token is only needed again for another client. `fleet t3 main-pc` remains
+the token is only needed again for another client. `fleet t3 kim` remains
 available as an SSH-tunnel fallback.
 
 ## Adding Machines

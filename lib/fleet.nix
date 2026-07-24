@@ -91,12 +91,12 @@
   knownHostsFile = "${homeDirectory}/.ssh/fleet_known_hosts";
 
   clientSshOptionsFor = name:
-    if isDarwin && name == "main-pc"
+    if isDarwin && name == "kim"
     then {
       AddKeysToAgent = "no";
       IdentityAgent = "%d/.1password/agent.sock";
       IdentitiesOnly = "yes";
-      IdentityFile = "${homeDirectory}/.ssh/main-pc_1password_ed25519.pub";
+      IdentityFile = "${homeDirectory}/.ssh/kim_1password_ed25519.pub";
     }
     else {};
 
@@ -449,12 +449,12 @@
           '  fleet t3 HOST [LOCAL_PORT]' \
           "" \
           'examples:' \
-          '  fleet ssh main-pc' \
-          '  fleet run main-pc btop' \
-          '  fleet forward main-pc 3000 3000' \
+          '  fleet ssh kim' \
+          '  fleet run kim btop' \
+          '  fleet forward kim 3000 3000' \
           '  fleet forward list 3000' \
           '  fleet forward delete 12345' \
-          '  fleet t3 main-pc 51001'
+          '  fleet t3 kim 51001'
       }
 
       cmd="''${1:-list}"

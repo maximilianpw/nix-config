@@ -25,7 +25,7 @@
     export XCURSOR_SIZE=128
   '';
 
-  hasLockScreen = hostname != "main-pc";
+  hasLockScreen = hostname != "kim";
 
   hostLua =
     if hasLockScreen

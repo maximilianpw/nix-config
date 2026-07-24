@@ -12,9 +12,9 @@
   resurrectDir = "${config.xdg.stateHome}/tmux/resurrect";
   hostAccent =
     {
-      main-pc = "#9ece6a";
-      macbook-pro-m1 = "#7aa2f7";
-      wsl = "#e0af68";
+      kim = "#9ece6a";
+      harry = "#7aa2f7";
+      cuno = "#e0af68";
     }
     .${
       hostname

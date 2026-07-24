@@ -3,14 +3,14 @@
 
 keys:
   - &admin_max age1feq76jjmp332nvqltcr3k4rmramk4ds7axhjqj8wjcpes46rusvs9wcpwh
-  # Derived from main-pc's pinned ED25519 SSH host key. This lets the server
+  # Derived from Kim's pinned ED25519 SSH host key. This lets the server
   # recover after the 1Password-managed admin key is unavailable, without
   # introducing another private key into this repository.
-  - &main_pc age1t4a4e3r2nf376rntd9gkr54etzd30e0ver7p2rayajdrm4pcaueqrc2l5p
+  - &kim age1t4a4e3r2nf376rntd9gkr54etzd30e0ver7p2rayajdrm4pcaueqrc2l5p
 
 creation_rules:
   - path_regex: secrets/[^/]+\.yaml$
     key_groups:
       - age:
           - *admin_max
-          - *main_pc
+          - *kim

@@ -288,7 +288,7 @@ fi
 # neededForUsers = true. If the age key is missing on the first rebuild,
 # the user ends up with no password - i.e. locked out of the new system.
 # Darwin Home Manager also decrypts user secrets, including the dedicated
-# fleet SSH key used for unattended Mac -> main-pc connections.
+# fleet SSH key used for unattended Harry -> Kim connections.
 if [[ "${SKIP_SOPS_CHECK:-0}" == "1" ]]; then
     step "7/8: Skipping sops age key check (SKIP_SOPS_CHECK=1)"
 elif [[ "$PLATFORM" == "darwin" ]]; then
@@ -308,7 +308,7 @@ elif [[ "$PLATFORM" == "darwin" ]]; then
             exit 1
         fi
     fi
-elif [[ "$PLATFORM" == "nixos" && "$HOSTNAME" != "wsl" ]]; then
+elif [[ "$PLATFORM" == "nixos" && "$HOSTNAME" != "cuno" ]]; then
     step "7/8: Checking sops age key (prevents user lockout)..."
     if [[ "$DRY_RUN" == "true" ]]; then
         info "[DRY-RUN] Would validate /var/lib/sops-nix/key.txt is a root-owned 0600 regular file"

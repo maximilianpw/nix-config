@@ -6,8 +6,8 @@
   ...
 }: let
   # The server itself is headless: run it on Linux desktops and on the
-  # main-pc homelab box, where Tailscale Serve provides tailnet-only HTTPS.
-  runServer = isLinuxDesktop || hostname == "main-pc";
+  # Kim is the homelab box, where Tailscale Serve provides tailnet-only HTTPS.
+  runServer = isLinuxDesktop || hostname == "kim";
   t3Version = "0.0.28";
   servicePath =
     [

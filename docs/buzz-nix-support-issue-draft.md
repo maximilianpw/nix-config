@@ -105,7 +105,7 @@ and take responsibility for the initial packaging updates.
 These notes are not intended to be included in the GitHub issue:
 
 - The personal deployment proposal remains the source of truth for the
-  `main-pc`, Tailscale Serve, sops-nix, Compose, and Borg design.
+  `kim`, Tailscale Serve, sops-nix, Compose, and Borg design.
 - Those deployment details were deliberately removed from the upstream issue
   because they do not require changes or maintenance from Buzz.
 - Native desktop packaging and a NixOS relay module were excluded to keep the

@@ -13,7 +13,7 @@
 #     like borg -> /run/secrets/...
 #
 # Proton Bridge generates a DIFFERENT password per machine, so the Mac and
-# main-pc use separate sops keys:
+# Kim uses a separate sops key:
 #   - darwin -> himalaya-work-password      (added via the HM sops module here)
 #   - NixOS  -> himalaya-bridge-password    (declared in modules/core/sops.nix)
 #

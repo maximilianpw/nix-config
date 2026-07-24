@@ -4,7 +4,7 @@
   ...
 }: {
   imports = [
-    ./hardware/main-pc.nix
+    ./hardware/kim.nix
     ../homelab
     ../modules/services/backup.nix
   ];
@@ -12,8 +12,7 @@
   custom.backup.enable = true;
 
   # Core system identity
-  # TODO: Consider renaming this host and flake config from main-pc to beest.
-  networking.hostName = "main-pc";
+  networking.hostName = "kim";
 
   # Wake-on-LAN on the Realtek RTL8125, so the box can be powered back up
   # remotely after a manual shutdown.
@@ -67,6 +66,9 @@
   users.users.maxpw.linger = true;
 
   services = {
+    # Keep the Tailscale/MagicDNS identity aligned with the system hostname.
+    tailscale.extraSetFlags = ["--hostname=kim"];
+
     # Firmware updates are still useful on a headless box.
     fwupd.enable = true;
 

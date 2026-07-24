@@ -66,8 +66,8 @@ if [[ "$PLATFORM" == "darwin" ]]; then
     NH_SWITCH=("${NH[@]}" darwin switch --no-nom)
 else
     NH_SWITCH=("${NH[@]}" os switch)
-    if [[ "$HOSTNAME" == "wsl" ]]; then
-        info "WSL environment detected, using wsl config"
+    if [[ "$HOSTNAME" == "cuno" ]]; then
+        info "WSL environment detected, using cuno config"
     fi
 fi
 
@@ -79,7 +79,7 @@ info "Platform: $PLATFORM"
 # (users/maxpw/nixos.nix, neededForUsers), so switching without the age key
 # leaves the user with no password. Validate the privileged file itself with
 # sudo, including type, ownership, mode, readability, and symlink refusal.
-if [[ "$PLATFORM" == "nixos" && "$HOSTNAME" != "wsl" && "${SKIP_SOPS_CHECK:-0}" != "1" ]]; then
+if [[ "$PLATFORM" == "nixos" && "$HOSTNAME" != "cuno" && "${SKIP_SOPS_CHECK:-0}" != "1" ]]; then
     # shellcheck source=lib/sops-key.sh
     source "$SCRIPT_DIR/lib/sops-key.sh"
     export SOPS_KEY_USE_SUDO=1

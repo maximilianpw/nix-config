@@ -5,9 +5,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## What This Is
 
 A unified NixOS + nix-darwin flake managing three systems from a single codebase:
-- **main-pc**: headless NixOS x86_64-linux homelab (AMD Ryzen); the Hyprland profile remains parked and eval-tested
-- **macbook-pro-m1**: nix-darwin aarch64-darwin (Apple Silicon, Homebrew for GUI apps)
-- **wsl**: NixOS x86_64-linux under WSL (minimal, no desktop)
+- **kim**: headless NixOS x86_64-linux homelab (AMD Ryzen); the Hyprland profile remains parked and eval-tested
+- **harry**: nix-darwin aarch64-darwin (Apple Silicon, Homebrew for GUI apps)
+- **cuno**: NixOS x86_64-linux under WSL (minimal, no desktop)
 
 ## Commands
 
@@ -60,8 +60,8 @@ The `userDir` parameter allows the macOS username (`max-vev`) to differ from the
 ### Module Layout
 
 ```
-machines/           # Per-host: boot, hardware, services (main-pc.nix, macbook-pro-m1.nix, wsl.nix)
-homelab/            # main-pc self-hosted services exposed through Cloudflare Tunnel and Tailscale Serve
+machines/           # Per-host: boot, hardware, services (kim.nix, harry.nix, cuno.nix)
+homelab/            # kim self-hosted services exposed through Cloudflare Tunnel and Tailscale Serve
 modules/
   core/             # Shared: nix-settings.nix, security.nix, sops.nix, shells.nix (login shells)
   desktop/          # Hyprland + greetd (Linux only)
@@ -97,7 +97,7 @@ secrets/            # sops-nix encrypted secrets (age encryption, key in 1Passwo
 
 ### Homelab Services
 
-`homelab/` is imported by `machines/main-pc.nix` and aggregates the services that run on main-pc. `homelab/cloudflared.nix` keeps only the public Cloudflare tunnel ingress (Nextcloud and Home Assistant), while `homelab/tailscale-serve.nix` exposes private operator/dev services to the tailnet. Secrets are managed through sops-nix, and most service endpoints bind to `127.0.0.1`.
+`homelab/` is imported by `machines/kim.nix` and aggregates the services that run on Kim. `homelab/cloudflared.nix` keeps only the public Cloudflare tunnel ingress (Nextcloud and Home Assistant), while `homelab/tailscale-serve.nix` exposes private operator/dev services to the tailnet. Secrets are managed through sops-nix, and most service endpoints bind to `127.0.0.1`.
 
 Fleet remote-development usage and implementation notes live in `modules/fleet/README.md`; implementation is split between `modules/fleet/home-manager.nix` and `modules/fleet/nixos.nix`.
 
@@ -111,7 +111,7 @@ Three overlays applied in order:
 ### Secrets
 
 Uses sops-nix with age encryption. The admin identity is stored in 1Password;
-main-pc's SSH host identity is also a recipient. Secrets file:
+Kim's SSH host identity is also a recipient. Secrets file:
 `secrets/secrets.yaml`. The host recipient helps with temporary admin-key loss
 but is not independent disaster recovery. See
 `docs/config-ownership-and-recovery.md` for the required offline recipient and
@@ -119,7 +119,7 @@ off-site backup work.
 
 ### XDG config management (`users/maxpw/modules/xdg.nix`)
 
-Dotfiles for desktop apps (Hyprland, waybar, rofi, ghostty, kitty, yazi, etc.) live as plain files under `users/maxpw/` and are symlinked into `~/.config/` via `xdg.configFile`. The `symlinkDir` helper auto-links all files in a directory. Hyprland configs use per-host overrides via the `hostname` argument (e.g., lock screen only on non-main-pc hosts).
+Dotfiles for desktop apps (Hyprland, waybar, rofi, ghostty, kitty, yazi, etc.) live as plain files under `users/maxpw/` and are symlinked into `~/.config/` via `xdg.configFile`. The `symlinkDir` helper auto-links all files in a directory. Hyprland configs use per-host overrides via the `hostname` argument (e.g., lock screen only on non-Kim hosts).
 
 ### Chezmoi bootstrap boundary
 
@@ -162,6 +162,6 @@ repository heads. Update each revision and hash together.
 
 - **Never bump `stateVersion`**: `system.stateVersion` and `home.stateVersion` must stay at their initial install values. They control state migration, not the package set version.
 - **Hyprland comes from upstream flake input**, not nixpkgs. Check the `hyprland` input in `flake.nix` when debugging Hyprland issues.
-- **macOS Nix daemon**: Managed by the Determinate installer. `nix.enable = false` in `macbook-pro-m1.nix` — don't set it to `true`.
+- **macOS Nix daemon**: Managed by the Determinate installer. `nix.enable = false` in `harry.nix` — don't set it to `true`.
 - **Rebuild does NOT auto-commit**: `make rebuild` formats with alejandra, switches via nh (which prints a package-level generation diff), and cleans old generations (`nh clean all --keep 5 --keep-since 30d`) — but always leaves the repo uncommitted. Commit manually; the pre-commit hook lints on commit.
-- **Darwin Nix settings live in /etc/nix/nix.custom.conf**: because `nix.enable = false` on macOS, nix-darwin ignores `nix.settings`. Caches/trusted-users for the Mac are managed via `environment.etc."nix/nix.custom.conf"` in `machines/macbook-pro-m1.nix`.
+- **Darwin Nix settings live in /etc/nix/nix.custom.conf**: because `nix.enable = false` on macOS, nix-darwin ignores `nix.settings`. Caches/trusted-users for Harry are managed via `environment.etc."nix/nix.custom.conf"` in `machines/harry.nix`.

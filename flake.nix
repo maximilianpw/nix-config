@@ -144,6 +144,7 @@
         obsidian = final.callPackage ./packages/obsidian.nix {};
         coderabbit = final.callPackage ./packages/coderabbit.nix {};
         cliproxyapi = final.callPackage ./packages/cliproxyapi.nix {};
+        buzz-cli = final.callPackage ./packages/buzz-cli.nix {};
       })
     ];
 
@@ -160,10 +161,10 @@
 
     nixosHosts = lib.filterAttrs (_: host: !host.darwin) hosts;
     darwinHosts = lib.filterAttrs (_: host: host.darwin) hosts;
-    desktopMainPc = mkConfiguredSystem "main-pc" (hosts.main-pc
+    desktopKim = mkConfiguredSystem "kim" (hosts.kim
       // {
         linuxDesktop = true;
-        profiles = hosts.main-pc.profiles ++ ["desktop"];
+        profiles = hosts.kim.profiles ++ ["desktop"];
       });
 
     mkPreCommitCheck = system:
@@ -211,33 +212,33 @@
     # Eval-only checks: catch typos, missing modules, type errors without building
     checks = {
       x86_64-linux = {
-        eval-main-pc = self.nixosConfigurations.main-pc.config.system.build.toplevel;
-        # Keep the parked Hyprland profile evaluable while main-pc is headless.
-        eval-main-pc-desktop = desktopMainPc.config.system.build.toplevel;
-        eval-wsl = self.nixosConfigurations.wsl.config.system.build.toplevel;
+        eval-kim = self.nixosConfigurations.kim.config.system.build.toplevel;
+        # Keep the parked Hyprland profile evaluable while kim is headless.
+        eval-kim-desktop = desktopKim.config.system.build.toplevel;
+        eval-cuno = self.nixosConfigurations.cuno.config.system.build.toplevel;
         pre-commit-check = mkPreCommitCheck "x86_64-linux";
         tailscale-serve-regression = import ./tests/tailscale-serve-regression.nix {
           inherit lib;
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
         };
         paperless-backup-regression = import ./tests/paperless-backup-regression.nix {
-          config = self.nixosConfigurations.main-pc.config;
+          config = self.nixosConfigurations.kim.config;
           inherit lib;
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
         };
         paperless-config-regression = import ./tests/paperless-config-regression.nix {
-          config = self.nixosConfigurations.main-pc.config;
+          config = self.nixosConfigurations.kim.config;
           inherit lib;
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
         };
         buzz-config-regression = import ./tests/buzz-config-regression.nix {
-          config = self.nixosConfigurations.main-pc.config;
+          config = self.nixosConfigurations.kim.config;
           inherit lib;
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
         };
       };
       aarch64-darwin = {
-        eval-macbook = self.darwinConfigurations.macbook-pro-m1.system;
+        eval-harry = self.darwinConfigurations.harry.system;
         pre-commit-check = mkPreCommitCheck "aarch64-darwin";
       };
     };
@@ -255,7 +256,7 @@
       x86_64-linux = let
         pkgs = mkPkgs "x86_64-linux";
       in {
-        inherit (pkgs) helium obsidian skills coderabbit cliproxyapi hunkdiff nix-update;
+        inherit (pkgs) helium obsidian skills coderabbit cliproxyapi buzz-cli hunkdiff nix-update;
       };
       aarch64-darwin = let
         pkgs = mkPkgs "aarch64-darwin";
