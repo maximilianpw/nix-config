@@ -22,6 +22,12 @@
     oc = "opencode";
     p = "pi";
   };
+  # Remote Plannotator sessions share one fixed forwarded port. Serialize
+  # Codex Stop hooks so concurrent agents queue instead of racing to bind it.
+  plannotatorCodexHook = pkgs.writeShellScript "plannotator-codex-hook" ''
+    lock_file="''${XDG_RUNTIME_DIR:-/tmp}/plannotator-codex-$UID.lock"
+    exec ${pkgs.util-linux}/bin/flock --exclusive "$lock_file" ${pkgs.plannotator}/bin/plannotator
+  '';
   source = path: homeFiles.mkRepoSource config.home.homeDirectory "users/${currentSystemUserDir}/agents/${path}";
   piConfigSource = path: homeFiles.mkHomeSource config.home.homeDirectory "pi-config/${path}";
   sharedAgentsText = builtins.readFile ../agents/shared/AGENTS.md;
@@ -219,15 +225,15 @@ in {
       // sharedPromptClaudeLinks
       // pinnedSkillFiles
       // lib.optionalAttrs (hostname == "kim") {
-        # Codex reviews the final plan after a turn stops. Use the immutable
-        # package path because GUI-launched Codex sessions may not inherit PATH.
+        # Codex reviews the final plan after a turn stops. The wrapper queues
+        # concurrent reviews before they contend for the fixed remote port.
         ".codex/hooks.json".text = builtins.toJSON {
           hooks.Stop = [
             {
               hooks = [
                 {
                   type = "command";
-                  command = "${pkgs.plannotator}/bin/plannotator";
+                  command = "${plannotatorCodexHook}";
                   timeout = 345600;
                 }
               ];
