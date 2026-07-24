@@ -8,6 +8,9 @@ CLI remains `fleet`.
 - `fleet list` shows the declared machines and aliases.
 - `fleet ssh <host>` connects to `tmux new-session -A -s main` on that host.
 - `fleet ssh <host> <session>` attaches to a named tmux session.
+- `fleet herdr <host> [label]` creates and focuses a local Herdr workspace,
+  then runs `fleet ssh <host>` in its first Fish pane. The optional label names
+  the workspace; `fh` is the shell alias for this command.
 - `fleet shell <host>` opens a plain SSH shell with no forced tmux command.
 - `fleet run <host> <command...>` runs a non-interactive command remotely.
 - `fleet forward <host> <local-port> <remote-port> [remote-host]` opens an SSH

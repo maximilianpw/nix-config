@@ -9,6 +9,7 @@
 
   inventory = import ./hosts.nix;
   fleetHosts = filterAttrs (_: host: host.fleet != null) inventory;
+  fleetHerdrLib = builtins.readFile ../scripts/lib/fleet-herdr.sh;
   hosts = mapAttrs (_: host:
     host.fleet
     // {
@@ -55,6 +56,7 @@
 
     - Use `fleet run <host> <command...>` for non-interactive remote checks.
     - Use `fleet ssh <host>` for persistent tmux sessions.
+    - Use `fleet herdr <host> [label]` to open a focused local Herdr workspace attached to the host's persistent tmux session.
     - Use `fleet t3 <host>` for T3 Code port forwards when the host declares a T3 Code port.
     - Use `fleet forward list [local-port]` to inspect active SSH local forwards, then `fleet forward delete PID` to stop one.
     - Run long-running or unattended agent work only on hosts with `longRunningAgents = true`.
@@ -183,6 +185,8 @@
   package = pkgs.writeShellApplication {
     name = "fleet";
     runtimeInputs = [
+      pkgs.herdr
+      pkgs.jq
       pkgs.openssh
       pkgs.tmux
     ];
@@ -221,6 +225,8 @@
             ;;
         esac
       }
+
+      ${fleetHerdrLib}
 
       forward_local_port() {
         spec="$1"
@@ -455,6 +461,7 @@
           'usage:' \
           '  fleet list' \
           '  fleet ssh HOST [SESSION]' \
+          '  fleet herdr HOST [LABEL]' \
           '  fleet shell HOST' \
           '  fleet run HOST COMMAND...' \
           '  fleet forward HOST LOCAL_PORT REMOTE_PORT [REMOTE_HOST]' \
@@ -465,6 +472,7 @@
           "" \
           'examples:' \
           '  fleet ssh kim' \
+          '  fleet herdr kim' \
           '  fleet run kim btop' \
           '  fleet forward kim 3000 3000' \
           '  fleet forward list 3000' \
@@ -499,6 +507,13 @@
             exec ssh -t "$host" "$tmux_command new-session -A -s '$session'"
           fi
           exec ssh "tm-$host"
+          ;;
+        herdr)
+          if [ "$#" -lt 2 ] || [ "$#" -gt 3 ]; then
+            usage >&2
+            exit 2
+          fi
+          fleet_herdr_workspace "$2" "''${3:-$2}"
           ;;
         shell)
           if [ "$#" -lt 2 ]; then
@@ -579,6 +594,7 @@ in {
   aliases = {
     fl = "fleet list";
     fs = "fleet ssh";
+    fh = "fleet herdr";
     fsh = "fleet shell";
     fr = "fleet run";
   };
