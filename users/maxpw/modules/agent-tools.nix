@@ -164,6 +164,7 @@ in {
         pkgs.codex
         pkgs.opencode
         pkgs.grok
+        pkgs.herdr
         pkgs.amp-cli
         pkgs.pi
         pkgs.skills
@@ -216,7 +217,24 @@ in {
         };
       }
       // sharedPromptClaudeLinks
-      // pinnedSkillFiles;
+      // pinnedSkillFiles
+      // lib.optionalAttrs (hostname == "kim") {
+        # Codex reviews the final plan after a turn stops. Use the immutable
+        # package path because GUI-launched Codex sessions may not inherit PATH.
+        ".codex/hooks.json".text = builtins.toJSON {
+          hooks.Stop = [
+            {
+              hooks = [
+                {
+                  type = "command";
+                  command = "${pkgs.plannotator}/bin/plannotator";
+                  timeout = 345600;
+                }
+              ];
+            }
+          ];
+        };
+      };
   };
 
   programs = {
