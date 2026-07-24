@@ -1,6 +1,7 @@
 {
   config,
   currentSystemUserDir,
+  hostname,
   pkgs,
   lib,
   ...
@@ -157,15 +158,17 @@
   pinnedSkills);
 in {
   home = {
-    packages = [
-      pkgs.claude-code
-      pkgs.codex
-      pkgs.opencode
-      pkgs.grok
-      pkgs.amp-cli
-      pkgs.pi
-      pkgs.skills
-    ];
+    packages =
+      [
+        pkgs.claude-code
+        pkgs.codex
+        pkgs.opencode
+        pkgs.grok
+        pkgs.amp-cli
+        pkgs.pi
+        pkgs.skills
+      ]
+      ++ lib.optionals (hostname == "kim") [pkgs.plannotator];
 
     file =
       {

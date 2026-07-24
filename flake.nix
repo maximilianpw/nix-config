@@ -145,6 +145,7 @@
         coderabbit = final.callPackage ./packages/coderabbit.nix {};
         cliproxyapi = final.callPackage ./packages/cliproxyapi.nix {};
         buzz-cli = final.callPackage ./packages/buzz-cli.nix {};
+        plannotator = final.callPackage ./packages/plannotator.nix {};
       })
     ];
 
@@ -256,12 +257,12 @@
       x86_64-linux = let
         pkgs = mkPkgs "x86_64-linux";
       in {
-        inherit (pkgs) helium obsidian skills coderabbit cliproxyapi buzz-cli hunkdiff nix-update;
+        inherit (pkgs) helium obsidian skills coderabbit cliproxyapi buzz-cli plannotator hunkdiff nix-update;
       };
       aarch64-darwin = let
         pkgs = mkPkgs "aarch64-darwin";
       in {
-        inherit (pkgs) skills coderabbit hunkdiff nix-update;
+        inherit (pkgs) skills coderabbit plannotator hunkdiff nix-update;
       };
     };
 

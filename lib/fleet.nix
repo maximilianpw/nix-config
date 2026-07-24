@@ -5,7 +5,7 @@
   lib,
   pkgs,
 }: let
-  inherit (lib) concatStringsSep escapeShellArg filterAttrs mapAttrs mapAttrs' mapAttrsToList nameValuePair optionalString;
+  inherit (lib) concatStringsSep escapeShellArg filterAttrs mapAttrs mapAttrs' mapAttrsToList nameValuePair optionalAttrs optionalString;
 
   inventory = import ./hosts.nix;
   fleetHosts = filterAttrs (_: host: host.fleet != null) inventory;
@@ -39,6 +39,7 @@
         - Target: ${host.hostName}
         - GUI/screenshot surface: ${boolText host.gui}
         - Long-running agents: ${boolText host.longRunningAgents}
+        ${optionalString (host ? plannotatorPort) "- Plannotator port: ${toString host.plannotatorPort} (forwarded automatically over SSH)\n"}
         ${optionalString (host ? t3codePort) "- T3 Code port: ${toString host.t3codePort}\n"}
       ''
     )
@@ -110,7 +111,21 @@
       }
       else {}
     )
-    // clientSshOptionsFor name;
+    // clientSshOptionsFor name
+    // optionalAttrs (host ? plannotatorPort) {
+      LocalForward = [
+        {
+          bind = {
+            address = "127.0.0.1";
+            port = host.plannotatorPort;
+          };
+          host = {
+            address = "127.0.0.1";
+            port = host.plannotatorPort;
+          };
+        }
+      ];
+    };
 
   # Values use upstream OpenSSH directive names; the attr name becomes the
   # `Host <patterns>` line (programs.ssh.settings semantics).

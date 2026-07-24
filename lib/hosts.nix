@@ -32,6 +32,7 @@
       ];
       tmuxSession = "main";
       tmuxCommand = "/run/current-system/sw/bin/tmux";
+      plannotatorPort = 19432;
       t3codePort = 51000;
       # Cross-checked against the host's public key, ssh-keyscan over
       # Tailscale, and the existing known_hosts entry on 2026-07-09.
