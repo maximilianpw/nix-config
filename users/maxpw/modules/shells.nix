@@ -104,7 +104,7 @@ in {
         use ($nu.default-config-dir | path join "ghostty.nu")
       '';
       extraEnv = ''
-        $env.SHELL = "${pkgs.bash}/bin/bash"
+        $env.SHELL = "${pkgs.bashInteractive}/bin/bash"
 
         # Ghostty shell integration - copy to config dir so config.nu can `use` it
         let ghostty_dest = ($nu.default-config-dir | path join "ghostty.nu")

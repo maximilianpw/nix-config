@@ -17,6 +17,7 @@
   agentAliases = {
     c = "codex --yolo";
     ccc = "DISABLE_ZOXIDE=1 claude --dangerously-skip-permissions";
+    h = "herdr";
     claudex = "ANTHROPIC_BASE_URL=${cliProxy.baseUrl} ANTHROPIC_AUTH_TOKEN=${cliProxy.apiKey} ANTHROPIC_DEFAULT_OPUS_MODEL=${cliProxy.model} ANTHROPIC_DEFAULT_SONNET_MODEL=${cliProxy.model} ANTHROPIC_DEFAULT_HAIKU_MODEL=${cliProxy.model} CLAUDE_CODE_SUBAGENT_MODEL=${cliProxy.model} CLAUDE_CODE_ALWAYS_ENABLE_EFFORT=1 CLAUDE_CODE_MAX_TOOL_USE_CONCURRENCY=3 ENABLE_TOOL_SEARCH=false claude --model ${cliProxy.model}";
     climi = "ANTHROPIC_BASE_URL=${cliProxy.baseUrl} ANTHROPIC_AUTH_TOKEN=${cliProxy.apiKey} ANTHROPIC_DEFAULT_OPUS_MODEL=${climiModel} ANTHROPIC_DEFAULT_SONNET_MODEL=${climiModel} ANTHROPIC_DEFAULT_HAIKU_MODEL=${climiModel} CLAUDE_CODE_SUBAGENT_MODEL=${climiModel} CLAUDE_CODE_ALWAYS_ENABLE_EFFORT=1 CLAUDE_CODE_MAX_TOOL_USE_CONCURRENCY=3 ENABLE_TOOL_SEARCH=false claude --model ${climiModel} --effort max";
     oc = "opencode";
@@ -149,6 +150,17 @@
     }
   ];
 
+  piExcludedSkillNames = [
+    "diagnose"
+    "find-skills"
+    "grill-me"
+    "improve"
+    "improve-codebase-architecture"
+    "receiving-code-review"
+    "tdd"
+    "vercel-react-best-practices"
+    "verification-before-completion"
+  ];
   pinnedSkillFiles = lib.listToAttrs (lib.concatMap (skill:
     map (prefix: {
       name = "${prefix}/${skill.name}";
@@ -156,11 +168,15 @@
         inherit (skill) source;
         force = true;
       };
-    }) [
-      ".agents/skills"
-      ".claude/skills"
-      ".pi/agent/skills"
-    ])
+    }) (
+      [
+        ".agents/skills"
+        ".claude/skills"
+      ]
+      ++ lib.optionals (!(builtins.elem skill.name piExcludedSkillNames)) [
+        ".pi/agent/skills"
+      ]
+    ))
   pinnedSkills);
 in {
   home = {
@@ -179,6 +195,7 @@ in {
 
     file =
       {
+        ".config/amp/settings.json".source = source "amp/settings.json";
         ".codex/AGENTS.md".text = codexAgentsText;
         ".codex/prompts" = {
           source = source "shared/prompts";
@@ -251,6 +268,7 @@ in {
     nushell = {
       shellAliases = {
         c = "codex --yolo";
+        h = "herdr";
         oc = "opencode";
         p = "pi";
       };
