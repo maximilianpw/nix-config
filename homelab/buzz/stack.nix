@@ -7,11 +7,15 @@
   homelab = import ../../lib/homelab.nix {inherit lib;};
   inherit ((homelab.endpoints config.homelab.tailnet.domain)) buzz;
   healthPort = 19004;
+  pairingPort = homelab.privateServices.buzz.pathBackends."/pair";
   docker = lib.getExe config.virtualisation.docker.package;
   composeFormat = pkgs.formats.yaml {};
 
   images = {
     relay = "ghcr.io/block/buzz@sha256:a0f67203d71d15d237fa7517788799957c30c8acdb81cbcff711e07e951c2710"; # 0.2.0
+    # v0.4.23 (sha-acfbb1b). The stable 0.2.0 relay image predates this
+    # stateless binary, so keep the database-backed relay pinned separately.
+    pairingRelay = "ghcr.io/block/buzz@sha256:29fe13981a726fe43642fe03cbd6cc87142579a90bbf9897e3c1b370d1037428";
     postgres = "docker.io/library/postgres@sha256:742f40ea20b9ff2ff31db5458d127452988a2164df9e17441e191f3b72252193"; # 17.10-alpine3.24
     redis = "docker.io/library/redis@sha256:6ab0b6e7381779332f97b8ca76193e45b0756f38d4c0dcda72dbb3c32061ab99"; # 7.4.9-alpine
     minio = "docker.io/minio/minio@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e"; # RELEASE.2025-09-07T16-13-09Z
@@ -86,6 +90,25 @@
           timeout = "3s";
           retries = 12;
           start_period = "30s";
+        };
+        restart = "unless-stopped";
+        networks = ["buzz-net"];
+      };
+
+      pairing-relay = {
+        image = images.pairingRelay;
+        command = ["/usr/local/bin/buzz-pair-relay"];
+        environment.BUZZ_PAIR_RELAY_BIND_ADDR = "0.0.0.0:5000";
+        ports = ["127.0.0.1:${toString pairingPort}:5000"];
+        healthcheck = {
+          test = [
+            "CMD-SHELL"
+            "bash -ec 'exec 3<>/dev/tcp/127.0.0.1/5000'"
+          ];
+          interval = "10s";
+          timeout = "3s";
+          retries = 12;
+          start_period = "5s";
         };
         restart = "unless-stopped";
         networks = ["buzz-net"];
@@ -260,6 +283,7 @@
 
     cat >"$staging/images.txt" <<'EOF'
     relay=${images.relay}
+    pairing-relay=${images.pairingRelay}
     postgres=${images.postgres}
     redis=${images.redis}
     minio=${images.minio}
@@ -285,7 +309,7 @@
           exec ${compose} logs --follow "''${@:-relay}"
           ;;
         restart)
-          exec ${lib.getExe' pkgs.util-linux "flock"} ${lockFile} ${compose} up --detach --wait --force-recreate relay
+          exec ${lib.getExe' pkgs.util-linux "flock"} ${lockFile} ${compose} up --detach --wait --force-recreate relay pairing-relay
           ;;
         add-member)
           pubkey="''${2:?Usage: buzzctl add-member <npub-or-hex> [--role member|admin]}"

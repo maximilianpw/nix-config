@@ -186,7 +186,7 @@ No custom source package is required for the first server deployment.
 
 ### Runtime choice
 
-Use the official `ghcr.io/block/buzz` image. The upstream image includes:
+Use the official `ghcr.io/block/buzz` image. Current upstream images include:
 
 - `buzz-relay`
 - `buzz-admin`
@@ -194,6 +194,13 @@ Use the official `ghcr.io/block/buzz` image. The upstream image includes:
 - The web bundle
 - The admin web bundle
 - Git and the runtime dependencies required by the relay
+
+The stable relay `0.2.0` image predates `buzz-pair-relay`. When retaining that
+stateful relay pin, run the pairing binary from a newer pinned image and route
+the legacy `/pair` endpoint to it. See
+[`buzz-mobile-pairing-404.md`](buzz-mobile-pairing-404.md) for the observed
+failure, compatibility deployment, verification steps, and upstream issue
+draft.
 
 The relay image is multi-architecture and is built separately from desktop
 releases. Upstream publishes:

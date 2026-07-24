@@ -9,6 +9,7 @@
   runsExporter = lib.hasInfix "systemctl start buzz-backup-export.service" backup.preHook;
   usesGeneratedCompose = lib.hasSuffix "-buzz-compose.yml" (toString (builtins.head composeFile));
   channels = config.systemd.services.buzz-channels;
+  generatedCompose = builtins.head composeFile;
 in
   assert lib.assertMsg (builtins.length composeFile == 1)
   "Buzz must restart when its generated Compose configuration changes";
@@ -31,6 +32,14 @@ in
   assert lib.assertMsg (!(config.systemd.services ? buzz-nix-builder))
   "Declarative channels must not restore the removed builder agent";
     pkgs.runCommand "buzz-config-regression" {} ''
+      if ! grep -Fq '/usr/local/bin/buzz-pair-relay' ${generatedCompose}; then
+        echo "Buzz Compose must run the dedicated mobile pairing relay" >&2
+        exit 1
+      fi
+      if ! grep -Fq '127.0.0.1:19005:5000' ${generatedCompose}; then
+        echo "Buzz pairing relay must remain bound to the declared loopback port" >&2
+        exit 1
+      fi
       if grep -Eq 'channels (add-member|remove-member)' ${channels.serviceConfig.ExecStart}; then
         echo "Declarative channel reconciliation must not manage membership or roles" >&2
         exit 1

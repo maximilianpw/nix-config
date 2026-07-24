@@ -2,7 +2,12 @@
   loopbackUrl = port: "http://127.0.0.1:${toString port}";
 
   privateServices = {
-    buzz.port = 19003;
+    buzz = {
+      port = 19003;
+      # Buzz clients use this fallback when NIP-43 is advertised without a
+      # dedicated pairing_relay_url in the relay's NIP-11 document.
+      pathBackends."/pair" = 19005;
+    };
     homelab.port = 19082;
     paperless.port = 28981;
     miniflux.port = 19002;

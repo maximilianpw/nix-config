@@ -10,7 +10,16 @@
   # HTTP backend: set-config recreates these endpoints as HTTP listeners. Keep
   # the listener protocol explicit in the CLI invocation instead.
   serveCommand = name: service: "${tailscale} serve --yes --bg --service=svc:${name} --https=443 ${lib.escapeShellArg (homelab.loopbackUrl service.port)}";
-  applyCommands = lib.concatStringsSep " &&\n" (lib.mapAttrsToList serveCommand homelab.privateServices);
+  servePathCommand = name: path: port: "${tailscale} serve --yes --bg --service=svc:${name} --https=443 --set-path=${lib.escapeShellArg path} ${lib.escapeShellArg (homelab.loopbackUrl port)}";
+  rootCommands = lib.mapAttrsToList serveCommand homelab.privateServices;
+  pathCommands = lib.concatLists (
+    lib.mapAttrsToList (
+      name: service:
+        lib.mapAttrsToList (servePathCommand name) (service.pathBackends or {})
+    )
+    homelab.privateServices
+  );
+  applyCommands = lib.concatStringsSep " &&\n" (rootCommands ++ pathCommands);
   serveScript = pkgs.writeShellScript "tailscale-serve-apply" ''
     set -eu
 
