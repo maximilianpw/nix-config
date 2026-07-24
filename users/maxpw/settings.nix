@@ -7,6 +7,11 @@
     model = "gpt-5.6-sol";
   };
 
+  t3codeRelease = {
+    version = "0.0.29-nightly.20260724.893";
+    darwinArm64Sha256 = "3a0cb7701de292a2815e736e036af1ffb3064b26349cb13404c1a6749de630be";
+  };
+
   # SSH remote commands are parsed by the account login shell before any
   # interactive shell config can run. Fish can launch the `/bin/sh -c ...`
   # wrapper used by tools like Codex remote SSH; Nushell rejects that syntax.

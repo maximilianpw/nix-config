@@ -8,7 +8,7 @@
   # The server itself is headless: run it on Linux desktops and on the
   # Kim is the homelab box, where Tailscale Serve provides tailnet-only HTTPS.
   runServer = isLinuxDesktop || hostname == "kim";
-  t3Version = "0.0.28";
+  inherit (import ../settings.nix {inherit pkgs;}) t3codeRelease;
   servicePath =
     [
       pkgs.nodejs
@@ -43,7 +43,7 @@ in {
     };
 
     Service = {
-      ExecStart = "${pkgs.nodejs}/bin/npx --yes t3@${t3Version} serve --host 127.0.0.1 --port 51000 --base-dir %h/.local/share/t3code --no-browser";
+      ExecStart = "${pkgs.nodejs}/bin/npx --yes t3@${t3codeRelease.version} serve --host 127.0.0.1 --port 51000 --base-dir %h/.local/share/t3code --no-browser";
       Restart = "on-failure";
       RestartSec = "5s";
       StandardOutput = "journal";

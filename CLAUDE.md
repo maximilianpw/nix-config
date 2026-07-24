@@ -156,6 +156,8 @@ repository heads. Update each revision and hash together.
 
 ### Verification defaults
 
+- Before finishing a task that changes Nix files, run `make lint` and confirm
+  its Statix hook succeeds. If Statix cannot run, say exactly why.
 - Formatting-sensitive Nix changes: `alejandra --check .`
 - Nix module/config changes: `nix flake check --no-build`
 - Docs-only changes: `git diff --check`
