@@ -88,6 +88,9 @@
     # Tailscale still advertises the pre-nix-darwin machine name. `joyce`
     # remains the stable Fleet alias and can become the target after renaming it.
     hostName = "maximilians-macbook-pro-1";
+    # Cross-checked against the host's public key and ssh-keyscan over
+    # Tailscale on 2026-07-25.
+    hostKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFiHFQW6b4qbruaHM9f4rXus/BAvYQUboN95vFG5FIKI";
     aliases = [
       "macbook"
       "mac"
