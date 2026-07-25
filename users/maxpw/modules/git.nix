@@ -34,14 +34,29 @@
           if isDarwin
           then "osxkeychain"
           else "cache --timeout=3600";
-        branch.autosetuprebase = "always";
+        branch = {
+          autosetuprebase = "always";
+          sort = "-committerdate";
+        };
+        column.ui = "auto";
         color.ui = true;
+        fetch = {
+          prune = true;
+          writeCommitGraph = true;
+        };
         github.user = "maximilianpw";
         init.defaultBranch = "main";
         push.default = "tracking";
         push.autoSetupRemote = true;
         pull.rebase = false;
+        rebase.updateRefs = true;
+        rerere.enabled = true;
+        tag.gpgSign = true;
       };
+      ignores = [
+        "**/.claude/settings.local.json"
+        "**/CLAUDE.local.md"
+      ];
     };
   };
 }

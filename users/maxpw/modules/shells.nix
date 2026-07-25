@@ -85,6 +85,8 @@
     fnix = "nix-shell --run fish";
   };
 in {
+  home.sessionVariables.RIPGREP_CONFIG_PATH = "${config.xdg.configHome}/ripgrep/config";
+
   programs = {
     bash = {
       enable = true;

@@ -99,10 +99,6 @@
 
   pinnedSkills = [
     {
-      name = "tdd";
-      source = "${mattSkills}/skills/engineering/tdd";
-    }
-    {
       name = "grill-me";
       source = "${mattSkills}/skills/productivity/grill-me";
     }
@@ -129,10 +125,6 @@
       };
     }
     {
-      name = "verification-before-completion";
-      source = "${superpowers}/skills/verification-before-completion";
-    }
-    {
       name = "receiving-code-review";
       source = "${superpowers}/skills/receiving-code-review";
     }
@@ -150,17 +142,6 @@
     }
   ];
 
-  piExcludedSkillNames = [
-    "diagnose"
-    "find-skills"
-    "grill-me"
-    "improve"
-    "improve-codebase-architecture"
-    "receiving-code-review"
-    "tdd"
-    "vercel-react-best-practices"
-    "verification-before-completion"
-  ];
   pinnedSkillFiles = lib.listToAttrs (lib.concatMap (skill:
     map (prefix: {
       name = "${prefix}/${skill.name}";
@@ -168,15 +149,10 @@
         inherit (skill) source;
         force = true;
       };
-    }) (
-      [
-        ".agents/skills"
-        ".claude/skills"
-      ]
-      ++ lib.optionals (!(builtins.elem skill.name piExcludedSkillNames)) [
-        ".pi/agent/skills"
-      ]
-    ))
+    }) [
+      ".agents/skills"
+      ".claude/skills"
+    ])
   pinnedSkills);
 in {
   home = {
@@ -218,10 +194,6 @@ in {
         ".pi/agent/APPEND_SYSTEM.md".source = piConfigSource "APPEND_SYSTEM.md";
 
         ".claude/settings.json".source = source "claude/settings.json";
-        ".claude/skills/lint-wiki" = {
-          source = source "claude/skills/lint-wiki";
-          recursive = true;
-        };
 
         ".config/opencode/opencode.json".source = source "opencode/opencode.json";
 
