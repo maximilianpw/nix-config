@@ -8,14 +8,4 @@
 
   # Polkit for privilege prompts (desktop authentication agent)
   security.polkit.enable = lib.mkDefault isLinuxDesktop;
-
-  # SSH server with secure defaults
-  services.openssh = {
-    enable = lib.mkDefault true;
-    settings = {
-      PasswordAuthentication = false;
-      KbdInteractiveAuthentication = false;
-      PermitRootLogin = "no";
-    };
-  };
 }

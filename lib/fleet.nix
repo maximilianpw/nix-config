@@ -1,20 +1,27 @@
 {
   hostname,
   homeDirectory,
-  isDarwin ? false,
   lib,
   pkgs,
 }: let
   inherit (lib) concatStringsSep escapeShellArg filterAttrs mapAttrs mapAttrs' mapAttrsToList nameValuePair optionalAttrs optionalString;
 
-  inventory = import ./hosts.nix;
-  fleetHosts = filterAttrs (_: host: host.fleet != null) inventory;
-  hosts = mapAttrs (_: host:
-    host.fleet
-    // {
-      inherit (host) gui longRunningAgents os role;
-    })
-  fleetHosts;
+  inventory = import ./inventory.nix {inherit lib;};
+  # Every managed host is a Fleet member. Keep the generated contract focused
+  # on connection and agent capabilities; presentation and client secrets stay
+  # in the typed inventory.
+  hosts =
+    mapAttrs (
+      _: host:
+        {
+          inherit (host) aliases gui hostName longRunningAgents os port role tmuxCommand tmuxSession user;
+          clientEnrolled = host.client != null;
+        }
+        // optionalAttrs (host.hostKey != null) {inherit (host) hostKey;}
+        // optionalAttrs (host.plannotatorPort != null) {inherit (host) plannotatorPort;}
+        // optionalAttrs (host.t3codePort != null) {inherit (host) t3codePort;}
+    )
+    inventory;
 
   boolText = value:
     if value
@@ -24,7 +31,7 @@
   contractRows =
     mapAttrsToList (
       name: host: let
-        aliases = concatStringsSep ", " (host.aliases or []);
+        aliases = concatStringsSep ", " host.aliases;
       in ''
         ## ${name}
 
@@ -34,11 +41,12 @@
           else aliases
         }
         - OS: ${host.os}
-        - Role: ${host.role or "unspecified"}
+        - Role: ${host.role}
         - Remote user: ${host.user}
         - Target: ${host.hostName}
         - GUI/screenshot surface: ${boolText host.gui}
         - Long-running agents: ${boolText host.longRunningAgents}
+        - Outbound Fleet identity enrolled: ${boolText host.clientEnrolled}
         ${optionalString (host ? plannotatorPort) "- Plannotator port: ${toString host.plannotatorPort} (forwarded automatically over SSH)\n"}
         ${optionalString (host ? t3codePort) "- T3 Code port: ${toString host.t3codePort}\n"}
       ''
@@ -67,12 +75,12 @@
   localHostNames =
     if localHost == null
     then []
-    else [hostname] ++ (localHost.aliases or []);
+    else [hostname] ++ localHost.aliases;
   localHostPattern = concatStringsSep "|" localHostNames;
 
-  hostPatterns = name: host: concatStringsSep " " ([name] ++ (host.aliases or []));
-  tmuxHostPatterns = name: host: concatStringsSep " " (map (alias: "tm-${alias}") ([name] ++ (host.aliases or [])));
-  caseHostPatterns = name: host: concatStringsSep "|" ([name] ++ (host.aliases or []));
+  hostPatterns = name: host: concatStringsSep " " ([name] ++ host.aliases);
+  tmuxHostPatterns = name: host: concatStringsSep " " (map (alias: "tm-${alias}") ([name] ++ host.aliases));
+  caseHostPatterns = name: host: concatStringsSep "|" ([name] ++ host.aliases);
 
   baseSshOptions = {
     AddKeysToAgent = "yes";
@@ -93,17 +101,25 @@
   pinnedHosts = filterAttrs (_: host: host ? hostKey) hosts;
   knownHostsFile = "${homeDirectory}/.ssh/fleet_known_hosts";
 
-  clientSshOptionsFor = name:
-    if isDarwin && name == "kim"
-    then {
+  localInventoryHost = inventory.${hostname} or null;
+  localClient =
+    if localInventoryHost == null
+    then null
+    else localInventoryHost.client;
+  clientSshOptions = optionalAttrs (localClient != null) (
+    {
       AddKeysToAgent = "no";
-      IdentityAgent = "%d/.1password/agent.sock";
       IdentitiesOnly = "yes";
-      IdentityFile = "${homeDirectory}/.ssh/kim_1password_ed25519.pub";
+      IdentityFile = "${homeDirectory}/${localClient.identityFile}";
     }
-    else {};
+    // optionalAttrs (localClient.identityAgent != null) {
+      IdentityAgent = localClient.identityAgent;
+      # ForwardAgent accepts an explicit socket path on modern OpenSSH.
+      ForwardAgent = localClient.identityAgent;
+    }
+  );
 
-  sshOptionsFor = name: host:
+  sshOptionsFor = host:
     baseSshOptions
     // (
       if host ? hostKey
@@ -113,7 +129,7 @@
       }
       else {}
     )
-    // clientSshOptionsFor name
+    // clientSshOptions
     // optionalAttrs (host ? plannotatorPort) {
       LocalForward = [
         {
@@ -135,30 +151,24 @@
     nameValuePair (hostPatterns name host) ({
         HostName = host.hostName;
         User = host.user;
-        Port = host.port or 22;
+        Port = host.port;
       }
-      // sshOptionsFor name host);
+      // sshOptionsFor host);
 
   mkTmuxBlock = name: host:
-    nameValuePair (tmuxHostPatterns name host) (let
-      session = host.tmuxSession or "main";
-      tmuxCommand = host.tmuxCommand or "tmux";
-    in
-      {
+    nameValuePair (tmuxHostPatterns name host) ({
         HostName = host.hostName;
         User = host.user;
-        Port = host.port or 22;
+        Port = host.port;
         RequestTTY = "yes";
-        RemoteCommand = "${tmuxCommand} new-session -A -s ${session}";
+        RemoteCommand = "${host.tmuxCommand} new-session -A -s ${host.tmuxSession}";
       }
-      // sshOptionsFor name host);
+      // sshOptionsFor host);
 
   remoteTmuxRows =
     mapAttrsToList (
-      name: host: let
-        tmuxCommand = host.tmuxCommand or "tmux";
-      in ''
-        ${caseHostPatterns name host}) printf '%s\n' ${escapeShellArg tmuxCommand} ;;
+      name: host: ''
+        ${caseHostPatterns name host}) printf '%s\n' ${escapeShellArg host.tmuxCommand} ;;
       ''
     )
     hosts;
@@ -174,10 +184,14 @@
   hostRows =
     mapAttrsToList (
       name: host: let
-        aliases = concatStringsSep "," (host.aliases or []);
-        role = host.role or "";
+        aliases = concatStringsSep "," host.aliases;
+        client =
+          if host.clientEnrolled
+          then "yes"
+          else "no";
+        inherit (host) role;
       in ''
-        printf '%-18s %-12s %-24s %-16s %s\n' ${escapeShellArg name} ${escapeShellArg host.user} ${escapeShellArg host.hostName} ${escapeShellArg role} ${escapeShellArg aliases}
+        printf '%-18s %-12s %-24s %-16s %-8s %s\n' ${escapeShellArg name} ${escapeShellArg host.user} ${escapeShellArg host.hostName} ${escapeShellArg role} ${escapeShellArg client} ${escapeShellArg aliases}
       ''
     )
     hosts;
@@ -428,6 +442,7 @@
       ssh_forward() {
         exec ssh \
           -o ExitOnForwardFailure=yes \
+          -o ForwardAgent=no \
           -o ControlMaster=no \
           -o ControlPath=none \
           -N \
@@ -479,7 +494,7 @@
 
       case "$cmd" in
         list)
-          printf '%-18s %-12s %-24s %-16s %s\n' HOST USER TARGET ROLE ALIASES
+          printf '%-18s %-12s %-24s %-16s %-8s %s\n' HOST USER TARGET ROLE CLIENT ALIASES
           ${concatStringsSep "\n        " hostRows}
           ;;
         ssh)

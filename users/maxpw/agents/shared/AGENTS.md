@@ -78,8 +78,8 @@ Direct tmux SSH aliases also exist as `tm-<host-or-alias>`, for example
 Use `fleet forward <host> <local-port> <remote-port> [remote-host]` for port
 forwards and `fleet t3 <host> [local-port]` for remote T3 Code access.
 
-Fleet inventory is generated from `modules/fleet/home-manager.nix`; do not edit
-generated `~/.config/fleet/hosts.json`, `~/.config/fleet/FLEET.md`, or SSH
+Fleet inventory is normalized from `lib/hosts.nix` by `lib/inventory.nix`; do
+not edit generated `~/.config/fleet/hosts.json`, `~/.config/fleet/FLEET.md`, or SSH
 config directly. Read `modules/fleet/README.md` before adding a host or
 changing the workflow.
 

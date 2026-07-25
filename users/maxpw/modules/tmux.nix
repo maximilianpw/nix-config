@@ -1,6 +1,6 @@
 {
   config,
-  hostname,
+  hostRecord,
   lib,
   pkgs,
   ...
@@ -10,16 +10,7 @@
   # compatibility login shell (fish) that sshd and tools exec into.
   interactiveShellPath = lib.getExe settings.interactiveShell;
   resurrectDir = "${config.xdg.stateHome}/tmux/resurrect";
-  hostAccent =
-    {
-      kim = "#9ece6a";
-      joyce = "#7aa2f7";
-      cuno = "#e0af68";
-    }
-    .${
-      hostname
-    }
-    or "#7aa2f7";
+  hostAccent = hostRecord.accent;
 in {
   programs.tmux = {
     enable = true;

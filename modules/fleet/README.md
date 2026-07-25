@@ -24,11 +24,13 @@ Herdr is the primary local multiplexer/workspace UI, but it stays separate
 from Fleet. Use `h` as the shell alias for `herdr`, then run `fleet shell`,
 `fleet ssh`, or direct SSH from the Herdr pane you choose.
 
-Home Manager also writes direct SSH aliases:
+Home Manager also writes direct plain-shell and `tm-` SSH aliases for every
+remote inventory host. For example, `ssh kim` opens a plain shell while
+`ssh tm-kim` attaches to tmux. The old `main-pc` name remains a migration alias.
 
-- `ssh kim`, `ssh main`, `ssh desktop` are plain SSH aliases.
-- `ssh tm-kim`, `ssh tm-main`, `ssh tm-desktop` attach to tmux immediately.
-- The old `main-pc` name remains a migration alias.
+All records in `lib/hosts.nix` are Fleet members. Home Manager omits the local
+machine from its SSH blocks, so each machine receives aliases for every peer
+without a directional allow-list.
 
 Hosts with a declared `plannotatorPort` automatically forward that loopback
 port on every generated SSH alias. Kim uses port `19432`, so Plannotator is
@@ -77,17 +79,61 @@ printed `Token` separately. Once paired, the desktop app uses its saved session;
 the token is only needed again for another client. `fleet t3 kim` remains
 available as an SSH-tunnel fallback.
 
+## Connectivity and Trust
+
+Fleet traffic uses each host's Tailscale MagicDNS target. Full NixOS hosts
+expose SSH and mosh only through `tailscale0`. NixOS-WSL disables its firewall
+service, so Cuno additionally relies on the shared sshd `AllowUsers` tailnet
+policy. Joyce uses Apple's launchd-managed SSH server with the same key-only,
+tailnet-source policy and is reached through its Tailscale name.
+
+`modules/fleet/ssh-access.nix` derives the same authorized identity set from
+each inventory host's `client` record and installs it on every managed server.
+Only public keys and stable Tailscale addresses belong in `lib/hosts.nix`; never
+copy a private key into the repository or Nix store. `client = null` keeps an
+unenrolled host visible while making the missing outbound identity explicit in
+the generated Fleet contract.
+
+Fleet host keys should be pinned after bootstrap. Capture the public ED25519
+host key, cross-check it against `ssh-keyscan` over the trusted Tailscale path
+and the key on the host itself, then add `hostKey` to the host's inventory
+record. Hosts without a pinned key temporarily use `accept-new`.
+
 ## Adding Machines
 
-Add the machine to `lib/hosts.nix` and set its nested `fleet` record. Prefer the
-machine's Tailscale MagicDNS name as `hostName`, set the remote login `user`,
-and add short aliases you want agents and shells to use. Set `fleet = null` for
-systems that are not SSH fleet targets.
+Add the machine to `lib/hosts.nix`; every inventory record automatically becomes
+a Fleet member. `lib/inventory.nix` derives the target, platform capabilities,
+tmux path, and accent; only override normalized defaults when needed. Public
+client identity is explicit: use a `client` record when enrolled or `null` while
+bootstrapping. Do not add a separate connectivity flag or edit generated files.
 
-Fleet host keys are pinned. Capture the public ED25519 key from the host,
-cross-check it against `ssh-keyscan` over the trusted Tailscale path and an
-existing known-hosts record, then add the public key to `fleet.hostKey`. Never
-copy an SSH private key into the repository.
+NixOS and WSL machines import `modules/fleet/nixos.nix`, which enables Tailscale
+and mosh. `modules/fleet/ssh-access.nix` owns key-only SSH hardening and tailnet
+source restrictions across NixOS, WSL, and Darwin.
 
-Full NixOS machines import `modules/fleet/nixos.nix`, which enables
-Tailscale and mosh while keeping SSH hardening in `modules/core/security.nix`.
+## Deployment Checks
+
+After Joyce's first switch, keep the local GUI session open and verify Apple's
+Remote Login service; nix-darwin uses `launchctl` because `systemsetup` requires
+Full Disk Access and can otherwise report misleading state:
+
+```sh
+sudo launchctl print system/com.openssh.sshd
+sudo /usr/sbin/sshd -T
+sudo systemsetup -getremotelogin
+```
+
+Then connect from Kim, cross-check Joyce's ED25519 host-key fingerprint on the
+Mac, and pin `hostKey` in `lib/hosts.nix`. Joyce has no LAN/localhost SSH
+fallback: its `AllowUsers` policy accepts only tailnet source ranges and each
+authorized credential is further restricted to its enrolled Tailscale IPv4
+and IPv6 addresses.
+
+Before applying trust changes to headless Kim, keep the current SSH session
+open and confirm local-console recovery. Re-enrolling a device in Tailscale can
+change its addresses; update its `client.tailscaleIps` on peers before closing
+the old session.
+
+For Cuno, follow `docs/wsl-setup.md`. The WSL VM must be running, its own
+`tailscaled` must be enrolled, and its public client key must be added before
+Cuno has independent outbound Fleet access.

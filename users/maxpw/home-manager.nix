@@ -1,5 +1,6 @@
 {
   config,
+  hostRecord,
   hostname,
   isDarwin,
   isLinuxDesktop,
@@ -80,7 +81,7 @@ in {
 
     file = lib.mkIf isDarwin {
       ".ssh/github-authentication_ed25519.pub".text = settings.sshKeys.githubAuthentication + "\n";
-      ".ssh/kim_1password_ed25519.pub".text = settings.sshKeys.kimUser + "\n";
+      ".ssh/fleet_1password_ed25519.pub".text = hostRecord.client.key + "\n";
     };
 
     sessionPath = [

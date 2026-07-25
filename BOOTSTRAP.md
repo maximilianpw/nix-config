@@ -192,20 +192,25 @@ checks and will tell you if either key is missing.
      hardwareModules = [];
      profiles = ["base" "dev"];
      role = "nixos-server";
-     os = "nixos";
-     gui = false;
      longRunningAgents = false;
-     fleet = null;
+     # Replace null after generating the machine-local client key.
+     client = null;
    };
    ```
 
 3. **Host detection**: Linux must report the same hostname as the inventory
    key. Only Darwin needs a login mapping in `scripts/lib/host-detect.sh`.
-4. **Secrets** (NixOS only): place the admin Age identity from 1Password. To
+4. **Fleet identity**: generate a dedicated client key outside the repository
+   (`ssh-keygen -t ed25519 -f ~/.ssh/fleet_ed25519 -C "fleet <hostname>"`),
+   add only its public key and stable IPv4/IPv6 Tailscale addresses to the
+   host's `client` record in `lib/hosts.nix`, then apply the normalized trust
+   set to the peers.
+5. **Secrets** (NixOS only): place the admin Age identity from 1Password. To
    add the new machine's SSH host identity as an additional recipient, derive
    and verify its public Age recipient, add only that recipient to
    `.sops.yaml`, then run `sops updatekeys secrets/secrets.yaml`.
-5. Commit, push, and run the bootstrap on the new machine.
+6. Commit, push, and run the bootstrap on the new machine. Start Tailscale and
+   verify the inventory key resolves through MagicDNS before testing Fleet.
 
 For WSL specifically, see `docs/wsl-setup.md` (`make wsl` builds the import
 image at `.artifacts/nixos.wsl`).

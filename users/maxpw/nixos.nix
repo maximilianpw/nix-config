@@ -12,6 +12,7 @@ in {
   imports = [
     ../../modules/core/nix-settings.nix
     ../../modules/fleet/nixos.nix
+    ../../modules/fleet/ssh-access.nix
     ../../modules/core/security.nix
     ../../modules/core/sops.nix
     ../../modules/core/shells.nix
@@ -71,14 +72,6 @@ in {
       extraGroups = ["networkmanager" "wheel"] ++ lib.optionals isLinuxDesktop ["seat" "input" "video"];
       home = "/home/${currentSystemUser}";
       shell = settings.loginShell;
-      openssh.authorizedKeys.keys =
-        [
-          settings.sshKeys.kimUser
-          settings.sshKeys.fleetJoyceToKim
-        ]
-        ++ lib.optionals (settings.sshKeys.cunoToKim != "") [
-          settings.sshKeys.cunoToKim
-        ];
       # Password is managed via sops-nix (see secrets/README.md)
       hashedPasswordFile = config.sops.secrets.maxpw-password.path;
     };

@@ -25,40 +25,7 @@ VStack(alignment: .leading, spacing: 10) {
   Divider()
 
   Section("Machines") {
-    Button(action: { cmux("workspace.create", title: "kim", initial_command: "/bin/sh -lc 'exec /etc/profiles/per-user/$(/usr/bin/id -un)/bin/fleet ssh kim'", focus: true) }) {
-      HStack(alignment: .top, spacing: 8) {
-        Rectangle()
-          .fill("#9ECE6A")
-          .frame(width: 4, height: 48)
-          .cornerRadius(2)
-
-        VStack(alignment: .leading, spacing: 3) {
-          HStack(spacing: 6) {
-            Image(systemName: "server.rack")
-              .foregroundColor("#9ECE6A")
-            Text("kim")
-              .font(.headline)
-              .lineLimit(1)
-            Spacer()
-            Text("tmux")
-              .font(.caption)
-              .foregroundColor("#9ECE6A")
-          }
-
-          Text("NixOS homelab")
-            .font(.caption)
-            .foregroundColor(.secondary)
-            .lineLimit(1)
-
-          Text("fleet ssh kim")
-            .font(.caption)
-            .foregroundColor(.secondary)
-            .lineLimit(1)
-        }
-      }
-      .padding(6)
-      .cornerRadius(8)
-    }
+@FLEET_MACHINES@
   }
 
   Divider()

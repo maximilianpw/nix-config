@@ -32,10 +32,14 @@ The Nix formatter is **alejandra** (run automatically during rebuild). The rebui
 
 ### System Builder (`lib/mksystem.nix`)
 
-`lib/hosts.nix` is the canonical typed, data-only host inventory. `flake.nix`
-maps it into NixOS/Darwin outputs, and `lib/fleet.nix` consumes nested fleet
-records. Profile lists are labels and a migration seam; platform flags still
-select modules.
+`lib/hosts.nix` is the canonical data-only host inventory.
+`lib/inventory.nix` applies typed defaults, derives capabilities, rejects unknown
+fields, and validates globally unique host names and aliases. `flake.nix` maps
+the normalized records into NixOS/Darwin outputs, and `lib/fleet.nix` makes
+every record a symmetric Fleet member. Optional SSH aliases, target overrides,
+ports, host keys, and public client identities live directly on the host record;
+there is no separate Fleet membership flag. Profile lists are labels and a
+migration seam; platform flags still select modules.
 
 The core builder is called from the inventory mapper as `mkSystem
 "<hostname>" { system, user, userDir?, darwin?, wsl?, profiles? }`. It:

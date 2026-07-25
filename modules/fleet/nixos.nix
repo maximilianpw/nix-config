@@ -4,8 +4,8 @@
   pkgs,
   ...
 }: {
-  # Mesh-networked development nodes: SSH stays in core/security.nix; this adds
-  # the private network and resilient terminal transport used by the fleet workflow.
+  # Mesh-networked development nodes: ssh-access.nix owns authentication and
+  # source policy; this adds private networking and resilient terminal transport.
   services.tailscale = {
     enable = lib.mkDefault true;
     openFirewall = lib.mkDefault true;

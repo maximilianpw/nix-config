@@ -13,6 +13,8 @@
   wsl ? false,
   linuxDesktop ? (!darwin && !wsl),
   profiles ? [],
+  hostRecord,
+  hostInventory,
   extraModules ? [],
 }: let
   inherit (nixpkgs) lib;
@@ -45,7 +47,7 @@
     isWSL = wsl;
     isLinuxDesktop = linuxDesktop;
     currentSystemProfiles = profiles;
-    inherit inputs;
+    inherit hostInventory hostRecord inputs;
   };
 in
   systemFunc {

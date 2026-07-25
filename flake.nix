@@ -50,43 +50,7 @@
     ...
   }: let
     inherit (nixpkgs) lib;
-    hosts = import ./lib/hosts.nix;
-
-    requiredHostFields = [
-      "system"
-      "user"
-      "userDir"
-      "darwin"
-      "wsl"
-      "linuxDesktop"
-      "hardwareModules"
-      "profiles"
-      "role"
-      "os"
-      "gui"
-      "longRunningAgents"
-      "fleet"
-    ];
-
-    validateHost = name: host:
-      lib.assertMsg
-      (lib.all (field: builtins.hasAttr field host) requiredHostFields)
-      "host '${name}' is missing a required field in lib/hosts.nix"
-      && lib.assertMsg
-      (lib.isString host.system && lib.isString host.user && lib.isString host.userDir)
-      "host '${name}' has invalid system/user fields"
-      && lib.assertMsg
-      (lib.isBool host.darwin && lib.isBool host.wsl && lib.isBool host.linuxDesktop)
-      "host '${name}' has invalid platform flags"
-      && lib.assertMsg
-      (!(host.darwin && host.wsl) && !(host.darwin && host.linuxDesktop))
-      "host '${name}' declares incompatible platform flags"
-      && lib.assertMsg
-      (lib.isList host.hardwareModules && lib.all lib.isString host.hardwareModules)
-      "host '${name}' has invalid hardwareModules"
-      && lib.assertMsg
-      (lib.isList host.profiles && lib.all lib.isString host.profiles)
-      "host '${name}' has invalid profiles";
+    hosts = import ./lib/inventory.nix {inherit lib;};
 
     # Overlay to pull select packages from nixpkgs-unstable and add custom packages
     overlays = [
@@ -155,11 +119,12 @@
     };
 
     mkConfiguredSystem = name: host:
-      assert validateHost name host;
-        mkSystem name {
-          inherit (host) darwin linuxDesktop profiles system user userDir wsl;
-          extraModules = map (moduleName: inputs.nixos-hardware.nixosModules.${moduleName}) host.hardwareModules;
-        };
+      mkSystem name {
+        inherit (host) darwin linuxDesktop profiles system user userDir wsl;
+        hostRecord = host;
+        hostInventory = hosts;
+        extraModules = map (moduleName: inputs.nixos-hardware.nixosModules.${moduleName}) host.hardwareModules;
+      };
 
     nixosHosts = lib.filterAttrs (_: host: !host.darwin) hosts;
     darwinHosts = lib.filterAttrs (_: host: host.darwin) hosts;
@@ -242,6 +207,20 @@
           config = self.nixosConfigurations.kim.config;
           inherit lib;
           pkgs = self.nixosConfigurations.kim.pkgs;
+        };
+        fleet-trust-regression = import ./tests/fleet-trust-regression.nix {
+          inherit hosts lib;
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+          configs =
+            lib.mapAttrsToList (name: host: {
+              config =
+                if host.darwin
+                then self.darwinConfigurations.${name}.config
+                else self.nixosConfigurations.${name}.config;
+              inherit (host) user;
+              isDarwin = host.darwin;
+            })
+            hosts;
         };
       };
       aarch64-darwin = {

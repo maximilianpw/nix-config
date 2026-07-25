@@ -45,7 +45,30 @@ exit
 wsl -d Cuno
 ```
 
-## 4. Set as default WSL distro (optional)
+## 4. Enrol Cuno in Fleet
+
+Cuno runs its own `tailscaled` and `sshd`; Windows is not used as the network
+owner for Fleet. Inside Cuno:
+
+```bash
+sudo tailscale up --hostname cuno
+ssh-keygen -t ed25519 -f ~/.ssh/fleet_ed25519 -C "fleet cuno"
+cat ~/.ssh/fleet_ed25519.pub
+```
+
+Replace Cuno's `client = null` in `lib/hosts.nix` with its public key, stable
+IPv4/IPv6 Tailscale addresses, and `identityFile = ".ssh/fleet_ed25519"`.
+Apply the normalized trust set to Kim and Joyce. Cuno's generated SSH aliases
+then select `~/.ssh/fleet_ed25519` automatically.
+
+WSL must be running for Cuno to accept inbound connections. Verify:
+
+```bash
+systemctl is-active sshd tailscaled
+fleet list
+```
+
+## 5. Set as default WSL distro (optional)
 
 ```powershell
 wsl --set-default Cuno

@@ -56,6 +56,7 @@
 in {
   imports = [
     ../../modules/core/shells.nix
+    ../../modules/fleet/ssh-access.nix
   ];
 
   # Homebrew owns the CLIProxyAPI binary; nix-darwin owns its configuration
