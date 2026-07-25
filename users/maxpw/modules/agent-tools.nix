@@ -81,6 +81,30 @@
     rev = "03369ee6d7cafbfcecc4346539b05b3dc0a603bb";
     hash = "sha256-m0a1n8xguDI2nooJ856sWPofh+tZI5VvIrVZrQH6XgY=";
   };
+  ghStack = pkgs.fetchFromGitHub {
+    owner = "github";
+    repo = "gh-stack";
+    rev = "6dcf9f050ae922aa0beea2027e5d456118d972b3";
+    hash = "sha256-4Jtd2oVv3mg9IBFIV5ihBl/QRnaBQOoI1iRQscrm+jg=";
+  };
+  plannotatorSkills = pkgs.fetchFromGitHub {
+    owner = "backnotprop";
+    repo = "plannotator";
+    rev = "9bf46e11f30755b60c0eb392362fce3eaaa1966c";
+    hash = "sha256-QiHKiHePxCRwGAS0/jh5sq5eAJnpqMhY3hjFWzvcfuE=";
+  };
+  shadcnUi = pkgs.fetchFromGitHub {
+    owner = "shadcn-ui";
+    repo = "ui";
+    rev = "4baadbc6517070ae8f8feb2c97037adc2b305544";
+    hash = "sha256-LoXjRMeTKkAnjqIchjUSvyjimIGLfvKburbjWAjZTEM=";
+  };
+  visualExplainer = pkgs.fetchFromGitHub {
+    owner = "nicobailon";
+    repo = "visual-explainer";
+    rev = "528b71feb85dab5d92b82c3554880826f50a75da";
+    hash = "sha256-LBqLqz7Irc8nSHuUUB25Nqn5qQa/ItgpojR/U+RVimc=";
+  };
 
   # Preserve the familiar local invocation names while following upstream's
   # renamed implementations.
@@ -139,6 +163,42 @@
     {
       name = "improve";
       source = "${shadcnImprove}/skills/improve";
+    }
+    {
+      name = "gh-stack";
+      source = "${ghStack}/skills/gh-stack";
+    }
+    {
+      name = "plannotator-annotate";
+      source = "${plannotatorSkills}/apps/skills/core/plannotator-annotate";
+    }
+    {
+      name = "plannotator-compound";
+      source = "${plannotatorSkills}/apps/skills/extra/plannotator-compound";
+    }
+    {
+      name = "plannotator-last";
+      source = "${plannotatorSkills}/apps/skills/core/plannotator-last";
+    }
+    {
+      name = "plannotator-review";
+      source = "${plannotatorSkills}/apps/skills/core/plannotator-review";
+    }
+    {
+      name = "plannotator-setup-goal";
+      source = "${plannotatorSkills}/apps/skills/extra/plannotator-setup-goal";
+    }
+    {
+      name = "plannotator-visual-explainer";
+      source = "${plannotatorSkills}/apps/skills/extra/plannotator-visual-explainer";
+    }
+    {
+      name = "shadcn";
+      source = "${shadcnUi}/skills/shadcn";
+    }
+    {
+      name = "visual-explainer";
+      source = "${visualExplainer}/plugins/visual-explainer";
     }
   ];
 
