@@ -33,6 +33,8 @@
   };
 
   environment.systemPackages = [
+    # Accept Ghostty clients without downgrading TERM to xterm-256color.
+    pkgs.ghostty.terminfo
     pkgs.tmux
   ];
 }

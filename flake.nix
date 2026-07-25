@@ -238,6 +238,11 @@
           inherit lib;
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
         };
+        fleet-ghostty-regression = import ./tests/fleet-ghostty-regression.nix {
+          config = self.nixosConfigurations.kim.config;
+          inherit lib;
+          pkgs = self.nixosConfigurations.kim.pkgs;
+        };
       };
       aarch64-darwin = {
         eval-joyce = self.darwinConfigurations.joyce.system;
