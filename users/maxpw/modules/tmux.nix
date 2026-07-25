@@ -72,7 +72,7 @@ in {
     ];
 
     extraConfig = ''
-      # Override default-command set by tmux-sensible (which uses reattach-to-user-namespace with zsh)
+      # Override tmux-sensible's default-command compatibility wrapper.
       set -g default-command "${interactiveShellPath}"
 
       # True color, undercurl, and modified key support

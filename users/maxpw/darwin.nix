@@ -109,7 +109,6 @@ in {
       "gnupg"
       "jsonlint"
       "pinentry-mac"
-      "zsh"
     ];
 
     casks = [

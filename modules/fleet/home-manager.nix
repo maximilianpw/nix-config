@@ -24,7 +24,6 @@ in {
     ssh.settings = fleet.sshSettings;
 
     bash.shellAliases = fleet.aliases;
-    zsh.shellAliases = fleet.aliases;
     fish.shellAliases = fleet.aliases;
     nushell.shellAliases = fleet.aliases;
   };

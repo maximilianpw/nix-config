@@ -29,6 +29,7 @@ in {
     ./modules/git.nix
     ./modules/vcs/jujutsu.nix
     ./modules/agent-tools.nix
+    ./modules/agent-skill-links.nix
     ./modules/cmux.nix
     ../../modules/fleet/home-manager.nix
     ./modules/t3code-server.nix
@@ -126,7 +127,6 @@ in {
       enableBashIntegration = true;
       enableFishIntegration = true;
       enableNushellIntegration = true;
-      enableZshIntegration = true;
       globalConfig.settings.node.compile = false;
     };
 

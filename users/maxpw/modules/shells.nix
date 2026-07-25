@@ -1,4 +1,4 @@
-# Shell configurations - nushell (primary), fish, bash/zsh (compatibility)
+# Shell configurations - Nushell (primary), Fish and Bash (compatibility)
 {
   config,
   pkgs,
@@ -6,6 +6,20 @@
   isDarwin,
   ...
 }: let
+  settings = import ../settings.nix {inherit pkgs;};
+  inherit (settings) cliProxy;
+  climiModel = "kimi-k3";
+
+  agentAliases = {
+    c = "codex --yolo";
+    ccc = "DISABLE_ZOXIDE=1 claude --dangerously-skip-permissions";
+    h = "herdr";
+    claudex = "ANTHROPIC_BASE_URL=${cliProxy.baseUrl} ANTHROPIC_AUTH_TOKEN=${cliProxy.apiKey} ANTHROPIC_DEFAULT_OPUS_MODEL=${cliProxy.model} ANTHROPIC_DEFAULT_SONNET_MODEL=${cliProxy.model} ANTHROPIC_DEFAULT_HAIKU_MODEL=${cliProxy.model} CLAUDE_CODE_SUBAGENT_MODEL=${cliProxy.model} CLAUDE_CODE_ALWAYS_ENABLE_EFFORT=1 CLAUDE_CODE_MAX_TOOL_USE_CONCURRENCY=3 ENABLE_TOOL_SEARCH=false claude --model ${cliProxy.model}";
+    climi = "ANTHROPIC_BASE_URL=${cliProxy.baseUrl} ANTHROPIC_AUTH_TOKEN=${cliProxy.apiKey} ANTHROPIC_DEFAULT_OPUS_MODEL=${climiModel} ANTHROPIC_DEFAULT_SONNET_MODEL=${climiModel} ANTHROPIC_DEFAULT_HAIKU_MODEL=${climiModel} CLAUDE_CODE_SUBAGENT_MODEL=${climiModel} CLAUDE_CODE_ALWAYS_ENABLE_EFFORT=1 CLAUDE_CODE_MAX_TOOL_USE_CONCURRENCY=3 ENABLE_TOOL_SEARCH=false claude --model ${climiModel} --effort max";
+    oc = "opencode";
+    p = "pi";
+  };
+
   # Fish shell functions
   fishShellFunctions = ''
     # JJ PR creation with GitHub CLI
@@ -90,7 +104,7 @@ in {
   programs = {
     bash = {
       enable = true;
-      inherit shellAliases;
+      shellAliases = shellAliases // agentAliases;
       initExtra = ''
         if [ -z "$DISABLE_ZOXIDE" ]; then
           eval "$(zoxide init --cmd cd bash)"
@@ -100,10 +114,44 @@ in {
 
     nushell = {
       enable = true;
-      shellAliases = builtins.removeAttrs shellAliases ["jtp" "ls" "fnix"];
+      shellAliases =
+        (builtins.removeAttrs shellAliases ["jtp" "ls" "fnix"])
+        // (builtins.removeAttrs agentAliases ["ccc" "claudex" "climi"]);
       configFile.source = ../config.nu;
       extraConfig = ''
         use ($nu.default-config-dir | path join "ghostty.nu")
+
+        def --wrapped claudex [...args: string] {
+          with-env {
+            ANTHROPIC_BASE_URL: "${cliProxy.baseUrl}",
+            ANTHROPIC_AUTH_TOKEN: "${cliProxy.apiKey}",
+            ANTHROPIC_DEFAULT_OPUS_MODEL: "${cliProxy.model}",
+            ANTHROPIC_DEFAULT_SONNET_MODEL: "${cliProxy.model}",
+            ANTHROPIC_DEFAULT_HAIKU_MODEL: "${cliProxy.model}",
+            CLAUDE_CODE_SUBAGENT_MODEL: "${cliProxy.model}",
+            CLAUDE_CODE_ALWAYS_ENABLE_EFFORT: "1",
+            CLAUDE_CODE_MAX_TOOL_USE_CONCURRENCY: "3",
+            ENABLE_TOOL_SEARCH: "false",
+          } { claude --model ${cliProxy.model} ...$args }
+        }
+
+        def --wrapped climi [...args: string] {
+          with-env {
+            ANTHROPIC_BASE_URL: "${cliProxy.baseUrl}",
+            ANTHROPIC_AUTH_TOKEN: "${cliProxy.apiKey}",
+            ANTHROPIC_DEFAULT_OPUS_MODEL: "${climiModel}",
+            ANTHROPIC_DEFAULT_SONNET_MODEL: "${climiModel}",
+            ANTHROPIC_DEFAULT_HAIKU_MODEL: "${climiModel}",
+            CLAUDE_CODE_SUBAGENT_MODEL: "${climiModel}",
+            CLAUDE_CODE_ALWAYS_ENABLE_EFFORT: "1",
+            CLAUDE_CODE_MAX_TOOL_USE_CONCURRENCY: "3",
+            ENABLE_TOOL_SEARCH: "false",
+          } { claude --model ${climiModel} --effort max ...$args }
+        }
+
+        def --wrapped ccc [...args: string] {
+          with-env {DISABLE_ZOXIDE: "1"} { claude --dangerously-skip-permissions ...$args }
+        }
       '';
       extraEnv = ''
         $env.SHELL = "${pkgs.bashInteractive}/bin/bash"
@@ -131,27 +179,6 @@ in {
         ];
     };
 
-    zsh = {
-      enable = true;
-      # nixpkgs 26.05 will move the default zsh dotDir to XDG; pin the prior
-      # (home-directory) location to keep the update behavior-neutral.
-      dotDir = config.home.homeDirectory;
-      inherit shellAliases;
-      history = {
-        size = 5000;
-        save = 5000;
-        ignoreAllDups = true;
-        ignoreSpace = true;
-        share = true;
-      };
-      completionInit = "autoload -Uz compinit && compinit -C -i";
-      initContent = ''
-        if [ -z "$DISABLE_ZOXIDE" ]; then
-          eval "$(zoxide init --cmd cd zsh)"
-        fi
-      '';
-    };
-
     carapace = {
       enable = true;
       enableFishIntegration = true;
@@ -160,7 +187,6 @@ in {
 
     zoxide = {
       enable = true;
-      enableZshIntegration = false;
       enableBashIntegration = false;
       options = ["--cmd cd"];
     };
@@ -177,7 +203,7 @@ in {
 
     fish = {
       enable = true;
-      inherit shellAliases;
+      shellAliases = shellAliases // agentAliases;
       interactiveShellInit = lib.strings.concatStrings (lib.strings.intersperse "\n" [
         (builtins.readFile ../config.fish)
         "set -g SHELL ${pkgs.fish}/bin/fish"

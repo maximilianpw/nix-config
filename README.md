@@ -106,7 +106,7 @@ The remote development fleet is named Revachol; its CLI remains `fleet`.
 
 - machines/joyce.nix (nix-darwin)
   - stateVersion = 6; leaves Nix daemon to Determinate installer (`nix.enable = false`).
-  - Optional Linux builder (currently disabled); zsh program enable; basic tools (e.g., cachix).
+  - Optional Linux builder (currently disabled); basic tools (e.g., cachix).
   - Imports core modules for shared nix settings.
 
 - machines/kim.nix (headless NixOS homelab)
@@ -136,7 +136,7 @@ The remote development fleet is named Revachol; its CLI remains `fleet`.
 - users/maxpw/home-manager.nix
   - Shared HM config for Linux/macOS; imports fonts and package modules.
   - Sets EDITOR/PAGER/MANPAGER; links macOS Rectangle config and Linux Ghostty config.
-  - Configures git (signing key, aliases), shells (bash/zsh/fish/nushell), neovim; Linux gpg-agent.
+  - Configures git (signing key, aliases), shells (Bash/Fish/Nushell), neovim; Linux gpg-agent.
 
 - users/maxpw/packages/*.nix
   - dev-tools.nix: Programming languages, LSPs, build tools, cloud/infrastructure tools.

@@ -19,8 +19,7 @@
       pkgs.git
       pkgs.openssh
 
-      # T3 probes $SHELL with POSIX syntax; use zsh instead of the login Nu shell.
-      pkgs.zsh
+      # T3 probes $SHELL with POSIX syntax; use Bash instead of the login Nu shell.
       pkgs.bash
       pkgs.mise
       pkgs.zoxide
@@ -51,7 +50,7 @@ in {
       WorkingDirectory = "%h";
       Environment = [
         "PATH=/run/current-system/sw/bin:${lib.makeBinPath servicePath}"
-        "SHELL=${pkgs.zsh}/bin/zsh"
+        "SHELL=${pkgs.bash}/bin/bash"
       ];
     };
 

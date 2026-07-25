@@ -50,7 +50,7 @@ The core builder is called from the inventory mapper as `mkSystem
 - Wires overlays, sops-nix (NixOS only), NixOS-WSL (when `wsl = true`)
 - Injects `currentSystem`, `currentSystemName`, `currentSystemUser`, `currentSystemUserDir`, `isWSL`, and `inputs` args into all modules
 
-The `userDir` parameter allows the macOS username (`max-vev`) to differ from the repo directory (`maxpw`), so both systems share `users/maxpw/`.
+The `userDir` parameter allows the macOS username (`max-vev`) to differ from the repo directory (`maxpw`), so both systems share `~/`.
 
 ### How Home Manager modules receive platform info
 
@@ -71,16 +71,17 @@ modules/
   desktop/          # Hyprland + greetd (Linux only)
   fleet/            # Remote dev fleet: NixOS Tailscale/mosh/tmux + HM SSH/fleet CLI
   services/         # Borg backup with retention policy
-users/maxpw/
+~/
   home-manager.nix  # Cross-platform entry: imports all user modules
   nixos.nix         # NixOS user: PipeWire, networking, nix-ld, locale, Wayland, user account, imports Hyprland module
   darwin.nix        # macOS user: Homebrew casks/brews, Mac App Store apps, fonts
   wsl.nix           # WSL user: minimal config (nix-ld, fish, no desktop)
   modules/
-    shells.nix      # Nushell, Fish, Bash, Zsh; all shell aliases defined here
+    shells.nix      # Nushell, Fish, Bash; all shell aliases defined here
     git.nix         # Git + Jujutsu (jj) config
     vcs/jujutsu.nix # Jujutsu config
-    agent-tools.nix # LLM agent CLIs + aliases
+    agent-tools.nix # LLM agent CLIs + configuration
+    agent-skill-links.nix # Shared local skill links for agent discovery paths
     t3code-server.nix # Headless T3 Code server integration
     fonts.nix       # Nerd fonts + system fonts with fontconfig
     xdg.nix         # XDG config file management (Hyprland, Ghostty, waybar, kitty, yazi, etc.)
@@ -124,9 +125,9 @@ but is not independent disaster recovery. See
 `docs/config-ownership-and-recovery.md` for the required offline recipient and
 off-site backup work.
 
-### XDG config management (`users/maxpw/modules/xdg.nix`)
+### XDG config management (`~/modules/xdg.nix`)
 
-Dotfiles for desktop apps (Hyprland, waybar, rofi, ghostty, kitty, yazi, etc.) live as plain files under `users/maxpw/` and are symlinked into `~/.config/` via `xdg.configFile`. The `symlinkDir` helper auto-links all files in a directory. Hyprland configs use per-host overrides via the `hostname` argument (e.g., lock screen only on non-Kim hosts).
+Dotfiles for desktop apps (Hyprland, waybar, rofi, ghostty, kitty, yazi, etc.) live as plain files under `~/` and are symlinked into `~/.config/` via `xdg.configFile`. The `symlinkDir` helper auto-links all files in a directory. Hyprland configs use per-host overrides via the `hostname` argument (e.g., lock screen only on non-Kim hosts).
 
 ### Chezmoi bootstrap boundary
 
@@ -135,22 +136,15 @@ apply dotfile content. On a new host run `make chezmoi-bootstrap`, review
 `make chezmoi-preview`, then explicitly run the interactive
 `make chezmoi-apply`. This split is intentional and fail-safe.
 
-### Agent skills
-
-Third-party global skills in `users/maxpw/modules/agent-tools.nix` use
-`fetchFromGitHub` with immutable revisions and Nix hashes. Home Manager links
-those store paths into each agent surface; activation must not fetch mutable
-repository heads. Update each revision and hash together.
-
 ## Conventions
 
 - **Nix formatting**: alejandra (no tabs, no trailing whitespace).
-- **Adding packages**: User packages go in `users/maxpw/modules/packages/` split by category. System packages go in the relevant machine file.
+- **Adding packages**: User packages go in `~/modules/packages/` split by category. System packages go in the relevant machine file.
 - **Structural code search**: Use `rg` for literal text search and file discovery. Use `ast-grep` (`sg`) for syntax-aware search, linting, and mechanical refactors where whitespace, formatting, or nesting should not matter. For broad rewrites, run search-only first, inspect matches, then apply rewrites and review the diff.
 - **Platform conditionals**: Config that diverges substantially per-OS lives in `nixos.nix`/`darwin.nix`/`wsl.nix` per user, not behind `if` statements in large shared modules. Small cross-platform Home Manager modules that are imported unconditionally (e.g. `gpg.nix`, `linux-services.nix`, `linux-desktop.nix`, `xdg.nix`) may instead guard their platform-specific bits internally using the `isDarwin`/`isWSL`/`isLinuxDesktop`/`hostname` arguments injected by `mksystem.nix` — these flags are always passed, so destructure them directly without fallback defaults.
 - **New modules**: Import them in the appropriate aggregator (`home-manager.nix`, `nixos.nix`, or `darwin.nix`). The `mksystem.nix` builder handles wiring.
 - **Nixpkgs channels**: Stable is `nixpkgs` (26.05). For bleeding-edge packages, add them to the unstable overlay in `flake.nix`. To add a new unstable package: in the third overlay in `flake.nix`, add `<pkg> = unstable.<pkg>;` alongside the existing entries (jujutsu, zig), then reference `pkgs.<pkg>` in the relevant module. For a one-off, `pkgs.unstable.<pkg>` also works without touching the overlay.
-- **Shell aliases**: All aliases are centralized in `users/maxpw/modules/shells.nix`. The `nr` alias runs `make -C ~/nix-config rebuild`.
+- **Shell aliases**: All aliases are centralized in `~/modules/shells.nix`. The `nr` alias runs `make -C ~/nix-config rebuild`.
 - **Dotfile ownership**: Nix/Home Manager owns systems, packages, shells, and
   editor executables. Chezmoi owns Neovim/app content. Never declare the same
   destination in both. A chezmoi `private_` prefix changes permissions only;
