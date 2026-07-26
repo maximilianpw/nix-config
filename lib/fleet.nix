@@ -80,6 +80,7 @@
 
   hostPatterns = name: host: concatStringsSep " " ([name] ++ host.aliases);
   tmuxHostPatterns = name: host: concatStringsSep " " (map (alias: "tm-${alias}") ([name] ++ host.aliases));
+  forwardHostPatterns = name: host: concatStringsSep " " (map (alias: "fleet-forward-${alias}") ([name] ++ host.aliases));
   caseHostPatterns = name: host: concatStringsSep "|" ([name] ++ host.aliases);
 
   baseSshOptions = {
@@ -164,6 +165,16 @@
         RemoteCommand = "${host.tmuxCommand} new-session -A -s ${host.tmuxSession}";
       }
       // sshOptionsFor host);
+
+  # Explicit Fleet tunnels need the normal identity, trust, and connection
+  # settings without host-level LocalForward entries competing for local ports.
+  mkForwardBlock = name: host:
+    nameValuePair (forwardHostPatterns name host) ({
+        HostName = host.hostName;
+        User = host.user;
+        Port = host.port;
+      }
+      // builtins.removeAttrs (sshOptionsFor host) ["LocalForward"]);
 
   remoteTmuxRows =
     mapAttrsToList (
@@ -447,7 +458,7 @@
           -o ControlPath=none \
           -N \
           -L "$1" \
-          "$2"
+          "fleet-forward-$2"
       }
 
       remote_tmux_command() {
@@ -612,5 +623,6 @@ in {
 
   sshSettings =
     (mapAttrs' mkPlainBlock remoteHosts)
-    // (mapAttrs' mkTmuxBlock remoteHosts);
+    // (mapAttrs' mkTmuxBlock remoteHosts)
+    // (mapAttrs' mkForwardBlock remoteHosts);
 }

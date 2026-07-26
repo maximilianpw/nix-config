@@ -33,9 +33,11 @@ machine from its SSH blocks, so each machine receives aliases for every peer
 without a directional allow-list.
 
 Hosts with a declared `plannotatorPort` automatically forward that loopback
-port on every generated SSH alias. Kim uses port `19432`, so Plannotator is
-available at `http://127.0.0.1:19432` on the client for the lifetime of the SSH
-control connection; a separate `fleet forward` process is not required.
+port on interactive generated SSH aliases. Kim uses port `19432`, so Plannotator
+is available at `http://127.0.0.1:19432` on the client for the lifetime of the
+SSH control connection; a separate `fleet forward` process is not required.
+Explicit `fleet forward` and `fleet t3` tunnels omit these automatic forwards so
+an existing Plannotator listener cannot prevent an unrelated tunnel opening.
 
 ## Agent Fleet Contract
 
