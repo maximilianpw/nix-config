@@ -43,6 +43,17 @@
       and git checkout -
       and jj git import
     end
+
+    # Expand three or more dots into the corresponding parent path.
+    # For example, `......` becomes `../../../../../`.
+    function __expand_parent_directories
+      string repeat -n (math (string length -- $argv[1]) - 1) ../
+    end
+
+    abbr --add parent-directories \
+      --position anywhere \
+      --regex '^\.\.\.+$' \
+      --function __expand_parent_directories
   '';
 
   shellAliases = {

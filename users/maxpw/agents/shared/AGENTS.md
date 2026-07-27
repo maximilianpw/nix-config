@@ -16,14 +16,20 @@ Use these rankings only when choosing models for workflows or subagents. Higher 
 | --- | --- | --- | --- |
 | gpt-5.6 sol | 9 | 8 | 5 |
 | sonnet-5 | 5 | 5 | 7 |
-| opus-5 | 4 | 7 | 8 |
+| opus-5 | 4 | 7.5 | 8 |
 
 - Cost is only a tie-breaker. For work that ships, prefer intelligence > taste > cost.
 - If a cheaper model's output does not meet the bar, rerun or redo the work with a smarter model without asking.
-- Bulk/mechanical work (clear-spec implementation, data analysis, migrations): gpt-5.6 sol.
 - Anything user-facing (UI, copy, API design) needs taste >= 7.
-- Reviews of plans and implementations: fable-5 or opus-5, optionally gpt-5.6 as an extra independent perspective.
+- Reviews of plans and implementations: fable-5 or opus-5, optionally gpt-5.6 Sol as an extra independent perspective.
 - Never use Haiku.
+
+### GPT-5.6 family routing
+
+- **Sol**: open-ended discovery, architecture, ambiguous debugging, cross-cutting or high-risk changes, and final synthesis.
+- **Terra**: bounded analysis and routine implementation with explicit scope and acceptance checks.
+- **Luna**: narrow mechanical work whose output can be checked objectively; never use it as the sole planner or reviewer.
+- Start unfamiliar task classes with Sol, then delegate bounded work to cheaper models. Escalate when scope expands, evidence is missing, agents disagree, or verification fails.
 
 ## Planning First
 
