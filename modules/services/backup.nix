@@ -110,6 +110,10 @@ in {
         # PostgreSQL is recovered from the consistent logical dump produced
         # immediately before Borg starts, never from live database files.
         "/var/lib/postgresql"
+        # Metrics history and Grafana's local database are disposable; their
+        # configuration and dashboards are provisioned from this repository.
+        "/var/lib/prometheus2"
+        "/var/lib/grafana"
         "/var/lib/systemd/coredump"
       ];
       description = "Patterns to exclude from backup";

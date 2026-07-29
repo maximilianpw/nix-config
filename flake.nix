@@ -198,6 +198,16 @@
           inherit lib;
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
         };
+        homepage-calendar-regression = import ./tests/homepage-calendar-regression.nix {
+          config = self.nixosConfigurations.kim.config;
+          inherit lib;
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        };
+        monitoring-regression = import ./tests/monitoring-regression.nix {
+          config = self.nixosConfigurations.kim.config;
+          inherit lib;
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        };
         buzz-config-regression = import ./tests/buzz-config-regression.nix {
           config = self.nixosConfigurations.kim.config;
           inherit lib;

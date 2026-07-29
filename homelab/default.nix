@@ -5,6 +5,7 @@
     ./home-assistant.nix
     ./homepage.nix
     ./miniflux.nix
+    ./monitoring.nix
     ./nextcloud.nix
     ./paperless.nix
     ./storage.nix

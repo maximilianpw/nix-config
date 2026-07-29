@@ -8,6 +8,10 @@
       # dedicated pairing_relay_url in the relay's NIP-11 document.
       pathBackends."/pair" = 19005;
     };
+    grafana = {
+      port = 19004;
+      monitorPath = "/api/health";
+    };
     homelab.port = 19082;
     paperless.port = 28981;
     miniflux.port = 19002;
@@ -35,7 +39,7 @@
     inherit (serviceConfig) port;
     host = privateHost tailnetDomain service;
     url = privateUrl tailnetDomain service;
-    monitorUrl = loopbackUrl serviceConfig.port;
+    monitorUrl = "${loopbackUrl serviceConfig.port}${serviceConfig.monitorPath or ""}";
   };
   publicEndpoint = service: let
     serviceConfig = publicServices.${service};
@@ -45,6 +49,55 @@
     monitorUrl = loopbackUrl serviceConfig.port;
   };
   publicEndpoints = lib.mapAttrs (service: _: publicEndpoint service) publicServices;
+
+  homepageCard = name: endpoint: icon: description: extra: {
+    ${name} =
+      {
+        inherit description icon;
+        href = endpoint.url;
+        siteMonitor = endpoint.monitorUrl;
+      }
+      // extra;
+  };
+  prometheusUrl = loopbackUrl 9090;
+  prometheusSummary = {
+    widget = {
+      type = "prometheusmetric";
+      url = prometheusUrl;
+      refreshInterval = 20000;
+      metrics = [
+        {
+          label = "CPU";
+          query = ''100 - (avg(rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)'';
+          format = {
+            type = "percent";
+            options.maximumFractionDigits = 0;
+          };
+        }
+        {
+          label = "Memory";
+          query = ''100 * (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)'';
+          format = {
+            type = "percent";
+            options.maximumFractionDigits = 0;
+          };
+        }
+        {
+          label = "/srv";
+          query = ''100 * (1 - node_filesystem_avail_bytes{mountpoint="/srv"} / node_filesystem_size_bytes{mountpoint="/srv"})'';
+          format = {
+            type = "percent";
+            options.maximumFractionDigits = 0;
+          };
+        }
+        {
+          label = "Failed";
+          query = ''sum(systemd_unit_state{state="failed"})'';
+          format.type = "number";
+        }
+      ];
+    };
+  };
 in {
   defaultTailnetDomain = "tail7161c3.ts.net";
   inherit loopbackUrl privateHost privateServices privateUrl publicEndpoints publicServices;
@@ -54,65 +107,27 @@ in {
   endpoints = tailnetDomain:
     lib.mapAttrs (service: _: privateEndpoint tailnetDomain service) privateServices;
 
-  homepageServices = tailnetDomain: let
+  homepageServiceGroups = tailnetDomain: let
     private = lib.mapAttrs (service: _: privateEndpoint tailnetDomain service) privateServices;
     public = publicEndpoints;
+    grafanaOverview = "${private.grafana.url}/d/kim-overview/kim-overview";
   in [
     {
-      Nextcloud = {
-        href = public.nextcloud.url;
-        description = "Files & sync";
-        siteMonitor = public.nextcloud.url;
-      };
+      Applications = [
+        (homepageCard "Home Assistant" public.homeassistant "home-assistant.png" "Smart home" {})
+        (homepageCard "Nextcloud" public.nextcloud "nextcloud.png" "Files, calendar, and sync" {})
+        (homepageCard "Paperless" private.paperless "paperless-ngx.png" "Document archive" {})
+        (homepageCard "Miniflux" private.miniflux "miniflux.png" "Focused RSS reading" {})
+        (homepageCard "Buzz" private.buzz "mdi-forum-outline" "Human and agent workspace" {})
+      ];
     }
     {
-      "Home Assistant" = {
-        href = public.homeassistant.url;
-        description = "Smart home";
-        siteMonitor = public.homeassistant.monitorUrl;
-      };
-    }
-    {
-      Buzz = {
-        href = private.buzz.url;
-        description = "Human and agent workspace";
-        siteMonitor = private.buzz.monitorUrl;
-      };
-    }
-    {
-      Paperless = {
-        href = private.paperless.url;
-        description = "Documents";
-        siteMonitor = private.paperless.monitorUrl;
-      };
-    }
-    {
-      Miniflux = {
-        href = private.miniflux.url;
-        description = "RSS reader";
-        siteMonitor = private.miniflux.monitorUrl;
-      };
-    }
-    {
-      Syncthing = {
-        href = private.syncthing.url;
-        description = "File sync";
-        siteMonitor = private.syncthing.monitorUrl;
-      };
-    }
-    {
-      "T3 Code" = {
-        href = private.t3code.url;
-        description = "Remote AI coding";
-        siteMonitor = private.t3code.monitorUrl;
-      };
-    }
-    {
-      "Uptime Kuma" = {
-        href = private.kuma.url;
-        description = "Monitoring";
-        siteMonitor = private.kuma.monitorUrl;
-      };
+      Operations = [
+        (homepageCard "Grafana" private.grafana "grafana.png" "Kim health and history" (prometheusSummary // {href = grafanaOverview;}))
+        (homepageCard "Uptime Kuma" private.kuma "uptime-kuma.png" "Endpoint availability" {})
+        (homepageCard "Syncthing" private.syncthing "syncthing.png" "File sync status" {})
+        (homepageCard "T3 Code" private.t3code "mdi-code-braces" "Remote AI coding" {})
+      ];
     }
   ];
 }

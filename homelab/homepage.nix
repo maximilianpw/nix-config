@@ -1,54 +1,135 @@
 {
   config,
   lib,
+  pkgs,
   ...
 }: let
   homelab = import ../lib/homelab.nix {inherit lib;};
   tailnetDomain = config.homelab.tailnet.domain;
   endpoints = homelab.endpoints tailnetDomain;
+
+  bookmark = name: icon: href: {
+    ${name} = [
+      {inherit href icon;}
+    ];
+  };
+  bookmarkGroup = name: bookmarks: {${name} = bookmarks;};
+
+  homepageSettings = {
+    title = "Homelab";
+    theme = "dark";
+    color = "zinc";
+    headerStyle = "clean";
+    iconStyle = "theme";
+    statusStyle = "dot";
+    target = "_self";
+    useEqualHeights = true;
+    disableCollapse = true;
+    hideVersion = true;
+    disableUpdateCheck = true;
+    disableIndexing = true;
+  };
+  settingsFormat = pkgs.formats.yaml {};
+  generatedSettings = settingsFormat.generate "homepage-settings-base.yaml" homepageSettings;
+  # Nix attribute sets sort their keys. Homepage instead uses YAML mapping order
+  # to interleave bookmark and service groups, so append this small ordered
+  # presentation-only layout rather than encoding the order in fake group names.
+  orderedSettings = pkgs.runCommand "homepage-settings.yaml" {} ''
+        cat ${generatedSettings} > "$out"
+        cat >> "$out" <<'EOF'
+    layout:
+      Everyday:
+        style: row
+        columns: 8
+      VEV:
+        style: row
+        columns: 5
+      RBI:
+        style: row
+        columns: 4
+      Applications:
+        style: row
+        columns: 3
+      Operations:
+        style: row
+        columns: 4
+    EOF
+  '';
 in {
-  # The nixpkgs module exposes no listen-address option; homepage is a
+  # The nixpkgs module exposes no listen-address option; Homepage is a
   # Next.js standalone server and binds the address given in $HOSTNAME.
-  # Keep it loopback-only like the rest of the homelab; Tailscale Serve
-  # reaches it at the configured homelab endpoint.
+  # Tailscale Serve is its only ingress path.
   systemd.services.homepage-dashboard.environment.HOSTNAME = "127.0.0.1";
+
+  # Preserve the presentation order in the generated YAML; see orderedSettings.
+  environment.etc."homepage-dashboard/settings.yaml".source = lib.mkForce orderedSettings;
 
   services.homepage-dashboard = {
     enable = true;
     listenPort = endpoints.homelab.port;
-    # Homepage refuses requests whose Host header isn't allow-listed.
     allowedHosts = homelab.allowedHosts endpoints.homelab.host;
     openFirewall = false;
 
-    settings = {
-      title = "Homelab";
-      headerStyle = "clean";
-      layout = {
-        Services.style = "row";
-        Services.columns = 3;
-      };
-    };
+    settings = homepageSettings;
 
-    # Health checks hit the services directly on localhost (no Cloudflare round-trip),
-    # except Nextcloud which lives behind a host-matched nginx vhost.
-    services = [
-      {
-        Services = homelab.homepageServices tailnetDomain;
-      }
+    bookmarks = [
+      (bookmarkGroup "Everyday" [
+        (bookmark "GitHub" "github.png" "https://github.com/")
+        (bookmark "Pull Requests" "github.png" "https://github.com/pulls")
+        (bookmark "YouTube" "youtube.png" "https://www.youtube.com/")
+        (bookmark "X" "x.png" "https://x.com/")
+        (bookmark "Calendar" "nextcloud.png" "${homelab.publicEndpoints.nextcloud.url}/apps/calendar/")
+        (bookmark "Chess.com" "si-chessdotcom" "https://www.chess.com/")
+        (bookmark "Reddit" "reddit.png" "https://www.reddit.com/")
+        (bookmark "Letterboxd" "si-letterboxd" "https://letterboxd.com/")
+      ])
+      (bookmarkGroup "VEV" [
+        (bookmark "Outlook" "microsoft-outlook.png" "https://outlook.cloud.microsoft/mail/")
+        (bookmark "Lucca Schedule" "mdi-calendar-clock-outline" "https://vev.ilucca.net/work-locations/schedule")
+        (bookmark "VEV GitHub" "github.png" "https://github.com/VEV-platform-services")
+        (bookmark "AWS Access Portal" "amazon-web-services.png" "https://d-8067153cb2.awsapps.com/")
+        (bookmark "Linear" "linear.png" "https://linear.app/")
+      ])
+      (bookmarkGroup "RBI" [
+        (bookmark "PostHog" "posthog.png" "https://eu.posthog.com/project/216724/web")
+        (bookmark "RBI Landing" "github.png" "https://github.com/maximilianpw/rbi-landing")
+        (bookmark "Cloudflare" "cloudflare.png" "https://dash.cloudflare.com/a2ca791db3863dceb49557db0f0f3647/rivierabeauty.com")
+        (bookmark "Riviera Beauty" "mdi-storefront-outline" "https://rivierabeauty.com/")
+      ])
     ];
+
+    # Availability checks stay on loopback; public and tailnet URLs are launch
+    # targets only. Uptime Kuma remains responsible for external availability.
+    services = homelab.homepageServiceGroups tailnetDomain;
 
     widgets = [
       {
-        resources = {
-          cpu = true;
-          memory = true;
-          disk = "/srv";
+        datetime = {
+          text_size = "xl";
+          format = {
+            dateStyle = "medium";
+            timeStyle = "short";
+          };
+        };
+      }
+      {
+        # Without committed coordinates Homepage asks the browser for its
+        # location. This works because Tailscale Serve provides HTTPS.
+        openmeteo = {
+          units = "metric";
+          cache = 5;
+          format.maximumFractionDigits = 1;
         };
       }
       {
         search = {
-          provider = "duckduckgo";
-          target = "_blank";
+          provider = [
+            "duckduckgo"
+            "brave"
+            "google"
+          ];
+          target = "_self";
+          showSearchSuggestions = true;
         };
       }
     ];
