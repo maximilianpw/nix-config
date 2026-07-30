@@ -34,27 +34,10 @@
   # Nix attribute sets sort their keys. Homepage instead uses YAML mapping order
   # to interleave bookmark and service groups, so append this small ordered
   # presentation-only layout rather than encoding the order in fake group names.
-  orderedSettings = pkgs.runCommand "homepage-settings.yaml" {} ''
-        cat ${generatedSettings} > "$out"
-        cat >> "$out" <<'EOF'
-    layout:
-      Everyday:
-        style: row
-        columns: 8
-      VEV:
-        style: row
-        columns: 5
-      RBI:
-        style: row
-        columns: 4
-      Applications:
-        style: row
-        columns: 3
-      Operations:
-        style: row
-        columns: 4
-    EOF
-  '';
+  orderedSettings = pkgs.concatText "homepage-settings.yaml" [
+    generatedSettings
+    ./homepage/layout.yaml
+  ];
 in {
   # The nixpkgs module exposes no listen-address option; Homepage is a
   # Next.js standalone server and binds the address given in $HOSTNAME.
@@ -71,6 +54,8 @@ in {
     openFirewall = false;
 
     settings = homepageSettings;
+
+    customCSS = builtins.readFile ./homepage/custom.css;
 
     bookmarks = [
       (bookmarkGroup "Everyday" [

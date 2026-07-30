@@ -3,7 +3,7 @@
     "nextcloud-cron"
     "nextcloud-setup"
     "nextcloud-update-db"
-    "nextcloud-update-plugins"
+    "nextcloud-update-store-apps"
     "paperless-consumer"
     "paperless-exporter"
     "paperless-scheduler"

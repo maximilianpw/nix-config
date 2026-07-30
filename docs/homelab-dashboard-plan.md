@@ -64,7 +64,6 @@ to Homepage.
 - Nextcloud
 - Paperless
 - Miniflux
-- Buzz
 
 **Operations**
 
@@ -227,7 +226,6 @@ Bind to loopback and include only operationally important units:
 - Syncthing
 - Uptime Kuma
 - Homepage
-- Buzz
 - Borg backup and check units/timers
 
 Use an include expression rather than exporting every system unit. Enable
@@ -251,7 +249,9 @@ restart-count metrics when supported.
 2. Expose it as `grafana.<tailnet>` through the existing Tailscale Serve module.
 3. Enable Grafana auth-proxy authentication using
    `Tailscale-User-Login` as the email identity.
-4. Trust the auth header only from loopback.
+4. Trust the auth header only from loopback and Tailscale source ranges. Tailscale
+   Services preserves the client's Tailnet source address even though Grafana
+   itself remains bound to loopback.
 5. Disable public signup and anonymous access.
 6. Auto-create the authenticated tailnet user with enough access for Grafana
    Explore, while keeping the provisioned dashboard repository-owned.
@@ -367,7 +367,8 @@ Assert:
 - Grafana, Prometheus, and exporters bind only to loopback.
 - Retention is 30 days and capped at 5 GiB.
 - Only expected systemd units are included.
-- Grafana auth proxy uses the Tailscale identity header and loopback whitelist.
+- Grafana auth proxy uses the Tailscale identity header and a comma-separated
+  whitelist limited to loopback and Tailscale source ranges.
 - Anonymous access is disabled.
 - The Prometheus datasource and `Kim Overview` dashboard are provisioned.
 - Prometheus/Grafana disposable state is excluded from Borg.

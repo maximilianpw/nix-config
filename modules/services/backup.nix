@@ -85,7 +85,6 @@ in {
         "/srv/nextcloud"
         "/srv/paperless/export"
         homeAssistantBackupDir
-        "/var/backup/buzz"
         "/var/backup/postgresql"
         "/var/lib"
       ];
@@ -211,11 +210,6 @@ in {
         if [ "''${#stopped_file_units[@]}" -gt 0 ]; then
           systemctl stop "''${stopped_file_units[@]}"
         fi
-
-        # Buzz's PostgreSQL records and object-store contents must come from the
-        # same quiesced window. Its exporter stops only the relay, leaving the
-        # private database and MinIO containers available for logical export.
-        systemctl start buzz-backup-export.service
 
         # Paperless' exporter is the supported application-level restore
         # format. The local override makes this a synchronous oneshot and

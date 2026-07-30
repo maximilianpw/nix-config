@@ -2,12 +2,6 @@
   loopbackUrl = port: "http://127.0.0.1:${toString port}";
 
   privateServices = {
-    buzz = {
-      port = 19003;
-      # Buzz clients use this fallback when NIP-43 is advertised without a
-      # dedicated pairing_relay_url in the relay's NIP-11 document.
-      pathBackends."/pair" = 19005;
-    };
     grafana = {
       port = 19004;
       monitorPath = "/api/health";
@@ -24,6 +18,7 @@
     nextcloud = {
       host = "nextcloud.maximilian.pw";
       port = 19080;
+      monitorPath = "/status.php";
     };
     homeassistant = {
       host = "homeassistant.maximilian.pw";
@@ -46,7 +41,7 @@
   in {
     inherit (serviceConfig) host port;
     url = "https://${serviceConfig.host}";
-    monitorUrl = loopbackUrl serviceConfig.port;
+    monitorUrl = "${loopbackUrl serviceConfig.port}${serviceConfig.monitorPath or ""}";
   };
   publicEndpoints = lib.mapAttrs (service: _: publicEndpoint service) publicServices;
 
@@ -118,7 +113,6 @@ in {
         (homepageCard "Nextcloud" public.nextcloud "nextcloud.png" "Files, calendar, and sync" {})
         (homepageCard "Paperless" private.paperless "paperless-ngx.png" "Document archive" {})
         (homepageCard "Miniflux" private.miniflux "miniflux.png" "Focused RSS reading" {})
-        (homepageCard "Buzz" private.buzz "mdi-forum-outline" "Human and agent workspace" {})
       ];
     }
     {

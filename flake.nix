@@ -109,8 +109,8 @@
         obsidian = final.callPackage ./packages/obsidian.nix {};
         coderabbit = final.callPackage ./packages/coderabbit.nix {};
         cliproxyapi = final.callPackage ./packages/cliproxyapi.nix {};
-        buzz-cli = final.callPackage ./packages/buzz-cli.nix {};
         plannotator = final.callPackage ./packages/plannotator.nix {};
+        nextcloud-calendar = final.callPackage ./packages/nextcloud-calendar.nix {};
       })
     ];
 
@@ -208,11 +208,6 @@
           inherit lib;
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
         };
-        buzz-config-regression = import ./tests/buzz-config-regression.nix {
-          config = self.nixosConfigurations.kim.config;
-          inherit lib;
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        };
         fleet-ghostty-regression = import ./tests/fleet-ghostty-regression.nix {
           config = self.nixosConfigurations.kim.config;
           inherit lib;
@@ -252,12 +247,12 @@
       x86_64-linux = let
         pkgs = mkPkgs "x86_64-linux";
       in {
-        inherit (pkgs) helium obsidian skills coderabbit cliproxyapi buzz-cli plannotator hunkdiff nix-update;
+        inherit (pkgs) helium obsidian skills coderabbit cliproxyapi plannotator nextcloud-calendar hunkdiff nix-update;
       };
       aarch64-darwin = let
         pkgs = mkPkgs "aarch64-darwin";
       in {
-        inherit (pkgs) skills coderabbit plannotator hunkdiff nix-update;
+        inherit (pkgs) skills coderabbit plannotator nextcloud-calendar hunkdiff nix-update;
       };
     };
 

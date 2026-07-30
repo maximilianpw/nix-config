@@ -1,0 +1,16 @@
+layout:
+  Everyday:
+    style: row
+    columns: 1
+  VEV:
+    style: row
+    columns: 1
+  RBI:
+    style: row
+    columns: 1
+  Applications:
+    style: row
+    columns: 3
+  Operations:
+    style: row
+    columns: 3

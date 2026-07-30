@@ -1,4 +1,4 @@
-.PHONY: help bootstrap chezmoi-bootstrap chezmoi-check chezmoi-preview chezmoi-apply rebuild rebuild-processes cleanup-rebuild check-nvim check-scripts lint update update-all update-packages build generations rollback wsl info
+.PHONY: help bootstrap chezmoi-bootstrap chezmoi-check chezmoi-preview chezmoi-apply rebuild rebuild-processes cleanup-rebuild check-nvim check-scripts lint update update-all update-packages update-nextcloud-apps build generations rollback wsl info
 
 # Default target
 .DEFAULT_GOAL := help
@@ -51,16 +51,18 @@ update-all: ## Update all flake inputs including Hyprland & NixOS-only
 	@nix flake update
 	@echo "Done! Run 'make rebuild' to apply updates."
 
-update-packages: ## Bump repo-local custom packages (helium, obsidian, coderabbit, cliproxyapi) via nix-update
+update-packages: ## Bump repo-local custom packages via nix-update
 	@echo "Bumping custom packages via nix-update..."
-	@echo "Note: Linux-only packages (helium, obsidian, cliproxyapi) cannot be built"
-	@echo "from macOS. The CI workflow handles them; here we only bump what"
-	@echo "this host can actually evaluate."
+	@echo "Note: Linux-only packages cannot be built from macOS. The CI workflow"
+	@echo "handles them; here we only bump what this host can evaluate."
 	@echo "(skills/hunkdiff come from the llm-agents input: use 'make update')"
-	@for pkg in helium obsidian coderabbit cliproxyapi; do \
+	@for pkg in helium obsidian coderabbit cliproxyapi nextcloud-calendar; do \
 		echo ">> nix-update $$pkg"; \
 		nix run .#nix-update -- --flake "$$pkg" || echo "(skipped: $$pkg)"; \
 	done
+
+update-nextcloud-apps: ## Bump declaratively managed Nextcloud apps
+	@nix run .#nix-update -- --flake nextcloud-calendar
 
 
 check-nvim: ## Verify every tool the Neovim config uses is on PATH

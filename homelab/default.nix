@@ -1,6 +1,5 @@
 {lib, ...}: {
   imports = [
-    ./buzz
     ./cloudflared.nix
     ./home-assistant.nix
     ./homepage.nix

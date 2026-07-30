@@ -128,6 +128,25 @@ else
     git diff --color=always -U2 '*.nix' || true
 fi
 
+# Fail before nh stops any units if the candidate configuration would make
+# Nextcloud load the same app from both its immutable and writable app paths.
+if [[ "$PLATFORM" == "nixos" && "$HOSTNAME" == "kim" ]]; then
+    info "Checking Nextcloud app ownership..."
+    declarative_apps=$(nix eval --raw \
+        "$FLAKE_REF#nixosConfigurations.${HOSTNAME}.config.services.nextcloud.extraApps" \
+        --apply 'apps: builtins.concatStringsSep "\n" (builtins.attrNames apps)')
+    declarative_app_ids=()
+    while IFS= read -r app_id; do
+        [[ -n "$app_id" ]] && declarative_app_ids+=("$app_id")
+    done <<< "$declarative_apps"
+
+    if ! NEXTCLOUD_USE_SUDO=1 "$SCRIPT_DIR/check-nextcloud-app-ownership.sh" "${declarative_app_ids[@]}"; then
+        error "Refusing to activate conflicting Nextcloud app ownership"
+        exit 1
+    fi
+    success "Nextcloud app ownership is unambiguous"
+fi
+
 # Build + switch via nh (elevates itself, prints an nvd generation diff).
 # Output is teed to the log; nh degrades to sequential lines when piped.
 info "Switching configuration via nh: $HOSTNAME ($PLATFORM)"

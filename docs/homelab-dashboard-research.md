@@ -140,7 +140,6 @@ Group daily applications separately from operations.
 - Nextcloud
 - Paperless
 - Miniflux
-- Buzz
 
 **Operations**
 
@@ -216,9 +215,10 @@ A minimal useful first deployment is:
 
 Tailscale Serve strips spoofed identity headers and adds
 `Tailscale-User-Login` for authenticated tailnet traffic. Grafana explicitly
-supports authentication-proxy headers. Configure Grafana to trust that header
-only from loopback, keep Grafana bound to loopback, and let Tailscale Serve be
-the sole entry point. This provides seamless login without anonymous access or
+supports authentication-proxy headers. Keep Grafana bound to loopback and let
+Tailscale Serve be the sole entry point. Tailscale Services preserves the
+client's Tailnet source address, so Grafana's auth-proxy whitelist must include
+loopback and Tailscale's IPv4/IPv6 source ranges as one comma-separated string. This provides seamless login without anonymous access or
 a second daily password prompt. Tailnet grants remain the outer authorization
 boundary. Provisioned dashboards can stay read-only while the authenticated
 user receives access to Grafana Explore.

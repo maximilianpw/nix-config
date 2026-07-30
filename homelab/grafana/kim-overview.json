@@ -21,8 +21,8 @@
       "gridPos": {"h": 4, "w": 4, "x": 0, "y": 0},
       "id": 1,
       "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
-      "targets": [{"editorMode": "code", "expr": "100 - (avg(rate(node_cpu_seconds_total{mode=\"idle\"}[$__rate_interval])) * 100)", "instant": true, "legendFormat": "CPU", "range": false, "refId": "A"}],
-      "title": "CPU utilization",
+      "targets": [{"editorMode": "code", "expr": "100 * (1 - avg(rate(node_cpu_seconds_total{mode=\"idle\"}[$__rate_interval])) - avg(rate(node_cpu_seconds_total{mode=\"iowait\"}[$__rate_interval])))", "instant": true, "legendFormat": "CPU", "range": false, "refId": "A"}],
+      "title": "CPU busy",
       "type": "stat"
     },
     {
@@ -93,8 +93,8 @@
       "gridPos": {"h": 4, "w": 4, "x": 16, "y": 0},
       "id": 5,
       "options": {"colorMode": "value", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
-      "targets": [{"editorMode": "code", "expr": "sum(systemd_unit_state{state=\"failed\"}) or vector(0)", "instant": true, "legendFormat": "Failed", "range": false, "refId": "A"}],
-      "title": "Failed important units",
+      "targets": [{"editorMode": "code", "expr": "(sum(systemd_unit_state{state=\"failed\"}) or vector(0)) + (1 - (max(pg_up) or vector(0)))", "instant": true, "legendFormat": "Issues", "range": false, "refId": "A"}],
+      "title": "Operational issues",
       "type": "stat"
     },
     {
@@ -125,10 +125,11 @@
       "id": 7,
       "options": {"legend": {"calcs": ["lastNotNull"], "displayMode": "table", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "desc"}},
       "targets": [
-        {"editorMode": "code", "expr": "100 - (avg(rate(node_cpu_seconds_total{mode=\"idle\"}[$__rate_interval])) * 100)", "legendFormat": "CPU utilization", "range": true, "refId": "A"},
-        {"editorMode": "code", "expr": "node_load1", "legendFormat": "Load (1m)", "range": true, "refId": "B"}
+        {"editorMode": "code", "expr": "100 * (1 - avg(rate(node_cpu_seconds_total{mode=\"idle\"}[$__rate_interval])) - avg(rate(node_cpu_seconds_total{mode=\"iowait\"}[$__rate_interval])))", "legendFormat": "CPU busy", "range": true, "refId": "A"},
+        {"editorMode": "code", "expr": "100 * avg(rate(node_cpu_seconds_total{mode=\"iowait\"}[$__rate_interval]))", "legendFormat": "I/O wait", "range": true, "refId": "B"},
+        {"editorMode": "code", "expr": "node_load1", "legendFormat": "Load (1m)", "range": true, "refId": "C"}
       ],
-      "title": "CPU and load history",
+      "title": "CPU work, I/O wait, and load",
       "type": "timeseries"
     },
     {
@@ -256,6 +257,24 @@
       "options": {"legend": {"calcs": ["lastNotNull"], "displayMode": "table", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "desc"}},
       "targets": [{"editorMode": "code", "expr": "topk(10, systemd_service_restart_total)", "legendFormat": "{{name}}", "range": true, "refId": "A"}],
       "title": "Service restart count",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "description": "Timed and requested PostgreSQL checkpoints, with checkpoint buffer writes estimated using PostgreSQL's 8 KiB block size.",
+      "fieldConfig": {
+        "defaults": {"color": {"mode": "palette-classic"}, "custom": {"drawStyle": "bars", "fillOpacity": 25, "lineInterpolation": "stepAfter", "lineWidth": 1, "showPoints": "never", "spanNulls": false}, "decimals": 0, "mappings": [], "min": 0, "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]}, "unit": "short"},
+        "overrides": [{"matcher": {"id": "byName", "options": "Checkpoint writes"}, "properties": [{"id": "unit", "value": "Bps"}, {"id": "custom.axisPlacement", "value": "right"}, {"id": "custom.drawStyle", "value": "line"}, {"id": "custom.fillOpacity", "value": 10}, {"id": "custom.lineWidth", "value": 2}]}]
+      },
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 28},
+      "id": 16,
+      "options": {"legend": {"calcs": ["max"], "displayMode": "table", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "desc"}},
+      "targets": [
+        {"editorMode": "code", "expr": "changes(pg_stat_bgwriter_checkpoints_timed_total[$__rate_interval]) or changes(pg_stat_checkpointer_num_timed_total[$__rate_interval])", "legendFormat": "Timed checkpoints", "range": true, "refId": "A"},
+        {"editorMode": "code", "expr": "changes(pg_stat_bgwriter_checkpoints_req_total[$__rate_interval]) or changes(pg_stat_checkpointer_num_requested_total[$__rate_interval])", "legendFormat": "Requested checkpoints", "range": true, "refId": "B"},
+        {"editorMode": "code", "expr": "(rate(pg_stat_bgwriter_buffers_checkpoint_total[$__rate_interval]) or rate(pg_stat_checkpointer_buffers_written_total[$__rate_interval])) * 8192", "legendFormat": "Checkpoint writes", "range": true, "refId": "C"}
+      ],
+      "title": "PostgreSQL checkpoint activity",
       "type": "timeseries"
     }
   ],
