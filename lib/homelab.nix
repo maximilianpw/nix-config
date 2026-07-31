@@ -9,6 +9,10 @@
     homelab.port = 19082;
     paperless.port = 28981;
     miniflux.port = 19002;
+    vaultwarden = {
+      port = 19003;
+      monitorPath = "/alive";
+    };
     syncthing.port = 19384;
     t3code.port = 51000;
     kuma.port = 19001;
@@ -113,6 +117,7 @@ in {
         (homepageCard "Nextcloud" public.nextcloud "nextcloud.png" "Files, calendar, and sync" {})
         (homepageCard "Paperless" private.paperless "paperless-ngx.png" "Document archive" {})
         (homepageCard "Miniflux" private.miniflux "miniflux.png" "Focused RSS reading" {})
+        (homepageCard "Vaultwarden" private.vaultwarden "vaultwarden.png" "Password manager" {})
       ];
     }
     {

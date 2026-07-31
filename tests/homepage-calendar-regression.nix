@@ -143,6 +143,7 @@ in
       "Nextcloud"
       "Paperless"
       "Miniflux"
+      "Vaultwarden"
     ])
   "Homepage Applications must retain their intended order";
   assert lib.assertMsg (cardNames (builtins.elemAt homepage.services 1)

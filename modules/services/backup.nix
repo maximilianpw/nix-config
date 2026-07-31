@@ -22,6 +22,10 @@
     "nextcloud-cron.service"
     "phpfpm-nextcloud.service"
     "syncthing.service"
+    # Vaultwarden's PostgreSQL database is dumped below, while attachments,
+    # Sends, and its RSA identity remain under /var/lib/vaultwarden. Keep the
+    # service stopped until Borg has captured both sides of that state.
+    "vaultwarden.service"
   ];
   restoreMain = pkgs.writeShellApplication {
     name = "borg-restore-main";
@@ -232,8 +236,8 @@ in {
 
         # Paperless restores from its exporter output and Miniflux is fully
         # represented by the logical database dump, so they can return as soon
-        # as the dump finishes. Nextcloud and Syncthing remain quiesced while
-        # Borg copies their live file trees.
+        # as the dump finishes. Nextcloud, Syncthing, and Vaultwarden remain
+        # quiesced while Borg copies their live file trees.
         for unit in "''${stopped_database_units[@]}"; do
           systemctl start "$unit"
         done

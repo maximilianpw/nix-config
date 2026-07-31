@@ -11,6 +11,7 @@
     ./syncthing.nix
     ./tailscale-serve.nix
     ./uptime-kuma.nix
+    ./vaultwarden.nix
   ];
 
   # Homelab services connect through /run/postgresql. Do not occupy the common

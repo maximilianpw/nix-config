@@ -36,6 +36,7 @@
     "syncthing.service"
     "uptime-kuma.service"
     "homepage-dashboard.service"
+    "vaultwarden.service"
     "postgresqlBackup.service"
     "borgbackup-job-main.service"
     "borgbackup-job-main.timer"
