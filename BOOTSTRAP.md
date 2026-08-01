@@ -103,8 +103,8 @@ The first build is large; it uses the committed, CI-tested `flake.lock`
 Config is now reproduced; **data and credentials are not**. After the first
 successful rebuild:
 
-- [ ] Sign in to the 1Password app and enable the SSH agent (unlocks git
-      pushes and `fleet` SSH)
+- [ ] Sign in to the Bitwarden app and enable the SSH agent (unlocks git
+      pushes and `fleet` SSH); keep Bitwarden running in the background
 - [ ] Switch the repo remote to SSH:
       `git remote set-url origin git@github.com:maximilianpw/nix-config.git`
 - [ ] `sudo tailscale up` — join the tailnet (fleet/remote-dev relies on it)

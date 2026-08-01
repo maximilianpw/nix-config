@@ -288,7 +288,7 @@ fi
 # neededForUsers = true. If the age key is missing on the first rebuild,
 # the user ends up with no password - i.e. locked out of the new system.
 # Darwin Home Manager also decrypts user-scoped secrets; Fleet client private
-# keys remain machine-local or in the 1Password SSH agent.
+# keys remain machine-local or in the Bitwarden SSH agent.
 if [[ "${SKIP_SOPS_CHECK:-0}" == "1" ]]; then
     step "7/8: Skipping sops age key check (SKIP_SOPS_CHECK=1)"
 elif [[ "$PLATFORM" == "darwin" ]]; then

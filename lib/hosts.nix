@@ -82,8 +82,8 @@
         "100.82.28.19"
         "fd7a:115c:a1e0::de01:1c2b"
       ];
-      identityFile = ".ssh/fleet_1password_ed25519.pub";
-      identityAgent = "%d/.1password/agent.sock";
+      identityFile = ".ssh/fleet_bitwarden_ed25519.pub";
+      identityAgent = "%d/.bitwarden-ssh-agent.sock";
     };
     # Tailscale still advertises the pre-nix-darwin machine name. `joyce`
     # remains the stable Fleet alias and can become the target after renaming it.

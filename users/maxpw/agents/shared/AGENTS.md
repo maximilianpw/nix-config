@@ -39,6 +39,11 @@ Use the grill-me skill or equivalent workflow only for complex, high-risk, produ
 
 Trivial changes can be implemented directly: one-liners, typo fixes, small config/content edits, or requests the user explicitly says to just do. Do not wait for explicit approval after presenting a plan unless the user asked for planning only, the change is risky, or the next step is genuinely ambiguous.
 
+## Design Principles
+
+- Prefer the simplest complete design. Understand the problem before building, avoid cleverness, and do not trade away required functionality or performance merely to minimize the patch.
+- Before adding special cases or secondary mechanisms, look for a simpler design that makes them unnecessary.
+
 ## Verification
 
 Before saying work is complete, run the smallest relevant verification command available. Prefer fast local checks first. If verification cannot be run, say exactly what was skipped and why.

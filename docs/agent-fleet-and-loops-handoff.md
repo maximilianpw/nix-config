@@ -222,7 +222,7 @@ Do not start here unless the user wants security hardening, but it is the
 highest-risk long-term gap.
 
 The current fleet guidance trusts internal hosts and allows SSH agent forwarding
-so Git and agent tools can use the 1Password SSH agent from the brain machine.
+so Git and agent tools can use the Bitwarden SSH agent from the brain machine.
 That is convenient for interactive work. It is too much authority for unattended
 scheduled loops.
 
@@ -267,7 +267,7 @@ patch.
 - Do not add a new agent platform if the existing Codex/Claude/OpenCode/Pi
   setup can be deepened.
 - Do not enable unattended repo edits as the first scheduled-prompt iteration.
-- Do not broaden SSH or 1Password access for agents without an explicit threat
+- Do not broaden SSH or Bitwarden access for agents without an explicit threat
   model.
 - Do not make prompt files longer just because agent workflows are getting more
   important. Prefer small, checked, linked documents.

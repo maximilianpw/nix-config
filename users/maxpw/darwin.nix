@@ -113,6 +113,7 @@ in {
 
     casks = [
       "colemak-dh"
+      "bitwarden"
       "1password"
       "rectangle"
       "whatsapp"

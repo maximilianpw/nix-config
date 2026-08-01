@@ -104,7 +104,7 @@ alias fnix = nix-shell --run nu
 use std/dirs
 
 #-------------------------------------------------------------------------------
-# SSH Agent (1Password)
+# SSH Agent (Bitwarden)
 #-------------------------------------------------------------------------------
 let ssh_dir = ($env.HOME | path join '.ssh')
 if not ($ssh_dir | path exists) {
