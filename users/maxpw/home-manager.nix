@@ -93,7 +93,7 @@ in {
         else {}
       )
       // lib.optionalAttrs (hostname == "kim") {
-        # Client SSH aliases forward this fixed port from the fleet inventory.
+        # Clients forward this fixed inventory port on demand with Fleet.
         PLANNOTATOR_REMOTE = "1";
         PLANNOTATOR_PORT = "19432";
       };

@@ -1,20 +1,9 @@
 {lib, ...}: let
-  srvConsumers = [
-    "nextcloud-cron"
-    "nextcloud-setup"
-    "nextcloud-update-db"
-    "nextcloud-update-store-apps"
-    "paperless-consumer"
-    "paperless-exporter"
-    "paperless-scheduler"
-    "paperless-task-queue"
-    "paperless-web"
-    "phpfpm-nextcloud"
-  ];
+  homelab = import ../lib/homelab.nix {inherit lib;};
 in {
-  # Spare 1TB internal SSD (nvme0n1p2) repurposed as bulk storage for
-  # self-hosted services. Mounted by filesystem label so it survives a
-  # reformat without needing a config change.
+  # Existing bulk-storage filesystem for self-hosted services. Kernel NVMe
+  # names are not stable identities; docs/homelab-storage.md records the live
+  # audit needed before migrating this compatibility label to a unique UUID.
   fileSystems."/srv" = {
     device = "/dev/disk/by-label/storage";
     fsType = "ext4";
@@ -31,7 +20,7 @@ in {
   # storage SSD is absent or failed. RequiresMountsFor also follows the path if
   # the mount layout changes later.
   systemd.services =
-    lib.genAttrs srvConsumers (_: {
+    lib.genAttrs homelab.srvConsumers (_: {
       requires = ["srv.mount"];
       after = ["srv.mount"];
       unitConfig.RequiresMountsFor = ["/srv"];

@@ -3,26 +3,140 @@
   pkgs,
   lib,
   currentSystemUser ? "maxpw",
+  currentSystemUserDir ? currentSystemUser,
   ...
 }: let
   cfg = config.custom.backup;
   homeDir = "/home/${currentSystemUser}";
   borg = lib.getExe config.services.borgbackup.package;
   tar = lib.getExe pkgs.gnutar;
+  git = lib.getExe pkgs.git;
+  jq = lib.getExe pkgs.jq;
+  flock = lib.getExe' pkgs.util-linux "flock";
+  borgOperationLockFile = "/run/homelab-backup/borg-operation.lock";
   homeAssistantBackupDir = "/var/backup/home-assistant";
-  databaseApplicationUnits = [
-    "home-assistant.service"
-    "miniflux.service"
-    "paperless-consumer.service"
-    "paperless-scheduler.service"
-    "paperless-task-queue.service"
-    "paperless-web.service"
+  homelabBackupDir = "/var/backup/homelab";
+  backupMetricsDir = "/var/lib/prometheus-node-exporter-text-files";
+  homelab = import ../../lib/homelab.nix {inherit lib;};
+  # Lifecycle ownership is declarative; service-specific export and archive
+  # commands remain in this coordinator.
+  databaseApplicationUnits = homelab.backup.dumpUnits;
+  fileApplicationUnits = homelab.backup.archiveUnits;
+  userDatabaseApplicationUnits = homelab.backup.userDumpUnits;
+  userFileApplicationUnits = homelab.backup.userArchiveUnits;
+  t3codeVersion = (import ../../users/${currentSystemUserDir}/settings.nix {inherit pkgs;}).t3codeRelease.version;
+  baseBackupPaths = [
+    "${homeDir}/nix-config"
+    "${homeDir}/Documents"
+    "${homeDir}/Sync"
+    "${homeDir}/.config"
+    "${homeDir}/.local/share"
+    "${homeDir}/.ssh"
+    "${homeDir}/.gnupg"
+    # Preserve broad system identity/state coverage while recovery owners are
+    # made explicit service by service in the typed inventory.
+    "/var/lib"
   ];
-  fileApplicationUnits = [
-    "nextcloud-cron.service"
-    "phpfpm-nextcloud.service"
-    "syncthing.service"
-  ];
+  pathCoveredBy = parents: path:
+    lib.any (parent: path == parent || lib.hasPrefix "${parent}/" path) parents;
+  inventoryArchiveRoots =
+    builtins.filter (
+      path: !(pathCoveredBy baseBackupPaths path)
+    )
+    homelab.backup.archivePaths;
+  applicationVersions = {
+    grafana = config.services.grafana.package.version;
+    homeassistant = config.services.home-assistant.package.version;
+    homepage = config.services.homepage-dashboard.package.version;
+    kuma = config.services.uptime-kuma.package.version;
+    miniflux = config.services.miniflux.package.version;
+    nextcloud = config.services.nextcloud.package.version;
+    paperless = config.services.paperless.package.version;
+    prometheus = config.services.prometheus.package.version;
+    syncthing = config.services.syncthing.package.version;
+    t3code = t3codeVersion;
+    vaultwarden = config.services.vaultwarden.package.version;
+    # Preserve the schema-v1 manifest key while the canonical inventory name
+    # above lets coverage track the service directly.
+    uptimeKuma = config.services.uptime-kuma.package.version;
+  };
+  statefulServiceNames = builtins.attrNames (
+    lib.filterAttrs (_: service: service.state.kind != "none") homelab.services
+  );
+  missingApplicationVersions =
+    builtins.filter (
+      service: !(builtins.hasAttr service applicationVersions)
+    )
+    statefulServiceNames;
+  manifestMetadata = assert lib.assertMsg (missingApplicationVersions == [])
+  "backup manifest lacks package versions for stateful services: ${lib.concatStringsSep ", " missingApplicationVersions}"; {
+    schemaVersion = 1;
+    system.nixosVersion = config.system.nixos.version;
+    postgresql = {
+      majorVersion = lib.versions.major config.services.postgresql.package.version;
+      packageVersion = config.services.postgresql.package.version;
+    };
+    inherit applicationVersions;
+    expectedDatabases = homelab.backup.expectedDatabases;
+    expectedPrimaryStatePaths = homelab.backup.primaryStatePaths;
+    expectedArchivePaths = lib.unique (homelab.backup.archivePaths
+      ++ [
+        "${homeDir}/nix-config"
+        "/var/backup/homelab/manifest.json"
+      ]);
+    disposableState = homelab.backup.disposableServices;
+    recovery = homelab.backup.recovery;
+  };
+  manifestStatic = builtins.toJSON manifestMetadata;
+  coordinator = pkgs.writeShellApplication {
+    name = "homelab-backup-coordinator";
+    runtimeInputs = [
+      pkgs.coreutils
+      pkgs.gawk
+      pkgs.gnutar
+      pkgs.systemd
+    ];
+    text = ''
+      export SYSTEMCTL_BIN=${lib.getExe' pkgs.systemd "systemctl"}
+      export TAR_BIN=${tar}
+      export SLEEP_BIN=${lib.getExe' pkgs.coreutils "sleep"}
+      export HOMELAB_DUMP_UNITS=${lib.escapeShellArg (lib.concatStringsSep " " databaseApplicationUnits)}
+      export HOMELAB_ARCHIVE_UNITS=${lib.escapeShellArg (lib.concatStringsSep " " fileApplicationUnits)}
+      export HOMELAB_USER_DUMP_UNITS=${lib.escapeShellArg (lib.concatStringsSep " " userDatabaseApplicationUnits)}
+      export HOMELAB_USER_ARCHIVE_UNITS=${lib.escapeShellArg (lib.concatStringsSep " " userFileApplicationUnits)}
+      export HOMELAB_POSTGRESQL_BACKUP_UNIT=${lib.escapeShellArg homelab.infrastructure.postgresqlBackup.unit}
+      export HOME_ASSISTANT_ARCHIVE_DIR=${lib.escapeShellArg homeAssistantBackupDir}
+      exec ${lib.getExe pkgs.bash} ${../../scripts/homelab-backup-coordinator.sh} "$@"
+    '';
+  };
+  postHookRunner = pkgs.writeShellApplication {
+    name = "homelab-backup-posthook";
+    runtimeInputs = [pkgs.coreutils];
+    text = ''
+      export HOMELAB_COORDINATOR_BIN=${lib.getExe coordinator}
+      export HOMELAB_BACKUP_METRICS_DIR=${lib.escapeShellArg backupMetricsDir}
+      export DATE_BIN=${lib.getExe' pkgs.coreutils "date"}
+      exec ${lib.getExe pkgs.bash} ${../../scripts/homelab-backup-posthook.sh} "$@"
+    '';
+  };
+  inspectMain = pkgs.writeShellApplication {
+    name = "homelab-backup-inspect";
+    runtimeInputs = [
+      config.services.borgbackup.package
+      pkgs.gawk
+      pkgs.gnutar
+      pkgs.jq
+    ];
+    text = ''
+      export BORG_BIN=${borg}
+      export JQ_BIN=${jq}
+      export TAR_BIN=${tar}
+      export BORG_REPO=${lib.escapeShellArg cfg.repo}
+      export BORG_PASSCOMMAND=${lib.escapeShellArg "cat ${config.sops.secrets.borg-backup-passphrase.path}"}
+      export HOMELAB_REQUIRE_ROOT=1
+      exec ${lib.getExe pkgs.bash} ${../../scripts/homelab-backup-inspect.sh} "$@"
+    '';
+  };
   restoreMain = pkgs.writeShellApplication {
     name = "borg-restore-main";
     runtimeInputs = [
@@ -74,20 +188,7 @@ in {
 
     paths = lib.mkOption {
       type = lib.types.listOf lib.types.str;
-      default = [
-        "${homeDir}/nix-config"
-        "${homeDir}/Documents"
-        "${homeDir}/Sync"
-        "${homeDir}/.config"
-        "${homeDir}/.local/share"
-        "${homeDir}/.ssh"
-        "${homeDir}/.gnupg"
-        "/srv/nextcloud"
-        "/srv/paperless/export"
-        homeAssistantBackupDir
-        "/var/backup/postgresql"
-        "/var/lib"
-      ];
+      default = lib.unique (baseBackupPaths ++ inventoryArchiveRoots ++ [homelabBackupDir]);
       description = "Paths to back up";
     };
 
@@ -130,6 +231,12 @@ in {
       description = "UUID of the backup drive";
     };
 
+    manifestMetadata = lib.mkOption {
+      type = lib.types.attrs;
+      readOnly = true;
+      description = "Non-secret, versioned metadata written into every homelab archive.";
+    };
+
     retention = lib.mkOption {
       # Strict keys so a typo (e.g. `dailly`) fails at eval time instead of
       # silently weakening the prune policy at runtime.
@@ -154,6 +261,8 @@ in {
   };
 
   config = lib.mkIf cfg.enable {
+    custom.backup.manifestMetadata = manifestMetadata;
+
     fileSystems."/mnt/backups" = {
       device = "/dev/disk/by-uuid/${cfg.driveUUID}";
       fsType = "ext4";
@@ -190,139 +299,138 @@ in {
 
       preHook = ''
         echo "Starting backup at $(date)"
+        backup_started_epoch=$(date +%s)
+        backup_started_at=$(date --iso-8601=seconds)
 
-        stopped_database_units=()
-        for unit in ${lib.escapeShellArgs databaseApplicationUnits}; do
-          if systemctl is-active --quiet "$unit"; then
-            stopped_database_units+=("$unit")
-          fi
-        done
-        if [ "''${#stopped_database_units[@]}" -gt 0 ]; then
-          systemctl stop "''${stopped_database_units[@]}"
+        # Acquire this before generating artifacts or stopping applications.
+        # Consistency checks use the same lock, so delayed timers and manual
+        # starts cannot make Borg contend after services are already quiesced.
+        exec 9>${lib.escapeShellArg borgOperationLockFile}
+        ${flock} 9
+
+        git_revision="$(${git} -c safe.directory=${lib.escapeShellArg "${homeDir}/nix-config"} -C ${lib.escapeShellArg "${homeDir}/nix-config"} rev-parse HEAD 2>/dev/null || printf unavailable)"
+        git_dirty=false
+        if [ "$git_revision" != unavailable ] && [ -n "$(${git} -c safe.directory=${lib.escapeShellArg "${homeDir}/nix-config"} -C ${lib.escapeShellArg "${homeDir}/nix-config"} status --porcelain 2>/dev/null)" ]; then
+          git_dirty=true
         fi
+        manifest_tmp=${lib.escapeShellArg "${homelabBackupDir}/manifest.json.tmp"}
+        printf '%s\n' ${lib.escapeShellArg manifestStatic} \
+          | ${jq} \
+            --arg backupStartTimestamp "$backup_started_at" \
+            --arg gitRevision "$git_revision" \
+            --argjson gitDirty "$git_dirty" \
+            '. + {backupStartTimestamp: $backupStartTimestamp, gitRevision: $gitRevision, gitDirty: $gitDirty}' \
+          > "$manifest_tmp"
+        chmod 0600 "$manifest_tmp"
+        mv -f "$manifest_tmp" ${lib.escapeShellArg "${homelabBackupDir}/manifest.json"}
 
-        stopped_file_units=()
-        for unit in ${lib.escapeShellArgs fileApplicationUnits}; do
-          if systemctl is-active --quiet "$unit"; then
-            stopped_file_units+=("$unit")
-          fi
-        done
-        if [ "''${#stopped_file_units[@]}" -gt 0 ]; then
-          systemctl stop "''${stopped_file_units[@]}"
-        fi
+        # The coordinator persists the pre-existing active set before stopping
+        # anything. Its cleanup phase can therefore recover services after a
+        # preparation failure or Borg failure without starting units that were
+        # already inactive.
+        ${lib.getExe coordinator} prepare
+      '';
 
-        # Paperless' exporter is the supported application-level restore
-        # format. The local override makes this a synchronous oneshot and
-        # leaves application recovery under this hook's control.
-        systemctl start paperless-exporter.service
-
-        # Home Assistant keeps UI-managed configuration and credentials below
-        # /var/lib/hass. Snapshot that tree while the service is stopped; its
-        # recorder history is captured separately by the PostgreSQL dump.
-        install -d -m 0700 ${lib.escapeShellArg homeAssistantBackupDir}
-        home_assistant_archive=${lib.escapeShellArg "${homeAssistantBackupDir}/config.tar"}
-        rm -f "$home_assistant_archive.tmp"
-        ${tar} --create --sparse --file "$home_assistant_archive.tmp" --directory /var/lib hass
-        chmod 0600 "$home_assistant_archive.tmp"
-        mv -f "$home_assistant_archive.tmp" "$home_assistant_archive"
-
-        # Logical dumps are portable across PostgreSQL storage and package
-        # changes. The service is ordered after the application quiesce above.
-        systemctl start postgresqlBackup.service
-
-        # Paperless restores from its exporter output and Miniflux is fully
-        # represented by the logical database dump, so they can return as soon
-        # as the dump finishes. Nextcloud and Syncthing remain quiesced while
-        # Borg copies their live file trees.
-        for unit in "''${stopped_database_units[@]}"; do
-          systemctl start "$unit"
-        done
-        stopped_database_units=()
+      # Recover file-backed services as soon as Borg has captured and finalized
+      # the archive. Repository pruning and compaction do not need an outage.
+      postCreate = ''
+        ${lib.getExe coordinator} cleanup
       '';
 
       postHook = ''
-        # The upstream Borg unit invokes this from an EXIT trap while `set -e`
-        # is still active. Disable fail-fast so one broken service cannot leave
-        # every other application quiesced.
+        # The upstream Borg unit invokes this from an EXIT trap. The helper
+        # always retries cleanup and returns the final status for that trap.
         set +e
-        backup_exit_status=$exitStatus
-        cleanup_failed=0
-
-        for unit in "''${stopped_database_units[@]:-}" "''${stopped_file_units[@]:-}"; do
-          if [ -n "$unit" ]; then
-            if ! systemctl start "$unit"; then
-              echo "Failed to restart $unit after backup" >&2
-              cleanup_failed=1
-            fi
-          fi
-        done
-
-        if [ "$backup_exit_status" -eq 0 ] && [ "$cleanup_failed" -eq 0 ]; then
-          echo "Backup finished successfully at $(date)"
-        elif [ "$backup_exit_status" -ne 0 ]; then
-          echo "Backup failed with status $backup_exit_status at $(date)" >&2
-        fi
-        if [ "$cleanup_failed" -ne 0 ]; then
-          echo "One or more services failed to recover after backup" >&2
-          if [ "$exitStatus" -eq 0 ]; then
-            exitStatus=1
-          fi
-        fi
+        ${lib.getExe postHookRunner} "$exitStatus" "''${backup_started_epoch:-0}"
+        exitStatus=$?
       '';
 
       extraArgs = "--lock-wait 60";
+      readWritePaths = [
+        homeAssistantBackupDir
+        homelabBackupDir
+        backupMetricsDir
+        "/run/homelab-backup"
+      ];
     };
 
     services.postgresqlBackup = {
       enable = true;
       backupAll = true;
       compression = "zstd";
-      location = "/var/backup/postgresql";
+      location = homelab.infrastructure.postgresqlBackup.archivePath;
       # Borg starts this oneshot directly after quiescing the applications.
       startAt = [];
     };
 
-    systemd.services = {
-      borgbackup-job-main = {
-        requires = ["srv.mount"];
-        after = ["srv.mount"];
-        unitConfig.RequiresMountsFor = [
-          "/srv"
-        ];
+    systemd = {
+      # The upstream Borg unit uses ProtectSystem=strict. Declare both the
+      # directory and its write exception so the pre-hook can atomically replace
+      # Home Assistant's quiesced config archive.
+      tmpfiles.rules = [
+        "d ${homeAssistantBackupDir} 0700 root root -"
+        "d ${homelabBackupDir} 0700 root root -"
+        "d ${backupMetricsDir} 0755 root root -"
+        "d /run/homelab-backup 0700 root root -"
+      ];
+
+      services = {
+        borgbackup-job-main = {
+          requires = ["srv.mount"];
+          after = ["srv.mount"];
+          unitConfig.RequiresMountsFor = [
+            "/srv"
+          ];
+        };
+
+        borgbackup-check-main = {
+          description = "Incremental consistency check of the main Borg repository";
+          requires = ["mnt-backups.mount"];
+          after = ["mnt-backups.mount" "borgbackup-job-main.service"];
+          unitConfig.RequiresMountsFor = [cfg.repo];
+          serviceConfig = {
+            Type = "oneshot";
+            User = "root";
+            ReadWritePaths = [backupMetricsDir];
+          };
+          environment = {
+            BORG_REPO = cfg.repo;
+            BORG_PASSCOMMAND = "cat ${config.sops.secrets.borg-backup-passphrase.path}";
+          };
+          script = ''
+            exec 9>${lib.escapeShellArg borgOperationLockFile}
+            ${flock} 9
+            check_started_epoch=$(date +%s)
+            ${borg} check --lock-wait 60 --repository-only --max-duration 3600
+            ${borg} check --lock-wait 60 --archives-only --last 1
+            check_finished_epoch=$(date +%s)
+            metrics_tmp=${lib.escapeShellArg "${backupMetricsDir}/homelab-borg-check.prom.tmp"}
+            {
+              printf 'homelab_borg_check_last_success_timestamp_seconds %s\n' "$check_finished_epoch"
+              printf 'homelab_borg_check_last_duration_seconds %s\n' "$((check_finished_epoch - check_started_epoch))"
+            } > "$metrics_tmp"
+            chmod 0644 "$metrics_tmp"
+            mv -f "$metrics_tmp" ${lib.escapeShellArg "${backupMetricsDir}/homelab-borg-check.prom"}
+          '';
+        };
       };
 
-      borgbackup-check-main = {
-        description = "Incremental consistency check of the main Borg repository";
-        requires = ["mnt-backups.mount"];
-        after = ["mnt-backups.mount" "borgbackup-job-main.service"];
-        unitConfig.RequiresMountsFor = [cfg.repo];
-        serviceConfig = {
-          Type = "oneshot";
-          User = "root";
+      timers.borgbackup-check-main = {
+        description = "Weekly Borg repository consistency check";
+        wantedBy = ["timers.target"];
+        timerConfig = {
+          OnCalendar = "Sun *-*-* 05:00:00";
+          Persistent = true;
+          RandomizedDelaySec = "30m";
         };
-        environment = {
-          BORG_REPO = cfg.repo;
-          BORG_PASSCOMMAND = "cat ${config.sops.secrets.borg-backup-passphrase.path}";
-        };
-        script = ''
-          ${borg} check --lock-wait 60 --repository-only --max-duration 3600
-          ${borg} check --lock-wait 60 --archives-only --last 1
-        '';
-      };
-    };
-
-    systemd.timers.borgbackup-check-main = {
-      description = "Weekly Borg repository consistency check";
-      wantedBy = ["timers.target"];
-      timerConfig = {
-        OnCalendar = "Sun *-*-* 05:00:00";
-        Persistent = true;
-        RandomizedDelaySec = "30m";
       };
     };
 
     environment.systemPackages = [
       config.services.borgbackup.package
+      coordinator
+      inspectMain
+      postHookRunner
       restoreMain
     ];
   };

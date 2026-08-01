@@ -21,6 +21,22 @@ Chezmoi's `private_` filename prefix sets restrictive file permissions. It does
 **not** encrypt file contents. Secrets belong in sops, a password manager, or a
 chezmoi encrypted source file; plaintext credentials must never be committed.
 
+## Homelab state classes
+
+Every service state artifact has exactly one owner:
+
+| State class | Owner | Recovery rule |
+| --- | --- | --- |
+| Declarative configuration | Git + NixOS | Rebuild the archived revision |
+| Encrypted secret | SOPS or external password manager | Decrypt at runtime and independently test key recovery |
+| Mutable primary data | Application database/files | Back up consistently and restore with the matching application version |
+| Disposable state | Reprovisioned cache/history | Exclude deliberately and record the accepted loss |
+| External control-plane state | Cloudflare, Tailscale, or another provider | Manage as code or document ownership and audit drift |
+
+The normalized records in `lib/homelab-inventory.nix` enforce the local state,
+backup, storage, monitoring, and endpoint classifications. Mutable UI state is
+not declarative merely because an activation hook could replay commands.
+
 ## Recovery layers
 
 The configuration repository recreates software and service definitions, not
@@ -33,8 +49,10 @@ personal data. Recovery currently has these layers:
   removable repository. This includes a quiesced Home Assistant config archive
   and its PostgreSQL recorder dump. Use `sudo borg-job-main list`, then
   `sudo borg-restore-main <archive> <existing-empty-directory> [path ...]` to
-  stage a restore without overwriting live data. Follow the version-matched
-  [Paperless restore drill](paperless.md) for its supported exporter format.
+  stage a restore without overwriting live data. Use
+  `sudo homelab-backup-inspect <archive>` for read-only member and metadata
+  validation, then follow the complete [homelab recovery runbook](homelab-recovery.md)
+  and version-matched [Paperless restore drill](paperless.md).
 - Syncthing replicates selected user data but is not a versioned backup or a
   substitute for Borg.
 
@@ -51,9 +69,8 @@ they cannot safely be invented in this public configuration:
 3. Configure an external dead-man/backup-failure notification destination. A
    check running only on Kim cannot report total host or network loss.
 
-Test recovery quarterly: list archives, run Borg consistency checks, extract a
-small sample to an empty staging directory, validate the Home Assistant config
-archive, a PostgreSQL dump, and the Paperless export, and confirm the offline
-Age identity can decrypt a copy of the SOPS file. Complete the Paperless import
-and application checks described in its restore drill rather than treating the
-presence of an export as sufficient.
+Test recovery quarterly using `docs/homelab-recovery.md`: list archives, run
+Borg consistency checks, extract only to empty staging directories, restore the
+major applications in isolation, and confirm the offline Age identity can
+decrypt a copy of the SOPS file. Store the dated drill result outside Kim as
+well as in the repository.

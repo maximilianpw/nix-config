@@ -8,8 +8,8 @@
   };
 
   t3codeRelease = {
-    version = "0.0.29-nightly.20260725.899";
-    darwinArm64Sha256 = "146b633b3fbbc27b945d5099e719af52b64e02e51d981f8c5247a85021385a5f";
+    version = "0.0.32-nightly.20260731.966";
+    darwinArm64Sha256 = "3b8ae151ec27d0dc551f95c662b99a676f614198c70727a79d1a4c8980d2c014";
   };
 
   # SSH remote commands are parsed by the account login shell before any

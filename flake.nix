@@ -184,6 +184,16 @@
         eval-kim-desktop = desktopKim.config.system.build.toplevel;
         eval-cuno = self.nixosConfigurations.cuno.config.system.build.toplevel;
         pre-commit-check = mkPreCommitCheck "x86_64-linux";
+        homelab-ingress-regression = import ./tests/homelab-ingress-regression.nix {
+          config = self.nixosConfigurations.kim.config;
+          inherit lib;
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        };
+        homelab-inventory-regression = import ./tests/homelab-inventory-regression.nix {
+          config = self.nixosConfigurations.kim.config;
+          inherit lib;
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        };
         tailscale-serve-regression = import ./tests/tailscale-serve-regression.nix {
           inherit lib;
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
@@ -205,6 +215,10 @@
         };
         monitoring-regression = import ./tests/monitoring-regression.nix {
           config = self.nixosConfigurations.kim.config;
+          inherit lib;
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        };
+        fleet-agent-forwarding-regression = import ./tests/fleet-agent-forwarding-regression.nix {
           inherit lib;
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
         };

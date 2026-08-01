@@ -61,6 +61,13 @@ lsmod | grep -E "iwlwifi|btusb"
 # TRIM + SMART timers/services present
 systemctl status fstrim.timer smartd
 
+# Read-only mounts, listeners, inventory drift, targets, and backup freshness
+sudo homelab-check
+
+# Optional repository/member check; unlike the default check, this may attach
+# the idle backup automount
+sudo env HOMELAB_CHECK_ARCHIVE=1 homelab-check
+
 # Homelab services up
 systemctl status nextcloud-setup home-assistant miniflux uptime-kuma
 
@@ -81,7 +88,7 @@ fleet ssh kim
 fleet t3 kim
 
 # Tailnet-only desktop endpoint responds over HTTPS
-curl --fail https://t3code.tail7161c3.ts.net/.well-known/t3/environment
+curl --fail https://t3code.liger-shilling.ts.net/.well-known/t3/environment
 ```
 
 If `Wake-on: g` did **not** stick, set it on the NetworkManager connection:
@@ -92,13 +99,19 @@ sudo nmcli connection modify <connection-name> 802-3-ethernet.wake-on-lan magic
 
 ## 5. Cleanup
 
-- [ ] Run `sudo borg-job-main list` and stage a small restore with
+- [ ] Run `sudo borg-job-main list` and
+      `sudo homelab-backup-inspect <archive>`, then stage a small restore with
       `borg-restore-main`; do not restore over live service paths.
-- [ ] Verify the Home Assistant config archive, Paperless export, and PostgreSQL
-      dump exist in the staged archive.
+- [ ] Verify the manifest, Home Assistant config archive, Paperless export,
+      pending consume files and media, PostgreSQL dumps, Nextcloud, Kuma, Vaultwarden,
+      and archived checkout are present.
 - [ ] Run the version-matched Paperless import and application checks in
       `docs/paperless.md`; the existence of an export alone is not a restore
       test.
+- [ ] Confirm `homelab-check` reports no Tailscale named-service drift and that
+      backup/check timestamps are fresh.
+- [ ] Confirm the latest quarterly drill in `docs/restore-drills/` follows
+      `docs/homelab-recovery.md` and is also stored outside Kim.
 - [ ] Confirm the independent offline Age recipient and off-site Borg copy
       described in `docs/config-ownership-and-recovery.md` are current.
 

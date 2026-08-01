@@ -162,6 +162,34 @@ The remote development fleet is named Revachol; its CLI remains `fleet`.
     `make rebuild-processes` and `make cleanup-rebuild` never regex-match
     unrelated Nix jobs.
 
+## Homelab service inventory
+
+`lib/homelab-services.nix` is the data-only source for service exposure and
+authorization ownership, loopback ports, primary files/databases, exceptional
+backup strategies, quiesce phases, `/srv` dependencies, important units,
+recovery contracts, and shared presentation metadata. State kinds, ordinary
+file archive paths, the shared PostgreSQL dump, and the default recovery owner
+are derived rather than repeated per service. Quiescing supports both system
+and user units. `lib/homelab-inventory.nix` uses typed Nix submodules for field
+validation and defaults, then enforces cross-field and cross-service invariants.
+`lib/homelab.nix` exposes small derived views to Cloudflare, Tailscale Serve,
+Homepage, storage, backup, and monitoring modules.
+
+To add a service:
+
+1. Add its owning NixOS application module.
+2. Add one typed record; classify every database, mutable path, secret owner,
+   and deliberately disposable artifact.
+3. Declare exposure and authorization ownership, health path, and important
+   units.
+4. Declare non-default backup transformations/exports, quiesce phase, restore
+   order, and functional acceptance checks.
+5. Verify both addition and removal so stale ingress cannot survive.
+
+Application options, shell implementation, secrets, dashboards, and
+provider/Terraform state stay in their owning modules rather than the inventory.
+See the [recovery runbook](docs/homelab-recovery.md) before handling archives.
+
 ## Using this flake
 
 ### For new systems

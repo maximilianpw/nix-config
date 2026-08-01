@@ -25,12 +25,17 @@
   hasExpectedCommands = lib.all (
     name: lib.hasInfix (expectedCommand name homelab.privateServices.${name}) applyScript
   ) (builtins.attrNames homelab.privateServices);
+  reconcilesNamedServices =
+    lib.hasInfix "serve status --json" applyScript
+    && lib.hasInfix "serve clear \"$service\"" applyScript;
   hasValidAndLayout = !lib.hasInfix "\n &&" applyScript;
 in
   assert lib.assertMsg hasExpectedCommands
   "tailscale-serve must terminate HTTPS on port 443 and proxy to each HTTP loopback backend";
   assert lib.assertMsg (!lib.hasInfix "serve set-config" applyScript)
   "tailscale-serve must not use the non-round-trippable Tailscale Services config-file path";
+  assert lib.assertMsg reconcilesNamedServices
+  "tailscale-serve must clear stale named services that are absent from the declarative inventory";
   assert lib.assertMsg hasValidAndLayout
   "tailscale-serve commands must keep && on the preceding command line";
     pkgs.runCommand "tailscale-serve-regression" {} ''

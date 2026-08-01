@@ -11,45 +11,20 @@
   backupExcludes = config.services.borgbackup.jobs.main.exclude;
   dashboard = builtins.fromJSON (builtins.readFile ../homelab/grafana/kim-overview.json);
 
-  importantSystemdUnits = [
-    "grafana.service"
-    "prometheus.service"
-    "prometheus-node-exporter.service"
-    "prometheus-systemd-exporter.service"
-    "prometheus-smartctl-exporter.service"
-    "prometheus-postgres-exporter.service"
-    "tailscaled.service"
-    "tailscaled-autoconnect.service"
-    "tailscaled-set.service"
-    "tailscale-serve.service"
-    "postgresql.service"
-    "home-assistant.service"
-    "nextcloud-cron.service"
-    "nextcloud-update-store-apps.service"
-    "nextcloud-update-store-apps.timer"
-    "nginx.service"
-    "phpfpm-nextcloud.service"
-    "paperless-consumer.service"
-    "paperless-scheduler.service"
-    "paperless-task-queue.service"
-    "paperless-web.service"
-    "paperless-exporter.service"
-    "miniflux.service"
-    "syncthing.service"
-    "uptime-kuma.service"
-    "homepage-dashboard.service"
-    "postgresqlBackup.service"
-    "borgbackup-job-main.service"
-    "borgbackup-job-main.timer"
-    "borgbackup-check-main.service"
-    "borgbackup-check-main.timer"
-  ];
-  escapeRegex = lib.replaceStrings ["."] ["\\."];
-  expectedSystemdExpression = "^(${lib.concatMapStringsSep "|" escapeRegex importantSystemdUnits})$";
+  escapeRegex = lib.replaceStrings ["."] ["[.]"];
+  expectedSystemdExpression = "^(${lib.concatMapStringsSep "|" escapeRegex homelab.importantSystemdUnits})$";
   systemdIncludeFlag = "--systemd.collector.unit-include=${expectedSystemdExpression}";
   datasource = builtins.head grafana.provision.datasources.settings.datasources;
   provider = builtins.head grafana.provision.dashboards.settings.providers;
+  homeDashboardPath = grafana.settings.dashboards.default_home_dashboard_path;
   scrapeJobNames = builtins.map (scrapeConfig: scrapeConfig.job_name) prometheus.scrapeConfigs;
+  localBackendScrape = builtins.head (
+    builtins.filter (scrapeConfig: scrapeConfig.job_name == "local-backends") prometheus.scrapeConfigs
+  );
+  localBackendTargets = (builtins.head localBackendScrape.static_configs).targets;
+  expectedLocalBackendTargets = map (endpoint: endpoint.monitorUrl) (
+    builtins.attrValues homelab.monitoredOrigins
+  );
   panelTitles = builtins.map (panel: panel.title) dashboard.panels;
   panelQueries = lib.concatMap (panel: builtins.map (target: target.expr) (panel.targets or [])) dashboard.panels;
   cpuBusyQueries = builtins.filter (query: lib.hasInfix ''mode="idle"'' query) panelQueries;
@@ -76,12 +51,16 @@
     "CPU and NVMe temperatures"
     "Important unit state"
     "Service restart count"
+    "Local backup age"
+    "Borg check age"
+    "Public ingress"
     "PostgreSQL checkpoint activity"
   ];
 in
   assert lib.assertMsg (prometheus.listenAddress == "127.0.0.1")
   "Prometheus must bind only to IPv4 loopback";
   assert lib.assertMsg (lib.all (exporter: exporter.listenAddress == "127.0.0.1") [
+    exporters.blackbox
     exporters.node
     exporters.systemd
     exporters.smartctl
@@ -89,6 +68,7 @@ in
   ])
   "Prometheus exporters must bind only to IPv4 loopback";
   assert lib.assertMsg (lib.all (exporter: !exporter.openFirewall) [
+    exporters.blackbox
     exporters.node
     exporters.systemd
     exporters.smartctl
@@ -109,6 +89,8 @@ in
   "SMART exporter must monitor both of Kim's NVMe namespaces explicitly";
   assert lib.assertMsg (builtins.elem systemdIncludeFlag exporters.systemd.extraFlags)
   "systemd exporter must include exactly the operational unit allow-list";
+  assert lib.assertMsg (!lib.hasInfix "\\" systemdIncludeFlag)
+  "systemd exporter regexes must avoid backslash escapes that produce unit parser warnings";
   assert lib.assertMsg (!exporters.postgres.runAsLocalSuperUser)
   "PostgreSQL exporter must not run as the database superuser";
   assert lib.assertMsg (exporters.postgres.dataSourceName
@@ -130,6 +112,19 @@ in
   "PostgreSQL 17 and newer must enable the replacement checkpoint collector";
   assert lib.assertMsg (builtins.elem "postgres" scrapeJobNames)
   "Prometheus must scrape the local PostgreSQL exporter";
+  assert lib.assertMsg (builtins.elem "public-ingress" scrapeJobNames && exporters.blackbox.enable)
+  "Prometheus must probe every declared public ingress through the loopback-only blackbox exporter";
+  assert lib.assertMsg (builtins.elem "local-backends" scrapeJobNames)
+  "Prometheus must probe every declared application backend rather than checking only its listener";
+  assert lib.assertMsg (localBackendTargets == expectedLocalBackendTargets)
+  "the local-backends scrape job must be generated from every monitored inventory endpoint";
+  assert lib.assertMsg (
+    builtins.elem "textfile" exporters.node.enabledCollectors
+    && builtins.elem "--collector.textfile.directory=/var/lib/prometheus-node-exporter-text-files" exporters.node.extraFlags
+  )
+  "node exporter must read atomically-written homelab backup freshness metrics";
+  assert lib.assertMsg (prometheus.ruleFiles != [])
+  "Prometheus must load the high-signal homelab alert rules";
   assert lib.assertMsg (builtins.elem "--systemd.collector.enable-restart-count" exporters.systemd.extraFlags)
   "systemd exporter must expose restart counts";
   assert lib.assertMsg (builtins.length exporters.systemd.extraFlags == 2)
@@ -167,6 +162,8 @@ in
   "Grafana must query Prometheus over loopback";
   assert lib.assertMsg (!provider.editable && provider.disableDeletion)
   "The repository-provisioned Grafana dashboard must stay read-only";
+  assert lib.assertMsg (lib.hasPrefix "/nix/store/" homeDashboardPath && !lib.hasInfix "-source/" homeDashboardPath)
+  "Grafana's default dashboard must be a retained store artifact, not a garbage-collectable dirty flake source path";
   assert lib.assertMsg (dashboard.uid == "kim-overview" && dashboard.title == "Kim Overview")
   "Kim Overview must retain its stable title and UID";
   assert lib.assertMsg (panelTitles == expectedPanelTitles)
@@ -192,6 +189,9 @@ in
     "smartctl_device_smart_status"
     "systemd_unit_state"
     "systemd_service_restart_total"
+    "homelab_backup_last_success_timestamp_seconds"
+    "homelab_borg_check_last_success_timestamp_seconds"
+    "probe_success"
     "pg_up"
     "pg_stat_bgwriter_checkpoints_timed_total"
     "pg_stat_bgwriter_checkpoints_req_total"
@@ -211,5 +211,6 @@ in
   assert lib.assertMsg (builtins.length privateServicePorts == builtins.length (lib.unique privateServicePorts))
   "Every loopback-bound private service port must be unique";
     pkgs.runCommand "monitoring-regression" {} ''
+      cmp ${lib.escapeShellArg homeDashboardPath} ${../homelab/grafana/kim-overview.json}
       touch "$out"
     ''
