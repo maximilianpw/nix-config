@@ -63,7 +63,7 @@ Every new host must set `os`, `gui`, and `longRunningAgents` explicitly.
 
 `kim` runs the pinned T3 Code nightly server on loopback port `51000`.
 The homelab Tailscale Serve configuration exposes it only within the tailnet at
-`https://t3code.tail7161c3.ts.net`.
+`https://t3code.liger-shilling.ts.net`.
 
 `users/maxpw/settings.nix` contains the shared release lock for Kim's npm server
 and Joyce's Homebrew-installed desktop app. Joyce installs the exact arm64

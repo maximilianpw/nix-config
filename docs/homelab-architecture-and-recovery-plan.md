@@ -258,7 +258,7 @@ Rollback:
 
 ### 0.6 Remove unmanaged node-level Serve state — External decision
 
-The live machine also has a machine-level `main-pc.tail7161c3.ts.net` handler
+The live machine also has a machine-level `main-pc.liger-shilling.ts.net` handler
 for T3 Code. It is outside the named-service inventory.
 
 Implementation decision:

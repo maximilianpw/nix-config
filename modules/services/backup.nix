@@ -13,7 +13,7 @@
   git = lib.getExe pkgs.git;
   jq = lib.getExe pkgs.jq;
   flock = lib.getExe' pkgs.util-linux "flock";
-  borgOperationLockFile = "/run/lock/homelab-borg-operation.lock";
+  borgOperationLockFile = "/run/homelab-backup/borg-operation.lock";
   homeAssistantBackupDir = "/var/backup/home-assistant";
   homelabBackupDir = "/var/backup/homelab";
   backupMetricsDir = "/var/lib/prometheus-node-exporter-text-files";

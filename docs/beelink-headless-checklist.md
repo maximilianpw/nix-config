@@ -88,7 +88,7 @@ fleet ssh kim
 fleet t3 kim
 
 # Tailnet-only desktop endpoint responds over HTTPS
-curl --fail https://t3code.tail7161c3.ts.net/.well-known/t3/environment
+curl --fail https://t3code.liger-shilling.ts.net/.well-known/t3/environment
 ```
 
 If `Wake-on: g` did **not** stick, set it on the NetworkManager connection:

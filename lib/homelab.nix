@@ -145,7 +145,7 @@
     "borgbackup-check-main.timer"
   ];
 in {
-  defaultTailnetDomain = "tail7161c3.ts.net";
+  defaultTailnetDomain = "liger-shilling.ts.net";
   inherit infrastructure loopbackUrl monitoredOrigins privateHost privateServices privateUrl publicEndpoints publicServices services;
 
   allowedHosts = host: "${host},localhost,127.0.0.1";

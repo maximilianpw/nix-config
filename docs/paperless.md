@@ -11,7 +11,7 @@ After applying the NixOS configuration:
 1. In Paperless, create a non-admin user for Nextcloud if one does not already
    exist, then create an API token from that user's profile.
 2. In Nextcloud, open **Personal settings → Paperless-ngx**, set the server URL
-   to `https://paperless.tail7161c3.ts.net`, and enter the API token.
+   to `https://paperless.liger-shilling.ts.net`, and enter the API token.
 3. Select a small test document in Nextcloud Files, choose **Upload to
    Paperless**, and confirm it becomes searchable in Paperless.
 

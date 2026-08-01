@@ -41,7 +41,12 @@
     lib.hasInfix "homelab-backup-coordinator" backup.preHook
     && lib.hasInfix "homelab-backup-coordinator" backup.postCreate
     && lib.hasInfix "homelab-backup-posthook" backup.postHook;
-  operationLockFile = "/run/lock/homelab-borg-operation.lock";
+  operationLockFile = "/run/homelab-backup/borg-operation.lock";
+  operationLockWritable =
+    lib.any (
+      path: operationLockFile == path || lib.hasPrefix "${path}/" operationLockFile
+    )
+    backupUnit.serviceConfig.ReadWritePaths;
   serializesBorgOperations =
     lib.all (
       script:
@@ -95,6 +100,8 @@ in
   "backup preparation and cleanup must share the failure-safe persisted coordinator";
   assert lib.assertMsg serializesBorgOperations
   "backup creation and consistency checks must acquire the same lock before touching applications or Borg";
+  assert lib.assertMsg operationLockWritable
+  "the shared operation lock must be writable inside the sandboxed Borg backup service";
   assert lib.assertMsg (!mutatesNextcloudMaintenance)
   "the backup must quiesce Nextcloud services instead of mutating its read-only config";
   assert lib.assertMsg exporterIsSynchronous
