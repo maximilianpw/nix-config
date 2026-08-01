@@ -208,6 +208,10 @@
           inherit lib;
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
         };
+        fleet-agent-forwarding-regression = import ./tests/fleet-agent-forwarding-regression.nix {
+          inherit lib;
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        };
         fleet-ghostty-regression = import ./tests/fleet-ghostty-regression.nix {
           config = self.nixosConfigurations.kim.config;
           inherit lib;

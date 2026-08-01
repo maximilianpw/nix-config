@@ -11,11 +11,17 @@
     mkOutOfStoreSymlink = config.lib.file.mkOutOfStoreSymlink;
   };
 
-  # Remote Plannotator sessions share one fixed forwarded port. Serialize
-  # Codex Stop hooks so concurrent agents queue instead of racing to bind it.
+  # Remote Plannotator sessions share one fixed forwarded port. Ignore non-plan
+  # Stop events before locking so ordinary Codex turns never queue behind a review.
   plannotatorCodexHook = pkgs.writeShellScript "plannotator-codex-hook" ''
+    payload="$(${pkgs.coreutils}/bin/cat)"
+    if ! ${pkgs.jq}/bin/jq -e '.permission_mode == "plan"' >/dev/null <<<"$payload"; then
+      printf '{}\n'
+      exit 0
+    fi
+
     lock_file="''${XDG_RUNTIME_DIR:-/tmp}/plannotator-codex-$UID.lock"
-    exec ${pkgs.util-linux}/bin/flock --exclusive "$lock_file" ${pkgs.plannotator}/bin/plannotator
+    exec ${pkgs.util-linux}/bin/flock --exclusive "$lock_file" ${pkgs.plannotator}/bin/plannotator <<<"$payload"
   '';
   source = path: homeFiles.mkRepoSource config.home.homeDirectory "users/${currentSystemUserDir}/agents/${path}";
   piConfigSource = path: homeFiles.mkHomeSource config.home.homeDirectory "pi-config/${path}";
@@ -79,6 +85,7 @@ in {
                 {
                   type = "command";
                   command = "${plannotatorCodexHook}";
+                  statusMessage = "Checking for plan";
                   timeout = 345600;
                 }
               ];

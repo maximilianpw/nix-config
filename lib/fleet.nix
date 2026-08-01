@@ -47,7 +47,7 @@
         - GUI/screenshot surface: ${boolText host.gui}
         - Long-running agents: ${boolText host.longRunningAgents}
         - Outbound Fleet identity enrolled: ${boolText host.clientEnrolled}
-        ${optionalString (host ? plannotatorPort) "- Plannotator port: ${toString host.plannotatorPort} (forwarded automatically over SSH)\n"}
+        ${optionalString (host ? plannotatorPort) "- Plannotator port: ${toString host.plannotatorPort} (forward on demand with `fleet forward`)\n"}
         ${optionalString (host ? t3codePort) "- T3 Code port: ${toString host.t3codePort}\n"}
       ''
     )
@@ -89,7 +89,9 @@
     ControlMaster = "auto";
     ControlPath = "${homeDirectory}/.ssh/control-%C";
     ControlPersist = "10m";
-    ForwardAgent = "yes";
+    # Agent forwarding grants the remote host access to the local agent. Keep
+    # the Fleet default off; a reviewed one-off SSH invocation can opt in.
+    ForwardAgent = "no";
     ServerAliveCountMax = "3";
     ServerAliveInterval = "30";
     StrictHostKeyChecking = "accept-new";
@@ -115,8 +117,6 @@
     }
     // optionalAttrs (localClient.identityAgent != null) {
       IdentityAgent = localClient.identityAgent;
-      # ForwardAgent accepts an explicit socket path on modern OpenSSH.
-      ForwardAgent = localClient.identityAgent;
     }
   );
 
@@ -130,21 +130,7 @@
       }
       else {}
     )
-    // clientSshOptions
-    // optionalAttrs (host ? plannotatorPort) {
-      LocalForward = [
-        {
-          bind = {
-            address = "127.0.0.1";
-            port = host.plannotatorPort;
-          };
-          host = {
-            address = "127.0.0.1";
-            port = host.plannotatorPort;
-          };
-        }
-      ];
-    };
+    // clientSshOptions;
 
   # Values use upstream OpenSSH directive names; the attr name becomes the
   # `Host <patterns>` line (programs.ssh.settings semantics).
@@ -166,15 +152,13 @@
       }
       // sshOptionsFor host);
 
-  # Explicit Fleet tunnels need the normal identity, trust, and connection
-  # settings without host-level LocalForward entries competing for local ports.
   mkForwardBlock = name: host:
     nameValuePair (forwardHostPatterns name host) ({
         HostName = host.hostName;
         User = host.user;
         Port = host.port;
       }
-      // builtins.removeAttrs (sshOptionsFor host) ["LocalForward"]);
+      // sshOptionsFor host);
 
   remoteTmuxRows =
     mapAttrsToList (

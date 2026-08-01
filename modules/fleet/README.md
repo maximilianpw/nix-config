@@ -32,12 +32,13 @@ All records in `lib/hosts.nix` are Fleet members. Home Manager omits the local
 machine from its SSH blocks, so each machine receives aliases for every peer
 without a directional allow-list.
 
-Hosts with a declared `plannotatorPort` automatically forward that loopback
-port on interactive generated SSH aliases. Kim uses port `19432`, so Plannotator
-is available at `http://127.0.0.1:19432` on the client for the lifetime of the
-SSH control connection; a separate `fleet forward` process is not required.
-Explicit `fleet forward` and `fleet t3` tunnels omit these automatic forwards so
-an existing Plannotator listener cannot prevent an unrelated tunnel opening.
+Hosts with a declared `plannotatorPort` expose the port as an on-demand Fleet
+capability. Kim uses port `19432`; while a remote Plannotator review is active,
+run `fleet forward kim 19432 19432` in a separate client terminal and open
+`http://127.0.0.1:19432`. Stop the tunnel with `Ctrl-C` when the review is done.
+Keeping this forward out of ordinary interactive SSH sessions avoids stale
+browser tabs repeatedly generating failed-forward errors while Plannotator is
+not listening.
 
 ## Agent Fleet Contract
 
@@ -52,8 +53,8 @@ Capability fields:
 - `gui`: whether the host has a GUI/screenshot surface.
 - `longRunningAgents`: whether unattended or multi-hour agent work should run
   there.
-- `plannotatorPort`: optional loopback port forwarded automatically by every
-  generated SSH alias for that host.
+- `plannotatorPort`: optional loopback port available through an on-demand
+  `fleet forward` tunnel.
 - `t3codePort`: optional T3 Code port exposed through `fleet t3`.
 
 Every new host must set `os`, `gui`, and `longRunningAgents` explicitly.
