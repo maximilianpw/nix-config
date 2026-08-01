@@ -45,7 +45,7 @@ Run this drill quarterly:
    sudo borg-job-main list
    mkdir -p /var/tmp/paperless-restore-drill
    sudo borg-restore-main <archive> /var/tmp/paperless-restore-drill \
-     srv/paperless/export home/maxpw/nix-config
+     srv/paperless/export srv/paperless/consume home/maxpw/nix-config
    ```
 
 3. Provision an empty disposable Paperless instance from the archived config
@@ -60,10 +60,14 @@ Run this drill quarterly:
    sudo paperless-manage document_sanity_checker
    ```
 
-5. Compare document, correspondent, tag, and document-type counts; test several
+5. Record every staged file under `srv/paperless/consume`, restore those files
+   before enabling the consumer, and confirm each pending input is ingested or
+   deliberately quarantined. An empty consume directory is also an explicit
+   successful check.
+6. Compare document, correspondent, tag, and document-type counts; test several
    searches; open original and archived files; and verify a non-PDF Office file
    processed through Tika.
-6. Destroy the disposable instance and the staged plaintext restore once the
+7. Destroy the disposable instance and the staged plaintext restore once the
    result is recorded. After a real recovery, generate a new API token and
    reconnect the Nextcloud integration.
 

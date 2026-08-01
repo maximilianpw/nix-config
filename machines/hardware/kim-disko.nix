@@ -1,7 +1,7 @@
 # Declarative root-disk layout for kim (Beelink SER9).
-# The device is pinned by serial because Linux currently assigns the root disk
-# as nvme1n1 and the /srv storage disk as nvme0n1. Using the kernel name here
-# would erase the storage disk during reprovisioning.
+# The destructive target is pinned by hardware identity because kernel NVMe
+# names are unstable. Reverify this model/serial against live lsblk and the
+# physical device before every use; a stale identity can erase the wrong disk.
 # NOT imported into the live config — the hardware/kim.nix UUID-based mounts remain in use.
 #
 # Review this file against `lsblk` and inspect the locked plan first:

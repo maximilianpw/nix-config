@@ -30,17 +30,25 @@ Boot the ISO, then partition and install. Two options:
 
 - **Manual/graphical install**: use the installer as usual. Keep the
   generated `hardware-configuration.nix` — you'll need it in step 3.
-- **Disko**: from a reviewed checkout, adapt
-  `machines/hardware/kim-disko.nix` for the new machine's stable disk
+- **Disko**: follow the destructive gates in
+  [docs/homelab-storage.md](docs/homelab-storage.md). From a reviewed checkout,
+  adapt `machines/hardware/kim-disko.nix` for the new machine's stable disk
   by-id. Evaluate the locked app first; run destructive mode only after
   checking the plan and `lsblk` on that exact machine:
 
   ```bash
+  layout=./machines/hardware/kim-disko.nix
+  target=$(nix --experimental-features "nix-command flakes" eval \
+    --impure --raw --expr \
+    "(import (builtins.toPath \"$PWD/$layout\")).disko.devices.disk.main.device")
+  [[ -b $target ]] || { echo "declared target is not a block device" >&2; exit 1; }
   sudo nix --experimental-features "nix-command flakes" run .#disko -- \
-    --dry-run ./machines/hardware/kim-disko.nix
-  # DESTRUCTIVE: erases the disk declared in the reviewed layout
+    --dry-run "$layout"
+  read -r -p "Type the exact target to erase ($target): " confirmation
+  [[ $confirmation == "$target" ]] || { echo "aborted" >&2; exit 1; }
+  # DESTRUCTIVE: erases only the target declared in the reviewed layout above
   sudo nix --experimental-features "nix-command flakes" run .#disko -- \
-    --mode disko ./machines/hardware/kim-disko.nix
+    --mode disko "$layout"
   sudo nixos-install
   ```
 
@@ -109,7 +117,9 @@ successful rebuild:
       `git remote set-url origin git@github.com:maximilianpw/nix-config.git`
 - [ ] `sudo tailscale up` — join the tailnet (fleet/remote-dev relies on it)
 - [ ] Accept Syncthing device pairings from an existing machine (personal data)
-- [ ] Restore anything needed from Borg backups
+- [ ] Restore homelab data in the safe, version-matched order from
+      [docs/homelab-recovery.md](docs/homelab-recovery.md); never extract over
+      live service paths
 - [ ] `make chezmoi-bootstrap`, inspect `make chezmoi-preview`, then run the
       interactive `make chezmoi-apply`
 - [ ] Verify secrets decrypted: `ls -la /run/secrets/`
