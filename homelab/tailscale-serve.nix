@@ -20,13 +20,29 @@
     homelab.privateServices
   );
   applyCommands = lib.concatStringsSep " &&\n" (rootCommands ++ pathCommands);
+  desiredServicePattern = lib.concatMapStringsSep "|" (name: lib.escapeShellArg "svc:${name}") (builtins.attrNames homelab.privateServices);
   serveScript = pkgs.writeShellScript "tailscale-serve-apply" ''
     set -eu
+
+    apply_config() {
+      current_services="$(${tailscale} serve status --json | ${lib.getExe pkgs.jq} -r '.Services // {} | keys[]')" || return 1
+      while IFS= read -r service; do
+        [ -n "$service" ] || continue
+        case "$service" in
+          ${desiredServicePattern}) ;;
+          *) ${tailscale} serve clear "$service" || return 1 ;;
+        esac
+      done <<EOF
+    $current_services
+    EOF
+
+      ${applyCommands}
+    }
 
     attempt=1
     delay=2
     while [ "$attempt" -le 8 ]; do
-      if ${applyCommands}; then
+      if apply_config; then
         exit 0
       fi
 
@@ -65,7 +81,6 @@ in {
       after = [
         "network-online.target"
         "tailscaled.service"
-        "tailscaled-autoconnect.service"
         "tailscaled-set.service"
       ];
       requires = ["tailscaled.service"];

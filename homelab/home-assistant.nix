@@ -5,13 +5,14 @@
 }: let
   homelab = import ../lib/homelab.nix {inherit lib;};
   inherit (homelab.publicEndpoints) homeassistant;
+  database = homelab.services.homeassistant.state.database;
 in {
   services.postgresql = {
     enable = true;
-    ensureDatabases = ["hass"];
+    ensureDatabases = [database];
     ensureUsers = [
       {
-        name = "hass";
+        name = database;
         ensureDBOwnership = true;
       }
     ];
@@ -88,7 +89,7 @@ in {
       recorder = {
         # Peer authentication maps the systemd service user to the local
         # PostgreSQL role, so the connection needs no stored password.
-        db_url = "postgresql://@/hass";
+        db_url = "postgresql://@/${database}";
       };
     };
   };

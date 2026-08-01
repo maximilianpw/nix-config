@@ -31,7 +31,7 @@ in {
   services.nextcloud = {
     enable = true;
     package = pkgs.nextcloud34;
-    hostName = "nextcloud.maximilian.pw";
+    hostName = nextcloud.host;
 
     # Whole instance (config, data, store-apps) lives on the storage SSD.
     home = "/srv/nextcloud";
@@ -64,10 +64,10 @@ in {
       # The Paperless integration calls its tailnet-only endpoint server-side.
       allow_local_remote_servers = true;
       trusted_proxies = ["127.0.0.1" "::1"];
-      trusted_domains = ["nextcloud.maximilian.pw"];
+      trusted_domains = [nextcloud.host];
       overwriteprotocol = "https";
-      overwritehost = "nextcloud.maximilian.pw";
-      "overwrite.cli.url" = "https://nextcloud.maximilian.pw";
+      overwritehost = nextcloud.host;
+      "overwrite.cli.url" = nextcloud.url;
       default_phone_region = "FR";
       maintenance_window_start = 4;
     };
@@ -79,7 +79,7 @@ in {
   };
 
   # Serve only on localhost for the Cloudflare tunnel (TLS terminates at the edge).
-  services.nginx.virtualHosts."nextcloud.maximilian.pw".listen = [
+  services.nginx.virtualHosts.${nextcloud.host}.listen = [
     {
       addr = "127.0.0.1";
       inherit (nextcloud) port;
