@@ -9,42 +9,9 @@
   prometheus = config.services.prometheus;
   inherit (prometheus) exporters;
 
-  importantSystemdUnits = [
-    "grafana.service"
-    "prometheus.service"
-    "prometheus-node-exporter.service"
-    "prometheus-systemd-exporter.service"
-    "prometheus-smartctl-exporter.service"
-    "prometheus-postgres-exporter.service"
-    "tailscaled.service"
-    "tailscaled-autoconnect.service"
-    "tailscaled-set.service"
-    "tailscale-serve.service"
-    "postgresql.service"
-    "home-assistant.service"
-    "nextcloud-cron.service"
-    "nextcloud-update-store-apps.service"
-    "nextcloud-update-store-apps.timer"
-    "nginx.service"
-    "phpfpm-nextcloud.service"
-    "paperless-consumer.service"
-    "paperless-scheduler.service"
-    "paperless-task-queue.service"
-    "paperless-web.service"
-    "paperless-exporter.service"
-    "miniflux.service"
-    "syncthing.service"
-    "uptime-kuma.service"
-    "homepage-dashboard.service"
-    "vaultwarden.service"
-    "postgresqlBackup.service"
-    "borgbackup-job-main.service"
-    "borgbackup-job-main.timer"
-    "borgbackup-check-main.service"
-    "borgbackup-check-main.timer"
-  ];
-  escapeRegex = lib.replaceStrings ["."] ["\\."];
-  systemdUnitExpression = "^(${lib.concatMapStringsSep "|" escapeRegex importantSystemdUnits})$";
+  escapeRegex = lib.replaceStrings ["."] ["[.]"];
+  systemdUnitExpression = "^(${lib.concatMapStringsSep "|" escapeRegex homelab.importantSystemdUnits})$";
+  grafanaHomeDashboard = pkgs.writeText "kim-overview.json" (builtins.readFile ./grafana/kim-overview.json);
   grafanaSecretKeySetup = pkgs.writeShellScript "grafana-secret-key-setup" ''
     set -eu
 
@@ -62,12 +29,125 @@
       {targets = ["127.0.0.1:${toString port}"];}
     ];
   };
+  alert = name: expression: duration: severity: summary: {
+    alert = name;
+    expr = expression;
+    "for" = duration;
+    labels = {inherit severity;};
+    annotations = {inherit summary;};
+  };
+  blackboxConfig = (pkgs.formats.yaml {}).generate "homelab-blackbox.yaml" {
+    modules.http_2xx = {
+      prober = "http";
+      timeout = "10s";
+      http = {
+        preferred_ip_protocol = "ip4";
+        follow_redirects = true;
+      };
+    };
+  };
+  publicIngressScrape = {
+    job_name = "public-ingress";
+    metrics_path = "/probe";
+    params.module = ["http_2xx"];
+    static_configs = [
+      {targets = map (endpoint: endpoint.url) (builtins.attrValues homelab.publicEndpoints);}
+    ];
+    relabel_configs = [
+      {
+        source_labels = ["__address__"];
+        target_label = "__param_target";
+      }
+      {
+        source_labels = ["__param_target"];
+        target_label = "instance";
+      }
+      {
+        target_label = "__address__";
+        replacement = "127.0.0.1:${toString exporters.blackbox.port}";
+      }
+    ];
+  };
+  localBackendScrape = {
+    job_name = "local-backends";
+    metrics_path = "/probe";
+    params.module = ["http_2xx"];
+    static_configs = [
+      {targets = map (endpoint: endpoint.monitorUrl) (builtins.attrValues homelab.monitoredOrigins);}
+    ];
+    inherit (publicIngressScrape) relabel_configs;
+  };
+  homelabRules = (pkgs.formats.yaml {}).generate "homelab-prometheus-rules.yaml" {
+    groups = [
+      {
+        name = "homelab-operations";
+        rules = [
+          (alert "HomelabNodeExporterDown" ''absent(up{job="node"}) or up{job="node"} == 0'' "5m" "critical" "The node exporter is absent or unreachable")
+          (alert "HomelabSystemdExporterDown" ''absent(up{job="systemd"}) or up{job="systemd"} == 0'' "5m" "critical" "The systemd exporter is absent or unreachable")
+          (alert "HomelabSmartctlExporterDown" ''absent(up{job="smartctl"}) or up{job="smartctl"} == 0'' "5m" "critical" "The SMART exporter is absent or unreachable")
+          (alert "HomelabLocalBackendDown" ''absent(probe_success{job="local-backends"}) or probe_success{job="local-backends"} == 0 or up{job="local-backends"} == 0'' "10m" "critical" "A declared homelab backend is unhealthy")
+          (alert "HomelabPublicIngressDown" ''absent(probe_success{job="public-ingress"}) or probe_success{job="public-ingress"} == 0 or up{job="public-ingress"} == 0'' "10m" "critical" "A declared public ingress endpoint is unreachable")
+          (alert "HomelabBackupStale" ''absent(homelab_backup_last_success_timestamp_seconds) or (time() - homelab_backup_last_success_timestamp_seconds > 129600)'' "15m" "critical" "No successful local backup has been recorded in 36 hours")
+          (alert "HomelabBorgCheckStale" ''absent(homelab_borg_check_last_success_timestamp_seconds) or (time() - homelab_borg_check_last_success_timestamp_seconds > 777600)'' "30m" "critical" "No successful Borg consistency check has been recorded in 9 days")
+          (alert "HomelabSrvAbsent" ''absent(node_filesystem_size_bytes{mountpoint="/srv",fstype!="rootfs"})'' "5m" "critical" "/srv is absent from node-exporter filesystem metrics")
+          (alert "HomelabFilesystemWarning" ''100 * (1 - node_filesystem_avail_bytes{mountpoint=~"/|/srv"} / node_filesystem_size_bytes{mountpoint=~"/|/srv"}) > 80'' "30m" "warning" "A primary filesystem is more than 80% full")
+          (alert "HomelabFilesystemCritical" ''100 * (1 - node_filesystem_avail_bytes{mountpoint=~"/|/srv"} / node_filesystem_size_bytes{mountpoint=~"/|/srv"}) > 90'' "15m" "critical" "A primary filesystem is more than 90% full")
+          (alert "HomelabSmartFailure" ''smartctl_device_smart_status != 1'' "5m" "critical" "SMART reports an unhealthy storage device")
+          (alert "HomelabNvmeTemperatureHigh" ''smartctl_device_temperature{temperature_type="current"} > 80'' "15m" "warning" "An NVMe device has remained above 80°C")
+          (alert "HomelabPostgresExporterDown" ''absent(pg_up) or pg_up == 0'' "5m" "critical" "The PostgreSQL exporter cannot query PostgreSQL")
+          (alert "HomelabImportantUnitFailed" ''systemd_unit_state{state="failed"} == 1'' "10m" "critical" "An important homelab systemd unit is failed")
+          (alert "HomelabRepeatedServiceRestarts" ''increase(systemd_service_restart_total[30m]) > 3'' "10m" "warning" "An important homelab service is repeatedly restarting")
+        ];
+      }
+    ];
+  };
+  loopbackPorts = map (service: service.endpoint.port) (
+    lib.filter (
+      service: service.endpoint.exposure != "none" && service.endpoint.port != null
+    ) (builtins.attrValues homelab.services)
+  );
+  tailscaleServiceNames = map (service: service.tailscaleServiceName) (
+    lib.filter (service: service.tailscaleServiceName != null) (builtins.attrValues homelab.services)
+  );
+  homelabCheck = pkgs.writeShellApplication {
+    name = "homelab-check";
+    runtimeInputs = [
+      pkgs.coreutils
+      pkgs.curl
+      pkgs.gawk
+      pkgs.iproute2
+      pkgs.jq
+      pkgs.systemd
+      pkgs.tailscale
+      pkgs.util-linux
+    ];
+    text = ''
+      export FINDMNT_BIN=${lib.getExe' pkgs.util-linux "findmnt"}
+      export SYSTEMCTL_BIN=${lib.getExe' pkgs.systemd "systemctl"}
+      export SS_BIN=${lib.getExe' pkgs.iproute2 "ss"}
+      export TAILSCALE_BIN=${lib.getExe config.services.tailscale.package}
+      export JQ_BIN=${lib.getExe pkgs.jq}
+      export CURL_BIN=${lib.getExe pkgs.curl}
+      export ID_BIN=${lib.getExe' pkgs.coreutils "id"}
+      export HOMELAB_REQUIRED_MOUNTS=${lib.escapeShellArg "/ /srv /mnt/backups"}
+      export HOMELAB_OPTIONAL_AUTOMOUNTS=${lib.escapeShellArg "/mnt/backups"}
+      export HOMELAB_IMPORTANT_UNITS=${lib.escapeShellArg (lib.concatStringsSep " " homelab.importantSystemdUnits)}
+      export HOMELAB_LOOPBACK_PORTS=${lib.escapeShellArg (lib.concatMapStringsSep " " toString loopbackPorts)}
+      export HOMELAB_TAILSCALE_SERVICES=${lib.escapeShellArg (lib.concatStringsSep " " tailscaleServiceNames)}
+      export HOMELAB_CLOUDFLARED_UNIT=${lib.escapeShellArg homelab.infrastructure.cloudflare.unit}
+      export HOMELAB_PROMETHEUS_URL=${lib.escapeShellArg (homelab.loopbackUrl prometheus.port)}
+      export HOMELAB_INSPECT_BIN=homelab-backup-inspect
+      exec ${lib.getExe pkgs.bash} ${../scripts/homelab-check.sh} "$@"
+    '';
+  };
 in {
+  environment.systemPackages = [homelabCheck];
+
   services = {
     prometheus = {
       enable = true;
       listenAddress = "127.0.0.1";
-      port = 9090;
+      port = homelab.services.prometheus.endpoint.port;
       checkConfig = true;
       retentionTime = "30d";
       extraFlags = ["--storage.tsdb.retention.size=5GB"];
@@ -75,23 +155,34 @@ in {
         scrape_interval = "20s";
         evaluation_interval = "20s";
       };
+      ruleFiles = [homelabRules];
       scrapeConfigs = [
         (scrape "node" exporters.node.port)
         (scrape "systemd" exporters.systemd.port)
         (scrape "smartctl" exporters.smartctl.port)
         (scrape "postgres" exporters.postgres.port)
         (scrape "prometheus" prometheus.port)
+        localBackendScrape
+        publicIngressScrape
       ];
 
       exporters = {
+        blackbox = {
+          enable = true;
+          listenAddress = "127.0.0.1";
+          openFirewall = false;
+          configFile = blackboxConfig;
+        };
         node = {
           enable = true;
           listenAddress = "127.0.0.1";
           openFirewall = false;
           # Keep filesystem series focused on the two operational filesystems;
           # CPU, memory, diskstats, netdev, uptime, and hwmon are default collectors.
+          enabledCollectors = ["textfile"];
           extraFlags = [
             "--collector.filesystem.mount-points-include=^/(|srv)$"
+            "--collector.textfile.directory=/var/lib/prometheus-node-exporter-text-files"
           ];
         };
         systemd = {
@@ -107,9 +198,9 @@ in {
           enable = true;
           listenAddress = "127.0.0.1";
           openFirewall = false;
-          # Kim's live hardware inventory identifies / as nvme0n1 and /srv as
-          # nvme1n1. The NixOS exporter module supplies the narrow NVMe device
-          # policy, ACL, and capabilities needed by smartctl.
+          # These are the currently monitored NVMe namespaces, not stable disk
+          # identities. Reconcile them with model/serial data using
+          # docs/homelab-storage.md after hardware changes.
           devices = [
             "/dev/nvme0n1"
             "/dev/nvme1n1"
@@ -177,7 +268,7 @@ in {
           check_for_plugin_updates = false;
           feedback_links_enabled = false;
         };
-        dashboards.default_home_dashboard_path = toString ./grafana/kim-overview.json;
+        dashboards.default_home_dashboard_path = "${grafanaHomeDashboard}";
       };
       provision = {
         enable = true;
