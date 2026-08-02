@@ -1,4 +1,11 @@
-{pkgs, ...}: {
+{
+  lib,
+  pkgs,
+  ...
+}: let
+  homelab = import ../../../../lib/homelab.nix {inherit lib;};
+  vaultwardenUrl = homelab.privateUrl homelab.defaultTailnetDomain "vaultwarden";
+in {
   home.packages = [
     (pkgs.writeShellApplication {
       name = "npmrc-token";
@@ -40,6 +47,19 @@
         export NODE_AUTH_TOKEN="$token"
         echo "running $1 with NODE_AUTH_TOKEN from $token_source" >&2
         exec "$@"
+      '';
+    })
+    (pkgs.writeShellApplication {
+      name = "vault-backup";
+      runtimeInputs = [
+        pkgs.bitwarden-cli
+        pkgs.coreutils
+        pkgs.expect
+        pkgs.jq
+      ];
+      text = ''
+        export VAULTWARDEN_URL=${lib.escapeShellArg vaultwardenUrl}
+        ${builtins.readFile ../../../../scripts/vault-backup.sh}
       '';
     })
   ];

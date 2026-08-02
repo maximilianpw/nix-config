@@ -56,6 +56,20 @@ personal data. Recovery currently has these layers:
 - Syncthing replicates selected user data but is not a versioned backup or a
   substitute for Borg.
 
+### Portable Vaultwarden exports
+
+Run `vault-backup` interactively on a Syncthing client to create dated,
+password-protected JSON exports under `~/Sync/Recovery/Vaultwarden`. The
+command synchronizes the vault first, exports the personal vault and every
+accessible organization with one confirmed recovery passphrase, and rejects
+the result unless it has the expected encrypted, password-protected envelope.
+The recovery passphrase must remain available without Vaultwarden.
+
+Kim retains received Syncthing deletions for 30 days, and `~/Sync` is also part
+of the Borg archive. These portable exports supplement the server-level backup;
+they do not include attachments or Sends, which remain covered by the
+PostgreSQL dump and complete `/var/lib/bitwarden_rs` archive.
+
 The host-key SOPS recipient is not disaster recovery for loss of Kim.
 These external pieces still require a provider/location choice and credentials;
 they cannot safely be invented in this public configuration:
