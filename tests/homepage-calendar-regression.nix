@@ -144,6 +144,9 @@ in
       "Paperless"
       "Miniflux"
       "Vaultwarden"
+      "Immich"
+      "Jellyfin"
+      "Seerr"
     ])
   "Homepage Applications must retain their intended order";
   assert lib.assertMsg (cardNames (builtins.elemAt homepage.services 1)
@@ -152,6 +155,10 @@ in
       "Uptime Kuma"
       "Syncthing"
       "T3 Code"
+      "Sonarr"
+      "Radarr"
+      "Prowlarr"
+      "qBittorrent"
     ])
   "Homepage Operations must retain their intended order";
   assert lib.assertMsg (lib.all cardUsesLoopbackMonitor allCards)

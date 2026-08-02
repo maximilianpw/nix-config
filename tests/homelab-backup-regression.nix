@@ -29,6 +29,7 @@
     "paperless-task-queue.service"
     "paperless-web.service"
   ];
+  quiescesImmichWrites = builtins.elem "immich-server.service" homelab.backup.archiveUnits;
   quiescesUptimeKuma = builtins.elem "uptime-kuma.service" homelab.backup.archiveUnits;
   quiescesT3Code = builtins.elem "maxpw:t3code.service" homelab.backup.userArchiveUnits;
   mutatesNextcloudMaintenance = lib.hasInfix "maintenance:mode" backup.preHook;
@@ -70,12 +71,14 @@ in
   assert lib.assertMsg (
     manifest.schemaVersion
     == 1
-    && manifest.expectedDatabases == ["hass" "miniflux" "nextcloud" "paperless" "vaultwarden"]
+    && manifest.expectedDatabases == ["hass" "immich" "miniflux" "nextcloud" "paperless" "vaultwarden"]
+    && builtins.hasAttr "immich" manifest.applicationVersions
     && builtins.hasAttr "nextcloud" manifest.applicationVersions
     && builtins.hasAttr "kuma" manifest.applicationVersions
     && builtins.hasAttr "uptimeKuma" manifest.applicationVersions
     && manifest.postgresql.majorVersion != ""
     && builtins.elem "/srv/nextcloud" manifest.expectedPrimaryStatePaths
+    && builtins.elem "/srv/immich" manifest.expectedPrimaryStatePaths
     && builtins.elem "/var/lib/private/uptime-kuma" manifest.expectedPrimaryStatePaths
     && builtins.elem "/home/maxpw/.local/share/t3code" manifest.expectedPrimaryStatePaths
     && builtins.elem "/home/maxpw/.local/share/t3code" manifest.expectedArchivePaths
@@ -92,6 +95,8 @@ in
   "the backup must prevent mutable Nextcloud app updates while copying store-apps";
   assert lib.assertMsg quiescesPaperlessIngestion
   "Paperless ingestion must remain quiesced until pending consume files are copied";
+  assert lib.assertMsg quiescesImmichWrites
+  "Immich must remain quiesced while its matching database and media are backed up";
   assert lib.assertMsg quiescesUptimeKuma
   "the backup must quiesce Uptime Kuma's mutable local database";
   assert lib.assertMsg quiescesT3Code
@@ -108,6 +113,6 @@ in
   "the backup must wait for the Paperless exporter to finish";
   assert lib.assertMsg (!exporterRestartsApplications)
   "the backup hook, not the exporter, must own application recovery ordering";
-    pkgs.runCommand "paperless-backup-regression" {} ''
+    pkgs.runCommand "homelab-backup-regression" {} ''
       touch "$out"
     ''

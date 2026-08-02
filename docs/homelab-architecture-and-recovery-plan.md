@@ -76,7 +76,7 @@ Cloudflare Tunnel        Tailscale Services
 The following existing choices are sound and should remain unless a later phase
 provides a measured reason to change them:
 
-- One Nix module per application under `homelab/`.
+- Focused application or tightly coupled stack modules under `homelab/`.
 - Native NixOS services rather than moving everything into containers.
 - Shared PostgreSQL over its Unix socket, with no TCP listener.
 - Public services through Cloudflare and private services through Tailscale.
@@ -110,6 +110,8 @@ acceptance check.
 | --- | --- | --- | --- |
 | Nextcloud | PostgreSQL and `/srv/nextcloud` | Logical dump plus file tree | Full version-matched restore runbook; inventory mutable store apps |
 | Home Assistant | `/var/lib/hass` and PostgreSQL recorder | Quiesced tar plus logical dump | Restore drill for config, integrations, credentials, automations, and recorder |
+| Immich | PostgreSQL and `/srv/immich` | Logical dump plus quiesced file tree | Version-matched database/storage restore, integrity scan, and mobile upload test |
+| Media stack | Jellyfin, Servarr, Seerr, and qBittorrent/Mullvad control state | Quiesced `/var/lib` paths; downloaded media deliberately excluded | Restore application wiring and verify import, hardlinks, playback, transcoding, and VPN binding |
 | Paperless | Export, pending consume files, PostgreSQL fallback | Supported exporter, consume path, logical dump | Keep exporter import as primary path; verify pending-file recovery |
 | Miniflux | PostgreSQL | Logical dump | Database restore and login/feed validation |
 | Vaultwarden | PostgreSQL and `/var/lib/bitwarden_rs` | Logical dump plus file tree | Verify RSA identity, attachments, Sends, and DB as one recovery point |
@@ -240,10 +242,17 @@ Required staged paths:
 
 - `var/backup/home-assistant/config.tar`
 - `var/backup/postgresql`
+- `srv/immich`
 - `srv/paperless/export`
 - `srv/paperless/consume`
 - `srv/paperless/media`
 - `srv/nextcloud`
+- `var/lib/jellyfin`
+- `var/lib/nixos-containers/qbt`
+- `var/lib/private/jellyseerr`
+- `var/lib/private/prowlarr`
+- `var/lib/radarr/.config/Radarr`
+- `var/lib/sonarr/.config/NzbDrone`
 - `var/lib/private/uptime-kuma`
 - `var/lib/bitwarden_rs`
 - the archived `nix-config` checkout
@@ -256,19 +265,19 @@ Rollback:
 - A Nix generation rollback does not roll back an application database after an
   application migration. Phase 0 should not introduce application upgrades.
 
-### 0.6 Remove unmanaged node-level Serve state — External decision
+### 0.6 Remove unmanaged node-level Serve state — Migration complete; audit pending
 
-The live machine also has a machine-level `main-pc.liger-shilling.ts.net` handler
-for T3 Code. It is outside the named-service inventory.
+The stale machine-level T3 Code handler was removed during the tailnet domain
+migration on 2026-08-01. `svc:t3code` is now the sole browser endpoint.
 
-Implementation decision:
+Migration result:
 
-1. Confirm no client depends on the machine-level hostname.
-2. Make `svc:t3code` the sole intended browser endpoint.
-3. Remove/reset only the machine-level Serve configuration.
-4. Keep named Tailscale Services intact.
-5. Add a live audit that fails when machine-level Serve handlers are present
-   without an explicit declaration.
+1. The unmanaged machine-level Serve configuration was removed.
+2. All declared named services were recreated under the current tailnet domain.
+3. The T3 Code endpoint and local backend were verified after migration.
+
+Follow-up: add a live audit that fails when machine-level Serve handlers are
+present without an explicit declaration.
 
 ## Phase 1: prove local recovery
 

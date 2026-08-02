@@ -3,6 +3,8 @@
     ./cloudflared.nix
     ./home-assistant.nix
     ./homepage.nix
+    ./immich.nix
+    ./media.nix
     ./miniflux.nix
     ./monitoring.nix
     ./nextcloud.nix

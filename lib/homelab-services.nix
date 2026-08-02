@@ -77,6 +77,82 @@
     operations.units = ["homepage-dashboard.service"];
   };
 
+  immich = {
+    endpoint = {
+      authorizationOwner = "tailscale";
+      exposure = "tailnet";
+      port = 2283;
+    };
+    state = {
+      paths = ["/srv/immich"];
+      database = "immich";
+    };
+    backup.quiesce = [
+      {
+        unit = "immich-server.service";
+        until = "archive";
+      }
+    ];
+    storage.units = ["immich-server.service"];
+    operations.units = [
+      "immich-machine-learning.service"
+      "immich-server.service"
+    ];
+    recovery = {
+      order = 15;
+      versionPolicy = "restore-archived-version-first";
+      runbook = "docs/homelab-recovery.md#immich";
+      acceptance = [
+        "database-and-storage-integrity-pass"
+        "representative-original-thumbnail-and-video-open"
+        "mobile-upload-and-search-pass"
+      ];
+      secretOwners = ["mutable-state:immich-database"];
+    };
+    presentation = {
+      group = "applications";
+      title = "Immich";
+      icon = "immich.png";
+      description = "Private photo library";
+      order = 60;
+    };
+  };
+
+  jellyfin = {
+    endpoint = {
+      authorizationOwner = "tailscale";
+      exposure = "tailnet";
+      port = 8096;
+      monitorPath = "/health";
+    };
+    state.paths = ["/var/lib/jellyfin"];
+    backup.quiesce = [
+      {
+        unit = "jellyfin.service";
+        until = "archive";
+      }
+    ];
+    storage.units = ["jellyfin.service"];
+    operations.units = ["jellyfin.service"];
+    recovery = {
+      order = 90;
+      versionPolicy = "restore-archived-version-first";
+      runbook = "docs/media-stack.md#recovery";
+      acceptance = [
+        "libraries-users-and-watch-state-load"
+        "representative-direct-play-and-transcode-pass"
+      ];
+      secretOwners = ["mutable-state:/var/lib/jellyfin"];
+    };
+    presentation = {
+      group = "applications";
+      title = "Jellyfin";
+      icon = "jellyfin.png";
+      description = "Private movies and television";
+      order = 70;
+    };
+  };
+
   kuma = {
     endpoint = {
       authorizationOwner = "tailscale";
@@ -287,6 +363,36 @@
     };
   };
 
+  prowlarr = {
+    endpoint = {
+      authorizationOwner = "tailscale";
+      exposure = "tailnet";
+      port = 9696;
+    };
+    state.paths = ["/var/lib/private/prowlarr"];
+    backup.quiesce = [
+      {
+        unit = "prowlarr.service";
+        until = "archive";
+      }
+    ];
+    operations.units = ["prowlarr.service"];
+    recovery = {
+      order = 93;
+      versionPolicy = "restore-archived-version-first";
+      runbook = "docs/media-stack.md#recovery";
+      acceptance = ["applications-and-authorized-indexer-definitions-load"];
+      secretOwners = ["mutable-state:/var/lib/private/prowlarr"];
+    };
+    presentation = {
+      group = "operations";
+      title = "Prowlarr";
+      icon = "prowlarr.png";
+      description = "Media source coordination";
+      order = 70;
+    };
+  };
+
   prometheus = {
     endpoint = {
       authorizationOwner = "host-local";
@@ -300,6 +406,140 @@
       versionPolicy = "rebuild-from-archived-revision";
       runbook = "docs/homelab-recovery.md#grafana-and-prometheus";
       acceptance = ["targets-and-rules-load-with-empty-history"];
+    };
+  };
+
+  qbittorrent = {
+    endpoint = {
+      authorizationOwner = "tailscale";
+      exposure = "tailnet";
+      port = 18080;
+    };
+    # The declarative container root holds qBittorrent resume/config state and
+    # Mullvad's device login. The bind-mounted media tree is intentionally not
+    # part of this recovery class.
+    state.paths = ["/var/lib/nixos-containers/qbt"];
+    backup.quiesce = [
+      {
+        unit = "container@qbt.service";
+        until = "archive";
+      }
+    ];
+    storage.units = ["container@qbt.service"];
+    operations.units = ["container@qbt.service"];
+    recovery = {
+      order = 91;
+      versionPolicy = "restore-archived-version-first";
+      runbook = "docs/media-stack.md#recovery";
+      acceptance = [
+        "mullvad-reports-connected-before-daemon-start"
+        "torrent-resume-state-and-categories-load"
+      ];
+      secretOwners = [
+        "interactive:mullvad-account-login"
+        "mutable-state:/var/lib/nixos-containers/qbt"
+      ];
+    };
+    presentation = {
+      group = "operations";
+      title = "qBittorrent";
+      icon = "qbittorrent.png";
+      description = "Mullvad-isolated downloads";
+      order = 80;
+    };
+  };
+
+  radarr = {
+    endpoint = {
+      authorizationOwner = "tailscale";
+      exposure = "tailnet";
+      port = 7878;
+    };
+    state.paths = ["/var/lib/radarr/.config/Radarr"];
+    backup.quiesce = [
+      {
+        unit = "radarr.service";
+        until = "archive";
+      }
+    ];
+    storage.units = ["radarr.service"];
+    operations.units = ["radarr.service"];
+    recovery = {
+      order = 92;
+      versionPolicy = "restore-archived-version-first";
+      runbook = "docs/media-stack.md#recovery";
+      acceptance = ["movie-root-download-client-and-history-load"];
+      secretOwners = ["mutable-state:/var/lib/radarr/.config/Radarr"];
+    };
+    presentation = {
+      group = "operations";
+      title = "Radarr";
+      icon = "radarr.png";
+      description = "Movie automation";
+      order = 60;
+    };
+  };
+
+  seerr = {
+    endpoint = {
+      authorizationOwner = "tailscale";
+      exposure = "tailnet";
+      port = 5055;
+    };
+    # Kim retains stateVersion 24.05, so nixpkgs keeps Seerr's compatibility
+    # StateDirectory name rather than migrating mutable state implicitly.
+    state.paths = ["/var/lib/private/jellyseerr"];
+    backup.quiesce = [
+      {
+        unit = "seerr.service";
+        until = "archive";
+      }
+    ];
+    operations.units = ["seerr.service"];
+    recovery = {
+      order = 94;
+      versionPolicy = "restore-archived-version-first";
+      runbook = "docs/media-stack.md#recovery";
+      acceptance = ["jellyfin-sonarr-and-radarr-connections-load"];
+      secretOwners = ["mutable-state:/var/lib/private/jellyseerr"];
+    };
+    presentation = {
+      group = "applications";
+      title = "Seerr";
+      icon = "jellyseerr.png";
+      description = "Media discovery and requests";
+      order = 80;
+    };
+  };
+
+  sonarr = {
+    endpoint = {
+      authorizationOwner = "tailscale";
+      exposure = "tailnet";
+      port = 8989;
+    };
+    state.paths = ["/var/lib/sonarr/.config/NzbDrone"];
+    backup.quiesce = [
+      {
+        unit = "sonarr.service";
+        until = "archive";
+      }
+    ];
+    storage.units = ["sonarr.service"];
+    operations.units = ["sonarr.service"];
+    recovery = {
+      order = 92;
+      versionPolicy = "restore-archived-version-first";
+      runbook = "docs/media-stack.md#recovery";
+      acceptance = ["series-root-download-client-and-history-load"];
+      secretOwners = ["mutable-state:/var/lib/sonarr/.config/NzbDrone"];
+    };
+    presentation = {
+      group = "operations";
+      title = "Sonarr";
+      icon = "sonarr.png";
+      description = "Television automation";
+      order = 50;
     };
   };
 

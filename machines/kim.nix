@@ -84,6 +84,8 @@
     pkgs.cachix
     pkgs.ethtool
     pkgs.hdparm
+    # Verify Jellyfin's VA-API codec support as the service identity.
+    pkgs.libva-utils
     pkgs.lm_sensors
     pkgs.nvme-cli
     pkgs.pciutils

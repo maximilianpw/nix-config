@@ -194,11 +194,21 @@
           inherit lib;
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
         };
+        immich-config-regression = import ./tests/immich-config-regression.nix {
+          config = self.nixosConfigurations.kim.config;
+          inherit lib;
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        };
+        media-stack-regression = import ./tests/media-stack-regression.nix {
+          config = self.nixosConfigurations.kim.config;
+          inherit lib;
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        };
         tailscale-serve-regression = import ./tests/tailscale-serve-regression.nix {
           inherit lib;
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
         };
-        paperless-backup-regression = import ./tests/paperless-backup-regression.nix {
+        homelab-backup-regression = import ./tests/homelab-backup-regression.nix {
           config = self.nixosConfigurations.kim.config;
           inherit lib;
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
