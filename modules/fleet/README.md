@@ -6,6 +6,8 @@ CLI remains `fleet`.
 ## Commands
 
 - `fleet list` shows the declared machines and aliases.
+- `fleet herdr <host> [session] [--forward <port-or-map>...]` opens the host's
+  persistent, agent-aware Herdr session with optional managed project ports.
 - `fleet ssh <host>` connects to `tmux new-session -A -s main` on that host.
 - `fleet ssh <host> <session>` attaches to a named tmux session.
 - `fleet shell <host>` opens a plain SSH shell with no forced tmux command.
@@ -20,9 +22,28 @@ CLI remains `fleet`.
   SSH local forward processes.
 - `fleet t3 <host> [local-port]` forwards a host's declared T3 Code server port.
 
-Herdr is the primary local multiplexer/workspace UI, but it stays separate
-from Fleet. Use `h` as the shell alias for `herdr`, then run `fleet shell`,
-`fleet ssh`, or direct SSH from the Herdr pane you choose.
+Use `fleet herdr <host>` from an ordinary terminal when agent work should run
+on another machine. Herdr's server, panes, and agent detection then live on the
+remote host; detaching or losing SSH leaves them running, and invoking the same
+command reattaches. A local Herdr session wrapped around `fleet ssh` sees only
+the local `ssh` process, so remote agents cannot appear in its agent menu.
+
+Add `--forward 3000` to expose the remote loopback port on the same local port,
+or `--forward 3000:5173` to map local port 3000 to remote port 5173. The option
+is repeatable. Fleet establishes every forward before attaching Herdr, so the
+remote app can start afterward, and removes the forwards when the local Herdr
+client exits:
+
+```sh
+fleet herdr kim agents --forward 3000 --forward 5173
+```
+
+Use standalone `fleet forward` when a tunnel must remain independent of a
+Herdr attachment.
+
+`fleet ssh` remains the tmux fallback for general remote shells and tools that
+do not need Herdr's agent model. Its tmux session also survives a dropped SSH
+client; rerun the same command and optional session name to reattach.
 
 Home Manager also writes direct plain-shell and `tm-` SSH aliases for every
 remote inventory host. For example, `ssh kim` opens a plain shell while
@@ -33,12 +54,12 @@ machine from its SSH blocks, so each machine receives aliases for every peer
 without a directional allow-list.
 
 Hosts with a declared `plannotatorPort` expose the port as an on-demand Fleet
-capability. Kim uses port `19432`; while a remote Plannotator review is active,
-run `fleet forward kim 19432 19432` in a separate client terminal and open
-`http://127.0.0.1:19432`. Stop the tunnel with `Ctrl-C` when the review is done.
-Keeping this forward out of ordinary interactive SSH sessions avoids stale
-browser tabs repeatedly generating failed-forward errors while Plannotator is
-not listening.
+capability. Kim uses port `19432`; attach with
+`fleet herdr kim --forward 19432` before starting a remote Plannotator review,
+then open `http://127.0.0.1:19432`. Standalone
+`fleet forward kim 19432 19432` remains available when Herdr is not involved.
+Keeping this forward opt-in avoids stale browser tabs repeatedly generating
+failed-forward errors while Plannotator is not listening.
 
 ## Agent Fleet Contract
 

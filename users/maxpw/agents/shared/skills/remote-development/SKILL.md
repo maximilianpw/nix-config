@@ -14,13 +14,21 @@ description: Operate trusted remote development machines through the Fleet CLI. 
 ## Operations
 
 - Use `fleet run <host> <command...>` for non-interactive checks.
+- Use `fleet herdr <host> [session] [--forward <port-or-map>...]` for persistent
+  remote agent work with Herdr agent discovery, lifecycle state, and managed
+  project ports. A port maps to itself; `local:remote` remaps it.
 - Use `fleet shell <host>` for a plain interactive shell.
-- Use `fleet ssh <host> [session]` for a persistent tmux session.
+- Use `fleet ssh <host> [session]` for a persistent tmux session when Herdr is
+  not needed.
 - Use `fleet forward <host> <local-port> <remote-port> [remote-host]` for local port forwarding.
 - Use `fleet forward list` to inspect forwards and `fleet forward delete <pid>` to stop them.
 - Use `fleet t3 <host> [local-port]` when the selected host declares T3 Code support.
 
-Prefer non-interactive `fleet run` for finite verification. Use persistent tmux for interactive or long-running work.
+Prefer non-interactive `fleet run` for finite verification. Use remote Herdr
+for interactive or long-running agent work, and tmux for other persistent
+terminal work. Prefer Herdr's `--forward` for project ports that should share
+the attachment lifecycle; use standalone `fleet forward` for independent
+tunnels.
 
 ## Safety
 

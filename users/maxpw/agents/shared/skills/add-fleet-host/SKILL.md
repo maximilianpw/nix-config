@@ -67,6 +67,7 @@ After applying the rebuild, verify the live workflow:
 ```bash
 fleet list
 fleet run HOST true
+fleet herdr HOST
 fleet ssh HOST
 cmux reload-config
 cmux sidebar reload fleet

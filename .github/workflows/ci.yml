@@ -51,6 +51,7 @@ jobs:
             .#checks.x86_64-linux.homepage-calendar-regression \
             .#checks.x86_64-linux.monitoring-regression \
             .#checks.x86_64-linux.fleet-agent-forwarding-regression \
+            .#checks.x86_64-linux.fleet-herdr-regression \
             .#checks.x86_64-linux.fleet-ghostty-regression \
             .#checks.x86_64-linux.fleet-trust-regression
 
