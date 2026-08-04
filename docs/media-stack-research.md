@@ -13,11 +13,10 @@ documents differ, the runbook and Nix configuration are authoritative.
    replace Kim's host routes or interfere with Tailscale.
 2. Keep downloads and the finished library on one ext4 filesystem under
    `/srv/media`. qBittorrent sees only `torrents/`, Sonarr and Radarr can
-   hardlink into `library/`, and Jellyfin receives a read-only view of the
-   library.
-3. Use a shared `media` group, setgid directories, and umask `0002` for the
-   three writers. Keep Jellyfin unable to modify the library even when its UI
-   grants delete permission.
+   hardlink into `library/`, and Jellyfin can manage the finished library while
+   remaining unable to access active downloads.
+3. Use a shared `media` group, setgid directories, and umask `0002` for all
+   four writers, including Jellyfin.
 4. Fail qBittorrent closed with Mullvad's early-boot blocker and lockdown mode,
    a connection gate before daemon startup, and an explicit qBittorrent bind to
    `wg0-mullvad`. Accept reduced peer connectivity because Mullvad does not

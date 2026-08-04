@@ -1,6 +1,37 @@
 # Data only. Validation, defaults, and all derived views live in
 # lib/homelab-inventory.nix and lib/homelab.nix.
 {
+  bazarr = {
+    endpoint = {
+      authorizationOwner = "tailscale";
+      exposure = "tailnet";
+      port = 6767;
+    };
+    state.paths = ["/var/lib/bazarr"];
+    backup.quiesce = [
+      {
+        unit = "bazarr.service";
+        until = "archive";
+      }
+    ];
+    storage.units = ["bazarr.service"];
+    operations.units = ["bazarr.service"];
+    recovery = {
+      order = 92;
+      versionPolicy = "restore-archived-version-first";
+      runbook = "docs/media-stack.md#recovery";
+      acceptance = ["sonarr-radarr-providers-and-subtitle-history-load"];
+      secretOwners = ["mutable-state:/var/lib/bazarr"];
+    };
+    presentation = {
+      group = "operations";
+      title = "Bazarr";
+      icon = "bazarr.png";
+      description = "Subtitle automation";
+      order = 68;
+    };
+  };
+
   grafana = {
     endpoint = {
       authorizationOwner = "tailscale";
@@ -187,6 +218,37 @@
       icon = "uptime-kuma.png";
       description = "Endpoint availability";
       order = 20;
+    };
+  };
+
+  lidarr = {
+    endpoint = {
+      authorizationOwner = "tailscale";
+      exposure = "tailnet";
+      port = 8686;
+    };
+    state.paths = ["/var/lib/lidarr/.config/Lidarr"];
+    backup.quiesce = [
+      {
+        unit = "lidarr.service";
+        until = "archive";
+      }
+    ];
+    storage.units = ["lidarr.service"];
+    operations.units = ["lidarr.service"];
+    recovery = {
+      order = 92;
+      versionPolicy = "restore-archived-version-first";
+      runbook = "docs/media-stack.md#recovery";
+      acceptance = ["music-root-download-client-and-history-load"];
+      secretOwners = ["mutable-state:/var/lib/lidarr/.config/Lidarr"];
+    };
+    presentation = {
+      group = "operations";
+      title = "Lidarr";
+      icon = "lidarr.png";
+      description = "Music automation";
+      order = 65;
     };
   };
 
@@ -477,6 +539,40 @@
       icon = "radarr.png";
       description = "Movie automation";
       order = 60;
+    };
+  };
+
+  sabnzbd = {
+    endpoint = {
+      authorizationOwner = "tailscale";
+      exposure = "tailnet";
+      port = 18081;
+    };
+    state.paths = ["/var/lib/sabnzbd"];
+    backup.quiesce = [
+      {
+        unit = "sabnzbd.service";
+        until = "archive";
+      }
+    ];
+    storage.units = ["sabnzbd.service"];
+    operations.units = ["sabnzbd.service"];
+    recovery = {
+      order = 91;
+      versionPolicy = "restore-archived-version-first";
+      runbook = "docs/media-stack.md#recovery";
+      acceptance = [
+        "provider-uses-strict-tls"
+        "queue-history-categories-and-download-clients-load"
+      ];
+      secretOwners = ["mutable-state:/var/lib/sabnzbd"];
+    };
+    presentation = {
+      group = "operations";
+      title = "SABnzbd";
+      icon = "sabnzbd.png";
+      description = "Usenet downloads";
+      order = 75;
     };
   };
 

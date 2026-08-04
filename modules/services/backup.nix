@@ -45,12 +45,14 @@
     )
     homelab.backup.archivePaths;
   applicationVersions = {
+    bazarr = config.services.bazarr.package.version;
     grafana = config.services.grafana.package.version;
     homeassistant = config.services.home-assistant.package.version;
     homepage = config.services.homepage-dashboard.package.version;
     immich = config.services.immich.package.version;
     jellyfin = config.services.jellyfin.package.version;
     kuma = config.services.uptime-kuma.package.version;
+    lidarr = config.services.lidarr.package.version;
     miniflux = config.services.miniflux.package.version;
     nextcloud = config.services.nextcloud.package.version;
     paperless = config.services.paperless.package.version;
@@ -58,6 +60,7 @@
     prometheus = config.services.prometheus.package.version;
     qbittorrent = config.containers.qbt.config.services.qbittorrent.package.version;
     radarr = config.services.radarr.package.version;
+    sabnzbd = config.services.sabnzbd.package.version;
     seerr = config.services.seerr.package.version;
     sonarr = config.services.sonarr.package.version;
     syncthing = config.services.syncthing.package.version;
@@ -211,6 +214,9 @@ in {
         "/var/lib/docker"
         "/var/lib/containers"
         "/var/lib/libvirt/images"
+        # LazyLibrarian is retired; never recapture orphaned state while the
+        # root-owned directory awaits explicit deletion.
+        "/var/lib/lazylibrarian"
         # Home Assistant is archived while quiesced before Borg starts. Avoid
         # also capturing its live config tree after the service restarts.
         "/var/lib/hass"

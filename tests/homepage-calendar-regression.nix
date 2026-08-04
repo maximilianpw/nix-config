@@ -157,7 +157,10 @@ in
       "T3 Code"
       "Sonarr"
       "Radarr"
+      "Lidarr"
+      "Bazarr"
       "Prowlarr"
+      "SABnzbd"
       "qBittorrent"
     ])
   "Homepage Operations must retain their intended order";

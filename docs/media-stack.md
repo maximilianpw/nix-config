@@ -1,15 +1,15 @@
 # Media stack on Kim
 
-Kim runs Jellyfin, Sonarr, Radarr, Prowlarr, Seerr, and qBittorrent as one
-private media-automation stack. This configuration is intended for a personal
-library and sources the operator is authorized to use. Source and indexer
-accounts are deliberately not declared in this repository.
+Kim runs Jellyfin, Sonarr, Radarr, Lidarr, Bazarr, Prowlarr, Seerr, SABnzbd,
+and qBittorrent as one private media-automation stack. This configuration
+is intended for a personal library and sources the operator is authorized to use.
+Source and indexer accounts are deliberately not declared in this repository.
 
 ## Architecture
 
-Jellyfin, Sonarr, Radarr, Prowlarr, and Seerr are native NixOS services.
-qBittorrent runs in a declarative systemd-nspawn container with its own network
-namespace and Mullvad daemon:
+Jellyfin, the Servarr managers, Prowlarr, Bazarr, Seerr, and SABnzbd are native
+NixOS services. qBittorrent runs in a declarative systemd-nspawn container with
+its own network namespace and Mullvad daemon:
 
 ```text
 Tailnet HTTPS                  Kim                         qbt container
@@ -17,7 +17,10 @@ Tailnet HTTPS                  Kim                         qbt container
 jellyfin.*  ---------> Jellyfin :8096              Mullvad lockdown + tunnel
 sonarr.*    ---------> Sonarr   :8989                     |
 radarr.*    ---------> Radarr   :7878               qBittorrent :8080
-prowlarr.*  ---------> Prowlarr :9696                     ^
+lidarr.*    ---------> Lidarr   :8686                     ^
+bazarr.*    ---------> Bazarr   :6767                     |
+prowlarr.*  ---------> Prowlarr :9696                     |
+sabnzbd.*  ---------> SABnzbd  :18081 --NNTP/TLS--> provider
 seerr.*     ---------> Seerr    :5055                     |
 qbittorrent.* -------> 127.0.0.1:18080 socket proxy -----'
 
@@ -37,17 +40,27 @@ Downloads and the finished library share Kim's `/srv` ext4 filesystem:
 ├── torrents/
 │   ├── incomplete/
 │   ├── movies/
+│   ├── music/
 │   └── tv/
+├── usenet/
+│   ├── incomplete/
+│   └── complete/
+│       ├── movies/
+│       ├── music/
+│       └── tv/
 └── library/
     ├── movies/
+    ├── music/
     └── tv/
 ```
 
-qBittorrent can see only `torrents/`. Sonarr and Radarr can read and write the
-whole tree so they can hardlink completed downloads into `library/`. Jellyfin
-can see only a read-only `library/`. All services that touch `/srv` require the
-mount and fail closed instead of writing into the root filesystem when it is
-missing.
+qBittorrent can see only `torrents/`; SABnzbd writes only under `usenet/`.
+Sonarr, Radarr, and Lidarr can read and write the whole tree to import completed
+downloads into `library/`. Bazarr can update subtitle files in
+the movie and television libraries. Jellyfin can manage `library/` but cannot
+see either active download tree. All
+services that touch `/srv` require the mount and fail closed instead of writing
+into the root filesystem when it is missing.
 
 ## First deployment
 
@@ -106,6 +119,41 @@ unrelated WebUI changes remain persistent.
 All application credentials and generated API keys belong in the application
 state, which is encrypted in Borg. Do not paste them into ordinary Nix values.
 
+### SABnzbd
+
+Open `https://sabnzbd.liger-shilling.ts.net`. The paths, categories, loopback
+listener, tailnet hostname, and non-secret Eweka connection policy are already
+declarative. Enter only the Eweka username and password in the existing server,
+then select **Test Server** and save. Verify **Config → Servers** shows:
+
+| Setting | Value |
+| --- | --- |
+| Host | `news.eweka.nl` |
+| Port | `563` |
+| SSL | Enabled |
+| Certificate verification | Strict |
+| Connections | `20` |
+
+Nix reasserts the hostname, TLS policy, and connection count after every
+restart while preserving credentials in SABnzbd's mutable state. The provider
+connection runs directly from Kim over NNTP/TLS; it does not use the
+qBittorrent Mullvad container. TLS protects credentials and article traffic in
+transit, while the provider can still associate usage with the account.
+
+Confirm the declared folders and categories:
+
+| Category | Complete folder |
+| --- | --- |
+| `sonarr-usenet` | `/srv/media/usenet/complete/tv` |
+| `radarr-usenet` | `/srv/media/usenet/complete/movies` |
+| `lidarr-usenet` | `/srv/media/usenet/complete/music` |
+
+The incomplete folder is `/srv/media/usenet/incomplete`. Copy SABnzbd's API key
+from **Config → General** into the download-client settings below; do not put it
+in the repository. SABnzbd verifies `X-Forwarded-For` and treats only Tailscale's
+CGNAT and IPv6 ranges as local, allowing named-service clients without opening
+the loopback listener to a host interface.
+
 ### qBittorrent
 
 In **Tools → Options → Downloads**:
@@ -120,30 +168,47 @@ Create these categories:
 | --- | --- |
 | `sonarr` | `/srv/media/torrents/tv` |
 | `radarr` | `/srv/media/torrents/movies` |
+| `lidarr` | `/srv/media/torrents/music` |
 
 Keep the WebUI on port 8080 inside the container, leave WebUI UPnP disabled,
 keep the advanced **Network interface** setting on `wg0-mullvad`, and do not
 open a peer port on Kim. A fixed peer port cannot become reachable through
 Mullvad because the provider no longer supports forwarded ports.
 
-### Sonarr and Radarr
+### Sonarr, Radarr, and Lidarr
 
-Open `https://sonarr.liger-shilling.ts.net` and
-`https://radarr.liger-shilling.ts.net`, complete their authentication setup,
-then add qBittorrent as the download client using:
+Open each manager's tailnet URL, complete its authentication setup, then add
+qBittorrent as the download client using:
 
-| Setting | Sonarr | Radarr |
-| --- | --- | --- |
-| Host | `127.0.0.1` | `127.0.0.1` |
-| Port | `18080` | `18080` |
-| Category | `sonarr` | `radarr` |
-| Root folder | `/srv/media/library/tv` | `/srv/media/library/movies` |
+| Setting | Sonarr | Radarr | Lidarr |
+| --- | --- | --- | --- |
+| Host | `127.0.0.1` | `127.0.0.1` | `127.0.0.1` |
+| Port | `18080` | `18080` | `18080` |
+| Category | `sonarr` | `radarr` | `lidarr` |
+| Root folder | `/srv/media/library/tv` | `/srv/media/library/movies` | `/srv/media/library/music` |
 
 Use the permanent qBittorrent WebUI credentials. The paths are identical on
 both sides of the container boundary, so remote-path mappings are neither
 needed nor desirable.
 
-Start with one conservative 1080p profile in each app:
+Add SABnzbd as a second download client:
+
+| Setting | Sonarr | Radarr | Lidarr |
+| --- | --- | --- | --- |
+| Host | `127.0.0.1` | `127.0.0.1` | `127.0.0.1` |
+| Port | `18081` | `18081` | `18081` |
+| Use SSL | No | No | No |
+| API key | SABnzbd API key | SABnzbd API key | SABnzbd API key |
+| Category | `sonarr-usenet` | `radarr-usenet` | `lidarr-usenet` |
+
+These names intentionally differ from the qBittorrent categories because each
+manager requires a unique category per configured download client.
+
+The loopback download-client connection is intentionally HTTP; Tailscale HTTPS
+protects browser access and SABnzbd separately uses strict NNTP/TLS to reach the
+provider. Remote-path mappings are not needed.
+
+Start with one conservative 1080p profile in Sonarr and Radarr:
 
 - Include HDTV-1080p, WEB 1080p, and Bluray-1080p.
 - Exclude remux and every 2160p/4K quality.
@@ -154,27 +219,39 @@ Start with one conservative 1080p profile in each app:
 
 ### Prowlarr
 
-Open `https://prowlarr.liger-shilling.ts.net`, configure only source accounts
-you are authorized to use, then add these applications with their API keys:
+Open `https://prowlarr.liger-shilling.ts.net` and add NZBGeek under **Indexers**
+using its HTTPS URL and API key. Test the indexer before enabling automatic
+searches. Configure only source accounts you are authorized to use, then add
+these applications with their API keys:
 
 | Application | Internal URL |
 | --- | --- |
 | Sonarr | `http://127.0.0.1:8989` |
 | Radarr | `http://127.0.0.1:7878` |
+| Lidarr | `http://127.0.0.1:8686` |
 
-Use full synchronization. qBittorrent still needs to remain configured
-directly in Sonarr and Radarr; Prowlarr does not replace those download-client
-connections.
+Use full synchronization for every application. SABnzbd and qBittorrent still
+need to remain configured directly in each manager; Prowlarr distributes
+indexers but does not replace download-client connections.
+
+### Bazarr
+
+Open `https://bazarr.liger-shilling.ts.net`, configure authorized subtitle
+providers, then connect Sonarr at `http://127.0.0.1:8989` and Radarr at
+`http://127.0.0.1:7878` with their API keys. No qBittorrent or Prowlarr
+connection is needed. Bazarr writes subtitle files beside the movie and episode
+files, so keep its paths identical to the Sonarr and Radarr library paths.
 
 ### Jellyfin
 
 Open `https://jellyfin.liger-shilling.ts.net`, create the administrator, and
-add exactly two libraries:
+add these libraries:
 
 | Library type | Folder |
 | --- | --- |
 | Movies | `/srv/media/library/movies` |
 | Shows | `/srv/media/library/tv` |
+| Music | `/srv/media/library/music` |
 
 LAN playback is available at `http://kim:8096` for clients that cannot run
 Tailscale. There is no direct Internet or router port-forwarded Jellyfin
@@ -198,7 +275,7 @@ enabled until the complete download-import-playback path has been proven.
 Check the host services and container boundary:
 
 ```nu
-systemctl status jellyfin sonarr radarr prowlarr seerr container@qbt qbittorrent-proxy.socket
+systemctl status jellyfin sonarr radarr lidarr bazarr prowlarr sabnzbd seerr container@qbt qbittorrent-proxy.socket
 sudo nixos-container run qbt -- mullvad status
 sudo nixos-container run qbt -- systemctl status qbittorrent --no-pager
 ```
@@ -214,25 +291,30 @@ declared in `homelab/media.nix`: H.264, HEVC/10-bit, VP9, and AV1 decoding plus
 H.264, HEVC, and AV1 encoding. Remove any unsupported profile from the Nix
 configuration and rebuild before continuing.
 
-Then perform one lawful movie and episode test:
+Then perform lawful movie, episode, and album tests:
 
-1. Confirm qBittorrent places each item in the matching category directory.
-2. Confirm Sonarr/Radarr imports it into the matching library root.
-3. Compare source and library files with `stat`; the device and inode numbers
-   should match and the link count should be at least two.
+1. Send one NZB through an application. Confirm NZBGeek supplied the result,
+   SABnzbd used the expected category, and **Config → Servers** still reports
+   SSL enabled with strict certificate verification.
+2. Confirm each manager imports completed Usenet content into its matching
+   library root. It may move the file because Usenet has no seeding requirement.
+3. Test one torrent fallback. Confirm qBittorrent places it in the matching
+   category and the manager hardlinks it into the library; compare device and
+   inode numbers with `stat` and require a link count of at least two.
 4. Confirm Jellyfin direct-plays one item.
 5. Force a lower playback bitrate, confirm the stream transcodes, and inspect
    Jellyfin's FFmpeg log for VA-API rather than software encoding.
-6. Stop Mullvad in the container and verify torrent traffic stops while host
-   Tailscale and Jellyfin remain reachable. Confirm qBittorrent does not fall
-   back to the container veth, then reconnect before continuing.
+6. Stop Mullvad in the container and verify torrent traffic stops while SABnzbd,
+   host Tailscale, and Jellyfin remain reachable. Confirm qBittorrent does not
+   fall back to the container veth, then reconnect before continuing.
 
 ## Backups
 
 Borg preserves the control plane:
 
 - Jellyfin users, libraries, metadata, and watch state
-- Sonarr, Radarr, and Prowlarr configuration/databases
+- Sonarr, Radarr, Lidarr, Bazarr, and Prowlarr configuration/databases
+- SABnzbd configuration, provider credentials, API keys, queue, and history
 - Seerr configuration/database
 - the qBittorrent container root, including resume data, configuration, and
   the Mullvad device login
@@ -255,10 +337,12 @@ off-host copy.
    `/var/lib/nixos-containers/qbt`, plus the other declared control-state paths.
 4. Start `container@qbt`, confirm Mullvad is connected, and only then confirm
    qBittorrent is running.
-5. Start Prowlarr, Sonarr, Radarr, Jellyfin, and Seerr.
+5. Start SABnzbd, Prowlarr, Sonarr, Radarr, Lidarr, Bazarr, Jellyfin, and
+   Seerr. Confirm the restored provider uses port 563, SSL, and
+   strict certificate verification before resuming its queue.
 6. Run the acceptance checks above. If downloaded media was not separately
-   protected, reconcile missing files in Sonarr/Radarr rather than assuming
-   their restored databases represent files that still exist.
+   protected, reconcile missing files in the library managers rather than
+   assuming their restored databases represent files that still exist.
 
 If the Mullvad device credential cannot be restored or has been revoked, repeat
 the interactive account login. Never place the account number in this file,
@@ -278,6 +362,19 @@ daemon will retry every 30 seconds but will not start until Mullvad reports a
 connection. If the WebUI works internally but not through its tailnet name,
 check `qbittorrent-proxy.socket`, `tailscale-serve.service`, and the tailnet ACL
 grant for `svc:qbittorrent`.
+
+If SABnzbd cannot download, inspect its service log and test the provider in
+**Config → Servers**:
+
+```nu
+journalctl -u sabnzbd -b --no-pager
+```
+
+Do not work around certificate errors by disabling verification or switching to
+plaintext port 119. Check Kim's clock/DNS, the provider hostname, credentials,
+and the provider's current SSL endpoint instead. If the WebUI works on loopback
+but not through its tailnet name, check `tailscale-serve.service` and the ACL
+grant for `svc:sabnzbd`.
 
 The design and operational choices are based on the
 [TRaSH native layout](https://trash-guides.info/File-and-Folder-Structure/How-to-set-up/Native/),

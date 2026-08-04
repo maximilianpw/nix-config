@@ -6,19 +6,29 @@
   homelab = import ../lib/homelab.nix {inherit lib;};
   endpoints = homelab.endpoints config.homelab.tailnet.domain;
   mediaRoot = "/srv/media";
+  usenetRoot = "${mediaRoot}/usenet";
   qbt = config.containers.qbt;
   qbtConfig = qbt.config;
   qbtService = qbtConfig.systemd.services.qbittorrent;
   qbtDeferredTimer = qbtConfig.systemd.timers.qbittorrent-deferred-start;
   hostContainerService = config.systemd.services."container@qbt";
+  sabService = config.systemd.services.sabnzbd;
   mediaDirectories = [
     mediaRoot
     "${mediaRoot}/torrents"
     "${mediaRoot}/torrents/incomplete"
     "${mediaRoot}/torrents/movies"
+    "${mediaRoot}/torrents/music"
     "${mediaRoot}/torrents/tv"
+    usenetRoot
+    "${usenetRoot}/incomplete"
+    "${usenetRoot}/complete"
+    "${usenetRoot}/complete/movies"
+    "${usenetRoot}/complete/music"
+    "${usenetRoot}/complete/tv"
     "${mediaRoot}/library"
     "${mediaRoot}/library/movies"
+    "${mediaRoot}/library/music"
     "${mediaRoot}/library/tv"
   ];
   mediaDirectoryIsShared = path: let
@@ -31,10 +41,13 @@
     && builtins.elem "/srv" service.unitConfig.RequiresMountsFor;
   manifest = config.custom.backup.manifestMetadata;
   mediaStatePaths = [
+    "/var/lib/bazarr"
     "/var/lib/jellyfin"
+    "/var/lib/lidarr/.config/Lidarr"
     "/var/lib/private/prowlarr"
     "/var/lib/nixos-containers/qbt"
     "/var/lib/radarr/.config/Radarr"
+    "/var/lib/sabnzbd"
     "/var/lib/private/jellyseerr"
     "/var/lib/sonarr/.config/NzbDrone"
   ];
@@ -49,22 +62,84 @@ in
   )
   "the bind-mounted torrent tree must retain stable qBittorrent and media identities";
   assert lib.assertMsg (
-    config.services.jellyfin.enable
+    config.users.users.sabnzbd.uid
+    == 973
+    && config.users.users.sabnzbd.group == "media"
+  )
+  "SABnzbd must retain a stable identity across state and download restores";
+  assert lib.assertMsg (
+    config.services.bazarr.enable
+    && config.services.jellyfin.enable
+    && config.services.lidarr.enable
     && config.services.sonarr.enable
     && config.services.radarr.enable
+    && !config.services.readarr.enable
+    && !(builtins.hasAttr "readarr" homelab.services)
+    && !(builtins.hasAttr "lazylibrarian" homelab.services)
+    && !(builtins.hasAttr "lazylibrarian" config.virtualisation.oci-containers.containers)
+    && !(builtins.hasAttr "lazylibrarian" config.users.users)
+    && builtins.elem "/var/lib/lazylibrarian" config.custom.backup.exclude
     && config.services.prowlarr.enable
+    && config.services.sabnzbd.enable
     && config.services.seerr.enable
     && !config.services.qbittorrent.enable
   )
-  "the media applications must be native except for the VPN-isolated download client";
+  "unsupported book managers must be absent and the supported native media applications enabled";
   assert lib.assertMsg (
-    config.services.sonarr.settings.server.bindaddress
-    == "127.0.0.1"
+    config.services.sabnzbd.configFile
+    == null
+    && config.services.sabnzbd.allowConfigWrite
+    && config.services.sabnzbd.group == "media"
+    && !config.services.sabnzbd.openFirewall
+    && config.services.sabnzbd.settings.misc.host == "127.0.0.1"
+    && config.services.sabnzbd.settings.misc.port == endpoints.sabnzbd.port
+    && config.services.sabnzbd.settings.misc.download_dir == "${usenetRoot}/incomplete"
+    && config.services.sabnzbd.settings.misc.complete_dir == "${usenetRoot}/complete"
+    && config.services.sabnzbd.settings.misc.backup_dir == "/var/lib/sabnzbd/backups"
+    && config.services.sabnzbd.settings.misc.permissions == "2775"
+    && config.services.sabnzbd.settings.misc.host_whitelist
+    == "${endpoints.sabnzbd.host}, localhost, 127.0.0.1"
+    && config.services.sabnzbd.settings.misc.local_ranges
+    == "100.64.0.0/10, fd7a:115c:a1e0::/48"
+    && config.services.sabnzbd.settings.misc.verify_xff_header
+    && config.services.sabnzbd.settings.servers.eweka.host == "news.eweka.nl"
+    && config.services.sabnzbd.settings.servers.eweka.port == 563
+    && config.services.sabnzbd.settings.servers.eweka.connections == 20
+    && config.services.sabnzbd.settings.servers.eweka.ssl
+    && config.services.sabnzbd.settings.servers.eweka.ssl_verify == 3
+    && config.services.sabnzbd.settings.servers.eweka.required
+    && !(builtins.hasAttr "username" config.services.sabnzbd.settings.servers.eweka)
+    && !(builtins.hasAttr "password" config.services.sabnzbd.settings.servers.eweka)
+    && config.services.sabnzbd.settings.categories."sonarr-usenet".dir == "tv"
+    && config.services.sabnzbd.settings.categories."radarr-usenet".dir == "movies"
+    && config.services.sabnzbd.settings.categories."lidarr-usenet".dir == "music"
+    && !(builtins.hasAttr "sonarr" config.services.sabnzbd.settings.categories)
+    && !(builtins.hasAttr "radarr" config.services.sabnzbd.settings.categories)
+    && !(builtins.hasAttr "lidarr" config.services.sabnzbd.settings.categories)
+  )
+  "SABnzbd must keep credentials mutable while enforcing loopback paths and media categories";
+  assert lib.assertMsg (
+    sabService.serviceConfig.StateDirectoryMode
+    == "0700"
+    && config.systemd.tmpfiles.settings."10-sabnzbd"."/var/lib/sabnzbd".d.mode == "0700"
+    && config.systemd.tmpfiles.settings."10-sabnzbd"."/var/lib/sabnzbd".d.user == "sabnzbd"
+    && builtins.elem "${mediaRoot}/torrents" sabService.serviceConfig.InaccessiblePaths
+    && builtins.elem "${mediaRoot}/library" sabService.serviceConfig.InaccessiblePaths
+  )
+  "SABnzbd state must stay private and the service must see only its download tree";
+  assert lib.assertMsg (
+    config.services.bazarr.listenPort
+    == endpoints.bazarr.port
+    && config.services.lidarr.settings.server.bindaddress == "127.0.0.1"
+    && config.services.lidarr.settings.server.port == endpoints.lidarr.port
+    && config.services.sonarr.settings.server.bindaddress == "127.0.0.1"
     && config.services.sonarr.settings.server.port == endpoints.sonarr.port
     && config.services.radarr.settings.server.bindaddress == "127.0.0.1"
     && config.services.radarr.settings.server.port == endpoints.radarr.port
     && config.services.prowlarr.settings.server.bindaddress == "127.0.0.1"
     && config.services.prowlarr.settings.server.port == endpoints.prowlarr.port
+    && !config.services.bazarr.openFirewall
+    && !config.services.lidarr.openFirewall
     && !config.services.sonarr.openFirewall
     && !config.services.radarr.openFirewall
     && !config.services.prowlarr.openFirewall
@@ -79,14 +154,20 @@ in
   )
   "Jellyfin must use Kim's declared AMD VA-API render path";
   assert lib.assertMsg (
-    builtins.elem "${mediaRoot}/library" config.systemd.services.jellyfin.serviceConfig.ReadOnlyPaths
+    builtins.elem "media" config.users.users.jellyfin.extraGroups
+    && !(builtins.elem "${mediaRoot}/library" (config.systemd.services.jellyfin.serviceConfig.ReadOnlyPaths or []))
     && builtins.elem "${mediaRoot}/torrents" config.systemd.services.jellyfin.serviceConfig.InaccessiblePaths
+    && builtins.elem usenetRoot config.systemd.services.jellyfin.serviceConfig.InaccessiblePaths
   )
-  "Jellyfin must see only a read-only finished library";
+  "Jellyfin must be able to manage the finished library without seeing downloads";
   assert lib.assertMsg (
-    config.systemd.services.sonarr.serviceConfig.UMask
+    config.systemd.services.bazarr.serviceConfig.UMask
     == "0002"
+    && config.systemd.services.jellyfin.serviceConfig.UMask == "0002"
+    && config.systemd.services.lidarr.serviceConfig.UMask == "0002"
+    && config.systemd.services.sonarr.serviceConfig.UMask == "0002"
     && config.systemd.services.radarr.serviceConfig.UMask == "0002"
+    && sabService.serviceConfig.UMask == "0002"
     && qbtService.serviceConfig.UMask == "0002"
   )
   "all writers must preserve shared-group write access";
@@ -147,19 +228,25 @@ in
   )
   "the physical LAN must expose Jellyfin playback and discovery only";
   assert lib.assertMsg (lib.all requiresSrv [
+    config.systemd.services.bazarr
     config.systemd.services.jellyfin
+    config.systemd.services.lidarr
     config.systemd.services.sonarr
     config.systemd.services.radarr
+    sabService
     hostContainerService
   ])
   "every media writer or reader must fail closed when /srv is absent";
   assert lib.assertMsg (
     lib.all (path: builtins.elem path manifest.expectedPrimaryStatePaths) mediaStatePaths
     && lib.all (name: builtins.hasAttr name manifest.applicationVersions) [
+      "bazarr"
       "jellyfin"
+      "lidarr"
       "prowlarr"
       "qbittorrent"
       "radarr"
+      "sabnzbd"
       "seerr"
       "sonarr"
     ]
@@ -168,10 +255,13 @@ in
   )
   "Borg must preserve media control state while excluding replaceable downloaded media";
   assert lib.assertMsg (lib.all (unit: builtins.elem unit homelab.backup.archiveUnits) [
+    "bazarr.service"
     "jellyfin.service"
+    "lidarr.service"
     "prowlarr.service"
     "container@qbt.service"
     "radarr.service"
+    "sabnzbd.service"
     "seerr.service"
     "sonarr.service"
   ])

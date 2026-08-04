@@ -7,8 +7,10 @@
   homelab = import ../lib/homelab.nix {inherit lib;};
   endpoints = homelab.endpoints config.homelab.tailnet.domain;
   mediaRoot = "/srv/media";
+  usenetRoot = "${mediaRoot}/usenet";
   mediaGid = 971;
   qbitUid = 970;
+  sabnzbdUid = 973;
   qbitContainerAddress = "10.89.0.2";
   qbitContainerPort = 8080;
   qbitNetworkInterface = "wg0-mullvad";
@@ -17,9 +19,17 @@
     "${mediaRoot}/torrents"
     "${mediaRoot}/torrents/incomplete"
     "${mediaRoot}/torrents/movies"
+    "${mediaRoot}/torrents/music"
     "${mediaRoot}/torrents/tv"
+    usenetRoot
+    "${usenetRoot}/incomplete"
+    "${usenetRoot}/complete"
+    "${usenetRoot}/complete/movies"
+    "${usenetRoot}/complete/music"
+    "${usenetRoot}/complete/tv"
     "${mediaRoot}/library"
     "${mediaRoot}/library/movies"
+    "${mediaRoot}/library/music"
     "${mediaRoot}/library/tv"
   ];
   sharedMediaDirectory = {
@@ -28,8 +38,8 @@
     group = "media";
   };
 in {
-  # Download and library paths share one ext4 filesystem so Sonarr and Radarr
-  # can import by hardlink while qBittorrent keeps seeding the original name.
+  # Download and library paths share one ext4 filesystem so the Servarr apps
+  # can import by hardlink while qBittorrent keeps seeding originals.
   users = {
     groups.media.gid = mediaGid;
     users = {
@@ -38,6 +48,11 @@ in {
       # could receive the same numeric identity and gain owner access.
       qbittorrent = {
         uid = qbitUid;
+        group = "media";
+        isSystemUser = true;
+      };
+      sabnzbd = {
+        uid = sabnzbdUid;
         group = "media";
         isSystemUser = true;
       };
@@ -50,6 +65,13 @@ in {
   };
 
   services = {
+    bazarr = {
+      enable = true;
+      group = "media";
+      openFirewall = false;
+      listenPort = endpoints.bazarr.port;
+    };
+
     jellyfin = {
       enable = true;
       openFirewall = false;
@@ -78,6 +100,16 @@ in {
       };
     };
 
+    lidarr = {
+      enable = true;
+      group = "media";
+      openFirewall = false;
+      settings.server = {
+        bindaddress = "127.0.0.1";
+        inherit (endpoints.lidarr) port;
+      };
+    };
+
     sonarr = {
       enable = true;
       group = "media";
@@ -95,6 +127,74 @@ in {
       settings.server = {
         bindaddress = "127.0.0.1";
         inherit (endpoints.radarr) port;
+      };
+    };
+
+    sabnzbd = {
+      enable = true;
+      # Kim predates the declarative SABnzbd module defaults. Opt into the
+      # generated/mutable configuration so credentials entered in the WebUI
+      # remain private while network, paths, and categories stay declarative.
+      configFile = null;
+      allowConfigWrite = true;
+      group = "media";
+      openFirewall = false;
+      settings = {
+        misc = {
+          host = "127.0.0.1";
+          inherit (endpoints.sabnzbd) port;
+          download_dir = "${usenetRoot}/incomplete";
+          complete_dir = "${usenetRoot}/complete";
+          backup_dir = "/var/lib/sabnzbd/backups";
+          permissions = "2775";
+          host_whitelist = "${endpoints.sabnzbd.host}, localhost, 127.0.0.1";
+          # Tailscale Serve is the only reverse proxy and forwards the real
+          # tailnet client address. Keep XFF verification enabled while
+          # treating Tailscale's stable IPv4/IPv6 ranges as local.
+          local_ranges = "100.64.0.0/10, fd7a:115c:a1e0::/48";
+          verify_xff_header = true;
+        };
+        servers.eweka = {
+          name = "eweka";
+          displayname = "Eweka";
+          host = "news.eweka.nl";
+          port = 563;
+          connections = 20;
+          ssl = true;
+          ssl_verify = "strict";
+          required = true;
+          priority = 0;
+        };
+        categories = {
+          "*" = {
+            order = 0;
+            pp = 3;
+            script = "None";
+            dir = "";
+            priority = 0;
+          };
+          "sonarr-usenet" = {
+            order = 1;
+            pp = 3;
+            script = "Default";
+            dir = "tv";
+            priority = 0;
+          };
+          "radarr-usenet" = {
+            order = 2;
+            pp = 3;
+            script = "Default";
+            dir = "movies";
+            priority = 0;
+          };
+          "lidarr-usenet" = {
+            order = 3;
+            pp = 3;
+            script = "Default";
+            dir = "music";
+            priority = 0;
+          };
+        };
       };
     };
 
@@ -117,21 +217,41 @@ in {
   # Headless Kim still needs Mesa's userspace stack for VA-API.
   hardware.graphics.enable = true;
   systemd = {
-    tmpfiles.settings."10-media" = lib.genAttrs mediaDirectories (_: {d = sharedMediaDirectory;});
+    tmpfiles.settings = {
+      "10-media" = lib.genAttrs mediaDirectories (_: {d = sharedMediaDirectory;});
+      "10-sabnzbd"."/var/lib/sabnzbd".d = {
+        mode = "0700";
+        user = "sabnzbd";
+        group = "media";
+      };
+    };
 
     services = {
+      bazarr.serviceConfig.UMask = lib.mkForce "0002";
+      lidarr.serviceConfig.UMask = lib.mkForce "0002";
       sonarr.serviceConfig.UMask = lib.mkForce "0002";
       radarr.serviceConfig.UMask = lib.mkForce "0002";
+      sabnzbd.serviceConfig = {
+        InaccessiblePaths = [
+          "${mediaRoot}/torrents"
+          "${mediaRoot}/library"
+        ];
+        StateDirectoryMode = "0700";
+        UMask = lib.mkForce "0002";
+      };
 
-      # Jellyfin can traverse the shared group-owned tree but cannot see active
-      # downloads or mutate the finished library, even if its UI grants delete.
+      # Jellyfin can manage the shared group-writable library but cannot see
+      # active downloads.
       jellyfin.serviceConfig = {
-        InaccessiblePaths = ["${mediaRoot}/torrents"];
-        ReadOnlyPaths = ["${mediaRoot}/library"];
+        InaccessiblePaths = [
+          "${mediaRoot}/torrents"
+          usenetRoot
+        ];
+        UMask = lib.mkForce "0002";
       };
 
       # Socket activation exposes the container WebUI only on host loopback.
-      # Tailscale Serve, Sonarr, and Radarr use this one guarded endpoint.
+      # Tailscale Serve and the library managers use this guarded endpoint.
       qbittorrent-proxy = {
         description = "qBittorrent container WebUI proxy";
         requires = ["container@qbt.service"];
@@ -213,7 +333,7 @@ in {
         # listens on 8080, so its strict port comparison cannot succeed.
         WebUI\HostHeaderValidation=${qbitWebUIHostHeaderValidation}
         # Every proxied client shares the host veth address. Do not let one
-        # stale Sonarr/Radarr password ban the WebUI for every other client.
+        # stale library-manager password ban the WebUI for every other client.
         WebUI\MaxAuthenticationFailCount=${qbitWebUIMaxAuthenticationFailCount}
         WebUI\Port=${toString qbitContainerPort}
         WebUI\SecureCookie=true

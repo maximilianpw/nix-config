@@ -247,11 +247,14 @@ Required staged paths:
 - `srv/paperless/consume`
 - `srv/paperless/media`
 - `srv/nextcloud`
+- `var/lib/bazarr`
 - `var/lib/jellyfin`
+- `var/lib/lidarr/.config/Lidarr`
 - `var/lib/nixos-containers/qbt`
 - `var/lib/private/jellyseerr`
 - `var/lib/private/prowlarr`
 - `var/lib/radarr/.config/Radarr`
+- `var/lib/sabnzbd`
 - `var/lib/sonarr/.config/NzbDrone`
 - `var/lib/private/uptime-kuma`
 - `var/lib/bitwarden_rs`
