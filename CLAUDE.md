@@ -82,6 +82,7 @@ modules/
     vcs/jujutsu.nix # Jujutsu config
     agent-tools.nix # LLM agent CLIs + configuration
     agent-skill-links.nix # Shared local skill links for agent discovery paths
+    t3code-darwin.nix # Pinned macOS Homebrew cask and activation migration
     t3code-server.nix # Headless T3 Code server integration
     fonts.nix       # Nerd fonts + system fonts with fontconfig
     xdg.nix         # XDG config file management (Hyprland, Ghostty, waybar, kitty, yazi, etc.)

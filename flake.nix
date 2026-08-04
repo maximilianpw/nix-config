@@ -232,6 +232,10 @@
           inherit lib;
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
         };
+        fleet-herdr-regression = import ./tests/fleet-herdr-regression.nix {
+          inherit lib;
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        };
         fleet-ghostty-regression = import ./tests/fleet-ghostty-regression.nix {
           config = self.nixosConfigurations.kim.config;
           inherit lib;
@@ -254,6 +258,10 @@
       };
       aarch64-darwin = {
         eval-joyce = self.darwinConfigurations.joyce.system;
+        fleet-herdr-regression = import ./tests/fleet-herdr-regression.nix {
+          inherit lib;
+          pkgs = nixpkgs.legacyPackages.aarch64-darwin;
+        };
         pre-commit-check = mkPreCommitCheck "aarch64-darwin";
       };
     };

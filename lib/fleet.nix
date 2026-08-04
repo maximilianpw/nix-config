@@ -62,9 +62,9 @@
     ## Usage Rules
 
     - Use `fleet run <host> <command...>` for non-interactive remote checks.
-    - Use Herdr for local workspace and pane layout; use Fleet inside a pane when connecting to a remote host.
+    - Use `fleet herdr <host> [session] [--forward port]` from an ordinary terminal for agent-aware persistent remote Herdr sessions and project ports.
     - Use `fleet shell <host>` for plain remote shells.
-    - Use `fleet ssh <host>` for persistent tmux sessions.
+    - Use `fleet ssh <host>` for persistent tmux sessions when Herdr is not needed.
     - Use `fleet t3 <host>` for T3 Code port forwards when the host declares a T3 Code port.
     - Use `fleet forward list [local-port]` to inspect active SSH local forwards, then `fleet forward delete PID` to stop one.
     - Run long-running or unattended agent work only on hosts with `longRunningAgents = true`.
@@ -194,6 +194,8 @@
   package = pkgs.writeShellApplication {
     name = "fleet";
     runtimeInputs = [
+      pkgs.coreutils
+      pkgs.herdr
       pkgs.openssh
       pkgs.tmux
     ];
@@ -445,6 +447,30 @@
           "fleet-forward-$2"
       }
 
+      normalize_herdr_forward() {
+        requested="$1"
+        case "$requested" in
+          *:*)
+            local_port="''${requested%%:*}"
+            remote_port="''${requested#*:}"
+            case "$remote_port" in
+              *:*)
+                echo "fleet: Herdr forwards use PORT or LOCAL_PORT:REMOTE_PORT" >&2
+                exit 2
+                ;;
+            esac
+            ;;
+          *)
+            local_port="$requested"
+            remote_port="$requested"
+            ;;
+        esac
+
+        validate_port "$local_port"
+        validate_port "$remote_port"
+        printf '127.0.0.1:%s:localhost:%s\n' "$local_port" "$remote_port"
+      }
+
       remote_tmux_command() {
         case "$1" in
           ${concatStringsSep "\n        " remoteTmuxRows}
@@ -466,6 +492,7 @@
         printf '%s\n' \
           'usage:' \
           '  fleet list' \
+          '  fleet herdr HOST [SESSION] [--forward PORT|LOCAL_PORT:REMOTE_PORT]...' \
           '  fleet ssh HOST [SESSION]' \
           '  fleet shell HOST' \
           '  fleet run HOST COMMAND...' \
@@ -476,6 +503,8 @@
           '  fleet t3 HOST [LOCAL_PORT]' \
           "" \
           'examples:' \
+          '  fleet herdr kim' \
+          '  fleet herdr kim agents --forward 3000 --forward 5173' \
           '  fleet ssh kim' \
           '  fleet shell kim' \
           '  fleet run kim btop' \
@@ -491,6 +520,94 @@
         list)
           printf '%-18s %-12s %-24s %-16s %-8s %s\n' HOST USER TARGET ROLE CLIENT ALIASES
           ${concatStringsSep "\n        " hostRows}
+          ;;
+        herdr)
+          if [ "$#" -lt 2 ]; then
+            usage >&2
+            exit 2
+          fi
+          if [ "''${HERDR_ENV:-}" = 1 ]; then
+            echo "fleet: run fleet herdr from an ordinary terminal, not inside an existing Herdr pane" >&2
+            exit 2
+          fi
+          host="$2"
+          shift 2
+          session=
+          forward_specs=()
+          while [ "$#" -gt 0 ]; do
+            case "$1" in
+              --forward)
+                if [ "$#" -lt 2 ]; then
+                  echo "fleet: --forward requires PORT or LOCAL_PORT:REMOTE_PORT" >&2
+                  exit 2
+                fi
+                forward_specs+=("$2")
+                shift 2
+                ;;
+              --*)
+                echo "fleet: unknown Herdr option: $1" >&2
+                exit 2
+                ;;
+              *)
+                if [ -n "$session" ]; then
+                  echo "fleet: expected at most one Herdr session name" >&2
+                  exit 2
+                fi
+                session="$1"
+                validate_session "$session"
+                shift
+                ;;
+            esac
+          done
+
+          if is_local_host "$host"; then
+            if [ "''${#forward_specs[@]}" -gt 0 ]; then
+              echo "fleet: --forward requires a remote Fleet host" >&2
+              exit 2
+            fi
+            if [ -n "$session" ]; then
+              exec herdr --session "$session"
+            fi
+            exec herdr
+          fi
+
+          herdr_args=(--remote "$host")
+          if [ -n "$session" ]; then
+            herdr_args+=(--session "$session")
+          fi
+          if [ "''${#forward_specs[@]}" -eq 0 ]; then
+            exec herdr "''${herdr_args[@]}"
+          fi
+
+          ssh_forward_args=()
+          for requested_forward in "''${forward_specs[@]}"; do
+            normalized_forward="$(normalize_herdr_forward "$requested_forward")"
+            local_port="$(forward_local_port "$normalized_forward")"
+            ensure_no_forward_on_port "$local_port"
+            ssh_forward_args+=(-L "$normalized_forward")
+          done
+
+          control_dir="$(mktemp -d "''${TMPDIR:-/tmp}/fleet-herdr.XXXXXXXX")"
+          control_path="$control_dir/ssh"
+          cleanup_herdr_forward() {
+            ssh -S "$control_path" -O exit "fleet-forward-$host" >/dev/null 2>&1 || true
+            rm -f "$control_path"
+            rmdir "$control_dir" 2>/dev/null || true
+          }
+          trap cleanup_herdr_forward EXIT
+
+          ssh \
+            -o ExitOnForwardFailure=yes \
+            -o ForwardAgent=no \
+            -o ControlMaster=yes \
+            -o ControlPersist=no \
+            -S "$control_path" \
+            -f \
+            -N \
+            "''${ssh_forward_args[@]}" \
+            "fleet-forward-$host"
+
+          herdr "''${herdr_args[@]}"
           ;;
         ssh)
           if [ "$#" -lt 2 ]; then
@@ -591,6 +708,7 @@ in {
 
   aliases = {
     fl = "fleet list";
+    fh = "fleet herdr";
     fs = "fleet ssh";
     fsh = "fleet shell";
     fr = "fleet run";
