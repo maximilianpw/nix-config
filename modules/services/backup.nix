@@ -154,42 +154,11 @@
       pkgs.findutils
     ];
     text = ''
-      set -eu
-
-      if [ "$(id -u)" -ne 0 ]; then
-        echo "borg-restore-main must run as root so it can read the repository passphrase" >&2
-        echo "Try: sudo borg-restore-main <archive> <existing-empty-directory> [path ...]" >&2
-        exit 1
-      fi
-
-      if [ "$#" -lt 2 ]; then
-        echo "Usage: borg-restore-main <archive> <existing-empty-directory> [path ...]" >&2
-        echo "List archives first with: sudo borg-job-main list" >&2
-        exit 2
-      fi
-
-      archive="$1"
-      destination="$2"
-      shift 2
-
-      if [ ! -d "$destination" ]; then
-        echo "Refusing to create the restore destination; create it explicitly first: $destination" >&2
-        exit 1
-      fi
-      if [ -n "$(find "$destination" -mindepth 1 -maxdepth 1 -print -quit)" ]; then
-        echo "Restore destination must be empty: $destination" >&2
-        exit 1
-      fi
-
-      case "$archive" in
-        ::*) archive_ref="$archive" ;;
-        *) archive_ref="::$archive" ;;
-      esac
-
+      export BORG_BIN=${borg}
+      export FIND_BIN=${lib.getExe pkgs.findutils}
       export BORG_REPO=${lib.escapeShellArg cfg.repo}
       export BORG_PASSCOMMAND=${lib.escapeShellArg "cat ${config.sops.secrets.borg-backup-passphrase.path}"}
-      cd "$destination"
-      exec borg extract --list "$archive_ref" "$@"
+      ${builtins.readFile ../../scripts/borg-restore-main.sh}
     '';
   };
 in {
@@ -311,37 +280,15 @@ in {
       ];
 
       preHook = ''
-        echo "Starting backup at $(date)"
-        backup_started_epoch=$(date +%s)
-        backup_started_at=$(date --iso-8601=seconds)
-
-        # Acquire this before generating artifacts or stopping applications.
-        # Consistency checks use the same lock, so delayed timers and manual
-        # starts cannot make Borg contend after services are already quiesced.
-        exec 9>${lib.escapeShellArg borgOperationLockFile}
-        ${flock} 9
-
-        git_revision="$(${git} -c safe.directory=${lib.escapeShellArg "${homeDir}/nix-config"} -C ${lib.escapeShellArg "${homeDir}/nix-config"} rev-parse HEAD 2>/dev/null || printf unavailable)"
-        git_dirty=false
-        if [ "$git_revision" != unavailable ] && [ -n "$(${git} -c safe.directory=${lib.escapeShellArg "${homeDir}/nix-config"} -C ${lib.escapeShellArg "${homeDir}/nix-config"} status --porcelain 2>/dev/null)" ]; then
-          git_dirty=true
-        fi
-        manifest_tmp=${lib.escapeShellArg "${homelabBackupDir}/manifest.json.tmp"}
-        printf '%s\n' ${lib.escapeShellArg manifestStatic} \
-          | ${jq} \
-            --arg backupStartTimestamp "$backup_started_at" \
-            --arg gitRevision "$git_revision" \
-            --argjson gitDirty "$git_dirty" \
-            '. + {backupStartTimestamp: $backupStartTimestamp, gitRevision: $gitRevision, gitDirty: $gitDirty}' \
-          > "$manifest_tmp"
-        chmod 0600 "$manifest_tmp"
-        mv -f "$manifest_tmp" ${lib.escapeShellArg "${homelabBackupDir}/manifest.json"}
-
-        # The coordinator persists the pre-existing active set before stopping
-        # anything. Its cleanup phase can therefore recover services after a
-        # preparation failure or Borg failure without starting units that were
-        # already inactive.
-        ${lib.getExe coordinator} prepare
+        export DATE_BIN=${lib.getExe' pkgs.coreutils "date"}
+        export FLOCK_BIN=${flock} GIT_BIN=${git} JQ_BIN=${jq}
+        export BORG_OPERATION_LOCK_FILE=${lib.escapeShellArg borgOperationLockFile}
+        export NIX_CONFIG_DIR=${lib.escapeShellArg "${homeDir}/nix-config"}
+        export HOMELAB_MANIFEST_STATIC=${lib.escapeShellArg manifestStatic}
+        export HOMELAB_MANIFEST_TMP=${lib.escapeShellArg "${homelabBackupDir}/manifest.json.tmp"}
+        export HOMELAB_MANIFEST_PATH=${lib.escapeShellArg "${homelabBackupDir}/manifest.json"}
+        export HOMELAB_BACKUP_COORDINATOR_BIN=${lib.getExe coordinator}
+        ${builtins.readFile ../../scripts/homelab-backup-pre-hook.sh}
       '';
 
       # Recover file-backed services as soon as Borg has captured and finalized
@@ -411,19 +358,12 @@ in {
             BORG_PASSCOMMAND = "cat ${config.sops.secrets.borg-backup-passphrase.path}";
           };
           script = ''
-            exec 9>${lib.escapeShellArg borgOperationLockFile}
-            ${flock} 9
-            check_started_epoch=$(date +%s)
-            ${borg} check --lock-wait 60 --repository-only --max-duration 3600
-            ${borg} check --lock-wait 60 --archives-only --last 1
-            check_finished_epoch=$(date +%s)
-            metrics_tmp=${lib.escapeShellArg "${backupMetricsDir}/homelab-borg-check.prom.tmp"}
-            {
-              printf 'homelab_borg_check_last_success_timestamp_seconds %s\n' "$check_finished_epoch"
-              printf 'homelab_borg_check_last_duration_seconds %s\n' "$((check_finished_epoch - check_started_epoch))"
-            } > "$metrics_tmp"
-            chmod 0644 "$metrics_tmp"
-            mv -f "$metrics_tmp" ${lib.escapeShellArg "${backupMetricsDir}/homelab-borg-check.prom"}
+            export BORG_BIN=${borg}
+            export DATE_BIN=${lib.getExe' pkgs.coreutils "date"}
+            export FLOCK_BIN=${flock}
+            export BORG_OPERATION_LOCK_FILE=${lib.escapeShellArg borgOperationLockFile}
+            export HOMELAB_BACKUP_METRICS_DIR=${lib.escapeShellArg backupMetricsDir}
+            ${builtins.readFile ../../scripts/homelab-borg-check.sh}
           '';
         };
       };

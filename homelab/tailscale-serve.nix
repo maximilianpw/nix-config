@@ -23,76 +23,32 @@
   advertiseCommands = lib.mapAttrsToList (name: _: "${tailscale} serve advertise ${lib.escapeShellArg "svc:${name}"}") homelab.privateServices;
   applyCommands = lib.concatStringsSep " &&\n" (rootCommands ++ pathCommands ++ advertiseCommands);
   desiredServicePattern = lib.concatMapStringsSep "|" (name: lib.escapeShellArg "svc:${name}") (builtins.attrNames homelab.privateServices);
-  serveScript = pkgs.writeShellScript "tailscale-serve-apply" ''
-    set -eu
-
-    expected_domain=${lib.escapeShellArg tailnetDomain}
-
-    apply_config() {
-      current_status="$(${tailscale} serve status --json)" || return 1
-      current_services="$(printf '%s\n' "$current_status" | ${lib.getExe pkgs.jq} -r '.Services // {} | keys[]')" || return 1
-      while IFS= read -r service; do
-        [ -n "$service" ] || continue
-        ${tailscale} serve drain "$service" || return 1
-        case "$service" in
-          ${desiredServicePattern}) ;;
-          *) ${tailscale} serve clear "$service" || return 1 ;;
-        esac
-      done <<EOF
-    $current_services
-    EOF
-
-      stale_services="$(printf '%s\n' "$current_status" | ${lib.getExe pkgs.jq} -r --arg suffix ".$expected_domain:443" '[.Services // {} | to_entries[] | .key as $service | (.value.Web // {} | keys[]) | select(endswith($suffix) | not) | $service] | unique[]')" || return 1
-      while IFS= read -r service; do
-        [ -n "$service" ] || continue
-        case "$service" in
-          ${desiredServicePattern}) ;;
-          *) continue ;;
-        esac
-        ${tailscale} serve clear "$service" || return 1
-      done <<EOF
-    $stale_services
-    EOF
-
-      ${applyCommands}
-
-      current_hosts="$(${tailscale} serve status --json | ${lib.getExe pkgs.jq} -r '.Services // {} | .[] | .Web // {} | keys[]')" || return 1
-      while IFS= read -r host; do
-        [ -n "$host" ] || continue
-        case "$host" in
-          *."$expected_domain":443) ;;
-          *)
-            echo "Tailscale Serve still advertises stale host $host; expected *.$expected_domain:443" >&2
-            return 1
-            ;;
-        esac
-      done <<EOF
-    $current_hosts
-    EOF
-    }
-
-    attempt=1
-    delay=2
-    while [ "$attempt" -le 8 ]; do
-      if apply_config; then
-        exit 0
-      fi
-
-      if [ "$attempt" -eq 8 ]; then
-        break
-      fi
-
-      echo "failed to apply Tailscale Serve configuration (attempt $attempt/8); retrying in ''${delay}s" >&2
-      ${lib.getExe' pkgs.coreutils "sleep"} "$delay"
-      attempt=$((attempt + 1))
-      if [ "$delay" -lt 30 ]; then
-        delay=$((delay * 2))
-      fi
-    done
-
-    echo "failed to apply Tailscale Serve configuration after 8 attempts" >&2
-    exit 1
-  '';
+  serveScriptMarkers = [
+    "@TAILSCALE_BIN@"
+    "@JQ_BIN@"
+    "@SLEEP_BIN@"
+    "@EXPECTED_DOMAIN@"
+    "@DESIRED_SERVICE_PATTERN@"
+    "@APPLY_COMMANDS@"
+  ];
+  serveScriptText = let
+    rendered =
+      lib.replaceStrings
+      serveScriptMarkers
+      [
+        tailscale
+        (lib.getExe pkgs.jq)
+        (lib.getExe' pkgs.coreutils "sleep")
+        (lib.escapeShellArg tailnetDomain)
+        desiredServicePattern
+        applyCommands
+      ]
+      (builtins.readFile ../scripts/tailscale-serve-apply.sh);
+  in
+    assert lib.assertMsg
+    (lib.all (marker: !lib.hasInfix marker rendered) serveScriptMarkers)
+    "scripts/tailscale-serve-apply.sh contains an unsubstituted template marker"; rendered;
+  serveScript = pkgs.writeShellScript "tailscale-serve-apply" serveScriptText;
 in {
   options.homelab.tailnet.domain = lib.mkOption {
     type = lib.types.str;
@@ -119,7 +75,6 @@ in {
       wants = ["network-online.target"];
       wantedBy = ["multi-user.target"];
       restartTriggers = [serveScript];
-
       serviceConfig = {
         Type = "oneshot";
         RemainAfterExit = true;

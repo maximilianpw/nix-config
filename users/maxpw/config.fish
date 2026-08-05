@@ -53,3 +53,36 @@ set -gx EDITOR nvim
 # Functions
 #-------------------------------------------------------------------------------
 alias rebuild-nix "~/nix-config/scripts/nixos-rebuild.sh"
+
+# JJ PR creation with GitHub CLI
+# Usage: jprgh "commit message" [gh pr create args...]
+function jprgh
+    jj commit -m $argv[1]
+    and jj git push -c '@-'
+    and set BRANCH "maximilianpw/push-"(jj log -r '@-' --no-graph -T 'change_id.short()')
+    and gh pr create --head $BRANCH $argv[2..-1]
+end
+
+# JJ PR creation with Graphite CLI
+# Usage: jprgt "commit message" [gt submit args...]
+function jprgt
+    jj commit -m $argv[1]
+    and jj git push -c '@-'
+    and set BRANCH "maximilianpw/push-"(jj log -r '@-' --no-graph -T 'change_id.short()')
+    and git checkout $BRANCH
+    and gt track
+    and gt submit $argv[2..-1]
+    and git checkout -
+    and jj git import
+end
+
+# Expand three or more dots into the corresponding parent path.
+# For example, `......` becomes `../../../../../`.
+function __expand_parent_directories
+    string repeat -n (math (string length -- $argv[1]) - 1) ../
+end
+
+abbr --add parent-directories \
+    --position anywhere \
+    --regex '^\.\.\.+$' \
+    --function __expand_parent_directories

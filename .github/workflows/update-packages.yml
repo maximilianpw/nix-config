@@ -39,23 +39,9 @@ jobs:
 
       - name: Run nix-update for each package
         id: bump
-        run: |
-          set -euo pipefail
-          packages="${{ github.event.inputs.packages || env.DEFAULT_PACKAGES }}"
-          failed=()
-          for pkg in $packages; do
-            echo "::group::nix-update $pkg"
-            if nix run .#nix-update -- --flake --use-update-script "$pkg"; then
-              echo "ok: $pkg"
-            else
-              echo "failed: $pkg"
-              failed+=("$pkg")
-            fi
-            echo "::endgroup::"
-          done
-          if [ "${#failed[@]}" -gt 0 ]; then
-            echo "failed_packages=${failed[*]}" >> "$GITHUB_OUTPUT"
-          fi
+        env:
+          PACKAGES: ${{ github.event.inputs.packages || env.DEFAULT_PACKAGES }}
+        run: scripts/ci/update-packages.sh
 
       - name: Check for changes
         id: diff

@@ -16,49 +16,28 @@
     else if host.os == "nixos-wsl"
     then "pc"
     else "server.rack";
-  fleetMachineRows = concatStringsSep "\n" (mapAttrsToList (
-      name: host: let
-        inherit (host) accent;
-        command = "/bin/sh -lc 'exec /etc/profiles/per-user/$(/usr/bin/id -un)/bin/fleet ssh ${name}'";
-        roleLabel = replaceStrings ["-"] [" "] host.role;
-      in ''
-        Button(action: { cmux("workspace.create", title: ${swiftString name}, initial_command: ${swiftString command}, focus: true) }) {
-          HStack(alignment: .top, spacing: 8) {
-            Rectangle()
-              .fill(${swiftString accent})
-              .frame(width: 4, height: 48)
-              .cornerRadius(2)
-
-            VStack(alignment: .leading, spacing: 3) {
-              HStack(spacing: 6) {
-                Image(systemName: ${swiftString (machineIcon host)})
-                  .foregroundColor(${swiftString accent})
-                Text(${swiftString name})
-                  .font(.headline)
-                  .lineLimit(1)
-                Spacer()
-                Text("tmux")
-                  .font(.caption)
-                  .foregroundColor(${swiftString accent})
-              }
-
-              Text(${swiftString roleLabel})
-                .font(.caption)
-                .foregroundColor(.secondary)
-                .lineLimit(1)
-
-              Text(${swiftString "fleet ssh ${name}"})
-                .font(.caption)
-                .foregroundColor(.secondary)
-                .lineLimit(1)
-            }
-          }
-          .padding(6)
-          .cornerRadius(8)
-        }
-      ''
-    )
-    remoteInventory);
+  fleetMachineMarkers = [
+    "@NAME@"
+    "@COMMAND@"
+    "@ACCENT@"
+    "@ICON@"
+    "@ROLE_LABEL@"
+    "@FLEET_COMMAND@"
+  ];
+  fleetMachineTemplate = builtins.readFile ../fleet-machine-row.swift;
+  renderFleetMachineRow = name: host: let
+    command = "/bin/sh -lc 'exec /etc/profiles/per-user/$(/usr/bin/id -un)/bin/fleet ssh ${name}'";
+    roleLabel = replaceStrings ["-"] [" "] host.role;
+    rendered =
+      replaceStrings
+      fleetMachineMarkers
+      (map swiftString [name command host.accent (machineIcon host) roleLabel "fleet ssh ${name}"])
+      fleetMachineTemplate;
+  in
+    assert lib.assertMsg
+    (lib.all (marker: !lib.hasInfix marker rendered) fleetMachineMarkers)
+    "users/maxpw/fleet-machine-row.swift contains an unsubstituted template marker"; rendered;
+  fleetMachineRows = concatStringsSep "\n" (mapAttrsToList renderFleetMachineRow remoteInventory);
 
   nixConfigPath = "${config.home.homeDirectory}/nix-config";
 

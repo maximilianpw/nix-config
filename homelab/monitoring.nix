@@ -118,17 +118,10 @@
       pkgs.iproute2
       pkgs.jq
       pkgs.systemd
-      pkgs.tailscale
+      config.services.tailscale.package
       pkgs.util-linux
     ];
     text = ''
-      export FINDMNT_BIN=${lib.getExe' pkgs.util-linux "findmnt"}
-      export SYSTEMCTL_BIN=${lib.getExe' pkgs.systemd "systemctl"}
-      export SS_BIN=${lib.getExe' pkgs.iproute2 "ss"}
-      export TAILSCALE_BIN=${lib.getExe config.services.tailscale.package}
-      export JQ_BIN=${lib.getExe pkgs.jq}
-      export CURL_BIN=${lib.getExe pkgs.curl}
-      export ID_BIN=${lib.getExe' pkgs.coreutils "id"}
       export HOMELAB_REQUIRED_MOUNTS=${lib.escapeShellArg "/ /srv /mnt/backups"}
       export HOMELAB_OPTIONAL_AUTOMOUNTS=${lib.escapeShellArg "/mnt/backups"}
       export HOMELAB_IMPORTANT_UNITS=${lib.escapeShellArg (lib.concatStringsSep " " homelab.importantSystemdUnits)}
