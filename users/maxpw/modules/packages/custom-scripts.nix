@@ -8,6 +8,26 @@
 in {
   home.packages = [
     (pkgs.writeShellApplication {
+      name = "hs";
+      runtimeInputs = [
+        pkgs.fzf
+        pkgs.herdr
+        pkgs.jq
+      ];
+      text = ''
+        set -euo pipefail
+
+        session=$(
+          herdr session list --json \
+            | jq -r '.sessions[].name' \
+            | fzf --prompt='Herdr session: '
+        ) || exit 0
+
+        [[ -n "$session" ]] || exit 0
+        exec herdr session attach "$session"
+      '';
+    })
+    (pkgs.writeShellApplication {
       name = "npmrc-token";
       text = ''
         set -euo pipefail

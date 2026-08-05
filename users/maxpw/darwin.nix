@@ -84,7 +84,8 @@ in {
       "wispr-flow"
       "freelens"
       "nextcloud"
-      "jellyfin"
+      "jellyfin-media-player"
+      "thebrowsercompany-dia"
     ];
 
     onActivation = {
