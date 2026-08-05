@@ -1,4 +1,5 @@
 {
+  hostname,
   lib,
   pkgs,
   ...
@@ -10,21 +11,15 @@ in {
     (pkgs.writeShellApplication {
       name = "hs";
       runtimeInputs = [
+        pkgs.coreutils
         pkgs.fzf
         pkgs.herdr
         pkgs.jq
+        pkgs.openssh
       ];
       text = ''
-        set -euo pipefail
-
-        session=$(
-          herdr session list --json \
-            | jq -r '.sessions[].name' \
-            | fzf --prompt='Herdr session: '
-        ) || exit 0
-
-        [[ -n "$session" ]] || exit 0
-        exec herdr session attach "$session"
+        export HERDR_SESSION_PICKER_LOCAL_HOST=${lib.escapeShellArg hostname}
+        ${builtins.readFile ../../../../scripts/herdr-session-picker.sh}
       '';
     })
     (pkgs.writeShellApplication {
