@@ -33,6 +33,10 @@
         # which runs as the user, so it must be owned by the user (not root).
         owner = currentSystemUser;
       };
+      linear-api-key = {
+        owner = currentSystemUser;
+        mode = "0400";
+      };
       github-ssh-private-key = lib.mkIf (!isLinuxDesktop) {
         owner = currentSystemUser;
         mode = "0600";
