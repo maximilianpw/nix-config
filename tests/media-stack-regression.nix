@@ -12,6 +12,7 @@
   qbtService = qbtConfig.systemd.services.qbittorrent;
   qbtDeferredTimer = qbtConfig.systemd.timers.qbittorrent-deferred-start;
   hostContainerService = config.systemd.services."container@qbt";
+  ersatzService = config.systemd.services.ersatztv;
   sabService = config.systemd.services.sabnzbd;
   mediaDirectories = [
     mediaRoot
@@ -42,6 +43,7 @@
   manifest = config.custom.backup.manifestMetadata;
   mediaStatePaths = [
     "/var/lib/bazarr"
+    "/var/lib/ersatztv"
     "/var/lib/jellyfin"
     "/var/lib/lidarr/.config/Lidarr"
     "/var/lib/private/prowlarr"
@@ -69,6 +71,9 @@ in
   "SABnzbd must retain a stable identity across state and download restores";
   assert lib.assertMsg (
     config.services.bazarr.enable
+    && config.services.ersatztv.enable
+    && config.services.ersatztv.environment.ETV_UI_PORT == endpoints.ersatztv.port
+    && !config.services.ersatztv.openFirewall
     && config.services.jellyfin.enable
     && config.services.lidarr.enable
     && config.services.sonarr.enable
@@ -147,6 +152,15 @@ in
   )
   "administrative media services must stay on loopback or behind the host firewall";
   assert lib.assertMsg (
+    builtins.elem "media" config.users.users.ersatztv.extraGroups
+    && builtins.elem "render" config.users.users.ersatztv.extraGroups
+    && builtins.elem "video" config.users.users.ersatztv.extraGroups
+    && builtins.elem "${mediaRoot}/library" ersatzService.serviceConfig.ReadOnlyPaths
+    && builtins.elem "${mediaRoot}/torrents" ersatzService.serviceConfig.InaccessiblePaths
+    && builtins.elem usenetRoot ersatzService.serviceConfig.InaccessiblePaths
+  )
+  "ErsatzTV must read the library and render node without modifying media or seeing downloads";
+  assert lib.assertMsg (
     config.services.jellyfin.hardwareAcceleration.enable
     && config.services.jellyfin.hardwareAcceleration.type == "vaapi"
     && config.services.jellyfin.hardwareAcceleration.device == "/dev/dri/renderD128"
@@ -161,8 +175,9 @@ in
   )
   "Jellyfin must be able to manage the finished library without seeing downloads";
   assert lib.assertMsg (
-    config.systemd.services.bazarr.serviceConfig.UMask
-    == "0002"
+    ersatzService.serviceConfig.UMask
+    == "0077"
+    && config.systemd.services.bazarr.serviceConfig.UMask == "0002"
     && config.systemd.services.jellyfin.serviceConfig.UMask == "0002"
     && config.systemd.services.lidarr.serviceConfig.UMask == "0002"
     && config.systemd.services.sonarr.serviceConfig.UMask == "0002"
@@ -170,7 +185,7 @@ in
     && sabService.serviceConfig.UMask == "0002"
     && qbtService.serviceConfig.UMask == "0002"
   )
-  "all writers must preserve shared-group write access";
+  "ErsatzTV must keep private state while all media writers preserve shared-group access";
   assert lib.assertMsg (
     qbt.autoStart
     && qbt.privateNetwork
@@ -229,6 +244,7 @@ in
   "the physical LAN must expose Jellyfin playback and discovery only";
   assert lib.assertMsg (lib.all requiresSrv [
     config.systemd.services.bazarr
+    ersatzService
     config.systemd.services.jellyfin
     config.systemd.services.lidarr
     config.systemd.services.sonarr
@@ -241,6 +257,7 @@ in
     lib.all (path: builtins.elem path manifest.expectedPrimaryStatePaths) mediaStatePaths
     && lib.all (name: builtins.hasAttr name manifest.applicationVersions) [
       "bazarr"
+      "ersatztv"
       "jellyfin"
       "lidarr"
       "prowlarr"
@@ -256,6 +273,7 @@ in
   "Borg must preserve media control state while excluding replaceable downloaded media";
   assert lib.assertMsg (lib.all (unit: builtins.elem unit homelab.backup.archiveUnits) [
     "bazarr.service"
+    "ersatztv.service"
     "jellyfin.service"
     "lidarr.service"
     "prowlarr.service"

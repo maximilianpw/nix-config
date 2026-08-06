@@ -1,20 +1,21 @@
 # Media stack on Kim
 
-Kim runs Jellyfin, Sonarr, Radarr, Lidarr, Bazarr, Prowlarr, Seerr, SABnzbd,
-and qBittorrent as one private media-automation stack. This configuration
-is intended for a personal library and sources the operator is authorized to use.
+Kim runs Jellyfin, ErsatzTV, Sonarr, Radarr, Lidarr, Bazarr, Prowlarr, Seerr,
+SABnzbd, and qBittorrent as one private media-automation stack. This
+configuration is intended for a personal library and sources the operator is authorized to use.
 Source and indexer accounts are deliberately not declared in this repository.
 
 ## Architecture
 
-Jellyfin, the Servarr managers, Prowlarr, Bazarr, Seerr, and SABnzbd are native
-NixOS services. qBittorrent runs in a declarative systemd-nspawn container with
-its own network namespace and Mullvad daemon:
+Jellyfin, ErsatzTV, the Servarr managers, Prowlarr, Bazarr, Seerr, and SABnzbd
+are native NixOS services. qBittorrent runs in a declarative systemd-nspawn
+container with its own network namespace and Mullvad daemon:
 
 ```text
 Tailnet HTTPS                  Kim                         qbt container
 ---------------        ---------------------       ------------------------
 jellyfin.*  ---------> Jellyfin :8096              Mullvad lockdown + tunnel
+ersatztv.*  ---------> ErsatzTV :8409                     |
 sonarr.*    ---------> Sonarr   :8989                     |
 radarr.*    ---------> Radarr   :7878               qBittorrent :8080
 lidarr.*    ---------> Lidarr   :8686                     ^
@@ -58,9 +59,10 @@ qBittorrent can see only `torrents/`; SABnzbd writes only under `usenet/`.
 Sonarr, Radarr, and Lidarr can read and write the whole tree to import completed
 downloads into `library/`. Bazarr can update subtitle files in
 the movie and television libraries. Jellyfin can manage `library/` but cannot
-see either active download tree. All
-services that touch `/srv` require the mount and fail closed instead of writing
-into the root filesystem when it is missing.
+see either active download tree. ErsatzTV has read-only access to `library/` and
+cannot see either download tree. All services that touch `/srv` require the
+mount and fail closed instead of writing into the root filesystem when it is
+missing.
 
 ## First deployment
 
@@ -257,6 +259,27 @@ LAN playback is available at `http://kim:8096` for clients that cannot run
 Tailscale. There is no direct Internet or router port-forwarded Jellyfin
 endpoint.
 
+### ErsatzTV
+
+Open `https://ersatztv.liger-shilling.ts.net`. Then wire the two applications:
+
+1. In Jellyfin, create an API key named `ErsatzTV` under **Dashboard → Advanced
+   → API Keys**.
+2. In ErsatzTV, open **Media Sources → Jellyfin**, connect to
+   `http://127.0.0.1:8096` with that key, and synchronize the Movies and Shows
+   libraries. The key remains in backed-up ErsatzTV state, not in Nix.
+3. Select streaming from disk. ErsatzTV sees the same library paths as Jellyfin,
+   so no path replacements are needed. It has read-only access to those files.
+4. Create a collection, channel, and playout in ErsatzTV. Start with the default
+   FFmpeg profile and HLS Segmenter mode; configure a VA-API profile only after
+   confirming a test stream works.
+5. In Jellyfin, open **Dashboard → Live TV**. Add an **M3U Tuner** using
+   `http://127.0.0.1:8409/iptv/channels.m3u`, then add an **XMLTV** guide provider
+   using `http://127.0.0.1:8409/iptv/xmltv.xml`.
+
+The resulting channels appear under Jellyfin's **Live TV** section. They run on
+an always-on schedule, but ErsatzTV only transcodes while a client is watching.
+
 ### Seerr
 
 Open `https://seerr.liger-shilling.ts.net`, sign in through Jellyfin, then add:
@@ -275,7 +298,7 @@ enabled until the complete download-import-playback path has been proven.
 Check the host services and container boundary:
 
 ```nu
-systemctl status jellyfin sonarr radarr lidarr bazarr prowlarr sabnzbd seerr container@qbt qbittorrent-proxy.socket
+systemctl status jellyfin ersatztv sonarr radarr lidarr bazarr prowlarr sabnzbd seerr container@qbt qbittorrent-proxy.socket
 sudo nixos-container run qbt -- mullvad status
 sudo nixos-container run qbt -- systemctl status qbittorrent --no-pager
 ```
@@ -302,9 +325,11 @@ Then perform lawful movie, episode, and album tests:
    category and the manager hardlinks it into the library; compare device and
    inode numbers with `stat` and require a link count of at least two.
 4. Confirm Jellyfin direct-plays one item.
-5. Force a lower playback bitrate, confirm the stream transcodes, and inspect
+5. Play an ErsatzTV channel from Jellyfin Live TV and confirm its guide data and
+   current program match the configured playout.
+6. Force a lower playback bitrate, confirm the stream transcodes, and inspect
    Jellyfin's FFmpeg log for VA-API rather than software encoding.
-6. Stop Mullvad in the container and verify torrent traffic stops while SABnzbd,
+7. Stop Mullvad in the container and verify torrent traffic stops while SABnzbd,
    host Tailscale, and Jellyfin remain reachable. Confirm qBittorrent does not
    fall back to the container veth, then reconnect before continuing.
 
@@ -313,6 +338,8 @@ Then perform lawful movie, episode, and album tests:
 Borg preserves the control plane:
 
 - Jellyfin users, libraries, metadata, and watch state
+- ErsatzTV's Jellyfin connection, collections, channels, schedules, and guide
+  state
 - Sonarr, Radarr, Lidarr, Bazarr, and Prowlarr configuration/databases
 - SABnzbd configuration, provider credentials, API keys, queue, and history
 - Seerr configuration/database
@@ -337,8 +364,8 @@ off-host copy.
    `/var/lib/nixos-containers/qbt`, plus the other declared control-state paths.
 4. Start `container@qbt`, confirm Mullvad is connected, and only then confirm
    qBittorrent is running.
-5. Start SABnzbd, Prowlarr, Sonarr, Radarr, Lidarr, Bazarr, Jellyfin, and
-   Seerr. Confirm the restored provider uses port 563, SSL, and
+5. Start SABnzbd, Prowlarr, Sonarr, Radarr, Lidarr, Bazarr, Jellyfin, ErsatzTV,
+   and Seerr. Confirm the restored provider uses port 563, SSL, and
    strict certificate verification before resuming its queue.
 6. Run the acceptance checks above. If downloaded media was not separately
    protected, reconcile missing files in the library managers rather than

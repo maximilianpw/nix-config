@@ -32,6 +32,40 @@
     };
   };
 
+  ersatztv = {
+    endpoint = {
+      authorizationOwner = "tailscale";
+      exposure = "tailnet";
+      port = 8409;
+    };
+    state.paths = ["/var/lib/ersatztv"];
+    backup.quiesce = [
+      {
+        unit = "ersatztv.service";
+        until = "archive";
+      }
+    ];
+    storage.units = ["ersatztv.service"];
+    operations.units = ["ersatztv.service"];
+    recovery = {
+      order = 91;
+      versionPolicy = "restore-archived-version-first";
+      runbook = "docs/media-stack.md#recovery";
+      acceptance = [
+        "jellyfin-source-collections-and-schedules-load"
+        "m3u-xmltv-and-representative-channel-play"
+      ];
+      secretOwners = ["mutable-state:/var/lib/ersatztv"];
+    };
+    presentation = {
+      group = "applications";
+      title = "ErsatzTV";
+      icon = "ersatztv.png";
+      description = "Scheduled channels from the media library";
+      order = 75;
+    };
+  };
+
   grafana = {
     endpoint = {
       authorizationOwner = "tailscale";

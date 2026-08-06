@@ -56,6 +56,11 @@ in {
         group = "media";
         isSystemUser = true;
       };
+      ersatztv.extraGroups = [
+        "media"
+        "render"
+        "video"
+      ];
       jellyfin.extraGroups = [
         "media"
         "render"
@@ -70,6 +75,12 @@ in {
       group = "media";
       openFirewall = false;
       listenPort = endpoints.bazarr.port;
+    };
+
+    ersatztv = {
+      enable = true;
+      openFirewall = false;
+      environment.ETV_UI_PORT = endpoints.ersatztv.port;
     };
 
     jellyfin = {
@@ -238,6 +249,17 @@ in {
         ];
         StateDirectoryMode = "0700";
         UMask = lib.mkForce "0002";
+      };
+
+      # ErsatzTV reads media directly for channel playback and can use Kim's
+      # render node for VA-API, but it must never modify the library or inspect
+      # active downloads.
+      ersatztv.serviceConfig = {
+        InaccessiblePaths = [
+          "${mediaRoot}/torrents"
+          usenetRoot
+        ];
+        ReadOnlyPaths = ["${mediaRoot}/library"];
       };
 
       # Jellyfin can manage the shared group-writable library but cannot see
