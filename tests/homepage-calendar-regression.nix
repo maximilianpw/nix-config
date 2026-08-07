@@ -146,7 +146,7 @@ in
       "Vaultwarden"
       "Immich"
       "Jellyfin"
-      "ErsatzTV"
+      "Tunarr"
       "Seerr"
     ])
   "Homepage Applications must retain their intended order";

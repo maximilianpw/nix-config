@@ -1,21 +1,22 @@
 # Media stack on Kim
 
-Kim runs Jellyfin, ErsatzTV, Sonarr, Radarr, Lidarr, Bazarr, Prowlarr, Seerr,
+Kim runs Jellyfin, Tunarr, Sonarr, Radarr, Lidarr, Bazarr, Prowlarr, Seerr,
 SABnzbd, and qBittorrent as one private media-automation stack. This
-configuration is intended for a personal library and sources the operator is authorized to use.
+configuration is intended for a personal library and sources the operator is
+authorized to use.
 Source and indexer accounts are deliberately not declared in this repository.
 
 ## Architecture
 
-Jellyfin, ErsatzTV, the Servarr managers, Prowlarr, Bazarr, Seerr, and SABnzbd
-are native NixOS services. qBittorrent runs in a declarative systemd-nspawn
+Jellyfin, Tunarr, the Servarr managers, Prowlarr, Bazarr, Seerr, and SABnzbd are
+native NixOS services. qBittorrent runs in a declarative systemd-nspawn
 container with its own network namespace and Mullvad daemon:
 
 ```text
 Tailnet HTTPS                  Kim                         qbt container
 ---------------        ---------------------       ------------------------
 jellyfin.*  ---------> Jellyfin :8096              Mullvad lockdown + tunnel
-ersatztv.*  ---------> ErsatzTV :8409                     |
+tunarr.*    ---------> Tunarr   :8000                     |
 sonarr.*    ---------> Sonarr   :8989                     |
 radarr.*    ---------> Radarr   :7878               qBittorrent :8080
 lidarr.*    ---------> Lidarr   :8686                     ^
@@ -59,7 +60,7 @@ qBittorrent can see only `torrents/`; SABnzbd writes only under `usenet/`.
 Sonarr, Radarr, and Lidarr can read and write the whole tree to import completed
 downloads into `library/`. Bazarr can update subtitle files in
 the movie and television libraries. Jellyfin can manage `library/` but cannot
-see either active download tree. ErsatzTV has read-only access to `library/` and
+see either active download tree. Tunarr has read-only access to `library/` and
 cannot see either download tree. All services that touch `/srv` require the
 mount and fail closed instead of writing into the root filesystem when it is
 missing.
@@ -259,26 +260,29 @@ LAN playback is available at `http://kim:8096` for clients that cannot run
 Tailscale. There is no direct Internet or router port-forwarded Jellyfin
 endpoint.
 
-### ErsatzTV
+### Tunarr
 
-Open `https://ersatztv.liger-shilling.ts.net`. Then wire the two applications:
+Open `https://tunarr.liger-shilling.ts.net`. Tunarr is paired with Nixpkgs
+FFmpeg (currently 8.1.2, above its 7.1 minimum) and an embedded Meilisearch
+binary. Then wire the two applications:
 
-1. In Jellyfin, create an API key named `ErsatzTV` under **Dashboard → Advanced
-   → API Keys**.
-2. In ErsatzTV, open **Media Sources → Jellyfin**, connect to
-   `http://127.0.0.1:8096` with that key, and synchronize the Movies and Shows
-   libraries. The key remains in backed-up ErsatzTV state, not in Nix.
-3. Select streaming from disk. ErsatzTV sees the same library paths as Jellyfin,
-   so no path replacements are needed. It has read-only access to those files.
-4. Create a collection, channel, and playout in ErsatzTV. Start with the default
-   FFmpeg profile and HLS Segmenter mode; configure a VA-API profile only after
-   confirming a test stream works.
-5. In Jellyfin, open **Dashboard → Live TV**. Add an **M3U Tuner** using
-   `http://127.0.0.1:8409/iptv/channels.m3u`, then add an **XMLTV** guide provider
-   using `http://127.0.0.1:8409/iptv/xmltv.xml`.
+1. In Jellyfin, create an API key named `Tunarr` under **Dashboard → Advanced →
+   API Keys**.
+2. In Tunarr, add a Jellyfin media source at `http://127.0.0.1:8096` using that
+   key. The key remains in backed-up Tunarr state, not in Nix.
+3. Create a transcode configuration for 1920×1080 H.264/AAC. Select **VAAPI**,
+   use driver `radeonsi`, and keep the device at `/dev/dri/renderD128`.
+4. Create a channel, add programs from the synchronized Jellyfin library, and
+   assign the VA-API transcode configuration.
+5. In Jellyfin **Dashboard → Live TV**, remove the old ErsatzTV M3U tuner and
+   guide. Add an **HDHomeRun** tuner manually at `http://127.0.0.1:8000`, then
+   add an **XMLTV** provider at `http://127.0.0.1:8000/api/xmltv.xml`.
+6. Refresh guide data and play the channel from Jellyfin's **Live TV** section.
 
-The resulting channels appear under Jellyfin's **Live TV** section. They run on
-an always-on schedule, but ErsatzTV only transcodes while a client is watching.
+Tunarr continuously advances each channel's timeline but starts an FFmpeg
+session only while a client is watching. Prometheus probes
+`/api/system/health`; because Tunarr always returns HTTP 200 there, the blackbox
+probe also fails when the response contains `"type":"error"`.
 
 ### Seerr
 
@@ -298,7 +302,7 @@ enabled until the complete download-import-playback path has been proven.
 Check the host services and container boundary:
 
 ```nu
-systemctl status jellyfin ersatztv sonarr radarr lidarr bazarr prowlarr sabnzbd seerr container@qbt qbittorrent-proxy.socket
+systemctl status jellyfin tunarr sonarr radarr lidarr bazarr prowlarr sabnzbd seerr container@qbt qbittorrent-proxy.socket
 sudo nixos-container run qbt -- mullvad status
 sudo nixos-container run qbt -- systemctl status qbittorrent --no-pager
 ```
@@ -325,8 +329,8 @@ Then perform lawful movie, episode, and album tests:
    category and the manager hardlinks it into the library; compare device and
    inode numbers with `stat` and require a link count of at least two.
 4. Confirm Jellyfin direct-plays one item.
-5. Play an ErsatzTV channel from Jellyfin Live TV and confirm its guide data and
-   current program match the configured playout.
+5. Play a Tunarr channel from Jellyfin Live TV and confirm its guide data and
+   current program match the configured lineup.
 6. Force a lower playback bitrate, confirm the stream transcodes, and inspect
    Jellyfin's FFmpeg log for VA-API rather than software encoding.
 7. Stop Mullvad in the container and verify torrent traffic stops while SABnzbd,
@@ -338,8 +342,8 @@ Then perform lawful movie, episode, and album tests:
 Borg preserves the control plane:
 
 - Jellyfin users, libraries, metadata, and watch state
-- ErsatzTV's Jellyfin connection, collections, channels, schedules, and guide
-  state
+- Tunarr's Jellyfin connection, channels, lineups, transcode profiles, and guide
+  state; its rebuildable sparse `data.ms` search index is excluded
 - Sonarr, Radarr, Lidarr, Bazarr, and Prowlarr configuration/databases
 - SABnzbd configuration, provider credentials, API keys, queue, and history
 - Seerr configuration/database
@@ -364,7 +368,7 @@ off-host copy.
    `/var/lib/nixos-containers/qbt`, plus the other declared control-state paths.
 4. Start `container@qbt`, confirm Mullvad is connected, and only then confirm
    qBittorrent is running.
-5. Start SABnzbd, Prowlarr, Sonarr, Radarr, Lidarr, Bazarr, Jellyfin, ErsatzTV,
+5. Start SABnzbd, Prowlarr, Sonarr, Radarr, Lidarr, Bazarr, Jellyfin, Tunarr,
    and Seerr. Confirm the restored provider uses port 563, SSL, and
    strict certificate verification before resuming its queue.
 6. Run the acceptance checks above. If downloaded media was not separately
@@ -406,5 +410,7 @@ grant for `svc:sabnzbd`.
 The design and operational choices are based on the
 [TRaSH native layout](https://trash-guides.info/File-and-Folder-Structure/How-to-set-up/Native/),
 [Jellyfin AMD acceleration guide](https://jellyfin.org/docs/general/post-install/transcoding/hardware-acceleration/amd/),
+[Tunarr installation guidance](https://tunarr.com/getting-started/installation/),
+[Tunarr's Jellyfin client guide](https://tunarr.com/configure/clients/jellyfin/),
 [qBittorrent headless guidance](https://github.com/qbittorrent/qBittorrent/wiki/Running-qBittorrent-without-X-server-%28WebUI-only%29),
 and [Mullvad CLI guidance](https://mullvad.net/help/how-use-mullvad-cli).

@@ -14,6 +14,16 @@
   qbitContainerAddress = "10.89.0.2";
   qbitContainerPort = 8080;
   qbitNetworkInterface = "wg0-mullvad";
+  tunarrReconcileSettings = let
+    ffmpeg = lib.getExe pkgs.ffmpeg;
+    ffprobe = lib.getExe' pkgs.ffmpeg "ffprobe";
+  in
+    pkgs.writeShellScript "tunarr-reconcile-settings" ''
+      exec ${lib.getExe pkgs.tunarr} --database /var/lib/tunarr settings update \
+        --settings.ffmpeg.ffmpegExecutablePath=${ffmpeg} \
+        --settings.ffmpeg.ffprobeExecutablePath=${ffprobe} \
+        >/dev/null
+    '';
   mediaDirectories = [
     mediaRoot
     "${mediaRoot}/torrents"
@@ -41,7 +51,10 @@ in {
   # Download and library paths share one ext4 filesystem so the Servarr apps
   # can import by hardlink while qBittorrent keeps seeding originals.
   users = {
-    groups.media.gid = mediaGid;
+    groups = {
+      media.gid = mediaGid;
+      tunarr = {};
+    };
     users = {
       # Reserve the bind-mount owner on the host as well as inside the
       # container; otherwise an unrelated dynamically allocated host user
@@ -56,11 +69,15 @@ in {
         group = "media";
         isSystemUser = true;
       };
-      ersatztv.extraGroups = [
-        "media"
-        "render"
-        "video"
-      ];
+      tunarr = {
+        isSystemUser = true;
+        group = "tunarr";
+        extraGroups = [
+          "media"
+          "render"
+          "video"
+        ];
+      };
       jellyfin.extraGroups = [
         "media"
         "render"
@@ -75,12 +92,6 @@ in {
       group = "media";
       openFirewall = false;
       listenPort = endpoints.bazarr.port;
-    };
-
-    ersatztv = {
-      enable = true;
-      openFirewall = false;
-      environment.ETV_UI_PORT = endpoints.ersatztv.port;
     };
 
     jellyfin = {
@@ -251,15 +262,51 @@ in {
         UMask = lib.mkForce "0002";
       };
 
-      # ErsatzTV reads media directly for channel playback and can use Kim's
-      # render node for VA-API, but it must never modify the library or inspect
-      # active downloads.
-      ersatztv.serviceConfig = {
-        InaccessiblePaths = [
-          "${mediaRoot}/torrents"
-          usenetRoot
-        ];
-        ReadOnlyPaths = ["${mediaRoot}/library"];
+      tunarr = {
+        description = "Tunarr personal TV server";
+        after = ["network-online.target"];
+        wants = ["network-online.target"];
+        wantedBy = ["multi-user.target"];
+        path = [pkgs.libva-utils];
+        environment = {
+          HOME = "/var/lib/tunarr";
+          TZ = config.time.timeZone;
+          TUNARR_BIND_ADDR = "127.0.0.1";
+          TUNARR_LOG_LEVEL = "info";
+          TUNARR_SERVER_PORT = toString endpoints.tunarr.port;
+        };
+        serviceConfig = {
+          User = "tunarr";
+          Group = "tunarr";
+          # Use the unambiguous CLI flag: v1.3.10's source and published docs
+          # disagree about the corresponding environment variable's name.
+          ExecStart = "${lib.getExe pkgs.tunarr} --database /var/lib/tunarr";
+          ExecStartPre = tunarrReconcileSettings;
+          InaccessiblePaths = [
+            "${mediaRoot}/torrents"
+            usenetRoot
+          ];
+          LockPersonality = true;
+          NoNewPrivileges = true;
+          PrivateTmp = true;
+          ProtectHome = true;
+          ProtectSystem = "strict";
+          ReadOnlyPaths = ["${mediaRoot}/library"];
+          ReadWritePaths = ["/var/lib/tunarr"];
+          Restart = "on-failure";
+          RestartSec = "5s";
+          RestrictAddressFamilies = [
+            "AF_INET"
+            "AF_INET6"
+            "AF_NETLINK"
+            "AF_UNIX"
+          ];
+          RestrictSUIDSGID = true;
+          StateDirectory = "tunarr";
+          StateDirectoryMode = "0700";
+          UMask = "0077";
+          WorkingDirectory = "/var/lib/tunarr";
+        };
       };
 
       # Jellyfin can manage the shared group-writable library but cannot see

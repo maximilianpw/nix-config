@@ -12,7 +12,7 @@
   qbtService = qbtConfig.systemd.services.qbittorrent;
   qbtDeferredTimer = qbtConfig.systemd.timers.qbittorrent-deferred-start;
   hostContainerService = config.systemd.services."container@qbt";
-  ersatzService = config.systemd.services.ersatztv;
+  tunarrService = config.systemd.services.tunarr;
   sabService = config.systemd.services.sabnzbd;
   mediaDirectories = [
     mediaRoot
@@ -43,7 +43,6 @@
   manifest = config.custom.backup.manifestMetadata;
   mediaStatePaths = [
     "/var/lib/bazarr"
-    "/var/lib/ersatztv"
     "/var/lib/jellyfin"
     "/var/lib/lidarr/.config/Lidarr"
     "/var/lib/private/prowlarr"
@@ -52,6 +51,7 @@
     "/var/lib/sabnzbd"
     "/var/lib/private/jellyseerr"
     "/var/lib/sonarr/.config/NzbDrone"
+    "/var/lib/tunarr"
   ];
 in
   assert lib.assertMsg (lib.all mediaDirectoryIsShared mediaDirectories)
@@ -71,9 +71,14 @@ in
   "SABnzbd must retain a stable identity across state and download restores";
   assert lib.assertMsg (
     config.services.bazarr.enable
-    && config.services.ersatztv.enable
-    && config.services.ersatztv.environment.ETV_UI_PORT == endpoints.ersatztv.port
-    && !config.services.ersatztv.openFirewall
+    && !config.services.ersatztv.enable
+    && !(builtins.hasAttr "ersatztv" homelab.services)
+    && tunarrService.environment.TUNARR_SERVER_PORT == toString endpoints.tunarr.port
+    && tunarrService.environment.TUNARR_BIND_ADDR == "127.0.0.1"
+    && !(builtins.hasAttr "TUNARR_DATABASE_PATH" tunarrService.environment)
+    && !(builtins.hasAttr "TUNARR_DATABASE_NAME" tunarrService.environment)
+    && pkgs.tunarr.ffmpeg == pkgs.ffmpeg
+    && lib.versionAtLeast pkgs.tunarr.ffmpeg.version "7.1"
     && config.services.jellyfin.enable
     && config.services.lidarr.enable
     && config.services.sonarr.enable
@@ -152,14 +157,19 @@ in
   )
   "administrative media services must stay on loopback or behind the host firewall";
   assert lib.assertMsg (
-    builtins.elem "media" config.users.users.ersatztv.extraGroups
-    && builtins.elem "render" config.users.users.ersatztv.extraGroups
-    && builtins.elem "video" config.users.users.ersatztv.extraGroups
-    && builtins.elem "${mediaRoot}/library" ersatzService.serviceConfig.ReadOnlyPaths
-    && builtins.elem "${mediaRoot}/torrents" ersatzService.serviceConfig.InaccessiblePaths
-    && builtins.elem usenetRoot ersatzService.serviceConfig.InaccessiblePaths
+    config.users.users.tunarr.isSystemUser
+    && config.users.users.tunarr.group == "tunarr"
+    && builtins.elem "media" config.users.users.tunarr.extraGroups
+    && builtins.elem "render" config.users.users.tunarr.extraGroups
+    && builtins.elem "video" config.users.users.tunarr.extraGroups
+    && tunarrService.serviceConfig.ExecStart == "${lib.getExe pkgs.tunarr} --database /var/lib/tunarr"
+    && lib.hasInfix "tunarr-reconcile-settings" tunarrService.serviceConfig.ExecStartPre
+    && builtins.elem pkgs.libva-utils tunarrService.path
+    && builtins.elem "${mediaRoot}/library" tunarrService.serviceConfig.ReadOnlyPaths
+    && builtins.elem "${mediaRoot}/torrents" tunarrService.serviceConfig.InaccessiblePaths
+    && builtins.elem usenetRoot tunarrService.serviceConfig.InaccessiblePaths
   )
-  "ErsatzTV must read the library and render node without modifying media or seeing downloads";
+  "Tunarr must read the library and render node without modifying media or seeing downloads";
   assert lib.assertMsg (
     config.services.jellyfin.hardwareAcceleration.enable
     && config.services.jellyfin.hardwareAcceleration.type == "vaapi"
@@ -175,8 +185,13 @@ in
   )
   "Jellyfin must be able to manage the finished library without seeing downloads";
   assert lib.assertMsg (
-    ersatzService.serviceConfig.UMask
+    tunarrService.serviceConfig.UMask
     == "0077"
+    && tunarrService.serviceConfig.StateDirectory == "tunarr"
+    && tunarrService.serviceConfig.StateDirectoryMode == "0700"
+    && tunarrService.serviceConfig.NoNewPrivileges
+    && tunarrService.serviceConfig.ProtectSystem == "strict"
+    && builtins.elem "AF_NETLINK" tunarrService.serviceConfig.RestrictAddressFamilies
     && config.systemd.services.bazarr.serviceConfig.UMask == "0002"
     && config.systemd.services.jellyfin.serviceConfig.UMask == "0002"
     && config.systemd.services.lidarr.serviceConfig.UMask == "0002"
@@ -185,7 +200,7 @@ in
     && sabService.serviceConfig.UMask == "0002"
     && qbtService.serviceConfig.UMask == "0002"
   )
-  "ErsatzTV must keep private state while all media writers preserve shared-group access";
+  "Tunarr must keep private state while all media writers preserve shared-group access";
   assert lib.assertMsg (
     qbt.autoStart
     && qbt.privateNetwork
@@ -244,7 +259,7 @@ in
   "the physical LAN must expose Jellyfin playback and discovery only";
   assert lib.assertMsg (lib.all requiresSrv [
     config.systemd.services.bazarr
-    ersatzService
+    tunarrService
     config.systemd.services.jellyfin
     config.systemd.services.lidarr
     config.systemd.services.sonarr
@@ -257,7 +272,6 @@ in
     lib.all (path: builtins.elem path manifest.expectedPrimaryStatePaths) mediaStatePaths
     && lib.all (name: builtins.hasAttr name manifest.applicationVersions) [
       "bazarr"
-      "ersatztv"
       "jellyfin"
       "lidarr"
       "prowlarr"
@@ -266,14 +280,15 @@ in
       "sabnzbd"
       "seerr"
       "sonarr"
+      "tunarr"
     ]
     && !lib.any (lib.hasPrefix mediaRoot) manifest.expectedPrimaryStatePaths
     && !builtins.elem mediaRoot config.services.borgbackup.jobs.main.paths
+    && builtins.elem "/var/lib/tunarr/data.ms" config.custom.backup.exclude
   )
   "Borg must preserve media control state while excluding replaceable downloaded media";
   assert lib.assertMsg (lib.all (unit: builtins.elem unit homelab.backup.archiveUnits) [
     "bazarr.service"
-    "ersatztv.service"
     "jellyfin.service"
     "lidarr.service"
     "prowlarr.service"
@@ -282,6 +297,7 @@ in
     "sabnzbd.service"
     "seerr.service"
     "sonarr.service"
+    "tunarr.service"
   ])
   "Borg must quiesce every mutable media control plane before copying it";
     pkgs.runCommand "media-stack-regression" {} ''

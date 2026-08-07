@@ -46,7 +46,6 @@
     homelab.backup.archivePaths;
   applicationVersions = {
     bazarr = config.services.bazarr.package.version;
-    ersatztv = config.services.ersatztv.package.version;
     grafana = config.services.grafana.package.version;
     homeassistant = config.services.home-assistant.package.version;
     homepage = config.services.homepage-dashboard.package.version;
@@ -66,6 +65,7 @@
     sonarr = config.services.sonarr.package.version;
     syncthing = config.services.syncthing.package.version;
     t3code = t3codeVersion;
+    tunarr = pkgs.tunarr.version;
     vaultwarden = config.services.vaultwarden.package.version;
     # Preserve the schema-v1 manifest key while the canonical inventory name
     # above lets coverage track the service directly.
@@ -218,6 +218,9 @@ in {
         # LazyLibrarian is retired; never recapture orphaned state while the
         # root-owned directory awaits explicit deletion.
         "/var/lib/lazylibrarian"
+        # Tunarr can rebuild its sparse Meilisearch index from the preserved
+        # database and snapshots; archiving the sparse file wastes space.
+        "/var/lib/tunarr/data.ms"
         # Home Assistant is archived while quiesced before Borg starts. Avoid
         # also capturing its live config tree after the service restarts.
         "/var/lib/hass"

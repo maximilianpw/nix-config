@@ -106,6 +106,7 @@
           zig
           ;
         helium = final.callPackage ./packages/helium.nix {};
+        tunarr = final.callPackage ./packages/tunarr.nix {};
         obsidian = final.callPackage ./packages/obsidian.nix {};
         coderabbit = final.callPackage ./packages/coderabbit.nix {};
         cliproxyapi = final.callPackage ./packages/cliproxyapi.nix {};
@@ -202,7 +203,7 @@
         media-stack-regression = import ./tests/media-stack-regression.nix {
           config = self.nixosConfigurations.kim.config;
           inherit lib;
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+          pkgs = self.nixosConfigurations.kim.pkgs;
         };
         tailscale-serve-regression = import ./tests/tailscale-serve-regression.nix {
           inherit lib;
@@ -279,7 +280,7 @@
       x86_64-linux = let
         pkgs = mkPkgs "x86_64-linux";
       in {
-        inherit (pkgs) helium obsidian skills coderabbit cliproxyapi plannotator nextcloud-calendar hunkdiff nix-update;
+        inherit (pkgs) helium obsidian skills coderabbit cliproxyapi plannotator nextcloud-calendar hunkdiff nix-update tunarr;
       };
       aarch64-darwin = let
         pkgs = mkPkgs "aarch64-darwin";

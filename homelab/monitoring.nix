@@ -43,6 +43,9 @@
       http = {
         preferred_ip_protocol = "ip4";
         follow_redirects = true;
+        # Tunarr's health endpoint returns HTTP 200 even when a component is
+        # unhealthy. Treat its compact JSON error marker as a failed probe.
+        fail_if_body_matches_regexp = [''"type":"error"''];
       };
     };
   };
