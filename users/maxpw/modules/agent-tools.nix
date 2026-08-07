@@ -45,6 +45,7 @@ in {
         pkgs.herdr
         pkgs.amp-cli
         pkgs.pi
+        pkgs.skills
       ]
       ++ lib.optionals (hostname == "kim") [pkgs.plannotator];
 

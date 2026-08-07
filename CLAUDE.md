@@ -80,8 +80,7 @@ modules/
     shells.nix      # Nushell, Fish, Bash; all shell aliases defined here
     git.nix         # Git + Jujutsu (jj) config
     vcs/jujutsu.nix # Jujutsu config
-    agent-tools.nix # LLM agent CLIs + configuration
-    agent-skill-links.nix # Shared local skill links for agent discovery paths
+    agent-tools.nix # LLM agent CLIs + configuration, including the Skills CLI
     t3code-darwin.nix # Pinned macOS Homebrew cask and activation migration
     t3code-server.nix # Headless T3 Code server integration
     fonts.nix       # Nerd fonts + system fonts with fontconfig
