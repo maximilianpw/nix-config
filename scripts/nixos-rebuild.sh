@@ -149,6 +149,7 @@ fi
 
 # Build + switch via nh (elevates itself, prints an nvd generation diff).
 # Output is teed to the log; nh degrades to sequential lines when piped.
+previous_system_generation=$(readlink -f /run/current-system 2>/dev/null || printf unknown)
 info "Switching configuration via nh: $HOSTNAME ($PLATFORM)"
 if ! "${NH_SWITCH[@]}" -H "$HOSTNAME" "$FLAKE_REF" 2>&1 | tee -a "$LOG_FILE"; then
     error "Rebuild failed! Check the log:"
@@ -157,6 +158,16 @@ if ! "${NH_SWITCH[@]}" -H "$HOSTNAME" "$FLAKE_REF" 2>&1 | tee -a "$LOG_FILE"; th
 fi
 
 success "Rebuild completed successfully!"
+
+if [[ "$PLATFORM" == "nixos" && "$HOSTNAME" == "kim" ]]; then
+    info "Running post-switch homelab verification..."
+    if ! HOMELAB_CHECK_BIN=/run/current-system/sw/bin/homelab-check \
+        "$SCRIPT_DIR/post-switch-homelab-check.sh" "$previous_system_generation"; then
+        error "The new generation switched, but Kim did not pass its runtime checks."
+        error "Automatic rollback is disabled because application migrations may have run."
+        exit 1
+    fi
+fi
 
 # Clean up old generations: always keep the last 5 as a rollback floor,
 # plus anything newer than 30 days (the old age-only GC could delete

@@ -6,6 +6,7 @@ set -euo pipefail
 : "${HOMELAB_COORDINATOR_BIN:=homelab-backup-coordinator}"
 : "${HOMELAB_BACKUP_METRICS_DIR:=/var/lib/prometheus-node-exporter-text-files}"
 : "${DATE_BIN:=date}"
+: "${HOMELAB_HEARTBEAT_BIN:=}"
 
 if (( $# != 2 )); then
   echo "Usage: homelab-backup-posthook <borg-status> <started-epoch>" >&2
@@ -51,6 +52,14 @@ if (( backup_exit_status == 0 && cleanup_failed == 0 )); then
   fi
 elif (( backup_exit_status != 0 )); then
   echo "Backup failed with status $backup_exit_status at $($DATE_BIN)" >&2
+fi
+
+if [[ -n $HOMELAB_HEARTBEAT_BIN ]]; then
+  heartbeat_action=fail
+  ((final_status == 0)) && heartbeat_action=success
+  if ! "$HOMELAB_HEARTBEAT_BIN" "$heartbeat_action"; then
+    echo "Backup status was recorded locally, but its external heartbeat failed" >&2
+  fi
 fi
 
 exit "$final_status"

@@ -5,6 +5,7 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -45,8 +46,10 @@ jobs:
           nix build --no-link \
             .#checks.x86_64-linux.homelab-ingress-regression \
             .#checks.x86_64-linux.homelab-inventory-regression \
+            .#checks.x86_64-linux.immich-config-regression \
+            .#checks.x86_64-linux.media-stack-regression \
             .#checks.x86_64-linux.tailscale-serve-regression \
-            .#checks.x86_64-linux.paperless-backup-regression \
+            .#checks.x86_64-linux.homelab-backup-regression \
             .#checks.x86_64-linux.paperless-config-regression \
             .#checks.x86_64-linux.homepage-calendar-regression \
             .#checks.x86_64-linux.monitoring-regression \

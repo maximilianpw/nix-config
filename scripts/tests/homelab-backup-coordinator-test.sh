@@ -236,7 +236,8 @@ run_posthook_case() {
   export POSTHOOK_CLEANUP_STATUS=$cleanup_status
 
   set +e
-  bash "$posthook" "$backup_status" 100 > "$metrics_dir/out" 2> "$metrics_dir/err"
+  HOMELAB_HEARTBEAT_BIN=${POSTHOOK_HEARTBEAT_BIN:-} \
+    bash "$posthook" "$backup_status" 100 > "$metrics_dir/out" 2> "$metrics_dir/err"
   actual_status=$?
   set -e
   [[ $actual_status -eq $expected_status ]]
@@ -251,5 +252,18 @@ run_posthook_case success 0 0 0 yes
 run_posthook_case borg-failed 2 0 2 no
 run_posthook_case cleanup-failed 0 1 1 no
 run_posthook_case both-failed 2 1 2 no
+
+cat > "$tmp/posthook-heartbeat" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+printf '%s\n' "$1" > "$POSTHOOK_HEARTBEAT_ACTION_FILE"
+EOF
+chmod +x "$tmp/posthook-heartbeat"
+export POSTHOOK_HEARTBEAT_BIN=$tmp/posthook-heartbeat
+export POSTHOOK_HEARTBEAT_ACTION_FILE=$tmp/posthook-heartbeat-action
+run_posthook_case heartbeat-success 0 0 0 yes
+grep -Fxq success "$POSTHOOK_HEARTBEAT_ACTION_FILE"
+run_posthook_case heartbeat-failure 2 0 2 no
+grep -Fxq fail "$POSTHOOK_HEARTBEAT_ACTION_FILE"
 
 echo "homelab backup coordinator tests passed"

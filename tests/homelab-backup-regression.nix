@@ -6,6 +6,8 @@
   homelab = import ../lib/homelab.nix {inherit lib;};
   backup = config.services.borgbackup.jobs.main;
   backupUnit = config.systemd.services.borgbackup-job-main;
+  verifyUnit = config.systemd.services.borgbackup-verify-main;
+  initialVerifyUnit = config.systemd.services.borgbackup-verify-main-initial;
   exporter = config.systemd.services.paperless-exporter;
   projectsPath = "/home/maxpw/Projects";
   hasProjectsPath = builtins.elem projectsPath backup.paths;
@@ -56,6 +58,7 @@
     ) [
       backup.preHook
       config.systemd.services.borgbackup-check-main.script
+      verifyUnit.script
     ];
 in
   assert lib.assertMsg (!hasProjectsPath)
@@ -104,7 +107,24 @@ in
   assert lib.assertMsg usesPersistentCoordinator
   "backup preparation and cleanup must share the failure-safe persisted coordinator";
   assert lib.assertMsg serializesBorgOperations
-  "backup creation and consistency checks must acquire the same lock before touching applications or Borg";
+  "backup creation and all consistency checks must acquire the same lock before touching applications or Borg";
+  assert lib.assertMsg (
+    lib.hasInfix "--archives-only --verify-data --last 1" verifyUnit.script
+    && config.systemd.timers.borgbackup-verify-main.wantedBy == ["timers.target"]
+    && config.systemd.timers.borgbackup-verify-main.timerConfig.OnCalendar == "*-*-01 06:00:00"
+    && builtins.elem "/var/lib/prometheus-node-exporter-text-files" verifyUnit.serviceConfig.ReadWritePaths
+    && builtins.elem "borgbackup-verify-main.service" homelab.importantSystemdUnits
+    && builtins.elem "borgbackup-verify-main.timer" homelab.importantSystemdUnits
+  )
+  "the newest Borg archive must receive a serialized monthly cryptographic data verification";
+  assert lib.assertMsg (
+    initialVerifyUnit.unitConfig.ConditionPathExists
+    == ["!/var/lib/prometheus-node-exporter-text-files/homelab-borg-verify.prom"]
+    && lib.hasInfix "systemctl start borgbackup-verify-main.service" initialVerifyUnit.script
+    && config.systemd.timers.borgbackup-verify-main-initial.wantedBy == ["timers.target"]
+    && config.systemd.timers.borgbackup-verify-main-initial.timerConfig.OnBootSec == "30m"
+  )
+  "a new deployment must seed its first Borg verification instead of alerting until the next month";
   assert lib.assertMsg operationLockWritable
   "the shared operation lock must be writable inside the sandboxed Borg backup service";
   assert lib.assertMsg (!mutatesNextcloudMaintenance)

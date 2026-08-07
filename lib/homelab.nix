@@ -35,10 +35,12 @@
   };
   publicEndpoint = service: let
     serviceConfig = publicServices.${service};
+    url = "https://${serviceConfig.host}";
   in {
     inherit (serviceConfig) host port;
-    url = "https://${serviceConfig.host}";
+    inherit url;
     monitorUrl = "${loopbackUrl serviceConfig.port}${serviceConfig.monitorPath}";
+    publicMonitorUrl = "${url}${serviceConfig.monitorPath}";
   };
   publicEndpoints = lib.mapAttrs (service: _: publicEndpoint service) publicServices;
   monitoredOrigins =
@@ -133,6 +135,11 @@
     "prometheus-systemd-exporter.service"
     "prometheus-smartctl-exporter.service"
     "prometheus-postgres-exporter.service"
+    "alertmanager.service"
+    "homelab-systemd-metrics.service"
+    "homelab-systemd-metrics.timer"
+    "homelab-container-audit.service"
+    "homelab-container-audit.timer"
     "tailscaled.service"
     "tailscaled-set.service"
     "tailscale-serve.service"
@@ -143,6 +150,8 @@
     "borgbackup-job-main.timer"
     "borgbackup-check-main.service"
     "borgbackup-check-main.timer"
+    "borgbackup-verify-main.service"
+    "borgbackup-verify-main.timer"
   ];
 in {
   defaultTailnetDomain = "liger-shilling.ts.net";

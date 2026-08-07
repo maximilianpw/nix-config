@@ -1,6 +1,7 @@
 {lib, ...}: {
   imports = [
     ./cloudflared.nix
+    ./container-hygiene.nix
     ./home-assistant.nix
     ./homepage.nix
     ./immich.nix

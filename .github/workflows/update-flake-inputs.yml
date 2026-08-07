@@ -1,0 +1,65 @@
+name: Update flake inputs
+
+on:
+  schedule:
+    # Monday 04:00 UTC, before the normal working day in Europe/Paris.
+    - cron: '0 4 * * 1'
+  workflow_dispatch:
+
+concurrency:
+  group: update-flake-inputs
+  cancel-in-progress: false
+
+jobs:
+  update:
+    name: Refresh flake.lock
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - uses: DeterminateSystems/determinate-nix-action@c70cb8ae92d68c66953db28a26a63db1665bc837 # v3
+
+      - uses: DeterminateSystems/magic-nix-cache-action@908b263ff629f4cc17666315b7fd3ec127c6244d # v14
+        with:
+          use-flakehub: false
+
+      - name: Update every flake input
+        run: nix flake update
+
+      - name: Evaluate the updated flake before opening a PR
+        run: nix flake check --no-build
+
+      - name: Open pull request
+        id: create-pull-request
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+        with:
+          branch: automated/update-flake-inputs
+          base: main
+          commit-message: 'chore: update flake inputs'
+          title: 'chore: update flake inputs'
+          body: |
+            Automated weekly refresh of `flake.lock`.
+
+            The workflow evaluates the updated flake before opening this PR,
+            then dispatches the full repository CI suite on this branch. Merge
+            remains manual; Kim is never rebuilt automatically.
+          delete-branch: true
+
+      - name: Dispatch full CI for the update branch
+        if: steps.create-pull-request.outputs.pull-request-operation == 'created' || steps.create-pull-request.outputs.pull-request-operation == 'updated'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          UPDATE_BRANCH: ${{ steps.create-pull-request.outputs.pull-request-branch }}
+        run: |
+          for attempt in 1 2 3 4 5; do
+            if gh workflow run ci.yml --ref "$UPDATE_BRANCH"; then
+              exit 0
+            fi
+            echo "CI dispatch attempt $attempt failed; retrying" >&2
+            sleep 5
+          done
+          exit 1

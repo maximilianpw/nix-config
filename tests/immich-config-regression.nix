@@ -28,6 +28,16 @@ in
   assert lib.assertMsg (immich.settings.server.externalDomain == endpoint.url)
   "Immich must generate links for its private HTTPS endpoint";
   assert lib.assertMsg (
+    immich.accelerationDevices
+    == ["/dev/dri/renderD128"]
+    && immich.settings.ffmpeg.accel == "vaapi"
+    && immich.settings.ffmpeg.accelDecode
+    && server.serviceConfig.DeviceAllow == ["/dev/dri/renderD128"]
+    && !server.serviceConfig.PrivateDevices
+    && builtins.elem "render" config.users.users.immich.extraGroups
+  )
+  "Immich must offload video encoding and decoding to Kim's VA-API device";
+  assert lib.assertMsg (
     builtins.elem "srv.mount" server.requires
     && builtins.elem "srv.mount" server.after
     && builtins.elem "/srv" server.unitConfig.RequiresMountsFor

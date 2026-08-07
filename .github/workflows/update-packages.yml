@@ -26,6 +26,7 @@ jobs:
     name: Bump custom packages
     runs-on: ubuntu-latest
     permissions:
+      actions: write
       contents: write
       pull-requests: write
     steps:
@@ -69,6 +70,7 @@ jobs:
 
       - name: Open pull request
         if: steps.diff.outputs.has_changes == 'true'
+        id: create-pull-request
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
           branch: automated/update-packages
@@ -84,3 +86,18 @@ jobs:
 
             ${{ steps.bump.outputs.failed_packages && format('> [!WARNING]\n> Packages that failed to update: `{0}`', steps.bump.outputs.failed_packages) || '' }}
           delete-branch: true
+
+      - name: Dispatch full CI for the update branch
+        if: steps.create-pull-request.outputs.pull-request-operation == 'created' || steps.create-pull-request.outputs.pull-request-operation == 'updated'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          UPDATE_BRANCH: ${{ steps.create-pull-request.outputs.pull-request-branch }}
+        run: |
+          for attempt in 1 2 3 4 5; do
+            if gh workflow run ci.yml --ref "$UPDATE_BRANCH"; then
+              exit 0
+            fi
+            echo "CI dispatch attempt $attempt failed; retrying" >&2
+            sleep 5
+          done
+          exit 1

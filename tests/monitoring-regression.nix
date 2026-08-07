@@ -5,7 +5,7 @@
 }: let
   homelab = import ../lib/homelab.nix {inherit lib;};
   prometheus = config.services.prometheus;
-  inherit (prometheus) exporters;
+  inherit (prometheus) alertmanager exporters;
   postgresql = config.services.postgresql;
   grafana = config.services.grafana;
   backupExcludes = config.services.borgbackup.jobs.main.exclude;
@@ -21,14 +21,23 @@
   localBackendScrape = builtins.head (
     builtins.filter (scrapeConfig: scrapeConfig.job_name == "local-backends") prometheus.scrapeConfigs
   );
+  publicIngressScrape = builtins.head (
+    builtins.filter (scrapeConfig: scrapeConfig.job_name == "public-ingress") prometheus.scrapeConfigs
+  );
   localBackendTargets = (builtins.head localBackendScrape.static_configs).targets;
+  publicIngressTargets = (builtins.head publicIngressScrape.static_configs).targets;
   expectedLocalBackendTargets = map (endpoint: endpoint.monitorUrl) (
     builtins.attrValues homelab.monitoredOrigins
+  );
+  expectedPublicIngressTargets = map (endpoint: endpoint.publicMonitorUrl) (
+    builtins.attrValues homelab.publicEndpoints
   );
   panelTitles = builtins.map (panel: panel.title) dashboard.panels;
   panelQueries = lib.concatMap (panel: builtins.map (target: target.expr) (panel.targets or [])) dashboard.panels;
   cpuBusyQueries = builtins.filter (query: lib.hasInfix ''mode="idle"'' query) panelQueries;
   queryText = lib.concatStringsSep "\n" panelQueries;
+  systemdMetricsService = config.systemd.services.homelab-systemd-metrics;
+  metricsDirectoryRule = config.systemd.tmpfiles.settings."10-homelab-metrics"."/var/lib/prometheus-node-exporter-text-files".d;
   privateServicePorts = lib.concatMap (
     service:
       [service.port]
@@ -45,6 +54,7 @@
     "CPU work, I/O wait, and load"
     "Memory history"
     "Filesystem growth"
+    "Service CPU usage (cores)"
     "Disk I/O throughput"
     "Disk I/O latency"
     "Network traffic"
@@ -53,6 +63,7 @@
     "Service restart count"
     "Local backup age"
     "Borg check age"
+    "Borg verify age"
     "Public ingress"
     "PostgreSQL checkpoint activity"
   ];
@@ -112,6 +123,8 @@ in
   "PostgreSQL 17 and newer must enable the replacement checkpoint collector";
   assert lib.assertMsg (builtins.elem "postgres" scrapeJobNames)
   "Prometheus must scrape the local PostgreSQL exporter";
+  assert lib.assertMsg (builtins.elem "alertmanager" scrapeJobNames)
+  "Prometheus must scrape its local Alertmanager";
   assert lib.assertMsg (builtins.elem "public-ingress" scrapeJobNames && exporters.blackbox.enable)
   "Prometheus must probe every declared public ingress through the loopback-only blackbox exporter";
   assert lib.assertMsg (builtins.elem "local-backends" scrapeJobNames)
@@ -119,10 +132,50 @@ in
   assert lib.assertMsg (localBackendTargets == expectedLocalBackendTargets)
   "the local-backends scrape job must be generated from every monitored inventory endpoint";
   assert lib.assertMsg (
+    localBackendScrape.scrape_interval
+    == "1m"
+    && publicIngressScrape.scrape_interval == "1m"
+    && publicIngressTargets == expectedPublicIngressTargets
+  )
+  "blackbox probes must use low-noise health URLs at a one-minute interval";
+  assert lib.assertMsg (
     builtins.elem "textfile" exporters.node.enabledCollectors
     && builtins.elem "--collector.textfile.directory=/var/lib/prometheus-node-exporter-text-files" exporters.node.extraFlags
   )
-  "node exporter must read atomically-written homelab backup freshness metrics";
+  "node exporter must read atomically-written homelab operational metrics";
+  assert lib.assertMsg (
+    config.systemd.timers.homelab-systemd-metrics.wantedBy
+    == ["timers.target"]
+    && config.systemd.timers.homelab-systemd-metrics.timerConfig.OnUnitActiveSec == "60s"
+    && systemdMetricsService.serviceConfig.Type == "oneshot"
+    && builtins.elem "/var/lib/prometheus-node-exporter-text-files" systemdMetricsService.serviceConfig.ReadWritePaths
+    && builtins.elem "homelab-systemd-metrics.service" homelab.importantSystemdUnits
+    && builtins.elem "homelab-systemd-metrics.timer" homelab.importantSystemdUnits
+    && metricsDirectoryRule.user == "root"
+    && metricsDirectoryRule.group == "root"
+    && metricsDirectoryRule.mode == "0755"
+  )
+  "systemd CPU counters must refresh atomically for Prometheus service attribution";
+  assert lib.assertMsg (
+    alertmanager.enable
+    && alertmanager.listenAddress == "127.0.0.1"
+    && !alertmanager.openFirewall
+    && alertmanager.checkConfig
+    && alertmanager.configuration.route.receiver == "local-sink"
+    && (builtins.head (builtins.head prometheus.alertmanagers).static_configs).targets
+    == ["127.0.0.1:${toString alertmanager.port}"]
+  )
+  "Alertmanager must receive alerts over loopback even before an external receiver is configured";
+  assert lib.assertMsg (
+    config.systemd.timers.homelab-container-audit.wantedBy
+    == ["timers.target"]
+    && config.systemd.timers.homelab-container-audit.timerConfig.OnCalendar == "daily"
+    && config.systemd.services.homelab-container-audit.serviceConfig.Type == "oneshot"
+    && builtins.elem "/var/lib/prometheus-node-exporter-text-files" config.systemd.services.homelab-container-audit.serviceConfig.ReadWritePaths
+    && builtins.elem "homelab-container-audit.service" homelab.importantSystemdUnits
+    && builtins.elem "homelab-container-audit.timer" homelab.importantSystemdUnits
+  )
+  "Docker lifecycle auditing must remain report-only, scheduled, and visible to Prometheus";
   assert lib.assertMsg (prometheus.ruleFiles != [])
   "Prometheus must load the high-signal homelab alert rules";
   assert lib.assertMsg (builtins.elem "--systemd.collector.enable-restart-count" exporters.systemd.extraFlags)
@@ -185,12 +238,18 @@ in
     "node_disk_read_time_seconds_total"
     "node_network_receive_bytes_total"
     "node_hwmon_temp_celsius"
+    "node_hwmon_chip_names"
     "smartctl_device_temperature"
     "smartctl_device_smart_status"
     "systemd_unit_state"
     "systemd_service_restart_total"
+    "homelab_systemd_unit_cpu_seconds_total"
     "homelab_backup_last_success_timestamp_seconds"
     "homelab_borg_check_last_success_timestamp_seconds"
+    "homelab_borg_verify_last_success_timestamp_seconds"
+    "homelab_docker_stale_containers"
+    "homelab:node_cpu_busy:mean24h"
+    "homelab:node_cpu_busy:upper24h"
     "probe_success"
     "pg_up"
     "pg_stat_bgwriter_checkpoints_timed_total"
@@ -201,16 +260,27 @@ in
     "pg_stat_checkpointer_buffers_written_total"
   ])
   "Kim Overview queries must cover the pinned exporters' required metrics";
+  assert lib.assertMsg (lib.hasInfix "sum(homelab_docker_stale_containers) or vector(0)" queryText)
+  "the operational issue count must aggregate Docker metric labels before vector matching";
+  assert lib.assertMsg (!lib.hasInfix ''chip=~".*k10temp.*"'' queryText)
+  "Kim Overview must join CPU temperatures through node_hwmon_chip_names rather than matching a nonexistent chip label";
   assert lib.assertMsg (lib.all (path: builtins.elem path backupExcludes) [
     "/var/lib/prometheus2"
+    "/var/lib/alertmanager"
     "/var/lib/grafana"
   ])
-  "Disposable Prometheus and Grafana state must stay excluded from Borg";
+  "Disposable Prometheus, Alertmanager, and Grafana state must stay excluded from Borg";
   assert lib.assertMsg (builtins.hasAttr "grafana" homelab.privateServices)
   "Grafana must remain in the Tailscale Serve-derived private service inventory";
   assert lib.assertMsg (builtins.length privateServicePorts == builtins.length (lib.unique privateServicePorts))
   "Every loopback-bound private service port must be unique";
     pkgs.runCommand "monitoring-regression" {} ''
       cmp ${lib.escapeShellArg homeDashboardPath} ${../homelab/grafana/kim-overview.json}
+      grep -F -- 'immich-server.service' ${lib.escapeShellArg systemdMetricsService.serviceConfig.ExecStart}
+      grep -F -- 'HomelabSystemdMetricsStale' ${lib.escapeShellArg (builtins.head prometheus.ruleFiles)}
+      grep -F -- 'HomelabCpuAnomaly' ${lib.escapeShellArg (builtins.head prometheus.ruleFiles)}
+      grep -F -- 'count_over_time(homelab:node_cpu_busy:ratio5m[24h]) >= 1380' ${lib.escapeShellArg (builtins.head prometheus.ruleFiles)}
+      grep -F -- 'HomelabStaleDockerContainers' ${lib.escapeShellArg (builtins.head prometheus.ruleFiles)}
+      grep -F -- 'HomelabBorgVerifyStale' ${lib.escapeShellArg (builtins.head prometheus.ruleFiles)}
       touch "$out"
     ''

@@ -19,6 +19,14 @@ in {
     redis.enable = true;
     machine-learning.enable = true;
 
+    # Offload video conversion to Kim's Radeon 890M instead of consuming the
+    # CPU cores during large mobile-library imports.
+    accelerationDevices = ["/dev/dri/renderD128"];
+    settings.ffmpeg = {
+      accel = "vaapi";
+      accelDecode = true;
+    };
+
     # Make generated share links and mobile-app discovery use the private
     # HTTPS endpoint terminated by Tailscale Serve.
     settings.server.externalDomain = immich.url;
@@ -26,4 +34,5 @@ in {
 
   # The upstream module deliberately does not create a non-default media path.
   systemd.tmpfiles.rules = ["d /srv/immich 0700 immich immich -"];
+  users.users.immich.extraGroups = ["render"];
 }

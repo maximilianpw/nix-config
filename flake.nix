@@ -139,6 +139,7 @@
       git-hooks.lib.${system}.run {
         src = ./.;
         hooks = {
+          actionlint.enable = true;
           alejandra.enable = true;
           statix.enable = true;
           statix.settings.ignore = ["machines/hardware"];

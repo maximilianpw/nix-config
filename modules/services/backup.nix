@@ -13,6 +13,7 @@
   git = lib.getExe pkgs.git;
   jq = lib.getExe pkgs.jq;
   flock = lib.getExe' pkgs.util-linux "flock";
+  systemctl = lib.getExe' pkgs.systemd "systemctl";
   borgOperationLockFile = "/run/homelab-backup/borg-operation.lock";
   homeAssistantBackupDir = "/var/backup/home-assistant";
   homelabBackupDir = "/var/backup/homelab";
@@ -120,6 +121,15 @@
       exec ${lib.getExe pkgs.bash} ${../../scripts/homelab-backup-coordinator.sh} "$@"
     '';
   };
+  healthcheckPing = pkgs.writeShellApplication {
+    name = "homelab-backup-healthcheck";
+    runtimeInputs = [pkgs.curl];
+    text = ''
+      export CURL_BIN=${lib.getExe pkgs.curl}
+      export HOMELAB_HEALTHCHECK_URL_FILE=${lib.escapeShellArg cfg.healthcheckUrlFile}
+      exec ${lib.getExe pkgs.bash} ${../../scripts/healthcheck-ping.sh} "$@"
+    '';
+  };
   postHookRunner = pkgs.writeShellApplication {
     name = "homelab-backup-posthook";
     runtimeInputs = [pkgs.coreutils];
@@ -127,6 +137,7 @@
       export HOMELAB_COORDINATOR_BIN=${lib.getExe coordinator}
       export HOMELAB_BACKUP_METRICS_DIR=${lib.escapeShellArg backupMetricsDir}
       export DATE_BIN=${lib.getExe' pkgs.coreutils "date"}
+      ${lib.optionalString (cfg.healthcheckUrlFile != null) "export HOMELAB_HEARTBEAT_BIN=${lib.getExe healthcheckPing}"}
       exec ${lib.getExe pkgs.bash} ${../../scripts/homelab-backup-posthook.sh} "$@"
     '';
   };
@@ -227,9 +238,11 @@ in {
         # PostgreSQL is recovered from the consistent logical dump produced
         # immediately before Borg starts, never from live database files.
         "/var/lib/postgresql"
-        # Metrics history and Grafana's local database are disposable; their
-        # configuration and dashboards are provisioned from this repository.
+        # Metrics history, Alertmanager state, and Grafana's local database are
+        # disposable; their configuration and dashboards are provisioned from
+        # this repository.
         "/var/lib/prometheus2"
+        "/var/lib/alertmanager"
         "/var/lib/grafana"
         "/var/lib/systemd/coredump"
       ];
@@ -246,6 +259,13 @@ in {
       type = lib.types.str;
       default = "73afcc5c-6148-4dc2-ae0e-61649ce71120";
       description = "UUID of the backup drive";
+    };
+
+    healthcheckUrlFile = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      example = "/run/secrets/homelab-backup-healthcheck-url";
+      description = "Runtime file containing an external dead-man ping URL for backup start, success, and failure signals.";
     };
 
     manifestMetadata = lib.mkOption {
@@ -319,6 +339,12 @@ in {
         backup_started_epoch=$(date +%s)
         backup_started_at=$(date --iso-8601=seconds)
 
+        ${lib.optionalString (cfg.healthcheckUrlFile != null) ''
+          if ! ${lib.getExe healthcheckPing} start; then
+            echo "External backup start heartbeat failed; continuing with the local backup" >&2
+          fi
+        ''}
+
         # Acquire this before generating artifacts or stopping applications.
         # Consistency checks use the same lock, so delayed timers and manual
         # starts cannot make Borg contend after services are already quiesced.
@@ -387,9 +413,13 @@ in {
       tmpfiles.rules = [
         "d ${homeAssistantBackupDir} 0700 root root -"
         "d ${homelabBackupDir} 0700 root root -"
-        "d ${backupMetricsDir} 0755 root root -"
         "d /run/homelab-backup 0700 root root -"
       ];
+      tmpfiles.settings."10-homelab-metrics"."${backupMetricsDir}".d = {
+        user = "root";
+        group = "root";
+        mode = "0755";
+      };
 
       services = {
         borgbackup-job-main = {
@@ -430,15 +460,74 @@ in {
             mv -f "$metrics_tmp" ${lib.escapeShellArg "${backupMetricsDir}/homelab-borg-check.prom"}
           '';
         };
+
+        borgbackup-verify-main = {
+          description = "Cryptographically verify the latest main Borg archive";
+          requires = ["mnt-backups.mount"];
+          after = ["mnt-backups.mount" "borgbackup-job-main.service"];
+          unitConfig.RequiresMountsFor = [cfg.repo];
+          serviceConfig = {
+            Type = "oneshot";
+            User = "root";
+            ReadWritePaths = [backupMetricsDir];
+          };
+          environment = {
+            BORG_REPO = cfg.repo;
+            BORG_PASSCOMMAND = "cat ${config.sops.secrets.borg-backup-passphrase.path}";
+          };
+          script = ''
+            exec 9>${lib.escapeShellArg borgOperationLockFile}
+            ${flock} 9
+            verify_started_epoch=$(date +%s)
+            ${borg} check --lock-wait 60 --archives-only --verify-data --last 1
+            verify_finished_epoch=$(date +%s)
+            metrics_tmp=${lib.escapeShellArg "${backupMetricsDir}/homelab-borg-verify.prom.tmp"}
+            {
+              printf 'homelab_borg_verify_last_success_timestamp_seconds %s\n' "$verify_finished_epoch"
+              printf 'homelab_borg_verify_last_duration_seconds %s\n' "$((verify_finished_epoch - verify_started_epoch))"
+            } > "$metrics_tmp"
+            chmod 0644 "$metrics_tmp"
+            mv -f "$metrics_tmp" ${lib.escapeShellArg "${backupMetricsDir}/homelab-borg-verify.prom"}
+          '';
+        };
+
+        borgbackup-verify-main-initial = {
+          description = "Seed Kim's first Borg data-verification result";
+          unitConfig.ConditionPathExists = [
+            "!${backupMetricsDir}/homelab-borg-verify.prom"
+          ];
+          serviceConfig.Type = "oneshot";
+          script = ''
+            ${systemctl} start borgbackup-verify-main.service
+          '';
+        };
       };
 
-      timers.borgbackup-check-main = {
-        description = "Weekly Borg repository consistency check";
-        wantedBy = ["timers.target"];
-        timerConfig = {
-          OnCalendar = "Sun *-*-* 05:00:00";
-          Persistent = true;
-          RandomizedDelaySec = "30m";
+      timers = {
+        borgbackup-check-main = {
+          description = "Weekly Borg repository consistency check";
+          wantedBy = ["timers.target"];
+          timerConfig = {
+            OnCalendar = "Sun *-*-* 05:00:00";
+            Persistent = true;
+            RandomizedDelaySec = "30m";
+          };
+        };
+
+        borgbackup-verify-main = {
+          description = "Monthly cryptographic verification of the latest Borg archive";
+          wantedBy = ["timers.target"];
+          timerConfig = {
+            OnCalendar = "*-*-01 06:00:00";
+            Persistent = true;
+            RandomizedDelaySec = "30m";
+          };
+        };
+
+        borgbackup-verify-main-initial = {
+          description = "Run the first Borg data verification after activation";
+          wantedBy = ["timers.target"];
+          timerConfig.OnBootSec = "30m";
         };
       };
     };

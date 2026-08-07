@@ -113,6 +113,7 @@
       authorizationOwner = "tailscale";
       exposure = "tailnet";
       port = 2283;
+      monitorPath = "/api/server/ping";
     };
     state = {
       paths = ["/srv/immich"];
@@ -189,6 +190,7 @@
       authorizationOwner = "tailscale";
       exposure = "tailnet";
       port = 19001;
+      monitorPath = "/dashboard";
     };
     state = {
       # DynamicUser StateDirectory data lives below /var/lib/private; the
@@ -226,6 +228,7 @@
       authorizationOwner = "tailscale";
       exposure = "tailnet";
       port = 8686;
+      monitorPath = "/ping";
     };
     state.paths = ["/var/lib/lidarr/.config/Lidarr"];
     backup.quiesce = [
@@ -356,6 +359,7 @@
       authorizationOwner = "tailscale";
       exposure = "tailnet";
       port = 28981;
+      monitorPath = "/accounts/login/";
     };
     state = {
       paths = [
@@ -430,6 +434,7 @@
       authorizationOwner = "tailscale";
       exposure = "tailnet";
       port = 9696;
+      monitorPath = "/ping";
     };
     state.paths = ["/var/lib/private/prowlarr"];
     backup.quiesce = [
@@ -460,6 +465,7 @@
       authorizationOwner = "host-local";
       exposure = "local";
       port = 9090;
+      monitorPath = "/-/ready";
     };
     state.disposable = true;
     operations.units = ["prometheus.service"];
@@ -516,6 +522,7 @@
       authorizationOwner = "tailscale";
       exposure = "tailnet";
       port = 7878;
+      monitorPath = "/ping";
     };
     state.paths = ["/var/lib/radarr/.config/Radarr"];
     backup.quiesce = [
@@ -547,6 +554,7 @@
       authorizationOwner = "tailscale";
       exposure = "tailnet";
       port = 18081;
+      monitorPath = "/login/";
     };
     state.paths = ["/var/lib/sabnzbd"];
     backup.quiesce = [
@@ -581,6 +589,7 @@
       authorizationOwner = "tailscale";
       exposure = "tailnet";
       port = 5055;
+      monitorPath = "/login";
     };
     # Kim retains stateVersion 24.05, so nixpkgs keeps Seerr's compatibility
     # StateDirectory name rather than migrating mutable state implicitly.
@@ -613,6 +622,7 @@
       authorizationOwner = "tailscale";
       exposure = "tailnet";
       port = 8989;
+      monitorPath = "/ping";
     };
     state.paths = ["/var/lib/sonarr/.config/NzbDrone"];
     backup.quiesce = [
@@ -679,6 +689,7 @@
       authorizationOwner = "tailscale";
       exposure = "tailnet";
       port = 19384;
+      monitorPath = "/rest/noauth/health";
     };
     state = {
       paths = [
@@ -717,6 +728,7 @@
       authorizationOwner = "tailscale";
       exposure = "tailnet";
       port = 51000;
+      monitorPath = "/health";
     };
     state.paths = ["/home/maxpw/.local/share/t3code"];
     backup.quiesce = [
