@@ -25,15 +25,6 @@
   '';
   source = path: homeFiles.mkRepoSource config.home.homeDirectory "users/${currentSystemUserDir}/agents/${path}";
   piConfigSource = path: homeFiles.mkHomeSource config.home.homeDirectory "pi-config/${path}";
-  sharedAgentsText = builtins.readFile ../agents/shared/AGENTS.md;
-  claudeAgentsText =
-    sharedAgentsText
-    + "\n\n---\n\n"
-    + (builtins.readFile ../agents/claude/CLAUDE.md);
-  codexAgentsText =
-    sharedAgentsText
-    + "\n\n---\n\n"
-    + (builtins.readFile ../agents/codex/AGENTS.md);
 in {
   home = {
     packages =
@@ -52,11 +43,10 @@ in {
     file =
       {
         ".config/amp/settings.json".source = source "amp/settings.json";
-        ".codex/AGENTS.md".text = codexAgentsText;
-        ".claude/CLAUDE.md".text = claudeAgentsText;
+        ".codex/AGENTS.md".source = source "shared/AGENTS.md";
+        ".claude/CLAUDE.md".source = source "shared/AGENTS.md";
         ".config/opencode/AGENTS.md".source = source "shared/AGENTS.md";
-        # Pi uses the shared cross-agent policy directly.
-        ".pi/agent/AGENTS.md".text = sharedAgentsText;
+        ".pi/agent/AGENTS.md".source = source "shared/AGENTS.md";
         ".claude/settings.json".source = source "claude/settings.json";
 
         ".config/opencode/opencode.json".source = source "opencode/opencode.json";

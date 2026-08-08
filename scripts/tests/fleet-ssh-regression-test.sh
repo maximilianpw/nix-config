@@ -10,6 +10,11 @@ fi
 export SSH_ARGS_LOG="$TMPDIR/ssh-args"
 export TMUX_ARGS_LOG="$TMPDIR/tmux-args"
 
+fleet_output=$("$FLEET_BIN")
+list_output=$("$FLEET_BIN" list)
+[[ $fleet_output == "$list_output" ]]
+[[ $list_output == $'Current machine: joyce\n\n'* ]]
+
 "$FLEET_BIN" ssh kim
 printf '%s\n' tm-kim >"$TMPDIR/expected-default"
 diff -u "$TMPDIR/expected-default" "$SSH_ARGS_LOG"

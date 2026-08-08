@@ -305,6 +305,7 @@ cmd="${1:-list}"
 
 case "$cmd" in
   list)
+    # @CURRENT_HOST@
     printf '%-18s %-12s %-24s %-16s %-8s %s\n' HOST USER TARGET ROLE CLIENT ALIASES
     # @HOST_ROWS@
     ;;

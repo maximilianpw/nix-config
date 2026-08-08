@@ -194,6 +194,7 @@
     "@LOCAL_HOST_CASE@"
     "@REMOTE_TMUX_ROWS@"
     "@T3CODE_PORT_ROWS@"
+    "@CURRENT_HOST@"
     "@HOST_ROWS@"
   ];
   fleetScript = let
@@ -203,6 +204,7 @@
         "  # @LOCAL_HOST_CASE@\n  return 1"
         "    # @REMOTE_TMUX_ROWS@"
         "    # @T3CODE_PORT_ROWS@"
+        "    # @CURRENT_HOST@"
         "    # @HOST_ROWS@"
       ]
       [
@@ -218,6 +220,7 @@
         )
         (concatStringsSep "\n        " remoteTmuxRows)
         (concatStringsSep "\n        " t3codePortRows)
+        "printf 'Current machine: %s\\n\\n' ${escapeShellArg hostname}"
         (concatStringsSep "\n        " hostRows)
       ]
       (builtins.readFile ../scripts/fleet.sh);

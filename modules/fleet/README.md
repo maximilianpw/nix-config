@@ -5,7 +5,8 @@ CLI remains `fleet`.
 
 ## Commands
 
-- `fleet list` shows the declared machines and aliases.
+- `fleet` or `fleet list` identifies the current machine, then shows every
+  declared machine and its aliases.
 - `fleet ssh <host> [session] [--forward <port-or-map>...]` connects to a
   persistent tmux session with optional project ports. The default session is
   `main`; a port maps to itself and `local:remote` remaps it.
