@@ -102,7 +102,7 @@ secrets/            # sops-nix encrypted secrets (age encryption, key in 1Passwo
 
 ### Homelab Services
 
-`homelab/` is imported by `machines/kim.nix` and aggregates the services that run on Kim. `homelab/cloudflared.nix` keeps only the public Cloudflare tunnel ingress (Nextcloud and Home Assistant), while `homelab/tailscale-serve.nix` exposes private operator/dev services to the tailnet. Secrets are managed through sops-nix, and most service endpoints bind to `127.0.0.1`.
+`homelab/` is imported by `machines/kim.nix` and aggregates the services that run on Kim. `homelab/cloudflared.nix` keeps only the public Cloudflare tunnel ingress (Nextcloud, Home Assistant, Jellyfin, and Seerr), while `homelab/tailscale-serve.nix` exposes private operator/dev services to the tailnet. Secrets are managed through sops-nix, and most service endpoints bind to `127.0.0.1`.
 
 The remote-development fleet is named Revachol, while its operational CLI
 remains `fleet`. Usage and implementation notes live in

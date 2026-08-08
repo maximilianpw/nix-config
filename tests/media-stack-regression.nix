@@ -4,7 +4,9 @@
   pkgs,
 }: let
   homelab = import ../lib/homelab.nix {inherit lib;};
-  endpoints = homelab.endpoints config.homelab.tailnet.domain;
+  endpoints =
+    homelab.endpoints config.homelab.tailnet.domain
+    // homelab.publicEndpoints;
   mediaRoot = "/srv/media";
   usenetRoot = "${mediaRoot}/usenet";
   qbt = config.containers.qbt;

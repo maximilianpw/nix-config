@@ -152,11 +152,12 @@
 
   jellyfin = {
     endpoint = {
-      authorizationOwner = "tailscale";
+      authorizationOwner = "cloudflare";
       # Jellyfin also serves clients on Kim's physical LAN; the firewall limits
       # this host-bound listener to the declared playback interface.
       bindScope = "host";
-      exposure = "tailnet";
+      exposure = "public";
+      hostname = "jellyfin.maximilian.pw";
       port = 8096;
       monitorPath = "/health";
     };
@@ -611,8 +612,9 @@
 
   seerr = {
     endpoint = {
-      authorizationOwner = "tailscale";
-      exposure = "tailnet";
+      authorizationOwner = "cloudflare";
+      exposure = "public";
+      hostname = "seerr.maximilian.pw";
       port = 5055;
       monitorPath = "/login";
     };

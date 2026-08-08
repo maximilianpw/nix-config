@@ -14,18 +14,20 @@ systemd-nspawn containers. Each downloader has its own network namespace,
 Mullvad daemon, fail-closed startup gate, and host-loopback proxy:
 
 ```text
-Tailnet HTTPS                  Kim host                    VPN containers
+HTTPS ingress                  Kim host                    VPN containers
 ---------------        -------------------------    ---------------------------
-jellyfin.*  ---------> Jellyfin :8096
-tunarr.*    ---------> Tunarr   :8000
-sonarr.*    ---------> Sonarr   :8989
-radarr.*    ---------> Radarr   :7878
-lidarr.*    ---------> Lidarr   :8686
-bazarr.*    ---------> Bazarr   :6767
-prowlarr.*  ---------> Prowlarr :9696
-seerr.*     ---------> Seerr    :5055
-qbittorrent.* -------> 127.0.0.1:18080 proxy ------> qbt:8080 --Mullvad--> peers
-sabnzbd.*  ---------> 127.0.0.1:18081 proxy ------> sab:8080 --Mullvad/NNTP/TLS--> provider
+Cloudflare:
+  jellyfin.* --------> Jellyfin :8096
+  seerr.* -----------> Seerr    :5055
+Tailnet:
+  tunarr.* ----------> Tunarr   :8000
+  sonarr.* ----------> Sonarr   :8989
+  radarr.* ----------> Radarr   :7878
+  lidarr.* ----------> Lidarr   :8686
+  bazarr.* ----------> Bazarr   :6767
+  prowlarr.* --------> Prowlarr :9696
+  qbittorrent.* -----> 127.0.0.1:18080 proxy ------> qbt:8080 --Mullvad--> peers
+  sabnzbd.* ---------> 127.0.0.1:18081 proxy ------> sab:8080 --Mullvad/NNTP/TLS--> provider
 
 LAN enp194s0 --------> Jellyfin :8096 and discovery UDP :7359
 ```
@@ -270,7 +272,7 @@ files, so keep its paths identical to the Sonarr and Radarr library paths.
 
 ### Jellyfin
 
-Open `https://jellyfin.liger-shilling.ts.net`, create the administrator, and
+Open `https://jellyfin.maximilian.pw`, create the administrator, and
 add these libraries:
 
 | Library type | Folder |
@@ -279,9 +281,8 @@ add these libraries:
 | Shows | `/srv/media/library/tv` |
 | Music | `/srv/media/library/music` |
 
-LAN playback is available at `http://kim:8096` for clients that cannot run
-Tailscale. There is no direct Internet or router port-forwarded Jellyfin
-endpoint.
+LAN playback is available at `http://kim:8096`. Internet playback uses the
+Cloudflare tunnel; there is no direct router port-forwarded Jellyfin endpoint.
 
 ### Tunarr
 
@@ -309,7 +310,7 @@ probe also fails when the response contains `"type":"error"`.
 
 ### Seerr
 
-Open `https://seerr.liger-shilling.ts.net`, sign in through Jellyfin, then add:
+Open `https://seerr.maximilian.pw`, sign in through Jellyfin, then add:
 
 | Service | Internal URL |
 | --- | --- |

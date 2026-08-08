@@ -16,8 +16,8 @@
   nextcloudListen = config.services.nginx.virtualHosts.${homelab.publicEndpoints.nextcloud.host}.listen;
   privatePorts = map (service: service.port) (builtins.attrValues homelab.privateServices);
 in
-  assert lib.assertMsg (publicNames == ["homeassistant" "nextcloud"])
-  "only Home Assistant and Nextcloud may be declared as public services";
+  assert lib.assertMsg (publicNames == ["homeassistant" "jellyfin" "nextcloud" "seerr"])
+  "Cloudflare ingress must expose the declared public application set";
   assert lib.assertMsg (ingressHosts == publicHosts)
   "Cloudflare ingress must derive exactly from the public service inventory";
   assert lib.assertMsg (lib.all ingressIsLoopback ingressHosts)

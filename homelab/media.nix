@@ -5,7 +5,9 @@
   ...
 }: let
   homelab = import ../lib/homelab.nix {inherit lib;};
-  endpoints = homelab.endpoints config.homelab.tailnet.domain;
+  endpoints =
+    homelab.endpoints config.homelab.tailnet.domain
+    // homelab.publicEndpoints;
   hostTimeZone = config.time.timeZone;
   mediaRoot = "/srv/media";
   usenetRoot = "${mediaRoot}/usenet";
@@ -382,8 +384,8 @@ in {
     sockets = lib.mapAttrs mkContainerProxySocket downloadProxies;
   };
 
-  # Playback is private to the physical LAN plus the HTTPS tailnet endpoint.
-  # The administrative services remain closed on every host interface.
+  # Playback is available on the physical LAN and through Cloudflare. Other
+  # administrative services remain closed on every host interface.
   networking.firewall.interfaces.enp194s0 = {
     allowedTCPPorts = [endpoints.jellyfin.port];
     allowedUDPPorts = [7359];
