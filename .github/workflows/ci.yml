@@ -42,21 +42,7 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - uses: DeterminateSystems/determinate-nix-action@c70cb8ae92d68c66953db28a26a63db1665bc837 # v3
       - name: Build configuration regression checks
-        run: |
-          nix build --no-link \
-            .#checks.x86_64-linux.homelab-ingress-regression \
-            .#checks.x86_64-linux.homelab-inventory-regression \
-            .#checks.x86_64-linux.immich-config-regression \
-            .#checks.x86_64-linux.media-stack-regression \
-            .#checks.x86_64-linux.tailscale-serve-regression \
-            .#checks.x86_64-linux.homelab-backup-regression \
-            .#checks.x86_64-linux.paperless-config-regression \
-            .#checks.x86_64-linux.homepage-calendar-regression \
-            .#checks.x86_64-linux.monitoring-regression \
-            .#checks.x86_64-linux.fleet-agent-forwarding-regression \
-            .#checks.x86_64-linux.fleet-ssh-regression \
-            .#checks.x86_64-linux.fleet-ghostty-regression \
-            .#checks.x86_64-linux.fleet-trust-regression
+        run: scripts/ci/build-regression-checks.sh
 
   eval-profiles:
     runs-on: ubuntu-latest

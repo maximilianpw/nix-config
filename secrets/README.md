@@ -60,9 +60,24 @@ git commit -m "Add encrypted secrets"
 ## Usage
 
 NixOS secrets are decrypted by system sops-nix under `/run/secrets`. Darwin
-user secrets are decrypted by Home Manager sops-nix under the user account.
-`github-ssh-private-key` is the GitHub authentication key used by non-desktop
-NixOS hosts; desktop hosts use the 1Password SSH agent instead.
+and WSL user secrets are decrypted by Home Manager sops-nix under the user
+account. `github-ssh-private-key` is the GitHub authentication key used by
+non-desktop NixOS hosts; desktop hosts use the 1Password SSH agent instead.
+
+### Linear API key
+
+Run the interactive setup when adding or rotating the personal Linear API key:
+
+```bash
+./scripts/setup-linear-key.sh
+```
+
+The wizard captures the key with hidden input, writes only encrypted
+`linear-api-key` ciphertext through `sops set --value-stdin`, offers to stage
+the encrypted file for the commit that syncs it to other machines, rebuilds on
+confirmation, and verifies the decrypted file without printing its contents.
+Commit and push `secrets/secrets.yaml` together with the Linear/SOPS
+configuration before rebuilding another machine.
 
 ## Important Security Notes
 
@@ -137,7 +152,8 @@ sudo nixos-rebuild switch --flake .#MACHINE_NAME
 ls -la /run/secrets/maxpw-password
 ```
 
-On Darwin, only the user key is needed:
+On Darwin and WSL, only the user key is needed because Home Manager decrypts
+user secrets:
 
 ```bash
 mkdir -p ~/.config/sops/age
@@ -150,8 +166,8 @@ chmod 600 ~/.config/sops/age/keys.txt
 If you get decryption errors:
 
 1. Make sure your age private key is in both:
-   - `~/.config/sops/age/keys.txt` (for local editing and Darwin Home Manager secrets)
-   - `/var/lib/sops-nix/key.txt` (for system decryption)
+   - `~/.config/sops/age/keys.txt` (for local editing and Darwin/WSL Home Manager secrets)
+   - `/var/lib/sops-nix/key.txt` (for NixOS system decryption)
 2. Verify the public key in `.sops.yaml` matches your private key:
    ```bash
    age-keygen -y ~/.config/sops/age/keys.txt

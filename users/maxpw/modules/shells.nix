@@ -10,6 +10,13 @@
   inherit (settings) cliProxy;
   climiModel = "kimi-k3";
 
+  renderTemplate = path: markers: values: let
+    rendered = lib.replaceStrings markers values (builtins.readFile path);
+  in
+    assert lib.assertMsg
+    (lib.all (marker: !lib.hasInfix marker rendered) markers)
+    "${toString path} contains an unsubstituted template marker"; rendered;
+
   agentAliases = {
     c = "codex --yolo";
     ccc = "DISABLE_ZOXIDE=1 claude --dangerously-skip-permissions";
@@ -19,42 +26,6 @@
     oc = "opencode";
     p = "pi";
   };
-
-  # Fish shell functions
-  fishShellFunctions = ''
-    # JJ PR creation with GitHub CLI
-    # Usage: jprgh "commit message" [gh pr create args...]
-    function jprgh
-      jj commit -m $argv[1]
-      and jj git push -c '@-'
-      and set BRANCH "maximilianpw/push-"(jj log -r '@-' --no-graph -T 'change_id.short()')
-      and gh pr create --head $BRANCH $argv[2..-1]
-    end
-
-    # JJ PR creation with Graphite CLI
-    # Usage: jprgt "commit message" [gt submit args...]
-    function jprgt
-      jj commit -m $argv[1]
-      and jj git push -c '@-'
-      and set BRANCH "maximilianpw/push-"(jj log -r '@-' --no-graph -T 'change_id.short()')
-      and git checkout $BRANCH
-      and gt track
-      and gt submit $argv[2..-1]
-      and git checkout -
-      and jj git import
-    end
-
-    # Expand three or more dots into the corresponding parent path.
-    # For example, `......` becomes `../../../../../`.
-    function __expand_parent_directories
-      string repeat -n (math (string length -- $argv[1]) - 1) ../
-    end
-
-    abbr --add parent-directories \
-      --position anywhere \
-      --regex '^\.\.\.+$' \
-      --function __expand_parent_directories
-  '';
 
   shellAliases = {
     ls = "eza";
@@ -129,57 +100,16 @@ in {
         (builtins.removeAttrs shellAliases ["jtp" "ls" "fnix"])
         // (builtins.removeAttrs agentAliases ["ccc" "claudex" "climi"]);
       configFile.source = ../config.nu;
-      extraConfig = ''
-        use ($nu.default-config-dir | path join "ghostty.nu")
-
-        def --wrapped claudex [...args: string] {
-          with-env {
-            ANTHROPIC_BASE_URL: "${cliProxy.baseUrl}",
-            ANTHROPIC_AUTH_TOKEN: "${cliProxy.apiKey}",
-            ANTHROPIC_DEFAULT_OPUS_MODEL: "${cliProxy.model}",
-            ANTHROPIC_DEFAULT_SONNET_MODEL: "${cliProxy.model}",
-            ANTHROPIC_DEFAULT_HAIKU_MODEL: "${cliProxy.model}",
-            CLAUDE_CODE_SUBAGENT_MODEL: "${cliProxy.model}",
-            CLAUDE_CODE_ALWAYS_ENABLE_EFFORT: "1",
-            CLAUDE_CODE_MAX_TOOL_USE_CONCURRENCY: "3",
-            ENABLE_TOOL_SEARCH: "false",
-          } { claude --model ${cliProxy.model} ...$args }
-        }
-
-        def --wrapped climi [...args: string] {
-          with-env {
-            ANTHROPIC_BASE_URL: "${cliProxy.baseUrl}",
-            ANTHROPIC_AUTH_TOKEN: "${cliProxy.apiKey}",
-            ANTHROPIC_DEFAULT_OPUS_MODEL: "${climiModel}",
-            ANTHROPIC_DEFAULT_SONNET_MODEL: "${climiModel}",
-            ANTHROPIC_DEFAULT_HAIKU_MODEL: "${climiModel}",
-            CLAUDE_CODE_SUBAGENT_MODEL: "${climiModel}",
-            CLAUDE_CODE_ALWAYS_ENABLE_EFFORT: "1",
-            CLAUDE_CODE_MAX_TOOL_USE_CONCURRENCY: "3",
-            ENABLE_TOOL_SEARCH: "false",
-          } { claude --model ${climiModel} --effort max ...$args }
-        }
-
-        def --wrapped ccc [...args: string] {
-          with-env {DISABLE_ZOXIDE: "1"} { claude --dangerously-skip-permissions ...$args }
-        }
-      '';
-      extraEnv = ''
-        $env.SHELL = "${pkgs.bashInteractive}/bin/bash"
-
-        # Ghostty shell integration - copy to config dir so config.nu can `use` it
-        let ghostty_dest = ($nu.default-config-dir | path join "ghostty.nu")
-        if ($env | get -o GHOSTTY_RESOURCES_DIR | is-not-empty) {
-          let ghostty_src = ($env.GHOSTTY_RESOURCES_DIR | path join "shell-integration" "nushell" "ghostty.nu")
-          if ($ghostty_src | path exists) {
-            open $ghostty_src | save -f $ghostty_dest
-          } else {
-            "# ghostty stub" | save -f $ghostty_dest
-          }
-        } else {
-          "# ghostty stub" | save -f $ghostty_dest
-        }
-      '';
+      extraConfig =
+        renderTemplate
+        ../extra-config.nu
+        ["@CLI_PROXY_BASE_URL@" "@CLI_PROXY_API_KEY@" "@CLI_PROXY_MODEL@" "@CLIMI_MODEL@"]
+        [cliProxy.baseUrl cliProxy.apiKey cliProxy.model climiModel];
+      extraEnv =
+        renderTemplate
+        ../extra-env.nu
+        ["@BASH_INTERACTIVE@"]
+        ["${pkgs.bashInteractive}/bin/bash"];
       plugins = with pkgs.nushellPlugins;
       # Plugins pinned to nushell 0.111.0 in nixpkgs-unstable (skim, hcl,
       # semver, desktop_notifications) are ABI-incompatible with nushell
@@ -218,7 +148,6 @@ in {
       interactiveShellInit = lib.strings.concatStrings (lib.strings.intersperse "\n" [
         (builtins.readFile ../config.fish)
         "set -g SHELL ${pkgs.fish}/bin/fish"
-        fishShellFunctions
       ]);
 
       plugins = [

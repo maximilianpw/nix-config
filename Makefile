@@ -69,8 +69,8 @@ check-nvim: ## Verify every tool the Neovim config uses is on PATH
 	@$(SCRIPT_DIR)/check-nvim-tooling.sh
 
 check-scripts: ## Run shell syntax, ShellCheck, and safety regression tests
-	@bash -n $(SCRIPT_DIR)/*.sh $(SCRIPT_DIR)/lib/*.sh $(SCRIPT_DIR)/tests/*.sh
-	@shellcheck --severity=warning $(SCRIPT_DIR)/*.sh $(SCRIPT_DIR)/lib/*.sh $(SCRIPT_DIR)/tests/*.sh
+	@bash -n $(SCRIPT_DIR)/*.sh $(SCRIPT_DIR)/ci/*.sh $(SCRIPT_DIR)/lib/*.sh $(SCRIPT_DIR)/tests/*.sh packages/scripts/*.sh
+	@shellcheck --severity=warning $(SCRIPT_DIR)/*.sh $(SCRIPT_DIR)/ci/*.sh $(SCRIPT_DIR)/lib/*.sh $(SCRIPT_DIR)/tests/*.sh packages/scripts/*.sh
 	@set -e; for test in $(SCRIPT_DIR)/tests/*-test.sh; do bash "$$test"; done
 
 lint: ## Run Nix linters (statix, deadnix) and format check

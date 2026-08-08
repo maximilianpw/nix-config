@@ -80,8 +80,7 @@ modules/
     shells.nix      # Nushell, Fish, Bash; all shell aliases defined here
     git.nix         # Git + Jujutsu (jj) config
     vcs/jujutsu.nix # Jujutsu config
-    agent-tools.nix # LLM agent CLIs + configuration
-    agent-skill-links.nix # Shared local skill links for agent discovery paths
+    agent-tools.nix # LLM agent CLIs + configuration, including the Skills CLI
     t3code-darwin.nix # Pinned macOS Homebrew cask and activation migration
     t3code-server.nix # Headless T3 Code server integration
     fonts.nix       # Nerd fonts + system fonts with fontconfig
@@ -146,6 +145,7 @@ apply dotfile content. On a new host run `make chezmoi-bootstrap`, review
 - **New modules**: Import them in the appropriate aggregator (`home-manager.nix`, `nixos.nix`, or `darwin.nix`). The `mksystem.nix` builder handles wiring.
 - **Nixpkgs channels**: Stable is `nixpkgs` (26.05). For bleeding-edge packages, add them to the unstable overlay in `flake.nix`. To add a new unstable package: in the third overlay in `flake.nix`, add `<pkg> = unstable.<pkg>;` alongside the existing entries (jujutsu, zig), then reference `pkgs.<pkg>` in the relevant module. For a one-off, `pkgs.unstable.<pkg>` also works without touching the overlay.
 - **Shell aliases**: All aliases are centralized in `~/modules/shells.nix`. The `nr` alias runs `make -C ~/nix-config rebuild`.
+- **Embedded scripts**: Keep inline scripts to 10 lines or fewer. Move longer scripts into `scripts/` and include them with `builtins.readFile`.
 - **Dotfile ownership**: Nix/Home Manager owns systems, packages, shells, and
   editor executables. Chezmoi owns Neovim/app content. Never declare the same
   destination in both. A chezmoi `private_` prefix changes permissions only;

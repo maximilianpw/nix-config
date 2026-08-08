@@ -22,30 +22,33 @@
     col -bx | ${pkgs.bat}/bin/bat -l man -p --paging=always
   '';
 in {
-  imports = [
-    inputs.nix-index-database.homeModules.nix-index
-    inputs.stylix.homeModules.stylix
-    ./modules/fonts.nix
-    ./modules/git.nix
-    ./modules/vcs/jujutsu.nix
-    ./modules/agent-tools.nix
-    ./modules/agent-skill-links.nix
-    ./modules/cmux.nix
-    ../../modules/fleet/home-manager.nix
-    ./modules/t3code-server.nix
-    ./modules/shells.nix
-    ./modules/syncthing.nix
-    ./modules/gpg.nix
-    ./modules/himalaya.nix
-    ./modules/xdg.nix
-    ./modules/linux-services.nix
-    ./modules/tmux.nix
-    ./modules/neovim.nix
-    ./modules/packages/dev-tools.nix
-    ./modules/packages/terminal-tools.nix
-    ./modules/packages/linux-desktop.nix
-    ./modules/packages/custom-scripts.nix
-  ];
+  imports =
+    [
+      inputs.nix-index-database.homeModules.nix-index
+      inputs.stylix.homeModules.stylix
+      ./modules/fonts.nix
+      ./modules/git.nix
+      ./modules/vcs/jujutsu.nix
+      ./modules/agent-tools.nix
+      ./modules/cmux.nix
+      ../../modules/fleet/home-manager.nix
+      ./modules/t3code-server.nix
+      ./modules/shells.nix
+      ./modules/syncthing.nix
+      ./modules/gpg.nix
+      ./modules/himalaya.nix
+      ./modules/xdg.nix
+      ./modules/linux-services.nix
+      ./modules/tmux.nix
+      ./modules/neovim.nix
+      ./modules/packages/dev-tools.nix
+      ./modules/packages/terminal-tools.nix
+      ./modules/packages/linux-desktop.nix
+      ./modules/packages/custom-scripts.nix
+    ]
+    ++ lib.optionals (isDarwin || isWSL) [
+      ./modules/agent-secrets.nix
+    ];
 
   stylix = lib.mkMerge [
     {

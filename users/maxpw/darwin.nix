@@ -48,7 +48,13 @@ in {
   homebrew = {
     enable = true;
 
+    taps = [
+      "maximilianpw/tap"
+    ];
+
     brews = [
+      "maximilianpw/tap/loggle"
+      "maximilianpw/tap/rmus"
       "cliproxyapi"
       "ffmpeg"
       "gnupg"
