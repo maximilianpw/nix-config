@@ -6,6 +6,7 @@
 }: let
   homelab = import ../lib/homelab.nix {inherit lib;};
   endpoints = homelab.endpoints config.homelab.tailnet.domain;
+  hostTimeZone = config.time.timeZone;
   mediaRoot = "/srv/media";
   usenetRoot = "${mediaRoot}/usenet";
   mediaGid = 971;
@@ -14,6 +15,131 @@
   qbitContainerAddress = "10.89.0.2";
   qbitContainerPort = 8080;
   qbitNetworkInterface = "wg0-mullvad";
+  sabContainerAddress = "10.89.1.2";
+  sabContainerHostAddress = "10.89.1.1";
+  sabContainerPort = 8080;
+  mullvadConnectionGate = application: ''
+    # These settings persist in Mullvad's state. Reasserting them makes every
+    # downloader start fail closed, including the first boot before login.
+    mullvad lockdown-mode set on
+    mullvad lan set allow
+    mullvad auto-connect set on
+    mullvad connect
+
+    for _attempt in {1..30}; do
+      if mullvad status | grep --quiet '^Connected'; then
+        exit 0
+      fi
+      sleep 2
+    done
+
+    echo "Mullvad did not connect; refusing to start ${application}" >&2
+    exit 1
+  '';
+  mkDeferredVpnService = {
+    serviceName,
+    description,
+    environment ? {},
+    extraServiceConfig ? {},
+    vpnGate,
+  }: {
+    services.${serviceName} = {
+      # Waiting for the first interactive Mullvad login must not prevent the
+      # container from reaching multi-user.target and reporting ready.
+      wantedBy = lib.mkForce [];
+      requires = ["mullvad-daemon.service"];
+      after = ["mullvad-daemon.service"];
+      inherit environment;
+      serviceConfig =
+        {
+          ExecStartPre = vpnGate;
+          Restart = "on-failure";
+          RestartSec = "30s";
+          UMask = "0002";
+        }
+        // extraServiceConfig;
+    };
+    timers."${serviceName}-deferred-start" = {
+      inherit description;
+      wantedBy = ["timers.target"];
+      timerConfig = {
+        OnBootSec = "15s";
+        # Re-arm after dependency-driven stops as well as initial boot. This
+        # lets the downloader recover when mullvad-daemon comes back.
+        OnUnitInactiveSec = "30s";
+        Unit = "${serviceName}.service";
+      };
+    };
+  };
+  mkVpnContainer = {
+    hostAddress,
+    localAddress,
+    bindMounts,
+    port,
+    applicationModule,
+  }: {
+    autoStart = true;
+    privateNetwork = true;
+    enableTun = true;
+    inherit hostAddress localAddress bindMounts;
+    config = {
+      imports = [applicationModule];
+      system.stateVersion = "24.05";
+      time.timeZone = hostTimeZone;
+      networking = {
+        useDHCP = false;
+        useHostResolvConf = false;
+        firewall.allowedTCPPorts = [port];
+      };
+      users.groups.media.gid = mediaGid;
+      services = {
+        resolved.enable = true;
+        mullvad-vpn = {
+          enable = true;
+          enableEarlyBootBlocking = true;
+          enableExcludeWrapper = false;
+        };
+      };
+    };
+  };
+  downloadProxies = {
+    qbittorrent-proxy = {
+      application = "qBittorrent";
+      container = "qbt";
+      address = qbitContainerAddress;
+      targetPort = qbitContainerPort;
+      listenPort = endpoints.qbittorrent.port;
+    };
+    sabnzbd-proxy = {
+      application = "SABnzbd";
+      container = "sab";
+      address = sabContainerAddress;
+      targetPort = sabContainerPort;
+      listenPort = endpoints.sabnzbd.port;
+    };
+  };
+  mkContainerProxyService = _: proxy: {
+    description = "${proxy.application} container WebUI proxy";
+    requires = ["container@${proxy.container}.service"];
+    after = ["container@${proxy.container}.service"];
+    serviceConfig = {
+      DynamicUser = true;
+      ExecStart = "${pkgs.systemd}/lib/systemd/systemd-socket-proxyd ${proxy.address}:${toString proxy.targetPort}";
+      NoNewPrivileges = true;
+      PrivateTmp = true;
+      ProtectHome = true;
+      ProtectSystem = "strict";
+      RestrictAddressFamilies = [
+        "AF_INET"
+        "AF_INET6"
+      ];
+    };
+  };
+  mkContainerProxySocket = _: proxy: {
+    description = "${proxy.application} loopback proxy socket";
+    wantedBy = ["sockets.target"];
+    socketConfig.ListenStream = "127.0.0.1:${toString proxy.listenPort}";
+  };
   tunarrReconcileSettings = let
     ffmpeg = lib.getExe pkgs.ffmpeg;
     ffprobe = lib.getExe' pkgs.ffmpeg "ffprobe";
@@ -152,74 +278,6 @@ in {
       };
     };
 
-    sabnzbd = {
-      enable = true;
-      # Kim predates the declarative SABnzbd module defaults. Opt into the
-      # generated/mutable configuration so credentials entered in the WebUI
-      # remain private while network, paths, and categories stay declarative.
-      configFile = null;
-      allowConfigWrite = true;
-      group = "media";
-      openFirewall = false;
-      settings = {
-        misc = {
-          host = "127.0.0.1";
-          inherit (endpoints.sabnzbd) port;
-          download_dir = "${usenetRoot}/incomplete";
-          complete_dir = "${usenetRoot}/complete";
-          backup_dir = "/var/lib/sabnzbd/backups";
-          permissions = "2775";
-          host_whitelist = "${endpoints.sabnzbd.host}, localhost, 127.0.0.1";
-          # Tailscale Serve is the only reverse proxy and forwards the real
-          # tailnet client address. Keep XFF verification enabled while
-          # treating Tailscale's stable IPv4/IPv6 ranges as local.
-          local_ranges = "100.64.0.0/10, fd7a:115c:a1e0::/48";
-          verify_xff_header = true;
-        };
-        servers.eweka = {
-          name = "eweka";
-          displayname = "Eweka";
-          host = "news.eweka.nl";
-          port = 563;
-          connections = 20;
-          ssl = true;
-          ssl_verify = "strict";
-          required = true;
-          priority = 0;
-        };
-        categories = {
-          "*" = {
-            order = 0;
-            pp = 3;
-            script = "None";
-            dir = "";
-            priority = 0;
-          };
-          "sonarr-usenet" = {
-            order = 1;
-            pp = 3;
-            script = "Default";
-            dir = "tv";
-            priority = 0;
-          };
-          "radarr-usenet" = {
-            order = 2;
-            pp = 3;
-            script = "Default";
-            dir = "movies";
-            priority = 0;
-          };
-          "lidarr-usenet" = {
-            order = 3;
-            pp = 3;
-            script = "Default";
-            dir = "music";
-            priority = 0;
-          };
-        };
-      };
-    };
-
     prowlarr = {
       enable = true;
       openFirewall = false;
@@ -241,6 +299,8 @@ in {
   systemd = {
     tmpfiles.settings = {
       "10-media" = lib.genAttrs mediaDirectories (_: {d = sharedMediaDirectory;});
+      # This is both SABnzbd's private state and the pre-created host source
+      # for the container bind mount, preserving the existing deployment.
       "10-sabnzbd"."/var/lib/sabnzbd".d = {
         mode = "0700";
         user = "sabnzbd";
@@ -248,103 +308,74 @@ in {
       };
     };
 
-    services = {
-      bazarr.serviceConfig.UMask = lib.mkForce "0002";
-      lidarr.serviceConfig.UMask = lib.mkForce "0002";
-      sonarr.serviceConfig.UMask = lib.mkForce "0002";
-      radarr.serviceConfig.UMask = lib.mkForce "0002";
-      sabnzbd.serviceConfig = {
-        InaccessiblePaths = [
-          "${mediaRoot}/torrents"
-          "${mediaRoot}/library"
-        ];
-        StateDirectoryMode = "0700";
-        UMask = lib.mkForce "0002";
-      };
-
-      tunarr = {
-        description = "Tunarr personal TV server";
-        after = ["network-online.target"];
-        wants = ["network-online.target"];
-        wantedBy = ["multi-user.target"];
-        path = [pkgs.libva-utils];
-        environment = {
-          HOME = "/var/lib/tunarr";
-          TZ = config.time.timeZone;
-          TUNARR_BIND_ADDR = "127.0.0.1";
-          TUNARR_LOG_LEVEL = "info";
-          TUNARR_SERVER_PORT = toString endpoints.tunarr.port;
+    services =
+      {
+        bazarr.serviceConfig.UMask = lib.mkForce "0002";
+        lidarr.serviceConfig.UMask = lib.mkForce "0002";
+        sonarr.serviceConfig.UMask = lib.mkForce "0002";
+        radarr.serviceConfig.UMask = lib.mkForce "0002";
+        tunarr = {
+          description = "Tunarr personal TV server";
+          after = ["network-online.target"];
+          wants = ["network-online.target"];
+          wantedBy = ["multi-user.target"];
+          path = [pkgs.libva-utils];
+          environment = {
+            HOME = "/var/lib/tunarr";
+            TZ = config.time.timeZone;
+            TUNARR_BIND_ADDR = "127.0.0.1";
+            TUNARR_LOG_LEVEL = "info";
+            TUNARR_SERVER_PORT = toString endpoints.tunarr.port;
+          };
+          serviceConfig = {
+            User = "tunarr";
+            Group = "tunarr";
+            # Use the unambiguous CLI flag: v1.3.10's source and published docs
+            # disagree about the corresponding environment variable's name.
+            ExecStart = "${lib.getExe pkgs.tunarr} --database /var/lib/tunarr";
+            ExecStartPre = tunarrReconcileSettings;
+            InaccessiblePaths = [
+              "${mediaRoot}/torrents"
+              usenetRoot
+            ];
+            LockPersonality = true;
+            NoNewPrivileges = true;
+            PrivateTmp = true;
+            ProtectHome = true;
+            ProtectSystem = "strict";
+            ReadOnlyPaths = ["${mediaRoot}/library"];
+            ReadWritePaths = ["/var/lib/tunarr"];
+            Restart = "on-failure";
+            RestartSec = "5s";
+            RestrictAddressFamilies = [
+              "AF_INET"
+              "AF_INET6"
+              "AF_NETLINK"
+              "AF_UNIX"
+            ];
+            RestrictSUIDSGID = true;
+            StateDirectory = "tunarr";
+            StateDirectoryMode = "0700";
+            UMask = "0077";
+            WorkingDirectory = "/var/lib/tunarr";
+          };
         };
-        serviceConfig = {
-          User = "tunarr";
-          Group = "tunarr";
-          # Use the unambiguous CLI flag: v1.3.10's source and published docs
-          # disagree about the corresponding environment variable's name.
-          ExecStart = "${lib.getExe pkgs.tunarr} --database /var/lib/tunarr";
-          ExecStartPre = tunarrReconcileSettings;
+
+        # Jellyfin can manage the shared group-writable library but cannot see
+        # active downloads.
+        jellyfin.serviceConfig = {
           InaccessiblePaths = [
             "${mediaRoot}/torrents"
             usenetRoot
           ];
-          LockPersonality = true;
-          NoNewPrivileges = true;
-          PrivateTmp = true;
-          ProtectHome = true;
-          ProtectSystem = "strict";
-          ReadOnlyPaths = ["${mediaRoot}/library"];
-          ReadWritePaths = ["/var/lib/tunarr"];
-          Restart = "on-failure";
-          RestartSec = "5s";
-          RestrictAddressFamilies = [
-            "AF_INET"
-            "AF_INET6"
-            "AF_NETLINK"
-            "AF_UNIX"
-          ];
-          RestrictSUIDSGID = true;
-          StateDirectory = "tunarr";
-          StateDirectoryMode = "0700";
-          UMask = "0077";
-          WorkingDirectory = "/var/lib/tunarr";
+          UMask = lib.mkForce "0002";
         };
-      };
+      }
+      // lib.mapAttrs mkContainerProxyService downloadProxies;
 
-      # Jellyfin can manage the shared group-writable library but cannot see
-      # active downloads.
-      jellyfin.serviceConfig = {
-        InaccessiblePaths = [
-          "${mediaRoot}/torrents"
-          usenetRoot
-        ];
-        UMask = lib.mkForce "0002";
-      };
-
-      # Socket activation exposes the container WebUI only on host loopback.
-      # Tailscale Serve and the library managers use this guarded endpoint.
-      qbittorrent-proxy = {
-        description = "qBittorrent container WebUI proxy";
-        requires = ["container@qbt.service"];
-        after = ["container@qbt.service"];
-        serviceConfig = {
-          DynamicUser = true;
-          ExecStart = "${pkgs.systemd}/lib/systemd/systemd-socket-proxyd ${qbitContainerAddress}:${toString qbitContainerPort}";
-          NoNewPrivileges = true;
-          PrivateTmp = true;
-          ProtectHome = true;
-          ProtectSystem = "strict";
-          RestrictAddressFamilies = [
-            "AF_INET"
-            "AF_INET6"
-          ];
-        };
-      };
-    };
-
-    sockets.qbittorrent-proxy = {
-      description = "qBittorrent loopback proxy socket";
-      wantedBy = ["sockets.target"];
-      socketConfig.ListenStream = "127.0.0.1:${toString endpoints.qbittorrent.port}";
-    };
+    # Socket activation exposes each downloader WebUI only on host loopback.
+    # Tailscale Serve and the library managers use these guarded endpoints.
+    sockets = lib.mapAttrs mkContainerProxySocket downloadProxies;
   };
 
   # Playback is private to the physical LAN plus the HTTPS tailnet endpoint.
@@ -354,28 +385,29 @@ in {
     allowedUDPPorts = [7359];
   };
 
-  # Only this private veth is NATed to the physical uplink. Mullvad runs inside
-  # the namespace, so it cannot replace Kim's routes or interfere with Tailscale.
+  # Only the downloader veths are NATed to the physical uplink. Mullvad runs
+  # inside each namespace, so it cannot replace Kim's routes or affect Tailscale.
   networking.nat = {
     enable = true;
     externalInterface = "enp194s0";
-    internalInterfaces = ["ve-qbt"];
+    internalInterfaces = [
+      "ve-qbt"
+      "ve-sab"
+    ];
   };
 
-  containers.qbt = {
-    autoStart = true;
-    privateNetwork = true;
-    enableTun = true;
+  containers.qbt = mkVpnContainer {
     hostAddress = "10.89.0.1";
     # The container module installs localAddress as a host route. Supplying a
     # subnet prefix here makes its generated `ip route add` reject the address.
     localAddress = qbitContainerAddress;
+    port = qbitContainerPort;
     bindMounts.${mediaRoot + "/torrents"} = {
       hostPath = mediaRoot + "/torrents";
       isReadOnly = false;
     };
 
-    config = {
+    applicationModule = {
       lib,
       pkgs,
       ...
@@ -443,86 +475,144 @@ in {
           set_preference 'WebUI\HostHeaderValidation' "$QBIT_WEBUI_HOST_HEADER_VALIDATION"
           set_preference 'WebUI\MaxAuthenticationFailCount' "$QBIT_WEBUI_MAX_AUTHENTICATION_FAIL_COUNT"
 
-          # These settings persist in Mullvad's state. Reasserting them makes
-          # every qBittorrent start fail closed, including the first boot before
-          # the operator has logged this container into their Mullvad account.
-          mullvad lockdown-mode set on
-          mullvad lan set allow
-          mullvad auto-connect set on
-          mullvad connect
-
-          for _attempt in {1..30}; do
-            if mullvad status | grep --quiet '^Connected'; then
-              exit 0
-            fi
-            sleep 2
-          done
-
-          echo "Mullvad did not connect; refusing to start qBittorrent" >&2
-          exit 1
+          ${mullvadConnectionGate "qBittorrent"}
         '';
       };
     in {
-      system.stateVersion = "24.05";
+      users.users.qbittorrent.uid = qbitUid;
 
-      networking = {
-        useDHCP = false;
-        useHostResolvConf = false;
-        firewall.allowedTCPPorts = [qbitContainerPort];
-      };
-      users = {
-        groups.media.gid = mediaGid;
-        users.qbittorrent.uid = qbitUid;
+      services.qbittorrent = {
+        enable = true;
+        group = "media";
+        openFirewall = false;
+        webuiPort = qbitContainerPort;
+        extraArgs = ["--confirm-legal-notice"];
       };
 
-      services = {
-        resolved.enable = true;
-        mullvad-vpn = {
-          enable = true;
-          enableEarlyBootBlocking = true;
-          enableExcludeWrapper = false;
+      systemd = mkDeferredVpnService {
+        serviceName = "qbittorrent";
+        description = "Start qBittorrent after the container reports ready";
+        environment = {
+          QBIT_NETWORK_INTERFACE = qbitNetworkInterface;
+          QBIT_WEBUI_CSRF_PROTECTION = qbitWebUICSRFProtection;
+          QBIT_WEBUI_HOST_HEADER_VALIDATION = qbitWebUIHostHeaderValidation;
+          QBIT_WEBUI_MAX_AUTHENTICATION_FAIL_COUNT = qbitWebUIMaxAuthenticationFailCount;
         };
-        qbittorrent = {
-          enable = true;
-          group = "media";
-          openFirewall = false;
-          webuiPort = qbitContainerPort;
-          extraArgs = ["--confirm-legal-notice"];
+        # The leading + runs the leak check with full privileges even though
+        # the daemon remains the unprivileged qBittorrent user.
+        vpnGate = "+${lib.getExe qbitPreStart}";
+      };
+    };
+  };
+
+  containers.sab = mkVpnContainer {
+    hostAddress = sabContainerHostAddress;
+    localAddress = sabContainerAddress;
+    port = sabContainerPort;
+    # Keep SABnzbd's existing host state path to make this namespace move
+    # migration-free; the separate container root preserves Mullvad's login.
+    bindMounts = {
+      ${usenetRoot} = {
+        hostPath = usenetRoot;
+        isReadOnly = false;
+      };
+      "/var/lib/sabnzbd" = {
+        hostPath = "/var/lib/sabnzbd";
+        isReadOnly = false;
+      };
+    };
+
+    applicationModule = {
+      lib,
+      pkgs,
+      ...
+    }: let
+      sabPreStart = pkgs.writeShellApplication {
+        name = "sabnzbd-vpn-prestart";
+        runtimeInputs = [
+          pkgs.coreutils
+          pkgs.gnugrep
+          pkgs.mullvad
+        ];
+        text = mullvadConnectionGate "SABnzbd";
+      };
+    in {
+      nixpkgs.config.allowUnfreePredicate = package: lib.getName package == "unrar";
+      users.users.sabnzbd.uid = sabnzbdUid;
+
+      services.sabnzbd = {
+        enable = true;
+        # Preserve credentials entered in the WebUI while keeping network,
+        # path, TLS, and category policy declarative.
+        configFile = null;
+        allowConfigWrite = true;
+        group = "media";
+        openFirewall = false;
+        settings = {
+          misc = {
+            host = sabContainerAddress;
+            port = sabContainerPort;
+            download_dir = "${usenetRoot}/incomplete";
+            complete_dir = "${usenetRoot}/complete";
+            backup_dir = "/var/lib/sabnzbd/backups";
+            permissions = "2775";
+            host_whitelist = "${endpoints.sabnzbd.host}, localhost, 127.0.0.1, ${sabContainerAddress}";
+            # The host veth is the only direct client. Tailscale Serve's XFF
+            # value must also remain within the private tailnet ranges.
+            local_ranges = "${sabContainerHostAddress}, 100.64.0.0/10, fd7a:115c:a1e0::/48";
+            verify_xff_header = true;
+          };
+          servers.eweka = {
+            name = "eweka";
+            displayname = "Eweka";
+            host = "news.eweka.nl";
+            port = 563;
+            connections = 20;
+            ssl = true;
+            ssl_verify = "strict";
+            required = true;
+            priority = 0;
+          };
+          categories = {
+            "*" = {
+              order = 0;
+              pp = 3;
+              script = "None";
+              dir = "";
+              priority = 0;
+            };
+            "sonarr-usenet" = {
+              order = 1;
+              pp = 3;
+              script = "Default";
+              dir = "tv";
+              priority = 0;
+            };
+            "radarr-usenet" = {
+              order = 2;
+              pp = 3;
+              script = "Default";
+              dir = "movies";
+              priority = 0;
+            };
+            "lidarr-usenet" = {
+              order = 3;
+              pp = 3;
+              script = "Default";
+              dir = "music";
+              priority = 0;
+            };
+          };
         };
       };
 
-      systemd = {
-        services.qbittorrent = {
-          # Waiting for the first interactive Mullvad login must not prevent
-          # the container from reaching multi-user.target and reporting ready
-          # to the host activation. A timer starts the fail-closed daemon after
-          # boot; Restart=on-failure keeps retrying until Mullvad connects.
-          wantedBy = lib.mkForce [];
-          requires = ["mullvad-daemon.service"];
-          after = ["mullvad-daemon.service"];
-          environment = {
-            QBIT_NETWORK_INTERFACE = qbitNetworkInterface;
-            QBIT_WEBUI_CSRF_PROTECTION = qbitWebUICSRFProtection;
-            QBIT_WEBUI_HOST_HEADER_VALIDATION = qbitWebUIHostHeaderValidation;
-            QBIT_WEBUI_MAX_AUTHENTICATION_FAIL_COUNT = qbitWebUIMaxAuthenticationFailCount;
-          };
-          serviceConfig = {
-            # The leading + runs the leak check with full privileges even
-            # though the daemon remains the unprivileged qbittorrent user.
-            ExecStartPre = "+${lib.getExe qbitPreStart}";
-            RestartSec = "30s";
-            UMask = "0002";
-          };
-        };
-
-        timers.qbittorrent-deferred-start = {
-          description = "Start qBittorrent after the container reports ready";
-          wantedBy = ["timers.target"];
-          timerConfig = {
-            OnBootSec = "15s";
-            Unit = "qbittorrent.service";
-          };
-        };
+      systemd = mkDeferredVpnService {
+        serviceName = "sabnzbd";
+        description = "Start SABnzbd after the container reports ready";
+        # Keep the module's generated config reconciliation after the
+        # privileged VPN gate instead of replacing its ExecStartPre.
+        vpnGate = lib.mkBefore ["+${lib.getExe sabPreStart}"];
+        extraServiceConfig.StateDirectoryMode = "0700";
       };
     };
   };

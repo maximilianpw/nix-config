@@ -61,7 +61,7 @@
     prometheus = config.services.prometheus.package.version;
     qbittorrent = config.containers.qbt.config.services.qbittorrent.package.version;
     radarr = config.services.radarr.package.version;
-    sabnzbd = config.services.sabnzbd.package.version;
+    sabnzbd = config.containers.sab.config.services.sabnzbd.package.version;
     seerr = config.services.seerr.package.version;
     sonarr = config.services.sonarr.package.version;
     syncthing = config.services.syncthing.package.version;

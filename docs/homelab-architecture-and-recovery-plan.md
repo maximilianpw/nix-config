@@ -111,7 +111,7 @@ acceptance check.
 | Nextcloud | PostgreSQL and `/srv/nextcloud` | Logical dump plus file tree | Full version-matched restore runbook; inventory mutable store apps |
 | Home Assistant | `/var/lib/hass` and PostgreSQL recorder | Quiesced tar plus logical dump | Restore drill for config, integrations, credentials, automations, and recorder |
 | Immich | PostgreSQL and `/srv/immich` | Logical dump plus quiesced file tree | Version-matched database/storage restore, integrity scan, and mobile upload test |
-| Media stack | Jellyfin, Servarr, Seerr, and qBittorrent/Mullvad control state | Quiesced `/var/lib` paths; downloaded media deliberately excluded | Restore application wiring and verify import, hardlinks, playback, transcoding, and VPN binding |
+| Media stack | Jellyfin, Servarr, Seerr, and independently Mullvad-isolated qBittorrent/SABnzbd control state | Quiesced `/var/lib` paths and downloader container roots; downloaded media deliberately excluded | Restore application wiring and verify import, hardlinks, playback, transcoding, and both VPN gates |
 | Paperless | Export, pending consume files, PostgreSQL fallback | Supported exporter, consume path, logical dump | Keep exporter import as primary path; verify pending-file recovery |
 | Miniflux | PostgreSQL | Logical dump | Database restore and login/feed validation |
 | Vaultwarden | PostgreSQL and `/var/lib/bitwarden_rs` | Logical dump plus file tree | Verify RSA identity, attachments, Sends, and DB as one recovery point |
@@ -251,6 +251,7 @@ Required staged paths:
 - `var/lib/jellyfin`
 - `var/lib/lidarr/.config/Lidarr`
 - `var/lib/nixos-containers/qbt`
+- `var/lib/nixos-containers/sab`
 - `var/lib/private/jellyseerr`
 - `var/lib/private/prowlarr`
 - `var/lib/radarr/.config/Radarr`

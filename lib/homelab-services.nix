@@ -489,6 +489,12 @@
     state.paths = ["/var/lib/nixos-containers/qbt"];
     backup.quiesce = [
       {
+        # Stop socket activation first so health probes cannot restart the
+        # container while Borg is archiving its mutable state.
+        unit = "qbittorrent-proxy.socket";
+        until = "archive";
+      }
+      {
         unit = "container@qbt.service";
         until = "archive";
       }
@@ -556,30 +562,46 @@
       port = 18081;
       monitorPath = "/login/";
     };
-    state.paths = ["/var/lib/sabnzbd"];
+    # Keep application state at its existing host path for a migration-free
+    # bind mount; the container root separately preserves Mullvad's login.
+    state.paths = [
+      "/var/lib/nixos-containers/sab"
+      "/var/lib/sabnzbd"
+    ];
     backup.quiesce = [
       {
-        unit = "sabnzbd.service";
+        # Stop socket activation first so monitoring and Servarr polling cannot
+        # restart the container while Borg is archiving SABnzbd's state.
+        unit = "sabnzbd-proxy.socket";
+        until = "archive";
+      }
+      {
+        unit = "container@sab.service";
         until = "archive";
       }
     ];
-    storage.units = ["sabnzbd.service"];
-    operations.units = ["sabnzbd.service"];
+    storage.units = ["container@sab.service"];
+    operations.units = ["container@sab.service"];
     recovery = {
       order = 91;
       versionPolicy = "restore-archived-version-first";
       runbook = "docs/media-stack.md#recovery";
       acceptance = [
+        "mullvad-reports-connected-before-daemon-start"
         "provider-uses-strict-tls"
         "queue-history-categories-and-download-clients-load"
       ];
-      secretOwners = ["mutable-state:/var/lib/sabnzbd"];
+      secretOwners = [
+        "interactive:mullvad-account-login"
+        "mutable-state:/var/lib/nixos-containers/sab"
+        "mutable-state:/var/lib/sabnzbd"
+      ];
     };
     presentation = {
       group = "operations";
       title = "SABnzbd";
       icon = "sabnzbd.png";
-      description = "Usenet downloads";
+      description = "Mullvad-isolated Usenet downloads";
       order = 75;
     };
   };

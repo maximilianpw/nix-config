@@ -64,9 +64,10 @@ sudo systemctl mask --runtime \
   paperless-task-queue.service paperless-web.service miniflux.service \
   immich-machine-learning.service immich-server.service \
   bazarr.service jellyfin.service lidarr.service prowlarr.service \
-  radarr.service sabnzbd.service seerr.service sonarr.service \
-  container@qbt.service qbittorrent-proxy.service \
-  qbittorrent-proxy.socket \
+  radarr.service seerr.service sonarr.service \
+  container@qbt.service container@sab.service \
+  qbittorrent-proxy.service qbittorrent-proxy.socket \
+  sabnzbd-proxy.service sabnzbd-proxy.socket \
   syncthing.service uptime-kuma.service vaultwarden.service
 ```
 
@@ -89,6 +90,7 @@ sudo borg-restore-main <archive> /var/tmp/homelab-state \
   srv/immich srv/nextcloud srv/paperless/export srv/paperless/consume \
   srv/paperless/media var/lib/bazarr var/lib/bitwarden_rs var/lib/jellyfin \
   var/lib/lidarr/.config/Lidarr var/lib/nixos-containers/qbt \
+  var/lib/nixos-containers/sab \
   var/lib/private/jellyseerr var/lib/private/prowlarr \
   var/lib/private/uptime-kuma var/lib/radarr/.config/Radarr \
   var/lib/sabnzbd var/lib/sonarr/.config/NzbDrone \
@@ -201,22 +203,22 @@ and determine who initialized it; do not merge blindly.
 
 ### Media stack
 
-1. Keep Jellyfin, Sonarr, Radarr, Lidarr, Bazarr, Prowlarr, SABnzbd, Seerr,
-   the qBittorrent container, and its host proxy stopped. Restore each staged
+1. Keep Jellyfin, Sonarr, Radarr, Lidarr, Bazarr, Prowlarr, Seerr, both
+   downloader containers, and both host proxies stopped. Restore each staged
    control-state path into an explicitly created empty destination, preserving
    numeric ownership.
 2. Downloaded files under `/srv/media` are not in the Borg archive. Restore
    them from their separate copy if one exists; otherwise leave the media tree
    empty and reconcile missing entries after the control plane is healthy.
-3. Start `container@qbt` first. Confirm Mullvad is connected, the
-   `wg0-mullvad` interface exists, and qBittorrent is bound to it before
-   unmasking `qbittorrent-proxy.socket`.
-4. Start SABnzbd, Prowlarr, Sonarr, Radarr, Lidarr, Bazarr, Jellyfin, and
-   Seerr with the package versions recorded in the manifest.
-   Before resuming SABnzbd's queue, confirm every restored provider uses port
-   563, SSL, and strict certificate verification. Validate application
-   connections, root folders, categories, history, users, libraries, and watch
-   state.
+3. Start `container@qbt` and `container@sab`. In both namespaces confirm
+   Mullvad is connected and `wg0-mullvad` exists. Confirm qBittorrent is bound
+   to that interface and SABnzbd passed its VPN connection gate before
+   unmasking `qbittorrent-proxy.socket` and `sabnzbd-proxy.socket`.
+4. Start Prowlarr, Sonarr, Radarr, Lidarr, Bazarr, Jellyfin, and Seerr with the
+   package versions recorded in the manifest. Before resuming SABnzbd's queue,
+   confirm every restored provider uses port 563, SSL, and strict certificate
+   verification. Validate application connections, root folders, categories,
+   history, users, libraries, and watch state.
 5. Run the end-to-end checks in [the media-stack runbook](media-stack.md#acceptance-checks),
    including a hardlink import when media is available and both direct-play and
    VA-API transcoding. Retain the staged trees until all checks pass.

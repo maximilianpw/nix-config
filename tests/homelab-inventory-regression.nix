@@ -26,6 +26,8 @@
     then builtins.hasAttr (lib.removeSuffix ".service" unit) config.systemd.services
     else if lib.hasSuffix ".timer" unit
     then builtins.hasAttr (lib.removeSuffix ".timer" unit) config.systemd.timers
+    else if lib.hasSuffix ".socket" unit
+    then builtins.hasAttr (lib.removeSuffix ".socket" unit) config.systemd.sockets
     else false;
   realService = unit: let
     service = config.systemd.services.${lib.removeSuffix ".service" unit};

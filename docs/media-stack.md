@@ -8,30 +8,32 @@ Source and indexer accounts are deliberately not declared in this repository.
 
 ## Architecture
 
-Jellyfin, Tunarr, the Servarr managers, Prowlarr, Bazarr, Seerr, and SABnzbd are
-native NixOS services. qBittorrent runs in a declarative systemd-nspawn
-container with its own network namespace and Mullvad daemon:
+Jellyfin, Tunarr, the Servarr managers, Prowlarr, Bazarr, and Seerr are native
+NixOS services. qBittorrent and SABnzbd run in separate declarative
+systemd-nspawn containers. Each downloader has its own network namespace,
+Mullvad daemon, fail-closed startup gate, and host-loopback proxy:
 
 ```text
-Tailnet HTTPS                  Kim                         qbt container
----------------        ---------------------       ------------------------
-jellyfin.*  ---------> Jellyfin :8096              Mullvad lockdown + tunnel
-tunarr.*    ---------> Tunarr   :8000                     |
-sonarr.*    ---------> Sonarr   :8989                     |
-radarr.*    ---------> Radarr   :7878               qBittorrent :8080
-lidarr.*    ---------> Lidarr   :8686                     ^
-bazarr.*    ---------> Bazarr   :6767                     |
-prowlarr.*  ---------> Prowlarr :9696                     |
-sabnzbd.*  ---------> SABnzbd  :18081 --NNTP/TLS--> provider
-seerr.*     ---------> Seerr    :5055                     |
-qbittorrent.* -------> 127.0.0.1:18080 socket proxy -----'
+Tailnet HTTPS                  Kim host                    VPN containers
+---------------        -------------------------    ---------------------------
+jellyfin.*  ---------> Jellyfin :8096
+tunarr.*    ---------> Tunarr   :8000
+sonarr.*    ---------> Sonarr   :8989
+radarr.*    ---------> Radarr   :7878
+lidarr.*    ---------> Lidarr   :8686
+bazarr.*    ---------> Bazarr   :6767
+prowlarr.*  ---------> Prowlarr :9696
+seerr.*     ---------> Seerr    :5055
+qbittorrent.* -------> 127.0.0.1:18080 proxy ------> qbt:8080 --Mullvad--> peers
+sabnzbd.*  ---------> 127.0.0.1:18081 proxy ------> sab:8080 --Mullvad/NNTP/TLS--> provider
 
 LAN enp194s0 --------> Jellyfin :8096 and discovery UDP :7359
 ```
 
-The host's Tailscale routing is untouched. Only the container veth is NATed to
-the physical interface. Mullvad's early-boot blocker and lockdown mode prevent
-unprotected routing, while qBittorrent is additionally bound to Mullvad's
+The host's Tailscale routing is untouched. Only the two downloader veths are
+NATed to the physical interface. Mullvad's early-boot blocker, lockdown mode,
+and pre-start connection gate prevent either downloader from using an
+unprotected route. qBittorrent is additionally bound to Mullvad's
 `wg0-mullvad` interface. Mullvad does not offer port forwarding, so this accepts
 reduced inbound peer connectivity.
 
@@ -56,7 +58,9 @@ Downloads and the finished library share Kim's `/srv` ext4 filesystem:
     └── tv/
 ```
 
-qBittorrent can see only `torrents/`; SABnzbd writes only under `usenet/`.
+qBittorrent can see only `torrents/`. SABnzbd can see only `usenet/` plus its
+existing bind-mounted `/var/lib/sabnzbd` state. Both containers use the same
+stable `media` group identity as the host applications.
 Sonarr, Radarr, and Lidarr can read and write the whole tree to import completed
 downloads into `library/`. Bazarr can update subtitle files in
 the movie and television libraries. Jellyfin can manage `library/` but cannot
@@ -73,15 +77,16 @@ Apply the configuration when ready:
 make rebuild
 ```
 
-The initial qBittorrent starts will fail safely until the container is logged
-into Mullvad. Open a root shell inside the container:
+The initial downloader starts fail safely until both containers are separately
+logged into Mullvad. Each login creates a Mullvad device, so confirm the account
+has two available device slots. First open a root shell in `qbt`:
 
 ```nu
 sudo nixos-container root-login qbt
 ```
 
-That shell is Bash. Read the account number without placing it in shell
-history, log in, and restart qBittorrent:
+That shell is Bash. Read the account number without placing it in shell history,
+log in, and start qBittorrent:
 
 ```bash
 read -rs -p "Mullvad account number: " MULLVAD_ACCOUNT; echo
@@ -93,10 +98,27 @@ systemctl status qbittorrent --no-pager
 exit
 ```
 
-The pre-start gate reapplies LAN access, auto-connect, and lockdown mode and
-will refuse to launch qBittorrent unless `mullvad status` begins with
-`Connected`. Mullvad's device credential persists inside the backed-up
-container state; the account number is not stored in Nix or the repository.
+Repeat the login in the independent SABnzbd container:
+
+```nu
+sudo nixos-container root-login sab
+```
+
+```bash
+read -rs -p "Mullvad account number: " MULLVAD_ACCOUNT; echo
+mullvad account login "$MULLVAD_ACCOUNT"
+unset MULLVAD_ACCOUNT
+mullvad status
+systemctl restart sabnzbd
+systemctl status sabnzbd --no-pager
+exit
+```
+
+The shared pre-start policy reapplies LAN access, auto-connect, and lockdown
+mode and refuses to launch either downloader unless `mullvad status` begins
+with `Connected`. Failed gates retry every 30 seconds. Each Mullvad device
+credential persists inside its backed-up container root; the account number is
+not stored in Nix or the repository.
 
 qBittorrent 5 prints a temporary first-run WebUI password to its journal:
 
@@ -124,10 +146,10 @@ state, which is encrypted in Borg. Do not paste them into ordinary Nix values.
 
 ### SABnzbd
 
-Open `https://sabnzbd.liger-shilling.ts.net`. The paths, categories, loopback
-listener, tailnet hostname, and non-secret Eweka connection policy are already
-declarative. Enter only the Eweka username and password in the existing server,
-then select **Test Server** and save. Verify **Config → Servers** shows:
+Open `https://sabnzbd.liger-shilling.ts.net`. The paths, categories,
+host-loopback proxy, tailnet hostname, and non-secret Eweka connection policy
+are already declarative. Enter only the Eweka username and password in the
+existing server, then select **Test Server** and save. Verify **Config → Servers** shows:
 
 | Setting | Value |
 | --- | --- |
@@ -138,10 +160,11 @@ then select **Test Server** and save. Verify **Config → Servers** shows:
 | Connections | `20` |
 
 Nix reasserts the hostname, TLS policy, and connection count after every
-restart while preserving credentials in SABnzbd's mutable state. The provider
-connection runs directly from Kim over NNTP/TLS; it does not use the
-qBittorrent Mullvad container. TLS protects credentials and article traffic in
-transit, while the provider can still associate usage with the account.
+restart while preserving credentials in SABnzbd's bind-mounted mutable state.
+The provider connection uses the `sab` container's independent Mullvad tunnel
+and strict NNTP/TLS. TLS protects credentials and article traffic from the VPN
+exit to the provider, while the provider can still associate usage with the
+paid account.
 
 Confirm the declared folders and categories:
 
@@ -302,9 +325,11 @@ enabled until the complete download-import-playback path has been proven.
 Check the host services and container boundary:
 
 ```nu
-systemctl status jellyfin tunarr sonarr radarr lidarr bazarr prowlarr sabnzbd seerr container@qbt qbittorrent-proxy.socket
+systemctl status jellyfin tunarr sonarr radarr lidarr bazarr prowlarr seerr container@qbt container@sab qbittorrent-proxy.socket sabnzbd-proxy.socket
 sudo nixos-container run qbt -- mullvad status
 sudo nixos-container run qbt -- systemctl status qbittorrent --no-pager
+sudo nixos-container run sab -- mullvad status
+sudo nixos-container run sab -- systemctl status sabnzbd --no-pager
 ```
 
 Confirm VA-API access as the actual service identity:
@@ -333,9 +358,14 @@ Then perform lawful movie, episode, and album tests:
    current program match the configured lineup.
 6. Force a lower playback bitrate, confirm the stream transcodes, and inspect
    Jellyfin's FFmpeg log for VA-API rather than software encoding.
-7. Stop Mullvad in the container and verify torrent traffic stops while SABnzbd,
-   host Tailscale, and Jellyfin remain reachable. Confirm qBittorrent does not
-   fall back to the container veth, then reconnect before continuing.
+7. Run `sudo nixos-container run qbt -- mullvad disconnect` and verify torrent
+   traffic stops while SABnzbd, host Tailscale, and Jellyfin remain reachable.
+   Confirm qBittorrent does not fall back to its container veth, then run
+   `sudo nixos-container run qbt -- mullvad connect`.
+8. Repeat with `sab`: use `mullvad disconnect` and verify Usenet traffic stops
+   while qBittorrent and the host remain reachable. Confirm SABnzbd does not
+   fall back to its container veth, then run `mullvad connect`. Do not stop the
+   `mullvad-daemon` unit for this test.
 
 ## Backups
 
@@ -347,12 +377,15 @@ Borg preserves the control plane:
 - Sonarr, Radarr, Lidarr, Bazarr, and Prowlarr configuration/databases
 - SABnzbd configuration, provider credentials, API keys, queue, and history
 - Seerr configuration/database
-- the qBittorrent container root, including resume data, configuration, and
-  the Mullvad device login
+- both downloader container roots, including qBittorrent's resume/configuration
+  state and each container's independent Mullvad device login
 
-The coordinator stops each mutable service while copying it. Stopping the qbt
-container also unmounts its torrent bind mount before Borg traverses
-`/var/lib/nixos-containers/qbt`.
+The coordinator stops each downloader's host proxy socket before stopping its
+container. This prevents monitoring or Servarr polling from socket-activating
+the container again while Borg archives `/var/lib/nixos-containers/{qbt,sab}`
+and `/var/lib/sabnzbd`. The media bind mounts live only in each container's
+private mount namespace; downloaded files remain outside the archived control
+state and are excluded separately.
 
 Downloaded files below `/srv/media` are intentionally excluded. Hardlinks save
 space but are not backups: deleting both directory entries or losing the `/srv`
@@ -364,20 +397,22 @@ off-host copy.
 1. Restore and mount `/srv` before starting any media service.
 2. Rebuild the archived Nix revision so package versions match the backup
    manifest.
-3. Restore Borg's `/var/lib` content, including
-   `/var/lib/nixos-containers/qbt`, plus the other declared control-state paths.
-4. Start `container@qbt`, confirm Mullvad is connected, and only then confirm
-   qBittorrent is running.
-5. Start SABnzbd, Prowlarr, Sonarr, Radarr, Lidarr, Bazarr, Jellyfin, Tunarr,
-   and Seerr. Confirm the restored provider uses port 563, SSL, and
-   strict certificate verification before resuming its queue.
+3. Restore Borg's `/var/lib` content, including both
+   `/var/lib/nixos-containers/{qbt,sab}` and `/var/lib/sabnzbd`, plus the other
+   declared control-state paths.
+4. Start `container@qbt` and `container@sab`. Confirm Mullvad is connected in
+   each namespace before confirming qBittorrent and SABnzbd are running or
+   unmasking their host proxy sockets.
+5. Start Prowlarr, Sonarr, Radarr, Lidarr, Bazarr, Jellyfin, Tunarr, and Seerr.
+   Confirm the restored Usenet provider uses port 563, SSL, and strict
+   certificate verification before resuming its queue.
 6. Run the acceptance checks above. If downloaded media was not separately
    protected, reconcile missing files in the library managers rather than
    assuming their restored databases represent files that still exist.
 
-If the Mullvad device credential cannot be restored or has been revoked, repeat
-the interactive account login. Never place the account number in this file,
-the Nix store, or command history.
+If either Mullvad device credential cannot be restored or has been revoked,
+repeat the interactive account login in that container. Never place the account
+number in this file, the Nix store, or command history.
 
 ## Troubleshooting
 
@@ -389,23 +424,26 @@ sudo nixos-container run qbt -- journalctl -u qbittorrent -u mullvad-daemon -b -
 ```
 
 Repeated qBittorrent pre-start failures mean the privacy gate is working: the
-daemon will retry every 30 seconds but will not start until Mullvad reports a
-connection. If the WebUI works internally but not through its tailnet name,
+downloader will retry every 30 seconds but will not start until Mullvad reports
+a connection. If the WebUI works internally but not through its tailnet name,
 check `qbittorrent-proxy.socket`, `tailscale-serve.service`, and the tailnet ACL
 grant for `svc:qbittorrent`.
 
-If SABnzbd cannot download, inspect its service log and test the provider in
-**Config → Servers**:
+If SABnzbd cannot download, check its independent Mullvad connection before
+testing the provider in **Config → Servers**:
 
 ```nu
-journalctl -u sabnzbd -b --no-pager
+sudo nixos-container run sab -- mullvad status
+sudo nixos-container run sab -- journalctl -u sabnzbd -u mullvad-daemon -b --no-pager
 ```
 
-Do not work around certificate errors by disabling verification or switching to
-plaintext port 119. Check Kim's clock/DNS, the provider hostname, credentials,
-and the provider's current SSL endpoint instead. If the WebUI works on loopback
-but not through its tailnet name, check `tailscale-serve.service` and the ACL
-grant for `svc:sabnzbd`.
+Repeated SABnzbd pre-start failures mean the privacy gate is working. Do not
+work around certificate errors by disabling verification or switching to
+plaintext port 119. Check the container's clock/DNS, the provider hostname,
+credentials, and the provider's current SSL endpoint instead. If the WebUI
+works inside the container but not through its tailnet name, check
+`sabnzbd-proxy.socket`, `tailscale-serve.service`, and the ACL grant for
+`svc:sabnzbd`.
 
 The design and operational choices are based on the
 [TRaSH native layout](https://trash-guides.info/File-and-Folder-Structure/How-to-set-up/Native/),

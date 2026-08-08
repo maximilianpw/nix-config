@@ -11,9 +11,13 @@
   qbtConfig = qbt.config;
   qbtService = qbtConfig.systemd.services.qbittorrent;
   qbtDeferredTimer = qbtConfig.systemd.timers.qbittorrent-deferred-start;
-  hostContainerService = config.systemd.services."container@qbt";
+  sab = config.containers.sab;
+  sabConfig = sab.config;
+  sabService = sabConfig.systemd.services.sabnzbd;
+  sabDeferredTimer = sabConfig.systemd.timers.sabnzbd-deferred-start;
+  hostQbtContainerService = config.systemd.services."container@qbt";
+  hostSabContainerService = config.systemd.services."container@sab";
   tunarrService = config.systemd.services.tunarr;
-  sabService = config.systemd.services.sabnzbd;
   mediaDirectories = [
     mediaRoot
     "${mediaRoot}/torrents"
@@ -40,6 +44,17 @@
     builtins.elem "srv.mount" service.requires
     && builtins.elem "srv.mount" service.after
     && builtins.elem "/srv" service.unitConfig.RequiresMountsFor;
+  quiescesBefore = first: second: let
+    before = units:
+      if units == []
+      then false
+      else if builtins.head units == first
+      then true
+      else if builtins.head units == second
+      then false
+      else before (builtins.tail units);
+  in
+    before homelab.backup.archiveUnits;
   manifest = config.custom.backup.manifestMetadata;
   mediaStatePaths = [
     "/var/lib/bazarr"
@@ -47,6 +62,7 @@
     "/var/lib/lidarr/.config/Lidarr"
     "/var/lib/private/prowlarr"
     "/var/lib/nixos-containers/qbt"
+    "/var/lib/nixos-containers/sab"
     "/var/lib/radarr/.config/Radarr"
     "/var/lib/sabnzbd"
     "/var/lib/private/jellyseerr"
@@ -64,11 +80,13 @@ in
   )
   "the bind-mounted torrent tree must retain stable qBittorrent and media identities";
   assert lib.assertMsg (
-    config.users.users.sabnzbd.uid
-    == 973
+    config.users.groups.media.gid
+    == sabConfig.users.groups.media.gid
+    && config.users.users.sabnzbd.uid == 973
     && config.users.users.sabnzbd.group == "media"
+    && sabConfig.users.users.sabnzbd.uid == 973
   )
-  "SABnzbd must retain a stable identity across state and download restores";
+  "the bind-mounted Usenet tree and SABnzbd state must retain stable media identities";
   assert lib.assertMsg (
     config.services.bazarr.enable
     && !config.services.ersatztv.enable
@@ -90,53 +108,59 @@ in
     && !(builtins.hasAttr "lazylibrarian" config.users.users)
     && builtins.elem "/var/lib/lazylibrarian" config.custom.backup.exclude
     && config.services.prowlarr.enable
-    && config.services.sabnzbd.enable
+    && !config.services.sabnzbd.enable
+    && sabConfig.services.sabnzbd.enable
     && config.services.seerr.enable
     && !config.services.qbittorrent.enable
   )
-  "unsupported book managers must be absent and the supported native media applications enabled";
+  "unsupported book managers must be absent and supported media applications must run in their declared isolation domains";
   assert lib.assertMsg (
-    config.services.sabnzbd.configFile
+    sabConfig.services.sabnzbd.configFile
     == null
-    && config.services.sabnzbd.allowConfigWrite
-    && config.services.sabnzbd.group == "media"
-    && !config.services.sabnzbd.openFirewall
-    && config.services.sabnzbd.settings.misc.host == "127.0.0.1"
-    && config.services.sabnzbd.settings.misc.port == endpoints.sabnzbd.port
-    && config.services.sabnzbd.settings.misc.download_dir == "${usenetRoot}/incomplete"
-    && config.services.sabnzbd.settings.misc.complete_dir == "${usenetRoot}/complete"
-    && config.services.sabnzbd.settings.misc.backup_dir == "/var/lib/sabnzbd/backups"
-    && config.services.sabnzbd.settings.misc.permissions == "2775"
-    && config.services.sabnzbd.settings.misc.host_whitelist
-    == "${endpoints.sabnzbd.host}, localhost, 127.0.0.1"
-    && config.services.sabnzbd.settings.misc.local_ranges
-    == "100.64.0.0/10, fd7a:115c:a1e0::/48"
-    && config.services.sabnzbd.settings.misc.verify_xff_header
-    && config.services.sabnzbd.settings.servers.eweka.host == "news.eweka.nl"
-    && config.services.sabnzbd.settings.servers.eweka.port == 563
-    && config.services.sabnzbd.settings.servers.eweka.connections == 20
-    && config.services.sabnzbd.settings.servers.eweka.ssl
-    && config.services.sabnzbd.settings.servers.eweka.ssl_verify == 3
-    && config.services.sabnzbd.settings.servers.eweka.required
-    && !(builtins.hasAttr "username" config.services.sabnzbd.settings.servers.eweka)
-    && !(builtins.hasAttr "password" config.services.sabnzbd.settings.servers.eweka)
-    && config.services.sabnzbd.settings.categories."sonarr-usenet".dir == "tv"
-    && config.services.sabnzbd.settings.categories."radarr-usenet".dir == "movies"
-    && config.services.sabnzbd.settings.categories."lidarr-usenet".dir == "music"
-    && !(builtins.hasAttr "sonarr" config.services.sabnzbd.settings.categories)
-    && !(builtins.hasAttr "radarr" config.services.sabnzbd.settings.categories)
-    && !(builtins.hasAttr "lidarr" config.services.sabnzbd.settings.categories)
+    && sabConfig.services.sabnzbd.allowConfigWrite
+    && sabConfig.services.sabnzbd.group == "media"
+    && !sabConfig.services.sabnzbd.openFirewall
+    && sabConfig.services.sabnzbd.settings.misc.host == "10.89.1.2"
+    && sabConfig.services.sabnzbd.settings.misc.port == 8080
+    && sabConfig.services.sabnzbd.settings.misc.download_dir == "${usenetRoot}/incomplete"
+    && sabConfig.services.sabnzbd.settings.misc.complete_dir == "${usenetRoot}/complete"
+    && sabConfig.services.sabnzbd.settings.misc.backup_dir == "/var/lib/sabnzbd/backups"
+    && sabConfig.services.sabnzbd.settings.misc.permissions == "2775"
+    && sabConfig.services.sabnzbd.settings.misc.host_whitelist
+    == "${endpoints.sabnzbd.host}, localhost, 127.0.0.1, 10.89.1.2"
+    && sabConfig.services.sabnzbd.settings.misc.local_ranges
+    == "10.89.1.1, 100.64.0.0/10, fd7a:115c:a1e0::/48"
+    && sabConfig.services.sabnzbd.settings.misc.verify_xff_header
+    && sabConfig.services.sabnzbd.settings.servers.eweka.host == "news.eweka.nl"
+    && sabConfig.services.sabnzbd.settings.servers.eweka.port == 563
+    && sabConfig.services.sabnzbd.settings.servers.eweka.connections == 20
+    && sabConfig.services.sabnzbd.settings.servers.eweka.ssl
+    && sabConfig.services.sabnzbd.settings.servers.eweka.ssl_verify == 3
+    && sabConfig.services.sabnzbd.settings.servers.eweka.required
+    && !(builtins.hasAttr "username" sabConfig.services.sabnzbd.settings.servers.eweka)
+    && !(builtins.hasAttr "password" sabConfig.services.sabnzbd.settings.servers.eweka)
+    && sabConfig.services.sabnzbd.settings.categories."sonarr-usenet".dir == "tv"
+    && sabConfig.services.sabnzbd.settings.categories."radarr-usenet".dir == "movies"
+    && sabConfig.services.sabnzbd.settings.categories."lidarr-usenet".dir == "music"
+    && !(builtins.hasAttr "sonarr" sabConfig.services.sabnzbd.settings.categories)
+    && !(builtins.hasAttr "radarr" sabConfig.services.sabnzbd.settings.categories)
+    && !(builtins.hasAttr "lidarr" sabConfig.services.sabnzbd.settings.categories)
   )
-  "SABnzbd must keep credentials mutable while enforcing loopback paths and media categories";
+  "SABnzbd must keep credentials mutable while enforcing proxied access, strict TLS, paths, and media categories";
   assert lib.assertMsg (
     sabService.serviceConfig.StateDirectoryMode
     == "0700"
     && config.systemd.tmpfiles.settings."10-sabnzbd"."/var/lib/sabnzbd".d.mode == "0700"
     && config.systemd.tmpfiles.settings."10-sabnzbd"."/var/lib/sabnzbd".d.user == "sabnzbd"
-    && builtins.elem "${mediaRoot}/torrents" sabService.serviceConfig.InaccessiblePaths
-    && builtins.elem "${mediaRoot}/library" sabService.serviceConfig.InaccessiblePaths
+    && builtins.attrNames sab.bindMounts
+    == [
+      "/srv/media/usenet"
+      "/var/lib/sabnzbd"
+    ]
+    && !sab.bindMounts.${usenetRoot}.isReadOnly
+    && !sab.bindMounts."/var/lib/sabnzbd".isReadOnly
   )
-  "SABnzbd state must stay private and the service must see only its download tree";
+  "SABnzbd state must stay private and the container must see only its state and download tree";
   assert lib.assertMsg (
     config.services.bazarr.listenPort
     == endpoints.bazarr.port
@@ -208,29 +232,54 @@ in
     && qbt.hostAddress == "10.89.0.1"
     && qbt.localAddress == "10.89.0.2"
     && !lib.hasInfix "/" qbt.localAddress
+    && qbtConfig.time.timeZone == config.time.timeZone
     && builtins.attrNames qbt.bindMounts == ["${mediaRoot}/torrents"]
     && qbt.bindMounts."${mediaRoot}/torrents".hostPath == "${mediaRoot}/torrents"
     && !qbt.bindMounts."${mediaRoot}/torrents".isReadOnly
   )
   "qBittorrent must use the container module's prefix-free host-route address and only the torrent bind mount";
   assert lib.assertMsg (
+    sab.autoStart
+    && sab.privateNetwork
+    && sab.enableTun
+    && sab.hostAddress == "10.89.1.1"
+    && sab.localAddress == "10.89.1.2"
+    && !lib.hasInfix "/" sab.localAddress
+    && sabConfig.time.timeZone == config.time.timeZone
+    && sab.bindMounts.${usenetRoot}.hostPath == usenetRoot
+    && sab.bindMounts."/var/lib/sabnzbd".hostPath == "/var/lib/sabnzbd"
+  )
+  "SABnzbd must use a separate prefix-free private network and preserve only its state and Usenet bind mounts";
+  assert lib.assertMsg (
     qbtConfig.services.mullvad-vpn.enable
     && qbtConfig.services.mullvad-vpn.enableEarlyBootBlocking
     && !qbtConfig.services.mullvad-vpn.enableExcludeWrapper
+    && sabConfig.services.mullvad-vpn.enable
+    && sabConfig.services.mullvad-vpn.enableEarlyBootBlocking
+    && !sabConfig.services.mullvad-vpn.enableExcludeWrapper
     && !config.services.mullvad-vpn.enable
     && qbtConfig.services.qbittorrent.enable
     && !qbtConfig.services.qbittorrent.openFirewall
     && lib.hasPrefix "+/nix/store/" qbtService.serviceConfig.ExecStartPre
+    && lib.hasPrefix "+/nix/store/" (builtins.head sabService.serviceConfig.ExecStartPre)
     && builtins.elem "mullvad-daemon.service" qbtService.requires
+    && builtins.elem "mullvad-daemon.service" sabService.requires
+    && qbtService.serviceConfig.Restart == "on-failure"
+    && sabService.serviceConfig.Restart == "on-failure"
   )
-  "Mullvad's early blocker and pre-start connection gate must fail qBittorrent closed without affecting Kim";
+  "Mullvad's early blocker and pre-start connection gate must fail both downloaders closed without affecting Kim";
   assert lib.assertMsg (
     qbtService.wantedBy
     == []
     && qbtDeferredTimer.wantedBy == ["timers.target"]
+    && qbtDeferredTimer.timerConfig.OnUnitInactiveSec == "30s"
     && qbtDeferredTimer.timerConfig.Unit == "qbittorrent.service"
+    && sabService.wantedBy == []
+    && sabDeferredTimer.wantedBy == ["timers.target"]
+    && sabDeferredTimer.timerConfig.OnUnitInactiveSec == "30s"
+    && sabDeferredTimer.timerConfig.Unit == "sabnzbd.service"
   )
-  "qBittorrent must not block the container boot target while Mullvad awaits its first login";
+  "downloaders must not block their container boot targets while Mullvad awaits first login";
   assert lib.assertMsg (
     qbtService.environment.QBIT_NETWORK_INTERFACE
     == "wg0-mullvad"
@@ -242,15 +291,22 @@ in
   assert lib.assertMsg (
     config.networking.nat.enable
     && config.networking.nat.externalInterface == "enp194s0"
-    && config.networking.nat.internalInterfaces == ["ve-qbt"]
+    && config.networking.nat.internalInterfaces
+    == [
+      "ve-qbt"
+      "ve-sab"
+    ]
   )
-  "only the qBittorrent veth must use Kim's physical uplink for NAT";
+  "only the isolated downloader veths must use Kim's physical uplink for NAT";
   assert lib.assertMsg (
     config.systemd.sockets.qbittorrent-proxy.socketConfig.ListenStream
     == "127.0.0.1:${toString endpoints.qbittorrent.port}"
     && lib.hasSuffix "systemd-socket-proxyd 10.89.0.2:8080" config.systemd.services.qbittorrent-proxy.serviceConfig.ExecStart
+    && config.systemd.sockets.sabnzbd-proxy.socketConfig.ListenStream
+    == "127.0.0.1:${toString endpoints.sabnzbd.port}"
+    && lib.hasSuffix "systemd-socket-proxyd 10.89.1.2:8080" config.systemd.services.sabnzbd-proxy.serviceConfig.ExecStart
   )
-  "qBittorrent's WebUI must cross the namespace only through a loopback proxy";
+  "downloader WebUIs must cross their namespaces only through loopback proxies";
   assert lib.assertMsg (
     config.networking.firewall.interfaces.enp194s0.allowedTCPPorts
     == [endpoints.jellyfin.port]
@@ -264,8 +320,8 @@ in
     config.systemd.services.lidarr
     config.systemd.services.sonarr
     config.systemd.services.radarr
-    sabService
-    hostContainerService
+    hostQbtContainerService
+    hostSabContainerService
   ])
   "every media writer or reader must fail closed when /srv is absent";
   assert lib.assertMsg (
@@ -288,18 +344,22 @@ in
   )
   "Borg must preserve media control state while excluding replaceable downloaded media";
   assert lib.assertMsg (lib.all (unit: builtins.elem unit homelab.backup.archiveUnits) [
-    "bazarr.service"
-    "jellyfin.service"
-    "lidarr.service"
-    "prowlarr.service"
-    "container@qbt.service"
-    "radarr.service"
-    "sabnzbd.service"
-    "seerr.service"
-    "sonarr.service"
-    "tunarr.service"
-  ])
-  "Borg must quiesce every mutable media control plane before copying it";
+      "bazarr.service"
+      "jellyfin.service"
+      "lidarr.service"
+      "prowlarr.service"
+      "qbittorrent-proxy.socket"
+      "container@qbt.service"
+      "sabnzbd-proxy.socket"
+      "container@sab.service"
+      "radarr.service"
+      "seerr.service"
+      "sonarr.service"
+      "tunarr.service"
+    ]
+    && quiescesBefore "qbittorrent-proxy.socket" "container@qbt.service"
+    && quiescesBefore "sabnzbd-proxy.socket" "container@sab.service")
+  "Borg must disable downloader socket activation before quiescing every mutable media control plane";
     pkgs.runCommand "media-stack-regression" {} ''
       touch "$out"
     ''
