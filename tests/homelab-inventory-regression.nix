@@ -46,6 +46,8 @@ in
   "unknown service record fields must fail evaluation";
   assert lib.assertMsg (rejects (withService "vaultwarden" {endpoint.exposure = "private";}))
   "unknown exposure values must fail evaluation";
+  assert lib.assertMsg (rejects (withService "vaultwarden" {endpoint.bindScope = "lan";}))
+  "unknown endpoint bind scopes must fail evaluation";
   assert lib.assertMsg (rejects (withService "vaultwarden" {state.kind = "files";}))
   "derived state kinds must not be configurable";
   assert lib.assertMsg (rejects (withService "vaultwarden" {
@@ -94,6 +96,13 @@ in
   "every /srv dependency must target a real service rather than a generated empty unit";
   assert lib.assertMsg (lib.all userUnitExists userQuiesceEntries)
   "every user-scoped backup unit must exist in the declared user's Home Manager configuration";
+  assert lib.assertMsg (
+    homelab.services.jellyfin.endpoint.bindScope
+    == "host"
+    && homelab.services.bazarr.endpoint.bindScope == "loopback"
+    && homelab.services.seerr.endpoint.bindScope == "loopback"
+  )
+  "endpoint bind scope must default to loopback with explicit host-bound exceptions";
   assert lib.assertMsg (homelab.services.paperless.state.kind == "database+files")
   "state kind must derive from Paperless's declared files and database";
   assert lib.assertMsg (homelab.services.homeassistant.backup.archivePaths == ["/var/backup/home-assistant/config.tar"])

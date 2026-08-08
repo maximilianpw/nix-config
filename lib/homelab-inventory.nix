@@ -29,6 +29,10 @@
         type = types.nullOr types.str;
         default = null;
       };
+      bindScope = mkOption {
+        type = types.enum ["loopback" "host"];
+        default = "loopback";
+      };
       exposure = mkOption {
         type = types.enum ["public" "tailnet" "local" "none"];
         default = "none";

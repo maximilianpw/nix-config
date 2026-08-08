@@ -176,11 +176,15 @@
       }
     ];
   };
-  loopbackPorts = map (service: service.endpoint.port) (
-    lib.filter (
-      service: service.endpoint.exposure != "none" && service.endpoint.port != null
-    ) (builtins.attrValues homelab.services)
-  );
+  monitoredEndpoints = lib.filter (
+    service: service.endpoint.exposure != "none" && service.endpoint.port != null
+  ) (builtins.attrValues homelab.services);
+  portsForBindScope = bindScope:
+    map (service: service.endpoint.port) (
+      lib.filter (service: service.endpoint.bindScope == bindScope) monitoredEndpoints
+    );
+  loopbackPorts = portsForBindScope "loopback";
+  hostPorts = portsForBindScope "host";
   tailscaleServiceNames = map (service: service.tailscaleServiceName) (
     lib.filter (service: service.tailscaleServiceName != null) (builtins.attrValues homelab.services)
   );
@@ -201,6 +205,7 @@
       export HOMELAB_OPTIONAL_AUTOMOUNTS=${lib.escapeShellArg "/mnt/backups"}
       export HOMELAB_IMPORTANT_UNITS=${lib.escapeShellArg (lib.concatStringsSep " " importantSystemdUnits)}
       export HOMELAB_LOOPBACK_PORTS=${lib.escapeShellArg (lib.concatMapStringsSep " " toString loopbackPorts)}
+      export HOMELAB_HOST_PORTS=${lib.escapeShellArg (lib.concatMapStringsSep " " toString hostPorts)}
       export HOMELAB_TAILSCALE_SERVICES=${lib.escapeShellArg (lib.concatStringsSep " " tailscaleServiceNames)}
       export HOMELAB_CLOUDFLARED_UNIT=${lib.escapeShellArg homelab.infrastructure.cloudflare.unit}
       export HOMELAB_PROMETHEUS_URL=${lib.escapeShellArg (homelab.loopbackUrl prometheus.port)}

@@ -172,6 +172,8 @@ in
     && config.services.radarr.settings.server.port == endpoints.radarr.port
     && config.services.prowlarr.settings.server.bindaddress == "127.0.0.1"
     && config.services.prowlarr.settings.server.port == endpoints.prowlarr.port
+    && config.systemd.services.bazarr.environment.DYNACONF_GENERAL__IP == "127.0.0.1"
+    && config.systemd.services.seerr.environment.HOST == "127.0.0.1"
     && !config.services.bazarr.openFirewall
     && !config.services.lidarr.openFirewall
     && !config.services.sonarr.openFirewall
@@ -179,7 +181,7 @@ in
     && !config.services.prowlarr.openFirewall
     && !config.services.seerr.openFirewall
   )
-  "administrative media services must stay on loopback or behind the host firewall";
+  "administrative media services must bind loopback and keep their firewall ports closed";
   assert lib.assertMsg (
     config.users.users.tunarr.isSystemUser
     && config.users.users.tunarr.group == "tunarr"

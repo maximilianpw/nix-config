@@ -26,7 +26,11 @@ cat > "$tmp/ss" <<'EOF'
 if [[ $* == *"sport = :"* ]]; then
   port=${@: -1}
   port=${port##*:}
-  printf 'LISTEN 0 128 127.0.0.1:%s 0.0.0.0:*\n' "$port"
+  if [[ $port == 8096 ]]; then
+    printf 'LISTEN 0 128 0.0.0.0:%s 0.0.0.0:*\n' "$port"
+  else
+    printf 'LISTEN 0 128 127.0.0.1:%s 0.0.0.0:*\n' "$port"
+  fi
 fi
 EOF
 cat > "$tmp/tailscale" <<'EOF'
@@ -67,6 +71,7 @@ export HOMELAB_REQUIRED_MOUNTS='/ /srv /mnt/backups'
 export HOMELAB_OPTIONAL_AUTOMOUNTS='/mnt/backups'
 export HOMELAB_IMPORTANT_UNITS='grafana.service borgbackup-job-main.service'
 export HOMELAB_LOOPBACK_PORTS='19001 19004'
+export HOMELAB_HOST_PORTS='8096'
 export HOMELAB_TAILSCALE_SERVICES='svc:grafana svc:kuma'
 export HOMELAB_METRICS_DIR=$tmp
 export HOMELAB_INSPECT_BIN=$tmp/inspect
@@ -79,6 +84,20 @@ grep -Fq 'homelab check passed' "$tmp/pass.out"
 grep -Fq 'INFO: /mnt/backups is armed but not mounted; no access was triggered' "$tmp/pass.out"
 grep -Fq 'INFO: latest archive inspection skipped' "$tmp/pass.out"
 [[ ! -s $INSPECT_LOG ]]
+
+if HOMELAB_LOOPBACK_PORTS='19001 19004 8096' HOMELAB_HOST_PORTS='' \
+  bash "$check_script" > "$tmp/host-as-loopback.out" 2> "$tmp/host-as-loopback.err"; then
+  echo "listener audit accepted a host-bound listener as loopback-only" >&2
+  exit 1
+fi
+grep -Fq 'declared port 8096 has a non-loopback listener' "$tmp/host-as-loopback.err"
+
+if HOMELAB_LOOPBACK_PORTS='19004' HOMELAB_HOST_PORTS='19001 8096' \
+  bash "$check_script" > "$tmp/loopback-as-host.out" 2> "$tmp/loopback-as-host.err"; then
+  echo "listener audit accepted a loopback-only listener as host-bound" >&2
+  exit 1
+fi
+grep -Fq 'declared host-bound port 19001 has no non-loopback listener' "$tmp/loopback-as-host.err"
 
 HOMELAB_CHECK_ARCHIVE=1 bash "$check_script" > "$tmp/archive.out"
 grep -Fq 'Archive inspection passed; no files were restored' "$tmp/archive.out"

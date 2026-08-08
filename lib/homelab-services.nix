@@ -153,6 +153,9 @@
   jellyfin = {
     endpoint = {
       authorizationOwner = "tailscale";
+      # Jellyfin also serves clients on Kim's physical LAN; the firewall limits
+      # this host-bound listener to the declared playback interface.
+      bindScope = "host";
       exposure = "tailnet";
       port = 8096;
       monitorPath = "/health";

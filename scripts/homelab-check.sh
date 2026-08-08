@@ -57,6 +57,20 @@ for port in "${loopback_ports[@]}"; do
   fi
 done
 
+printf '%s\n' '== declared host-bound listeners =='
+read -r -a host_ports <<< "${HOMELAB_HOST_PORTS:-}"
+for port in "${host_ports[@]}"; do
+  listeners=$($SS_BIN -H -lnt "sport = :$port" 2>/dev/null || true)
+  if [[ -z $listeners ]]; then
+    fail "declared host-bound port $port has no TCP listener"
+  elif ! awk '{print $4}' <<< "$listeners" | grep -Evq '^(127\.0\.0\.1|\[::1\]):[0-9]+$'; then
+    fail "declared host-bound port $port has no non-loopback listener"
+    printf '%s\n' "$listeners" >&2
+  else
+    printf '%s\n' "$listeners"
+  fi
+done
+
 printf '%s\n' '== all non-loopback TCP listeners (audit only) =='
 $SS_BIN -H -lnt 2>/dev/null \
   | awk '$4 !~ /^(127\.0\.0\.1|\[::1\]):/ { print }' \

@@ -310,10 +310,14 @@ in {
 
     services =
       {
-        bazarr.serviceConfig.UMask = lib.mkForce "0002";
+        bazarr = {
+          environment.DYNACONF_GENERAL__IP = "127.0.0.1";
+          serviceConfig.UMask = lib.mkForce "0002";
+        };
         lidarr.serviceConfig.UMask = lib.mkForce "0002";
         sonarr.serviceConfig.UMask = lib.mkForce "0002";
         radarr.serviceConfig.UMask = lib.mkForce "0002";
+        seerr.environment.HOST = "127.0.0.1";
         tunarr = {
           description = "Tunarr personal TV server";
           after = ["network-online.target"];
