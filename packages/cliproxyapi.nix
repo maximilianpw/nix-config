@@ -5,11 +5,11 @@
   stdenv,
 }: let
   pname = "cliproxyapi";
-  version = "7.2.113";
+  version = "7.2.125";
 
   src = fetchurl {
     url = "https://github.com/router-for-me/CLIProxyAPI/releases/download/v${version}/CLIProxyAPI_${version}_linux_amd64.tar.gz";
-    hash = "sha256-zuTO6o6P84EbqkU0ErkmyqqUKBPaRlj/sv0lKmNknhY=";
+    hash = "sha256-TpQLfcW9+Ge1xYyjDxs2j65twuBB6KNR1cLAfz9hAjM=";
   };
 in
   stdenv.mkDerivation {
