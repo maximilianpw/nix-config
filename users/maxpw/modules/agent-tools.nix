@@ -27,18 +27,17 @@
   piConfigSource = path: homeFiles.mkHomeSource config.home.homeDirectory "pi-config/${path}";
 in {
   home = {
-    packages =
-      [
-        pkgs.claude-code
-        pkgs.codex
-        pkgs.opencode
-        pkgs.grok
-        pkgs.herdr
-        pkgs.amp-cli
-        pkgs.pi
-        pkgs.skills
-      ]
-      ++ lib.optionals (hostname == "kim") [pkgs.plannotator];
+    packages = [
+      pkgs.claude-code
+      pkgs.codex
+      pkgs.opencode
+      pkgs.grok
+      pkgs.herdr
+      pkgs.amp-cli
+      pkgs.pi
+      pkgs.skills
+      pkgs.plannotator
+    ];
 
     file =
       {
