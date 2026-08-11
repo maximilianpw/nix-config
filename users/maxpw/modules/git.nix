@@ -29,7 +29,7 @@
         core.pager = "hunk pager";
         core.askPass = ""; # needs to be empty to use terminal for ask pass
         # Avoid plaintext ~/.git-credentials: macOS Keychain on Darwin,
-        # in-memory cache (1h) elsewhere. SSH auth goes through Bitwarden.
+        # in-memory cache (1h) elsewhere. SSH auth goes through 1Password.
         credential.helper =
           if isDarwin
           then "osxkeychain"

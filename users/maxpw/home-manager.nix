@@ -69,9 +69,23 @@ in {
   home = {
     stateVersion = "25.05";
 
+    activation.ensureOnePasswordAgentSymlink = lib.hm.dag.entryBefore ["checkLinkTargets"] ''
+      if [ ${lib.escapeShellArg (
+        if isDarwin
+        then "1"
+        else "0"
+      )} = 1 ]; then
+        agent_dir="${config.home.homeDirectory}/.1password"
+        agent_target="${config.home.homeDirectory}/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
+
+        mkdir -p "$agent_dir"
+        ln -sfn "$agent_target" "$agent_dir/agent.sock"
+      fi
+    '';
+
     file = lib.mkIf isDarwin {
       ".ssh/github-authentication_ed25519.pub".text = settings.sshKeys.githubAuthentication + "\n";
-      ".ssh/fleet_bitwarden_ed25519.pub".text = hostRecord.client.key + "\n";
+      ".ssh/fleet_1password_ed25519.pub".text = hostRecord.client.key + "\n";
     };
 
     sessionPath = [
@@ -91,7 +105,7 @@ in {
         then {
           # See: https://github.com/NixOS/nixpkgs/issues/390751
           DISPLAY = "nixpkgs-390751";
-          SSH_AUTH_SOCK = "${config.home.homeDirectory}/.bitwarden-ssh-agent.sock";
+          SSH_AUTH_SOCK = "${config.home.homeDirectory}/.1password/agent.sock";
         }
         else {}
       )
@@ -129,7 +143,7 @@ in {
           "github.com" = {
             HostName = "github.com";
             User = "git";
-            IdentityAgent = "%d/.bitwarden-ssh-agent.sock";
+            IdentityAgent = "%d/.1password/agent.sock";
             IdentityFile = "~/.ssh/github-authentication_ed25519.pub";
             IdentitiesOnly = "yes";
             AddKeysToAgent = "no";

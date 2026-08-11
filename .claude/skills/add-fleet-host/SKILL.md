@@ -47,7 +47,7 @@ If key facts are missing, ask for them. Do not guess `longRunningAgents = true`.
 2. Set the platform flags, `user`, `role`, `longRunningAgents`, and `client` explicitly. The normalized inventory derives `os`, `gui`, `accent`, `tmuxCommand`, and the default `hostName`.
 3. Add optional `aliases`, target override, ports, host key, or presentation overrides directly to the host record only when they differ from defaults.
 4. Leave `hostKey` absent only while bootstrapping; generated SSH config uses `StrictHostKeyChecking = "accept-new"` until it is pinned.
-5. Generate `~/.ssh/fleet_ed25519` on non-Darwin clients (or use the Bitwarden SSH agent on Darwin), then add only the public key, identity selector, and stable Tailscale IPv4/IPv6 addresses to the host's `client` record. `modules/fleet/ssh-access.nix` derives and distributes the restricted trust set.
+5. Generate `~/.ssh/fleet_ed25519` on non-Darwin clients (or use the 1Password SSH agent on Darwin), then add only the public key, identity selector, and stable Tailscale IPv4/IPv6 addresses to the host's `client` record. `modules/fleet/ssh-access.nix` derives and distributes the restricted trust set.
 6. For NixOS and WSL machines, confirm the system imports `modules/fleet/nixos.nix`; all platforms import `modules/fleet/ssh-access.nix` through their user OS module.
 7. The cmux machine buttons and tmux accent are generated from inventory data. Do not add per-host code to the sidebar or tmux module.
 8. Do not edit generated files such as `~/.config/fleet/hosts.json`, `~/.config/fleet/FLEET.md`, or `~/.ssh/config`.
