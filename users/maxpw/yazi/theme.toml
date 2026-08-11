@@ -1,102 +1,76 @@
-# Yazi theme - similar to ranger default colorscheme
+# Catppuccin Mocha theme for Yazi.
 # See https://yazi-rs.github.io/docs/configuration/theme
 
 [mgr]
-# Highlight current item with a visible color
-cwd = { fg = "cyan" }
-
-# Tabs
-tab_active = { fg = "black", bg = "blue" }
-tab_inactive = { fg = "white", bg = "darkgray" }
+cwd = { fg = "#89b4fa" }
+tab_active = { fg = "#1e1e2e", bg = "#89b4fa", bold = true }
+tab_inactive = { fg = "#cdd6f4", bg = "#313244" }
 tab_width = 1
-
-# Borders
 border_symbol = "│"
-border_style = { fg = "gray" }
-
-# Selection
-find_keyword = { fg = "yellow", underline = true }
-find_position = { fg = "magenta", bg = "reset", italic = true }
-
-# Marks & bookmarks
-marker_selected = { fg = "yellow", bg = "yellow" }
-marker_copied = { fg = "green", bg = "green" }
-marker_cut = { fg = "red", bg = "red" }
+border_style = { fg = "#6c7086" }
+find_keyword = { fg = "#f9e2af", underline = true }
+find_position = { fg = "#cba6f7", bg = "reset", italic = true }
+marker_selected = { fg = "#f9e2af", bg = "#f9e2af" }
+marker_copied = { fg = "#a6e3a1", bg = "#a6e3a1" }
+marker_cut = { fg = "#f38ba8", bg = "#f38ba8" }
 
 [status]
 separator_open = ""
 separator_close = ""
-
-# Mode indicators
-mode_normal = { fg = "black", bg = "blue", bold = true }
-mode_select = { fg = "black", bg = "green", bold = true }
-mode_unset = { fg = "black", bg = "magenta", bold = true }
-
-# Status bar
-progress_label = { fg = "white", bold = true }
-progress_normal = { fg = "blue", bg = "black" }
-progress_error = { fg = "red", bg = "black" }
+mode_normal = { fg = "#1e1e2e", bg = "#89b4fa", bold = true }
+mode_select = { fg = "#1e1e2e", bg = "#a6e3a1", bold = true }
+mode_unset = { fg = "#1e1e2e", bg = "#cba6f7", bold = true }
+progress_label = { fg = "#cdd6f4", bold = true }
+progress_normal = { fg = "#89b4fa", bg = "#1e1e2e" }
+progress_error = { fg = "#f38ba8", bg = "#1e1e2e" }
 
 [input]
-border = { fg = "blue" }
+border = { fg = "#89b4fa" }
 title = {}
 value = {}
 selected = { reversed = true }
 
 [select]
-border = { fg = "blue" }
-active = { fg = "magenta" }
+border = { fg = "#89b4fa" }
+active = { fg = "#cba6f7" }
 inactive = {}
 
 [tasks]
-border = { fg = "blue" }
+border = { fg = "#89b4fa" }
 title = {}
 hovered = { underline = true }
 
 [which]
-mask = { bg = "black" }
-cand = { fg = "cyan" }
-rest = { fg = "gray" }
-desc = { fg = "magenta" }
+mask = { bg = "#1e1e2e" }
+cand = { fg = "#94e2d5" }
+rest = { fg = "#a6adc8" }
+desc = { fg = "#cba6f7" }
 separator = " -> "
-separator_style = { fg = "darkgray" }
+separator_style = { fg = "#6c7086" }
 
 [help]
-on = { fg = "magenta" }
-run = { fg = "cyan" }
+on = { fg = "#cba6f7" }
+run = { fg = "#94e2d5" }
 desc = {}
-hovered = { bg = "darkgray", bold = true }
-footer = { fg = "black", bg = "white" }
+hovered = { bg = "#313244", bold = true }
+footer = { fg = "#1e1e2e", bg = "#cdd6f4" }
 
 [filetype]
 rules = [
-  # Directories
-  { name = "*/", fg = "blue", bold = true },
-
-  # Executables
-  { mime = "application/x-*executable*", fg = "green" },
-
-  # Media
-  { mime = "image/*", fg = "cyan" },
-  { mime = "video/*", fg = "magenta" },
-  { mime = "audio/*", fg = "yellow" },
-
-  # Archives
-  { mime = "application/zip", fg = "red" },
-  { mime = "application/gzip", fg = "red" },
-  { mime = "application/x-tar", fg = "red" },
-  { mime = "application/x-bzip2", fg = "red" },
-  { mime = "application/x-xz", fg = "red" },
-  { mime = "application/x-7z-compressed", fg = "red" },
-  { mime = "application/x-rar", fg = "red" },
-
-  # Documents
-  { mime = "application/pdf", fg = "red" },
-  { mime = "application/*document*", fg = "red" },
-
-  # Symlinks
-  { is = "link", fg = "cyan", italic = true },
-
-  # Hidden files
-  { name = ".*", fg = "gray" },
+  { url = "*/", fg = "#89b4fa", bold = true },
+  { mime = "application/x-*executable*", fg = "#a6e3a1" },
+  { mime = "image/*", fg = "#94e2d5" },
+  { mime = "video/*", fg = "#cba6f7" },
+  { mime = "audio/*", fg = "#f9e2af" },
+  { mime = "application/zip", fg = "#f38ba8" },
+  { mime = "application/gzip", fg = "#f38ba8" },
+  { mime = "application/x-tar", fg = "#f38ba8" },
+  { mime = "application/x-bzip2", fg = "#f38ba8" },
+  { mime = "application/x-xz", fg = "#f38ba8" },
+  { mime = "application/x-7z-compressed", fg = "#f38ba8" },
+  { mime = "application/x-rar", fg = "#f38ba8" },
+  { mime = "application/pdf", fg = "#f38ba8" },
+  { mime = "application/*document*", fg = "#f38ba8" },
+  { url = "*", is = "link", fg = "#94e2d5", italic = true },
+  { url = ".*", fg = "#a6adc8" },
 ]
