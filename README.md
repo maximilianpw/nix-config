@@ -43,7 +43,6 @@ The remote development fleet is named Revachol; its CLI remains `fleet`.
 │   └── services/
 │       └── backup.nix       # Borg backup service
 ├── packages/
-│   ├── coderabbit.nix       # Custom package: CodeRabbit CLI
 │   ├── helium.nix           # Custom package: Helium floating browser
 │   └── obsidian.nix         # Custom package: Obsidian
 ├── scripts/
@@ -82,7 +81,7 @@ The remote development fleet is named Revachol; its CLI remains `fleet`.
 ## Flake overview
 
 - Inputs: nixpkgs 26.05, nixpkgs-unstable (select pkgs), home-manager 26.05, nix-darwin 26.05, Hyprland, NixOS-WSL, fenix, sops-nix, llm-agents, disko, nix-index-database.
-- Overlays: fenix (Rust toolchain); llm-agents (claude-code, codex, opencode, amp-cli, pi, skills, hunkdiff, agent-browser); unstable passthrough (`pkgs.unstable`, plus jujutsu/zig pinned to unstable) and custom packages (helium, obsidian, coderabbit).
+- Overlays: fenix (Rust toolchain); llm-agents (claude-code, codex, opencode, amp-cli, pi, skills, hunkdiff, agent-browser); unstable passthrough (`pkgs.unstable`, plus jujutsu/zig pinned to unstable) and custom packages (helium, obsidian).
 - `lib/hosts.nix` is the data-only source for system outputs, profile labels,
   platform metadata, and fleet hosts. Its profile labels are a typed migration
   seam; platform flags still select modules today rather than a new role-module

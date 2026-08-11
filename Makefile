@@ -56,7 +56,7 @@ update-packages: ## Bump repo-local custom packages via nix-update
 	@echo "Note: Linux-only packages cannot be built from macOS. The CI workflow"
 	@echo "handles them; here we only bump what this host can evaluate."
 	@echo "(skills/hunkdiff come from the llm-agents input: use 'make update')"
-	@for pkg in helium obsidian coderabbit cliproxyapi nextcloud-calendar; do \
+	@for pkg in helium obsidian cliproxyapi nextcloud-calendar; do \
 		echo ">> nix-update $$pkg"; \
 		nix run .#nix-update -- --flake "$$pkg" || echo "(skipped: $$pkg)"; \
 	done

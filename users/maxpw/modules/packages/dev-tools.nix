@@ -51,6 +51,5 @@
     # Dev tools
     pkgs.ast-grep
     pkgs.sops
-    pkgs.coderabbit
   ];
 }

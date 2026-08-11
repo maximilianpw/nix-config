@@ -96,7 +96,7 @@ modules/
       terminal-tools.nix  # CLI utilities (bat, eza, fzf, ripgrep, etc.)
       linux-desktop.nix   # Wayland/GUI apps (Ghostty, rofi, waybar, etc.)
       custom-scripts.nix  # Personal helper scripts
-packages/           # Custom package definitions (helium, obsidian, coderabbit)
+packages/           # Custom package definitions (helium, obsidian, and other repo-local packages)
 secrets/            # sops-nix encrypted secrets (age encryption, key in 1Password)
 ```
 
@@ -114,7 +114,7 @@ remains `fleet`. Usage and implementation notes live in
 Three overlays applied in order:
 1. **fenix** - Rust toolchain
 2. **llm-agents** - AI CLI tools (claude-code, codex, opencode, amp-cli, pi, skills, hunkdiff, agent-browser) from the `numtide/llm-agents.nix` flake input
-3. **unstable + custom** - Exposes the full unstable channel as `pkgs.unstable`, pulls select packages from `nixpkgs-unstable` (jujutsu, zig), and defines the custom packages (helium, obsidian, coderabbit)
+3. **unstable + custom** - Exposes the full unstable channel as `pkgs.unstable`, pulls select packages from `nixpkgs-unstable` (jujutsu, zig), and defines the custom packages (helium, obsidian, and other repo-local packages)
 
 ### Secrets
 
