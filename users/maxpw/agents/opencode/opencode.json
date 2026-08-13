@@ -68,9 +68,9 @@
     }
   },
   "mcp": {
-    "context7": {
+    "executor": {
       "type": "remote",
-      "url": "https://mcp.context7.com/mcp",
+      "url": "https://executor.liger-shilling.ts.net/mcp",
       "enabled": true
     }
   },
