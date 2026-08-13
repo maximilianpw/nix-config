@@ -15,10 +15,13 @@
   qbitUid = 970;
   sabnzbdUid = 973;
   qbitContainerAddress = "10.89.0.2";
+  qbitContainerLocalAddress = "${qbitContainerAddress}/31";
+  qbitContainerHostAddress = "10.89.0.3";
   qbitContainerPort = 8080;
   qbitNetworkInterface = "wg0-mullvad";
   sabContainerAddress = "10.89.1.2";
-  sabContainerHostAddress = "10.89.1.1";
+  sabContainerLocalAddress = "${sabContainerAddress}/31";
+  sabContainerHostAddress = "10.89.1.3";
   sabContainerPort = 8080;
   mullvadConnectionGate = application: ''
     # These settings persist in Mullvad's state. Reasserting them makes every
@@ -403,10 +406,11 @@ in {
   };
 
   containers.qbt = mkVpnContainer {
-    hostAddress = "10.89.0.1";
-    # The container module installs localAddress as a host route. Supplying a
-    # subnet prefix here makes its generated `ip route add` reject the address.
-    localAddress = qbitContainerAddress;
+    hostAddress = qbitContainerHostAddress;
+    # Mullvad's LAN firewall must see the host endpoint in the container's
+    # connected subnet. Using the even .2 address as a /31 network base also
+    # keeps the container module's generated host route valid.
+    localAddress = qbitContainerLocalAddress;
     port = qbitContainerPort;
     bindMounts.${mediaRoot + "/torrents"} = {
       hostPath = mediaRoot + "/torrents";
@@ -490,7 +494,7 @@ in {
 
   containers.sab = mkVpnContainer {
     hostAddress = sabContainerHostAddress;
-    localAddress = sabContainerAddress;
+    localAddress = sabContainerLocalAddress;
     port = sabContainerPort;
     # Keep SABnzbd's existing host state path to make this namespace move
     # migration-free; the separate container root preserves Mullvad's login.

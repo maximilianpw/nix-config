@@ -131,7 +131,7 @@ in
     && sabConfig.services.sabnzbd.settings.misc.host_whitelist
     == "${endpoints.sabnzbd.host}, localhost, 127.0.0.1, 10.89.1.2"
     && sabConfig.services.sabnzbd.settings.misc.local_ranges
-    == "10.89.1.1, 100.64.0.0/10, fd7a:115c:a1e0::/48"
+    == "10.89.1.3, 100.64.0.0/10, fd7a:115c:a1e0::/48"
     && sabConfig.services.sabnzbd.settings.misc.verify_xff_header
     && sabConfig.services.sabnzbd.settings.servers.eweka.host == "news.eweka.nl"
     && sabConfig.services.sabnzbd.settings.servers.eweka.port == 563
@@ -233,27 +233,25 @@ in
     qbt.autoStart
     && qbt.privateNetwork
     && qbt.enableTun
-    && qbt.hostAddress == "10.89.0.1"
-    && qbt.localAddress == "10.89.0.2"
-    && !lib.hasInfix "/" qbt.localAddress
+    && qbt.hostAddress == "10.89.0.3"
+    && qbt.localAddress == "10.89.0.2/31"
     && qbtConfig.time.timeZone == config.time.timeZone
     && builtins.attrNames qbt.bindMounts == ["${mediaRoot}/torrents"]
     && qbt.bindMounts."${mediaRoot}/torrents".hostPath == "${mediaRoot}/torrents"
     && !qbt.bindMounts."${mediaRoot}/torrents".isReadOnly
   )
-  "qBittorrent must use the container module's prefix-free host-route address and only the torrent bind mount";
+  "qBittorrent must keep its host endpoint in Mullvad's connected LAN subnet and expose only the torrent bind mount";
   assert lib.assertMsg (
     sab.autoStart
     && sab.privateNetwork
     && sab.enableTun
-    && sab.hostAddress == "10.89.1.1"
-    && sab.localAddress == "10.89.1.2"
-    && !lib.hasInfix "/" sab.localAddress
+    && sab.hostAddress == "10.89.1.3"
+    && sab.localAddress == "10.89.1.2/31"
     && sabConfig.time.timeZone == config.time.timeZone
     && sab.bindMounts.${usenetRoot}.hostPath == usenetRoot
     && sab.bindMounts."/var/lib/sabnzbd".hostPath == "/var/lib/sabnzbd"
   )
-  "SABnzbd must use a separate prefix-free private network and preserve only its state and Usenet bind mounts";
+  "SABnzbd must keep its host endpoint in a separate Mullvad LAN subnet and preserve only its state and Usenet bind mounts";
   assert lib.assertMsg (
     qbtConfig.services.mullvad-vpn.enable
     && qbtConfig.services.mullvad-vpn.enableEarlyBootBlocking

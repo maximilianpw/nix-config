@@ -6,6 +6,11 @@
 }: let
   homelab = import ../../../../lib/homelab.nix {inherit lib;};
   vaultwardenUrl = homelab.privateUrl homelab.defaultTailnetDomain "vaultwarden";
+  ynabMcpServerSource = pkgs.runCommand "ynab-mcp-server-source" {} ''
+    mkdir --parents "$out"
+    cp ${../../../../scripts/ynab-mcp-server.mjs} "$out/ynab-mcp-server.mjs"
+    cp ${../../../../scripts/ynab-mcp-operations.json} "$out/ynab-mcp-operations.json"
+  '';
 in {
   home.packages = [
     (pkgs.writeShellApplication {
@@ -30,7 +35,7 @@ in {
       name = "ynab-mcp-server";
       runtimeInputs = [pkgs.nodejs pkgs._1password-cli];
       text = ''
-        exec ${pkgs.nodejs}/bin/node ${../../../../scripts/ynab-mcp-server.mjs} "$@"
+        exec ${pkgs.nodejs}/bin/node ${ynabMcpServerSource}/ynab-mcp-server.mjs "$@"
       '';
     })
     (pkgs.writeShellApplication {

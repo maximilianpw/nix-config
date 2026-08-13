@@ -1,0 +1,3102 @@
+{
+  "source": "https://api.ynab.com/papi/open_api_spec.yaml",
+  "openapiVersion": "3.1.1",
+  "apiVersion": "1.86.0",
+  "operations": [
+    {
+      "name": "get_user",
+      "operationId": "getUser",
+      "method": "GET",
+      "path": "/user",
+      "summary": "Get user",
+      "description": "Returns authenticated user information",
+      "parameters": [],
+      "bodyKeys": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "readOnly": true,
+      "destructive": false,
+      "idempotent": true
+    },
+    {
+      "name": "list_plans",
+      "operationId": "getPlans",
+      "method": "GET",
+      "path": "/plans",
+      "summary": "Get all plans",
+      "description": "Returns plans list with summary information",
+      "parameters": [
+        {
+          "apiName": "include_accounts",
+          "inputName": "includeAccounts",
+          "location": "query",
+          "required": false
+        }
+      ],
+      "bodyKeys": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "includeAccounts": {
+            "type": "boolean",
+            "description": "Whether to include the list of plan accounts"
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "readOnly": true,
+      "destructive": false,
+      "idempotent": true
+    },
+    {
+      "name": "get_plan",
+      "operationId": "getPlanById",
+      "method": "GET",
+      "path": "/plans/{plan_id}",
+      "summary": "Get a plan",
+      "description": "Returns a single plan with all related entities.  This resource is effectively a full plan export.",
+      "parameters": [
+        {
+          "apiName": "plan_id",
+          "inputName": "planId",
+          "location": "path",
+          "required": true
+        },
+        {
+          "apiName": "last_knowledge_of_server",
+          "inputName": "lastKnowledgeOfServer",
+          "location": "query",
+          "required": false
+        }
+      ],
+      "bodyKeys": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "planId": {
+            "type": "string",
+            "description": "The id of the plan. \"last-used\" can be used to specify the last used plan and \"default\" can be used if default plan selection is enabled (see: https://api.ynab.com/#oauth-default-plan)."
+          },
+          "lastKnowledgeOfServer": {
+            "type": "integer",
+            "format": "int64",
+            "description": "The starting server knowledge.  If provided, only entities that have changed since `last_knowledge_of_server` will be included."
+          }
+        },
+        "required": [
+          "planId"
+        ],
+        "additionalProperties": false
+      },
+      "readOnly": true,
+      "destructive": false,
+      "idempotent": true
+    },
+    {
+      "name": "get_plan_settings",
+      "operationId": "getPlanSettingsById",
+      "method": "GET",
+      "path": "/plans/{plan_id}/settings",
+      "summary": "Get plan settings",
+      "description": "Returns settings for a plan",
+      "parameters": [
+        {
+          "apiName": "plan_id",
+          "inputName": "planId",
+          "location": "path",
+          "required": true
+        }
+      ],
+      "bodyKeys": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "planId": {
+            "type": "string",
+            "description": "The id of the plan. \"last-used\" can be used to specify the last used plan and \"default\" can be used if default plan selection is enabled (see: https://api.ynab.com/#oauth-default-plan)."
+          }
+        },
+        "required": [
+          "planId"
+        ],
+        "additionalProperties": false
+      },
+      "readOnly": true,
+      "destructive": false,
+      "idempotent": true
+    },
+    {
+      "name": "list_accounts",
+      "operationId": "getAccounts",
+      "method": "GET",
+      "path": "/plans/{plan_id}/accounts",
+      "summary": "Get all accounts",
+      "description": "Returns all accounts",
+      "parameters": [
+        {
+          "apiName": "plan_id",
+          "inputName": "planId",
+          "location": "path",
+          "required": true
+        },
+        {
+          "apiName": "last_knowledge_of_server",
+          "inputName": "lastKnowledgeOfServer",
+          "location": "query",
+          "required": false
+        }
+      ],
+      "bodyKeys": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "planId": {
+            "type": "string",
+            "description": "The id of the plan. \"last-used\" can be used to specify the last used plan and \"default\" can be used if default plan selection is enabled (see: https://api.ynab.com/#oauth-default-plan)."
+          },
+          "lastKnowledgeOfServer": {
+            "type": "integer",
+            "format": "int64",
+            "description": "The starting server knowledge.  If provided, only entities that have changed since `last_knowledge_of_server` will be included."
+          }
+        },
+        "required": [
+          "planId"
+        ],
+        "additionalProperties": false
+      },
+      "readOnly": true,
+      "destructive": false,
+      "idempotent": true
+    },
+    {
+      "name": "create_account",
+      "operationId": "createAccount",
+      "method": "POST",
+      "path": "/plans/{plan_id}/accounts",
+      "summary": "Create an account",
+      "description": "Creates a new account",
+      "parameters": [
+        {
+          "apiName": "plan_id",
+          "inputName": "planId",
+          "location": "path",
+          "required": true
+        }
+      ],
+      "bodyKeys": [
+        "account"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "planId": {
+            "type": "string",
+            "description": "The id of the plan (\"last-used\" can be used to specify the last used plan and \"default\" can be used if default plan selection is enabled (see: https://api.ynab.com/#oauth-default-plan)"
+          },
+          "account": {
+            "required": [
+              "balance",
+              "name",
+              "type"
+            ],
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "The name of the account"
+              },
+              "type": {
+                "type": "string",
+                "description": "The type of account to create or update",
+                "enum": [
+                  "checking",
+                  "savings",
+                  "cash",
+                  "creditCard",
+                  "otherAsset",
+                  "otherLiability"
+                ]
+              },
+              "balance": {
+                "type": "integer",
+                "description": "The current balance of the account in milliunits format",
+                "format": "int64"
+              }
+            }
+          }
+        },
+        "required": [
+          "planId",
+          "account"
+        ],
+        "additionalProperties": false
+      },
+      "readOnly": false,
+      "destructive": false,
+      "idempotent": false
+    },
+    {
+      "name": "get_account",
+      "operationId": "getAccountById",
+      "method": "GET",
+      "path": "/plans/{plan_id}/accounts/{account_id}",
+      "summary": "Get an account",
+      "description": "Returns a single account",
+      "parameters": [
+        {
+          "apiName": "plan_id",
+          "inputName": "planId",
+          "location": "path",
+          "required": true
+        },
+        {
+          "apiName": "account_id",
+          "inputName": "accountId",
+          "location": "path",
+          "required": true
+        }
+      ],
+      "bodyKeys": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "planId": {
+            "type": "string",
+            "description": "The id of the plan. \"last-used\" can be used to specify the last used plan and \"default\" can be used if default plan selection is enabled (see: https://api.ynab.com/#oauth-default-plan)."
+          },
+          "accountId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The id of the account"
+          }
+        },
+        "required": [
+          "planId",
+          "accountId"
+        ],
+        "additionalProperties": false
+      },
+      "readOnly": true,
+      "destructive": false,
+      "idempotent": true
+    },
+    {
+      "name": "list_categories",
+      "operationId": "getCategories",
+      "method": "GET",
+      "path": "/plans/{plan_id}/categories",
+      "summary": "Get all categories",
+      "description": "Returns all categories grouped by category group.  Amounts (assigned, activity, available, etc.) are specific to the current plan month (UTC).",
+      "parameters": [
+        {
+          "apiName": "plan_id",
+          "inputName": "planId",
+          "location": "path",
+          "required": true
+        },
+        {
+          "apiName": "last_knowledge_of_server",
+          "inputName": "lastKnowledgeOfServer",
+          "location": "query",
+          "required": false
+        }
+      ],
+      "bodyKeys": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "planId": {
+            "type": "string",
+            "description": "The id of the plan. \"last-used\" can be used to specify the last used plan and \"default\" can be used if default plan selection is enabled (see: https://api.ynab.com/#oauth-default-plan)."
+          },
+          "lastKnowledgeOfServer": {
+            "type": "integer",
+            "format": "int64",
+            "description": "The starting server knowledge.  If provided, only entities that have changed since `last_knowledge_of_server` will be included."
+          }
+        },
+        "required": [
+          "planId"
+        ],
+        "additionalProperties": false
+      },
+      "readOnly": true,
+      "destructive": false,
+      "idempotent": true
+    },
+    {
+      "name": "create_category",
+      "operationId": "createCategory",
+      "method": "POST",
+      "path": "/plans/{plan_id}/categories",
+      "summary": "Create a category",
+      "description": "Creates a new category",
+      "parameters": [
+        {
+          "apiName": "plan_id",
+          "inputName": "planId",
+          "location": "path",
+          "required": true
+        }
+      ],
+      "bodyKeys": [
+        "category"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "planId": {
+            "type": "string",
+            "description": "The id of the plan (\"last-used\" can be used to specify the last used plan and \"default\" can be used if default plan selection is enabled (see: https://api.ynab.com/#oauth-default-plan)"
+          },
+          "category": {
+            "allOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "note": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "category_group_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "The id of the category group to which this category belongs.  An internal category group may not be specified."
+                  },
+                  "goal_target": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "description": "The goal target amount in milliunits format.  If value is specified and goal has not already been configured for category, a monthly goal will be created for the category with this target amount.  If goal_type is not specified, it will default to 'NEED' or 'MF' for Credit Card Payment categories. When updating a category, passing null removes any existing target.",
+                    "format": "int64"
+                  },
+                  "goal_target_date": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "description": "The goal target date in ISO format (e.g. 2016-12-01).",
+                    "format": "date"
+                  },
+                  "goal_needs_whole_amount": {
+                    "type": [
+                      "boolean",
+                      "null"
+                    ],
+                    "description": "Whether the goal requires the full target amount each period. Only supported for 'NEED' goals. When true, the goal is configured as 'Set aside another...'. When false, the goal is configured as 'Refill up to...'."
+                  },
+                  "goal_frequency": {
+                    "type": "string",
+                    "enum": [
+                      "monthly",
+                      "weekly",
+                      "yearly"
+                    ],
+                    "description": "When specified, configures a recurring 'NEED' target of goal_target that repeats at this frequency, replacing any existing target. Requires goal_target. Cannot be combined with goal_target_date and is not supported for Credit Card Payment categories. Omit to leave an existing target's cadence unchanged."
+                  }
+                }
+              },
+              {
+                "required": [
+                  "name",
+                  "category_group_id"
+                ]
+              }
+            ]
+          }
+        },
+        "required": [
+          "planId",
+          "category"
+        ],
+        "additionalProperties": false
+      },
+      "readOnly": false,
+      "destructive": false,
+      "idempotent": false
+    },
+    {
+      "name": "get_category",
+      "operationId": "getCategoryById",
+      "method": "GET",
+      "path": "/plans/{plan_id}/categories/{category_id}",
+      "summary": "Get a category",
+      "description": "Returns a single category.  Amounts (assigned, activity, available, etc.) are specific to the current plan month (UTC).",
+      "parameters": [
+        {
+          "apiName": "plan_id",
+          "inputName": "planId",
+          "location": "path",
+          "required": true
+        },
+        {
+          "apiName": "category_id",
+          "inputName": "categoryId",
+          "location": "path",
+          "required": true
+        }
+      ],
+      "bodyKeys": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "planId": {
+            "type": "string",
+            "description": "The id of the plan. \"last-used\" can be used to specify the last used plan and \"default\" can be used if default plan selection is enabled (see: https://api.ynab.com/#oauth-default-plan)."
+          },
+          "categoryId": {
+            "type": "string",
+            "description": "The id of the category"
+          }
+        },
+        "required": [
+          "planId",
+          "categoryId"
+        ],
+        "additionalProperties": false
+      },
+      "readOnly": true,
+      "destructive": false,
+      "idempotent": true
+    },
+    {
+      "name": "update_category",
+      "operationId": "updateCategory",
+      "method": "PATCH",
+      "path": "/plans/{plan_id}/categories/{category_id}",
+      "summary": "Update a category",
+      "description": "Update a category",
+      "parameters": [
+        {
+          "apiName": "plan_id",
+          "inputName": "planId",
+          "location": "path",
+          "required": true
+        },
+        {
+          "apiName": "category_id",
+          "inputName": "categoryId",
+          "location": "path",
+          "required": true
+        }
+      ],
+      "bodyKeys": [
+        "category"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "planId": {
+            "type": "string",
+            "description": "The id of the plan. \"last-used\" can be used to specify the last used plan and \"default\" can be used if default plan selection is enabled (see: https://api.ynab.com/#oauth-default-plan)."
+          },
+          "categoryId": {
+            "type": "string",
+            "description": "The id of the category"
+          },
+          "category": {
+            "allOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "note": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "category_group_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "The id of the category group to which this category belongs.  An internal category group may not be specified."
+                  },
+                  "goal_target": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "description": "The goal target amount in milliunits format.  If value is specified and goal has not already been configured for category, a monthly goal will be created for the category with this target amount.  If goal_type is not specified, it will default to 'NEED' or 'MF' for Credit Card Payment categories. When updating a category, passing null removes any existing target.",
+                    "format": "int64"
+                  },
+                  "goal_target_date": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "description": "The goal target date in ISO format (e.g. 2016-12-01).",
+                    "format": "date"
+                  },
+                  "goal_needs_whole_amount": {
+                    "type": [
+                      "boolean",
+                      "null"
+                    ],
+                    "description": "Whether the goal requires the full target amount each period. Only supported for 'NEED' goals. When true, the goal is configured as 'Set aside another...'. When false, the goal is configured as 'Refill up to...'."
+                  },
+                  "goal_frequency": {
+                    "type": "string",
+                    "enum": [
+                      "monthly",
+                      "weekly",
+                      "yearly"
+                    ],
+                    "description": "When specified, configures a recurring 'NEED' target of goal_target that repeats at this frequency, replacing any existing target. Requires goal_target. Cannot be combined with goal_target_date and is not supported for Credit Card Payment categories. Omit to leave an existing target's cadence unchanged."
+                  }
+                }
+              },
+              {
+                "type": "object"
+              }
+            ]
+          }
+        },
+        "required": [
+          "planId",
+          "categoryId",
+          "category"
+        ],
+        "additionalProperties": false
+      },
+      "readOnly": false,
+      "destructive": true,
+      "idempotent": false
+    },
+    {
+      "name": "get_month_category",
+      "operationId": "getMonthCategoryById",
+      "method": "GET",
+      "path": "/plans/{plan_id}/months/{month}/categories/{category_id}",
+      "summary": "Get a category for a specific plan month",
+      "description": "Returns a single category for a specific plan month.  Amounts (assigned, activity, available, etc.) are specific to the current plan month (UTC).",
+      "parameters": [
+        {
+          "apiName": "plan_id",
+          "inputName": "planId",
+          "location": "path",
+          "required": true
+        },
+        {
+          "apiName": "month",
+          "inputName": "month",
+          "location": "path",
+          "required": true
+        },
+        {
+          "apiName": "category_id",
+          "inputName": "categoryId",
+          "location": "path",
+          "required": true
+        }
+      ],
+      "bodyKeys": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "planId": {
+            "type": "string",
+            "description": "The id of the plan. \"last-used\" can be used to specify the last used plan and \"default\" can be used if default plan selection is enabled (see: https://api.ynab.com/#oauth-default-plan)."
+          },
+          "month": {
+            "oneOf": [
+              {
+                "const": "current",
+                "description": "The current UTC calendar month."
+              },
+              {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-01$",
+                "description": "A plan month in YYYY-MM-01 format."
+              }
+            ],
+            "description": "The plan month in ISO format (e.g. 2016-12-01) (\"current\" can also be used to specify the current calendar month (UTC))"
+          },
+          "categoryId": {
+            "type": "string",
+            "description": "The id of the category"
+          }
+        },
+        "required": [
+          "planId",
+          "month",
+          "categoryId"
+        ],
+        "additionalProperties": false
+      },
+      "readOnly": true,
+      "destructive": false,
+      "idempotent": true
+    },
+    {
+      "name": "update_month_category",
+      "operationId": "updateMonthCategory",
+      "method": "PATCH",
+      "path": "/plans/{plan_id}/months/{month}/categories/{category_id}",
+      "summary": "Update a category for a specific month",
+      "description": "Update a category for a specific month.  Only `budgeted` (assigned) amount can be updated.",
+      "parameters": [
+        {
+          "apiName": "plan_id",
+          "inputName": "planId",
+          "location": "path",
+          "required": true
+        },
+        {
+          "apiName": "month",
+          "inputName": "month",
+          "location": "path",
+          "required": true
+        },
+        {
+          "apiName": "category_id",
+          "inputName": "categoryId",
+          "location": "path",
+          "required": true
+        }
+      ],
+      "bodyKeys": [
+        "category"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "planId": {
+            "type": "string",
+            "description": "The id of the plan. \"last-used\" can be used to specify the last used plan and \"default\" can be used if default plan selection is enabled (see: https://api.ynab.com/#oauth-default-plan)."
+          },
+          "month": {
+            "oneOf": [
+              {
+                "const": "current",
+                "description": "The current UTC calendar month."
+              },
+              {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-01$",
+                "description": "A plan month in YYYY-MM-01 format."
+              }
+            ],
+            "description": "The plan month in ISO format (e.g. 2016-12-01) (\"current\" can also be used to specify the current calendar month (UTC))"
+          },
+          "categoryId": {
+            "type": "string",
+            "description": "The id of the category"
+          },
+          "category": {
+            "required": [
+              "budgeted"
+            ],
+            "type": "object",
+            "properties": {
+              "budgeted": {
+                "type": "integer",
+                "description": "Assigned (budgeted) amount in milliunits format",
+                "format": "int64"
+              }
+            }
+          }
+        },
+        "required": [
+          "planId",
+          "month",
+          "categoryId",
+          "category"
+        ],
+        "additionalProperties": false
+      },
+      "readOnly": false,
+      "destructive": true,
+      "idempotent": false
+    },
+    {
+      "name": "create_category_group",
+      "operationId": "createCategoryGroup",
+      "method": "POST",
+      "path": "/plans/{plan_id}/category_groups",
+      "summary": "Create a category group",
+      "description": "Creates a new category group",
+      "parameters": [
+        {
+          "apiName": "plan_id",
+          "inputName": "planId",
+          "location": "path",
+          "required": true
+        }
+      ],
+      "bodyKeys": [
+        "category_group"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "planId": {
+            "type": "string",
+            "description": "The id of the plan (\"last-used\" can be used to specify the last used plan and \"default\" can be used if default plan selection is enabled (see: https://api.ynab.com/#oauth-default-plan)"
+          },
+          "category_group": {
+            "required": [
+              "name"
+            ],
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "The name of the category group. The name must be a maximum of 50 characters.",
+                "maxLength": 50
+              }
+            }
+          }
+        },
+        "required": [
+          "planId",
+          "category_group"
+        ],
+        "additionalProperties": false
+      },
+      "readOnly": false,
+      "destructive": false,
+      "idempotent": false
+    },
+    {
+      "name": "update_category_group",
+      "operationId": "updateCategoryGroup",
+      "method": "PATCH",
+      "path": "/plans/{plan_id}/category_groups/{category_group_id}",
+      "summary": "Update a category group",
+      "description": "Update a category group",
+      "parameters": [
+        {
+          "apiName": "plan_id",
+          "inputName": "planId",
+          "location": "path",
+          "required": true
+        },
+        {
+          "apiName": "category_group_id",
+          "inputName": "categoryGroupId",
+          "location": "path",
+          "required": true
+        }
+      ],
+      "bodyKeys": [
+        "category_group"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "planId": {
+            "type": "string",
+            "description": "The id of the plan. \"last-used\" can be used to specify the last used plan and \"default\" can be used if default plan selection is enabled (see: https://api.ynab.com/#oauth-default-plan)."
+          },
+          "categoryGroupId": {
+            "type": "string",
+            "description": "The id of the category group"
+          },
+          "category_group": {
+            "required": [
+              "name"
+            ],
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "The name of the category group. The name must be a maximum of 50 characters.",
+                "maxLength": 50
+              }
+            }
+          }
+        },
+        "required": [
+          "planId",
+          "categoryGroupId",
+          "category_group"
+        ],
+        "additionalProperties": false
+      },
+      "readOnly": false,
+      "destructive": true,
+      "idempotent": false
+    },
+    {
+      "name": "list_payees",
+      "operationId": "getPayees",
+      "method": "GET",
+      "path": "/plans/{plan_id}/payees",
+      "summary": "Get all payees",
+      "description": "Returns all payees",
+      "parameters": [
+        {
+          "apiName": "plan_id",
+          "inputName": "planId",
+          "location": "path",
+          "required": true
+        },
+        {
+          "apiName": "last_knowledge_of_server",
+          "inputName": "lastKnowledgeOfServer",
+          "location": "query",
+          "required": false
+        }
+      ],
+      "bodyKeys": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "planId": {
+            "type": "string",
+            "description": "The id of the plan. \"last-used\" can be used to specify the last used plan and \"default\" can be used if default plan selection is enabled (see: https://api.ynab.com/#oauth-default-plan)."
+          },
+          "lastKnowledgeOfServer": {
+            "type": "integer",
+            "format": "int64",
+            "description": "The starting server knowledge.  If provided, only entities that have changed since `last_knowledge_of_server` will be included."
+          }
+        },
+        "required": [
+          "planId"
+        ],
+        "additionalProperties": false
+      },
+      "readOnly": true,
+      "destructive": false,
+      "idempotent": true
+    },
+    {
+      "name": "create_payee",
+      "operationId": "createPayee",
+      "method": "POST",
+      "path": "/plans/{plan_id}/payees",
+      "summary": "Create a payee",
+      "description": "Creates a new payee",
+      "parameters": [
+        {
+          "apiName": "plan_id",
+          "inputName": "planId",
+          "location": "path",
+          "required": true
+        }
+      ],
+      "bodyKeys": [
+        "payee"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "planId": {
+            "type": "string",
+            "description": "The id of the plan. \"last-used\" can be used to specify the last used plan and \"default\" can be used if default plan selection is enabled (see: https://api.ynab.com/#oauth-default-plan)."
+          },
+          "payee": {
+            "required": [
+              "name"
+            ],
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "nullable": false,
+                "maxLength": 500,
+                "description": "The name of the payee."
+              }
+            }
+          }
+        },
+        "required": [
+          "planId",
+          "payee"
+        ],
+        "additionalProperties": false
+      },
+      "readOnly": false,
+      "destructive": false,
+      "idempotent": false
+    },
+    {
+      "name": "get_payee",
+      "operationId": "getPayeeById",
+      "method": "GET",
+      "path": "/plans/{plan_id}/payees/{payee_id}",
+      "summary": "Get a payee",
+      "description": "Returns a single payee",
+      "parameters": [
+        {
+          "apiName": "plan_id",
+          "inputName": "planId",
+          "location": "path",
+          "required": true
+        },
+        {
+          "apiName": "payee_id",
+          "inputName": "payeeId",
+          "location": "path",
+          "required": true
+        }
+      ],
+      "bodyKeys": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "planId": {
+            "type": "string",
+            "description": "The id of the plan. \"last-used\" can be used to specify the last used plan and \"default\" can be used if default plan selection is enabled (see: https://api.ynab.com/#oauth-default-plan)."
+          },
+          "payeeId": {
+            "type": "string",
+            "description": "The id of the payee"
+          }
+        },
+        "required": [
+          "planId",
+          "payeeId"
+        ],
+        "additionalProperties": false
+      },
+      "readOnly": true,
+      "destructive": false,
+      "idempotent": true
+    },
+    {
+      "name": "update_payee",
+      "operationId": "updatePayee",
+      "method": "PATCH",
+      "path": "/plans/{plan_id}/payees/{payee_id}",
+      "summary": "Update a payee",
+      "description": "Update a payee",
+      "parameters": [
+        {
+          "apiName": "plan_id",
+          "inputName": "planId",
+          "location": "path",
+          "required": true
+        },
+        {
+          "apiName": "payee_id",
+          "inputName": "payeeId",
+          "location": "path",
+          "required": true
+        }
+      ],
+      "bodyKeys": [
+        "payee"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "planId": {
+            "type": "string",
+            "description": "The id of the plan. \"last-used\" can be used to specify the last used plan and \"default\" can be used if default plan selection is enabled (see: https://api.ynab.com/#oauth-default-plan)."
+          },
+          "payeeId": {
+            "type": "string",
+            "description": "The id of the payee"
+          },
+          "payee": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "nullable": false,
+                "maxLength": 500,
+                "description": "The name of the payee."
+              }
+            }
+          }
+        },
+        "required": [
+          "planId",
+          "payeeId",
+          "payee"
+        ],
+        "additionalProperties": false
+      },
+      "readOnly": false,
+      "destructive": true,
+      "idempotent": false
+    },
+    {
+      "name": "list_payee_locations",
+      "operationId": "getPayeeLocations",
+      "method": "GET",
+      "path": "/plans/{plan_id}/payee_locations",
+      "summary": "Get all payee locations",
+      "description": "Returns all payee locations",
+      "parameters": [
+        {
+          "apiName": "plan_id",
+          "inputName": "planId",
+          "location": "path",
+          "required": true
+        }
+      ],
+      "bodyKeys": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "planId": {
+            "type": "string",
+            "description": "The id of the plan. \"last-used\" can be used to specify the last used plan and \"default\" can be used if default plan selection is enabled (see: https://api.ynab.com/#oauth-default-plan)."
+          }
+        },
+        "required": [
+          "planId"
+        ],
+        "additionalProperties": false
+      },
+      "readOnly": true,
+      "destructive": false,
+      "idempotent": true
+    },
+    {
+      "name": "get_payee_location",
+      "operationId": "getPayeeLocationById",
+      "method": "GET",
+      "path": "/plans/{plan_id}/payee_locations/{payee_location_id}",
+      "summary": "Get a payee location",
+      "description": "Returns a single payee location",
+      "parameters": [
+        {
+          "apiName": "plan_id",
+          "inputName": "planId",
+          "location": "path",
+          "required": true
+        },
+        {
+          "apiName": "payee_location_id",
+          "inputName": "payeeLocationId",
+          "location": "path",
+          "required": true
+        }
+      ],
+      "bodyKeys": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "planId": {
+            "type": "string",
+            "description": "The id of the plan. \"last-used\" can be used to specify the last used plan and \"default\" can be used if default plan selection is enabled (see: https://api.ynab.com/#oauth-default-plan)."
+          },
+          "payeeLocationId": {
+            "type": "string",
+            "description": "id of payee location"
+          }
+        },
+        "required": [
+          "planId",
+          "payeeLocationId"
+        ],
+        "additionalProperties": false
+      },
+      "readOnly": true,
+      "destructive": false,
+      "idempotent": true
+    },
+    {
+      "name": "list_payee_locations_by_payee",
+      "operationId": "getPayeeLocationsByPayee",
+      "method": "GET",
+      "path": "/plans/{plan_id}/payees/{payee_id}/payee_locations",
+      "summary": "Get all locations for a payee",
+      "description": "Returns all payee locations for a specified payee",
+      "parameters": [
+        {
+          "apiName": "plan_id",
+          "inputName": "planId",
+          "location": "path",
+          "required": true
+        },
+        {
+          "apiName": "payee_id",
+          "inputName": "payeeId",
+          "location": "path",
+          "required": true
+        }
+      ],
+      "bodyKeys": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "planId": {
+            "type": "string",
+            "description": "The id of the plan. \"last-used\" can be used to specify the last used plan and \"default\" can be used if default plan selection is enabled (see: https://api.ynab.com/#oauth-default-plan)."
+          },
+          "payeeId": {
+            "type": "string",
+            "description": "id of payee"
+          }
+        },
+        "required": [
+          "planId",
+          "payeeId"
+        ],
+        "additionalProperties": false
+      },
+      "readOnly": true,
+      "destructive": false,
+      "idempotent": true
+    },
+    {
+      "name": "list_months",
+      "operationId": "getPlanMonths",
+      "method": "GET",
+      "path": "/plans/{plan_id}/months",
+      "summary": "Get all plan months",
+      "description": "Returns all plan months",
+      "parameters": [
+        {
+          "apiName": "plan_id",
+          "inputName": "planId",
+          "location": "path",
+          "required": true
+        },
+        {
+          "apiName": "last_knowledge_of_server",
+          "inputName": "lastKnowledgeOfServer",
+          "location": "query",
+          "required": false
+        }
+      ],
+      "bodyKeys": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "planId": {
+            "type": "string",
+            "description": "The id of the plan. \"last-used\" can be used to specify the last used plan and \"default\" can be used if default plan selection is enabled (see: https://api.ynab.com/#oauth-default-plan)."
+          },
+          "lastKnowledgeOfServer": {
+            "type": "integer",
+            "format": "int64",
+            "description": "The starting server knowledge.  If provided, only entities that have changed since `last_knowledge_of_server` will be included."
+          }
+        },
+        "required": [
+          "planId"
+        ],
+        "additionalProperties": false
+      },
+      "readOnly": true,
+      "destructive": false,
+      "idempotent": true
+    },
+    {
+      "name": "get_month",
+      "operationId": "getPlanMonth",
+      "method": "GET",
+      "path": "/plans/{plan_id}/months/{month}",
+      "summary": "Get a plan month",
+      "description": "Returns a single plan month",
+      "parameters": [
+        {
+          "apiName": "plan_id",
+          "inputName": "planId",
+          "location": "path",
+          "required": true
+        },
+        {
+          "apiName": "month",
+          "inputName": "month",
+          "location": "path",
+          "required": true
+        }
+      ],
+      "bodyKeys": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "planId": {
+            "type": "string",
+            "description": "The id of the plan. \"last-used\" can be used to specify the last used plan and \"default\" can be used if default plan selection is enabled (see: https://api.ynab.com/#oauth-default-plan)."
+          },
+          "month": {
+            "oneOf": [
+              {
+                "const": "current",
+                "description": "The current UTC calendar month."
+              },
+              {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-01$",
+                "description": "A plan month in YYYY-MM-01 format."
+              }
+            ],
+            "description": "The plan month in ISO format (e.g. 2016-12-01) (\"current\" can also be used to specify the current calendar month (UTC))"
+          }
+        },
+        "required": [
+          "planId",
+          "month"
+        ],
+        "additionalProperties": false
+      },
+      "readOnly": true,
+      "destructive": false,
+      "idempotent": true
+    },
+    {
+      "name": "list_money_movements",
+      "operationId": "getMoneyMovements",
+      "method": "GET",
+      "path": "/plans/{plan_id}/money_movements",
+      "summary": "Get all money movements",
+      "description": "Returns all money movements",
+      "parameters": [
+        {
+          "apiName": "plan_id",
+          "inputName": "planId",
+          "location": "path",
+          "required": true
+        }
+      ],
+      "bodyKeys": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "planId": {
+            "type": "string",
+            "description": "The id of the plan. \"last-used\" can be used to specify the last used plan and \"default\" can be used if default plan selection is enabled (see: https://api.ynab.com/#oauth-default-plan)."
+          }
+        },
+        "required": [
+          "planId"
+        ],
+        "additionalProperties": false
+      },
+      "readOnly": true,
+      "destructive": false,
+      "idempotent": true
+    },
+    {
+      "name": "list_money_movements_by_month",
+      "operationId": "getMoneyMovementsByMonth",
+      "method": "GET",
+      "path": "/plans/{plan_id}/months/{month}/money_movements",
+      "summary": "Get money movements for a plan month",
+      "description": "Returns all money movements for a specific month",
+      "parameters": [
+        {
+          "apiName": "plan_id",
+          "inputName": "planId",
+          "location": "path",
+          "required": true
+        },
+        {
+          "apiName": "month",
+          "inputName": "month",
+          "location": "path",
+          "required": true
+        }
+      ],
+      "bodyKeys": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "planId": {
+            "type": "string",
+            "description": "The id of the plan. \"last-used\" can be used to specify the last used plan and \"default\" can be used if default plan selection is enabled (see: https://api.ynab.com/#oauth-default-plan)."
+          },
+          "month": {
+            "oneOf": [
+              {
+                "const": "current",
+                "description": "The current UTC calendar month."
+              },
+              {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-01$",
+                "description": "A plan month in YYYY-MM-01 format."
+              }
+            ],
+            "description": "The plan month in ISO format (e.g. 2016-12-01) (\"current\" can also be used to specify the current calendar month (UTC))"
+          }
+        },
+        "required": [
+          "planId",
+          "month"
+        ],
+        "additionalProperties": false
+      },
+      "readOnly": true,
+      "destructive": false,
+      "idempotent": true
+    },
+    {
+      "name": "list_money_movement_groups",
+      "operationId": "getMoneyMovementGroups",
+      "method": "GET",
+      "path": "/plans/{plan_id}/money_movement_groups",
+      "summary": "Get all money movement groups",
+      "description": "Returns all money movement groups",
+      "parameters": [
+        {
+          "apiName": "plan_id",
+          "inputName": "planId",
+          "location": "path",
+          "required": true
+        }
+      ],
+      "bodyKeys": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "planId": {
+            "type": "string",
+            "description": "The id of the plan. \"last-used\" can be used to specify the last used plan and \"default\" can be used if default plan selection is enabled (see: https://api.ynab.com/#oauth-default-plan)."
+          }
+        },
+        "required": [
+          "planId"
+        ],
+        "additionalProperties": false
+      },
+      "readOnly": true,
+      "destructive": false,
+      "idempotent": true
+    },
+    {
+      "name": "list_money_movement_groups_by_month",
+      "operationId": "getMoneyMovementGroupsByMonth",
+      "method": "GET",
+      "path": "/plans/{plan_id}/months/{month}/money_movement_groups",
+      "summary": "Get money movement groups for a plan month",
+      "description": "Returns all money movement groups for a specific month",
+      "parameters": [
+        {
+          "apiName": "plan_id",
+          "inputName": "planId",
+          "location": "path",
+          "required": true
+        },
+        {
+          "apiName": "month",
+          "inputName": "month",
+          "location": "path",
+          "required": true
+        }
+      ],
+      "bodyKeys": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "planId": {
+            "type": "string",
+            "description": "The id of the plan. \"last-used\" can be used to specify the last used plan and \"default\" can be used if default plan selection is enabled (see: https://api.ynab.com/#oauth-default-plan)."
+          },
+          "month": {
+            "oneOf": [
+              {
+                "const": "current",
+                "description": "The current UTC calendar month."
+              },
+              {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-01$",
+                "description": "A plan month in YYYY-MM-01 format."
+              }
+            ],
+            "description": "The plan month in ISO format (e.g. 2016-12-01) (\"current\" can also be used to specify the current calendar month (UTC))"
+          }
+        },
+        "required": [
+          "planId",
+          "month"
+        ],
+        "additionalProperties": false
+      },
+      "readOnly": true,
+      "destructive": false,
+      "idempotent": true
+    },
+    {
+      "name": "list_transactions",
+      "operationId": "getTransactions",
+      "method": "GET",
+      "path": "/plans/{plan_id}/transactions",
+      "summary": "Get transactions",
+      "description": "Returns plan transactions, excluding any pending transactions",
+      "parameters": [
+        {
+          "apiName": "plan_id",
+          "inputName": "planId",
+          "location": "path",
+          "required": true
+        },
+        {
+          "apiName": "since_date",
+          "inputName": "sinceDate",
+          "location": "query",
+          "required": false
+        },
+        {
+          "apiName": "until_date",
+          "inputName": "untilDate",
+          "location": "query",
+          "required": false
+        },
+        {
+          "apiName": "type",
+          "inputName": "type",
+          "location": "query",
+          "required": false
+        },
+        {
+          "apiName": "last_knowledge_of_server",
+          "inputName": "lastKnowledgeOfServer",
+          "location": "query",
+          "required": false
+        }
+      ],
+      "bodyKeys": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "planId": {
+            "type": "string",
+            "description": "The id of the plan. \"last-used\" can be used to specify the last used plan and \"default\" can be used if default plan selection is enabled (see: https://api.ynab.com/#oauth-default-plan)."
+          },
+          "sinceDate": {
+            "type": "string",
+            "format": "date",
+            "description": "If specified, only transactions on or after this date will be included.  The date should be ISO formatted (e.g. 2016-12-30). Defaults to one year ago when not specified."
+          },
+          "untilDate": {
+            "type": "string",
+            "format": "date",
+            "description": "If specified, only transactions on or before this date will be included.  The date should be ISO formatted (e.g. 2016-12-30)."
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "uncategorized",
+              "unapproved"
+            ],
+            "description": "If specified, only transactions of the specified type will be included. \"uncategorized\" and \"unapproved\" are currently supported."
+          },
+          "lastKnowledgeOfServer": {
+            "type": "integer",
+            "format": "int64",
+            "description": "The starting server knowledge.  If provided, only entities that have changed since `last_knowledge_of_server` will be included."
+          }
+        },
+        "required": [
+          "planId"
+        ],
+        "additionalProperties": false
+      },
+      "readOnly": true,
+      "destructive": false,
+      "idempotent": true
+    },
+    {
+      "name": "create_transactions",
+      "operationId": "createTransaction",
+      "method": "POST",
+      "path": "/plans/{plan_id}/transactions",
+      "summary": "Create a single transaction or multiple transactions",
+      "description": "Creates a single transaction or multiple transactions.  If you provide a body containing a `transaction` object, a single transaction will be created and if you provide a body containing a `transactions` array, multiple transactions will be created.  Scheduled transactions (transactions with a future date) cannot be created on this endpoint.",
+      "parameters": [
+        {
+          "apiName": "plan_id",
+          "inputName": "planId",
+          "location": "path",
+          "required": true
+        }
+      ],
+      "bodyKeys": [
+        "transaction",
+        "transactions"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "planId": {
+            "type": "string",
+            "description": "The id of the plan. \"last-used\" can be used to specify the last used plan and \"default\" can be used if default plan selection is enabled (see: https://api.ynab.com/#oauth-default-plan)."
+          },
+          "transaction": {
+            "allOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "account_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "date": {
+                    "type": "string",
+                    "description": "The transaction date in ISO format (e.g. 2016-12-01).  Future dates (scheduled transactions) are not permitted.  Split transaction dates cannot be changed and if a different date is supplied it will be ignored.",
+                    "format": "date"
+                  },
+                  "amount": {
+                    "type": "integer",
+                    "description": "The transaction amount in milliunits format.  Split transaction amounts cannot be changed and if a different amount is supplied it will be ignored.",
+                    "format": "int64"
+                  },
+                  "payee_id": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "description": "The payee for the transaction.  To create a transfer between two accounts, use the account transfer payee pointing to the target account.  Account transfer payees are specified as `transfer_payee_id` on the account resource.",
+                    "format": "uuid"
+                  },
+                  "payee_name": {
+                    "maxLength": 200,
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "description": "The payee name.  If a `payee_name` value is provided and `payee_id` has a null value, the `payee_name` value will be used to resolve the payee by either (1) a matching payee rename rule (only if `import_id` is also specified) or (2) a payee with the same name or (3) creation of a new payee."
+                  },
+                  "category_id": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "description": "The category for the transaction.  To configure a split transaction, you can specify null for `category_id` and provide a `subtransactions` array as part of the transaction object.  If an existing transaction is a split, the `category_id` cannot be changed.  Credit Card Payment categories are not permitted and will be ignored if supplied.",
+                    "format": "uuid"
+                  },
+                  "memo": {
+                    "maxLength": 500,
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "cleared": {
+                    "type": "string",
+                    "description": "The cleared status of the transaction",
+                    "enum": [
+                      "cleared",
+                      "uncleared",
+                      "reconciled"
+                    ]
+                  },
+                  "approved": {
+                    "type": "boolean",
+                    "description": "Whether or not the transaction is approved.  If not supplied, transaction will be unapproved by default."
+                  },
+                  "flag_color": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "description": "The transaction flag",
+                    "enum": [
+                      "red",
+                      "orange",
+                      "yellow",
+                      "green",
+                      "blue",
+                      "purple",
+                      "",
+                      null
+                    ]
+                  },
+                  "subtransactions": {
+                    "type": "array",
+                    "description": "An array of subtransactions to configure a transaction as a split. Updating `subtransactions` on an existing split transaction is not supported and will return an error.  Splits are not allowed on tracking accounts or on transfers between on-budget accounts; a transfer to a tracking account can be a split.",
+                    "items": {
+                      "required": [
+                        "amount"
+                      ],
+                      "type": "object",
+                      "properties": {
+                        "amount": {
+                          "type": "integer",
+                          "description": "The subtransaction amount in milliunits format.",
+                          "format": "int64"
+                        },
+                        "payee_id": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "The payee for the subtransaction.",
+                          "format": "uuid"
+                        },
+                        "payee_name": {
+                          "maxLength": 200,
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "The payee name.  If a `payee_name` value is provided and `payee_id` has a null value, the `payee_name` value will be used to resolve the payee by either (1) a matching payee rename rule (only if import_id is also specified on parent transaction) or (2) a payee with the same name or (3) creation of a new payee."
+                        },
+                        "category_id": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "The category for the subtransaction.  Credit Card Payment categories are not permitted and will be ignored if supplied.",
+                          "format": "uuid"
+                        },
+                        "memo": {
+                          "maxLength": 500,
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "import_id": {
+                    "maxLength": 36,
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "description": "If specified, a new transaction will be assigned this `import_id` and considered \"imported\".  We will also attempt to match this imported transaction to an existing \"user-entered\" transaction on the same account, with the same amount, and with a date +/-10 days from the imported transaction date.<br><br>Transactions imported through File Based Import or Direct Import (not through the API) are assigned an import_id in the format: 'YNAB:[milliunit_amount]:[iso_date]:[occurrence]'. For example, a transaction dated 2015-12-30 in the amount of -$294.23 USD would have an import_id of 'YNAB:-294230:2015-12-30:1'.  If a second transaction on the same account was imported and had the same date and same amount, its import_id would be 'YNAB:-294230:2015-12-30:2'.  Using a consistent format will prevent duplicates through Direct Import and File Based Import.<br><br>If import_id is omitted or specified as null, the transaction will be treated as a \"user-entered\" transaction. As such, it will be eligible to be matched against transactions later being imported (via DI, FBI, or API)."
+                  }
+                }
+              }
+            ]
+          },
+          "transactions": {
+            "type": "array",
+            "items": {
+              "allOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "account_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "date": {
+                      "type": "string",
+                      "description": "The transaction date in ISO format (e.g. 2016-12-01).  Future dates (scheduled transactions) are not permitted.  Split transaction dates cannot be changed and if a different date is supplied it will be ignored.",
+                      "format": "date"
+                    },
+                    "amount": {
+                      "type": "integer",
+                      "description": "The transaction amount in milliunits format.  Split transaction amounts cannot be changed and if a different amount is supplied it will be ignored.",
+                      "format": "int64"
+                    },
+                    "payee_id": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "The payee for the transaction.  To create a transfer between two accounts, use the account transfer payee pointing to the target account.  Account transfer payees are specified as `transfer_payee_id` on the account resource.",
+                      "format": "uuid"
+                    },
+                    "payee_name": {
+                      "maxLength": 200,
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "The payee name.  If a `payee_name` value is provided and `payee_id` has a null value, the `payee_name` value will be used to resolve the payee by either (1) a matching payee rename rule (only if `import_id` is also specified) or (2) a payee with the same name or (3) creation of a new payee."
+                    },
+                    "category_id": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "The category for the transaction.  To configure a split transaction, you can specify null for `category_id` and provide a `subtransactions` array as part of the transaction object.  If an existing transaction is a split, the `category_id` cannot be changed.  Credit Card Payment categories are not permitted and will be ignored if supplied.",
+                      "format": "uuid"
+                    },
+                    "memo": {
+                      "maxLength": 500,
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "cleared": {
+                      "type": "string",
+                      "description": "The cleared status of the transaction",
+                      "enum": [
+                        "cleared",
+                        "uncleared",
+                        "reconciled"
+                      ]
+                    },
+                    "approved": {
+                      "type": "boolean",
+                      "description": "Whether or not the transaction is approved.  If not supplied, transaction will be unapproved by default."
+                    },
+                    "flag_color": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "The transaction flag",
+                      "enum": [
+                        "red",
+                        "orange",
+                        "yellow",
+                        "green",
+                        "blue",
+                        "purple",
+                        "",
+                        null
+                      ]
+                    },
+                    "subtransactions": {
+                      "type": "array",
+                      "description": "An array of subtransactions to configure a transaction as a split. Updating `subtransactions` on an existing split transaction is not supported and will return an error.  Splits are not allowed on tracking accounts or on transfers between on-budget accounts; a transfer to a tracking account can be a split.",
+                      "items": {
+                        "required": [
+                          "amount"
+                        ],
+                        "type": "object",
+                        "properties": {
+                          "amount": {
+                            "type": "integer",
+                            "description": "The subtransaction amount in milliunits format.",
+                            "format": "int64"
+                          },
+                          "payee_id": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "description": "The payee for the subtransaction.",
+                            "format": "uuid"
+                          },
+                          "payee_name": {
+                            "maxLength": 200,
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "description": "The payee name.  If a `payee_name` value is provided and `payee_id` has a null value, the `payee_name` value will be used to resolve the payee by either (1) a matching payee rename rule (only if import_id is also specified on parent transaction) or (2) a payee with the same name or (3) creation of a new payee."
+                          },
+                          "category_id": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "description": "The category for the subtransaction.  Credit Card Payment categories are not permitted and will be ignored if supplied.",
+                            "format": "uuid"
+                          },
+                          "memo": {
+                            "maxLength": 500,
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "import_id": {
+                      "maxLength": 36,
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "If specified, a new transaction will be assigned this `import_id` and considered \"imported\".  We will also attempt to match this imported transaction to an existing \"user-entered\" transaction on the same account, with the same amount, and with a date +/-10 days from the imported transaction date.<br><br>Transactions imported through File Based Import or Direct Import (not through the API) are assigned an import_id in the format: 'YNAB:[milliunit_amount]:[iso_date]:[occurrence]'. For example, a transaction dated 2015-12-30 in the amount of -$294.23 USD would have an import_id of 'YNAB:-294230:2015-12-30:1'.  If a second transaction on the same account was imported and had the same date and same amount, its import_id would be 'YNAB:-294230:2015-12-30:2'.  Using a consistent format will prevent duplicates through Direct Import and File Based Import.<br><br>If import_id is omitted or specified as null, the transaction will be treated as a \"user-entered\" transaction. As such, it will be eligible to be matched against transactions later being imported (via DI, FBI, or API)."
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "required": [
+          "planId"
+        ],
+        "additionalProperties": false
+      },
+      "readOnly": false,
+      "destructive": false,
+      "idempotent": false
+    },
+    {
+      "name": "update_transactions",
+      "operationId": "updateTransactions",
+      "method": "PATCH",
+      "path": "/plans/{plan_id}/transactions",
+      "summary": "Update multiple transactions",
+      "description": "Updates multiple transactions, by `id` or `import_id`.",
+      "parameters": [
+        {
+          "apiName": "plan_id",
+          "inputName": "planId",
+          "location": "path",
+          "required": true
+        }
+      ],
+      "bodyKeys": [
+        "transactions"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "planId": {
+            "type": "string",
+            "description": "The id of the plan. \"last-used\" can be used to specify the last used plan and \"default\" can be used if default plan selection is enabled (see: https://api.ynab.com/#oauth-default-plan)."
+          },
+          "transactions": {
+            "type": "array",
+            "items": {
+              "allOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "If specified, this id will be used to lookup a transaction by its `id` for the purpose of updating the transaction itself. If not specified, an `import_id` should be supplied."
+                    },
+                    "import_id": {
+                      "maxLength": 36,
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "If specified, this id will be used to lookup a transaction by its `import_id` for the purpose of updating the transaction itself. If not specified, an `id` should be supplied.  You may not provide both an `id` and an `import_id` and updating an `import_id` on an existing transaction is not allowed."
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "account_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "date": {
+                      "type": "string",
+                      "description": "The transaction date in ISO format (e.g. 2016-12-01).  Future dates (scheduled transactions) are not permitted.  Split transaction dates cannot be changed and if a different date is supplied it will be ignored.",
+                      "format": "date"
+                    },
+                    "amount": {
+                      "type": "integer",
+                      "description": "The transaction amount in milliunits format.  Split transaction amounts cannot be changed and if a different amount is supplied it will be ignored.",
+                      "format": "int64"
+                    },
+                    "payee_id": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "The payee for the transaction.  To create a transfer between two accounts, use the account transfer payee pointing to the target account.  Account transfer payees are specified as `transfer_payee_id` on the account resource.",
+                      "format": "uuid"
+                    },
+                    "payee_name": {
+                      "maxLength": 200,
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "The payee name.  If a `payee_name` value is provided and `payee_id` has a null value, the `payee_name` value will be used to resolve the payee by either (1) a matching payee rename rule (only if `import_id` is also specified) or (2) a payee with the same name or (3) creation of a new payee."
+                    },
+                    "category_id": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "The category for the transaction.  To configure a split transaction, you can specify null for `category_id` and provide a `subtransactions` array as part of the transaction object.  If an existing transaction is a split, the `category_id` cannot be changed.  Credit Card Payment categories are not permitted and will be ignored if supplied.",
+                      "format": "uuid"
+                    },
+                    "memo": {
+                      "maxLength": 500,
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "cleared": {
+                      "type": "string",
+                      "description": "The cleared status of the transaction",
+                      "enum": [
+                        "cleared",
+                        "uncleared",
+                        "reconciled"
+                      ]
+                    },
+                    "approved": {
+                      "type": "boolean",
+                      "description": "Whether or not the transaction is approved.  If not supplied, transaction will be unapproved by default."
+                    },
+                    "flag_color": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "The transaction flag",
+                      "enum": [
+                        "red",
+                        "orange",
+                        "yellow",
+                        "green",
+                        "blue",
+                        "purple",
+                        "",
+                        null
+                      ]
+                    },
+                    "subtransactions": {
+                      "type": "array",
+                      "description": "An array of subtransactions to configure a transaction as a split. Updating `subtransactions` on an existing split transaction is not supported and will return an error.  Splits are not allowed on tracking accounts or on transfers between on-budget accounts; a transfer to a tracking account can be a split.",
+                      "items": {
+                        "required": [
+                          "amount"
+                        ],
+                        "type": "object",
+                        "properties": {
+                          "amount": {
+                            "type": "integer",
+                            "description": "The subtransaction amount in milliunits format.",
+                            "format": "int64"
+                          },
+                          "payee_id": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "description": "The payee for the subtransaction.",
+                            "format": "uuid"
+                          },
+                          "payee_name": {
+                            "maxLength": 200,
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "description": "The payee name.  If a `payee_name` value is provided and `payee_id` has a null value, the `payee_name` value will be used to resolve the payee by either (1) a matching payee rename rule (only if import_id is also specified on parent transaction) or (2) a payee with the same name or (3) creation of a new payee."
+                          },
+                          "category_id": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "description": "The category for the subtransaction.  Credit Card Payment categories are not permitted and will be ignored if supplied.",
+                            "format": "uuid"
+                          },
+                          "memo": {
+                            "maxLength": 500,
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "required": [
+          "planId",
+          "transactions"
+        ],
+        "additionalProperties": false
+      },
+      "readOnly": false,
+      "destructive": true,
+      "idempotent": false
+    },
+    {
+      "name": "import_transactions",
+      "operationId": "importTransactions",
+      "method": "POST",
+      "path": "/plans/{plan_id}/transactions/import",
+      "summary": "Import transactions",
+      "description": "Imports available transactions on all linked accounts for the given plan.  Linked accounts allow transactions to be imported directly from a specified financial institution and this endpoint initiates that import.  Sending a request to this endpoint is the equivalent of clicking \"Import\" on each account in the web application or tapping the \"New Transactions\" banner in the mobile applications.  The response for this endpoint contains the transaction ids that have been imported.",
+      "parameters": [
+        {
+          "apiName": "plan_id",
+          "inputName": "planId",
+          "location": "path",
+          "required": true
+        }
+      ],
+      "bodyKeys": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "planId": {
+            "type": "string",
+            "description": "The id of the plan. \"last-used\" can be used to specify the last used plan and \"default\" can be used if default plan selection is enabled (see: https://api.ynab.com/#oauth-default-plan)."
+          }
+        },
+        "required": [
+          "planId"
+        ],
+        "additionalProperties": false
+      },
+      "readOnly": false,
+      "destructive": false,
+      "idempotent": false
+    },
+    {
+      "name": "get_transaction",
+      "operationId": "getTransactionById",
+      "method": "GET",
+      "path": "/plans/{plan_id}/transactions/{transaction_id}",
+      "summary": "Get a transaction",
+      "description": "Returns a single transaction",
+      "parameters": [
+        {
+          "apiName": "plan_id",
+          "inputName": "planId",
+          "location": "path",
+          "required": true
+        },
+        {
+          "apiName": "transaction_id",
+          "inputName": "transactionId",
+          "location": "path",
+          "required": true
+        }
+      ],
+      "bodyKeys": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "planId": {
+            "type": "string",
+            "description": "The id of the plan. \"last-used\" can be used to specify the last used plan and \"default\" can be used if default plan selection is enabled (see: https://api.ynab.com/#oauth-default-plan)."
+          },
+          "transactionId": {
+            "type": "string",
+            "description": "The id of the transaction"
+          }
+        },
+        "required": [
+          "planId",
+          "transactionId"
+        ],
+        "additionalProperties": false
+      },
+      "readOnly": true,
+      "destructive": false,
+      "idempotent": true
+    },
+    {
+      "name": "update_transaction",
+      "operationId": "updateTransaction",
+      "method": "PUT",
+      "path": "/plans/{plan_id}/transactions/{transaction_id}",
+      "summary": "Update a transaction",
+      "description": "Updates a single transaction",
+      "parameters": [
+        {
+          "apiName": "plan_id",
+          "inputName": "planId",
+          "location": "path",
+          "required": true
+        },
+        {
+          "apiName": "transaction_id",
+          "inputName": "transactionId",
+          "location": "path",
+          "required": true
+        }
+      ],
+      "bodyKeys": [
+        "transaction"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "planId": {
+            "type": "string",
+            "description": "The id of the plan. \"last-used\" can be used to specify the last used plan and \"default\" can be used if default plan selection is enabled (see: https://api.ynab.com/#oauth-default-plan)."
+          },
+          "transactionId": {
+            "type": "string",
+            "description": "The id of the transaction"
+          },
+          "transaction": {
+            "allOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "account_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "date": {
+                    "type": "string",
+                    "description": "The transaction date in ISO format (e.g. 2016-12-01).  Future dates (scheduled transactions) are not permitted.  Split transaction dates cannot be changed and if a different date is supplied it will be ignored.",
+                    "format": "date"
+                  },
+                  "amount": {
+                    "type": "integer",
+                    "description": "The transaction amount in milliunits format.  Split transaction amounts cannot be changed and if a different amount is supplied it will be ignored.",
+                    "format": "int64"
+                  },
+                  "payee_id": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "description": "The payee for the transaction.  To create a transfer between two accounts, use the account transfer payee pointing to the target account.  Account transfer payees are specified as `transfer_payee_id` on the account resource.",
+                    "format": "uuid"
+                  },
+                  "payee_name": {
+                    "maxLength": 200,
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "description": "The payee name.  If a `payee_name` value is provided and `payee_id` has a null value, the `payee_name` value will be used to resolve the payee by either (1) a matching payee rename rule (only if `import_id` is also specified) or (2) a payee with the same name or (3) creation of a new payee."
+                  },
+                  "category_id": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "description": "The category for the transaction.  To configure a split transaction, you can specify null for `category_id` and provide a `subtransactions` array as part of the transaction object.  If an existing transaction is a split, the `category_id` cannot be changed.  Credit Card Payment categories are not permitted and will be ignored if supplied.",
+                    "format": "uuid"
+                  },
+                  "memo": {
+                    "maxLength": 500,
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "cleared": {
+                    "type": "string",
+                    "description": "The cleared status of the transaction",
+                    "enum": [
+                      "cleared",
+                      "uncleared",
+                      "reconciled"
+                    ]
+                  },
+                  "approved": {
+                    "type": "boolean",
+                    "description": "Whether or not the transaction is approved.  If not supplied, transaction will be unapproved by default."
+                  },
+                  "flag_color": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "description": "The transaction flag",
+                    "enum": [
+                      "red",
+                      "orange",
+                      "yellow",
+                      "green",
+                      "blue",
+                      "purple",
+                      "",
+                      null
+                    ]
+                  },
+                  "subtransactions": {
+                    "type": "array",
+                    "description": "An array of subtransactions to configure a transaction as a split. Updating `subtransactions` on an existing split transaction is not supported and will return an error.  Splits are not allowed on tracking accounts or on transfers between on-budget accounts; a transfer to a tracking account can be a split.",
+                    "items": {
+                      "required": [
+                        "amount"
+                      ],
+                      "type": "object",
+                      "properties": {
+                        "amount": {
+                          "type": "integer",
+                          "description": "The subtransaction amount in milliunits format.",
+                          "format": "int64"
+                        },
+                        "payee_id": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "The payee for the subtransaction.",
+                          "format": "uuid"
+                        },
+                        "payee_name": {
+                          "maxLength": 200,
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "The payee name.  If a `payee_name` value is provided and `payee_id` has a null value, the `payee_name` value will be used to resolve the payee by either (1) a matching payee rename rule (only if import_id is also specified on parent transaction) or (2) a payee with the same name or (3) creation of a new payee."
+                        },
+                        "category_id": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "description": "The category for the subtransaction.  Credit Card Payment categories are not permitted and will be ignored if supplied.",
+                          "format": "uuid"
+                        },
+                        "memo": {
+                          "maxLength": 500,
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "required": [
+          "planId",
+          "transactionId",
+          "transaction"
+        ],
+        "additionalProperties": false
+      },
+      "readOnly": false,
+      "destructive": true,
+      "idempotent": true
+    },
+    {
+      "name": "delete_transaction",
+      "operationId": "deleteTransaction",
+      "method": "DELETE",
+      "path": "/plans/{plan_id}/transactions/{transaction_id}",
+      "summary": "Delete a transaction",
+      "description": "Deletes a transaction",
+      "parameters": [
+        {
+          "apiName": "plan_id",
+          "inputName": "planId",
+          "location": "path",
+          "required": true
+        },
+        {
+          "apiName": "transaction_id",
+          "inputName": "transactionId",
+          "location": "path",
+          "required": true
+        }
+      ],
+      "bodyKeys": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "planId": {
+            "type": "string",
+            "description": "The id of the plan. \"last-used\" can be used to specify the last used plan and \"default\" can be used if default plan selection is enabled (see: https://api.ynab.com/#oauth-default-plan)."
+          },
+          "transactionId": {
+            "type": "string",
+            "description": "The id of the transaction"
+          }
+        },
+        "required": [
+          "planId",
+          "transactionId"
+        ],
+        "additionalProperties": false
+      },
+      "readOnly": false,
+      "destructive": true,
+      "idempotent": true
+    },
+    {
+      "name": "list_transactions_by_account",
+      "operationId": "getTransactionsByAccount",
+      "method": "GET",
+      "path": "/plans/{plan_id}/accounts/{account_id}/transactions",
+      "summary": "Get account transactions",
+      "description": "Returns all transactions for a specified account, excluding any pending transactions",
+      "parameters": [
+        {
+          "apiName": "plan_id",
+          "inputName": "planId",
+          "location": "path",
+          "required": true
+        },
+        {
+          "apiName": "account_id",
+          "inputName": "accountId",
+          "location": "path",
+          "required": true
+        },
+        {
+          "apiName": "since_date",
+          "inputName": "sinceDate",
+          "location": "query",
+          "required": false
+        },
+        {
+          "apiName": "until_date",
+          "inputName": "untilDate",
+          "location": "query",
+          "required": false
+        },
+        {
+          "apiName": "type",
+          "inputName": "type",
+          "location": "query",
+          "required": false
+        },
+        {
+          "apiName": "last_knowledge_of_server",
+          "inputName": "lastKnowledgeOfServer",
+          "location": "query",
+          "required": false
+        }
+      ],
+      "bodyKeys": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "planId": {
+            "type": "string",
+            "description": "The id of the plan. \"last-used\" can be used to specify the last used plan and \"default\" can be used if default plan selection is enabled (see: https://api.ynab.com/#oauth-default-plan)."
+          },
+          "accountId": {
+            "type": "string",
+            "description": "The id of the account"
+          },
+          "sinceDate": {
+            "type": "string",
+            "format": "date",
+            "description": "If specified, only transactions on or after this date will be included.  The date should be ISO formatted (e.g. 2016-12-30). Defaults to one year ago when not specified."
+          },
+          "untilDate": {
+            "type": "string",
+            "format": "date",
+            "description": "If specified, only transactions on or before this date will be included.  The date should be ISO formatted (e.g. 2016-12-30)."
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "uncategorized",
+              "unapproved"
+            ],
+            "description": "If specified, only transactions of the specified type will be included. \"uncategorized\" and \"unapproved\" are currently supported."
+          },
+          "lastKnowledgeOfServer": {
+            "type": "integer",
+            "format": "int64",
+            "description": "The starting server knowledge.  If provided, only entities that have changed since `last_knowledge_of_server` will be included."
+          }
+        },
+        "required": [
+          "planId",
+          "accountId"
+        ],
+        "additionalProperties": false
+      },
+      "readOnly": true,
+      "destructive": false,
+      "idempotent": true
+    },
+    {
+      "name": "list_transactions_by_category",
+      "operationId": "getTransactionsByCategory",
+      "method": "GET",
+      "path": "/plans/{plan_id}/categories/{category_id}/transactions",
+      "summary": "Get category transactions",
+      "description": "Returns all transactions for a specified category, excluding any pending transactions",
+      "parameters": [
+        {
+          "apiName": "plan_id",
+          "inputName": "planId",
+          "location": "path",
+          "required": true
+        },
+        {
+          "apiName": "category_id",
+          "inputName": "categoryId",
+          "location": "path",
+          "required": true
+        },
+        {
+          "apiName": "since_date",
+          "inputName": "sinceDate",
+          "location": "query",
+          "required": false
+        },
+        {
+          "apiName": "until_date",
+          "inputName": "untilDate",
+          "location": "query",
+          "required": false
+        },
+        {
+          "apiName": "type",
+          "inputName": "type",
+          "location": "query",
+          "required": false
+        },
+        {
+          "apiName": "last_knowledge_of_server",
+          "inputName": "lastKnowledgeOfServer",
+          "location": "query",
+          "required": false
+        }
+      ],
+      "bodyKeys": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "planId": {
+            "type": "string",
+            "description": "The id of the plan. \"last-used\" can be used to specify the last used plan and \"default\" can be used if default plan selection is enabled (see: https://api.ynab.com/#oauth-default-plan)."
+          },
+          "categoryId": {
+            "type": "string",
+            "description": "The id of the category"
+          },
+          "sinceDate": {
+            "type": "string",
+            "format": "date",
+            "description": "If specified, only transactions on or after this date will be included.  The date should be ISO formatted (e.g. 2016-12-30). Defaults to one year ago when not specified."
+          },
+          "untilDate": {
+            "type": "string",
+            "format": "date",
+            "description": "If specified, only transactions on or before this date will be included.  The date should be ISO formatted (e.g. 2016-12-30)."
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "uncategorized",
+              "unapproved"
+            ],
+            "description": "If specified, only transactions of the specified type will be included. \"uncategorized\" and \"unapproved\" are currently supported."
+          },
+          "lastKnowledgeOfServer": {
+            "type": "integer",
+            "format": "int64",
+            "description": "The starting server knowledge.  If provided, only entities that have changed since `last_knowledge_of_server` will be included."
+          }
+        },
+        "required": [
+          "planId",
+          "categoryId"
+        ],
+        "additionalProperties": false
+      },
+      "readOnly": true,
+      "destructive": false,
+      "idempotent": true
+    },
+    {
+      "name": "list_transactions_by_payee",
+      "operationId": "getTransactionsByPayee",
+      "method": "GET",
+      "path": "/plans/{plan_id}/payees/{payee_id}/transactions",
+      "summary": "Get payee transactions",
+      "description": "Returns all transactions for a specified payee, excluding any pending transactions",
+      "parameters": [
+        {
+          "apiName": "plan_id",
+          "inputName": "planId",
+          "location": "path",
+          "required": true
+        },
+        {
+          "apiName": "payee_id",
+          "inputName": "payeeId",
+          "location": "path",
+          "required": true
+        },
+        {
+          "apiName": "since_date",
+          "inputName": "sinceDate",
+          "location": "query",
+          "required": false
+        },
+        {
+          "apiName": "until_date",
+          "inputName": "untilDate",
+          "location": "query",
+          "required": false
+        },
+        {
+          "apiName": "type",
+          "inputName": "type",
+          "location": "query",
+          "required": false
+        },
+        {
+          "apiName": "last_knowledge_of_server",
+          "inputName": "lastKnowledgeOfServer",
+          "location": "query",
+          "required": false
+        }
+      ],
+      "bodyKeys": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "planId": {
+            "type": "string",
+            "description": "The id of the plan. \"last-used\" can be used to specify the last used plan and \"default\" can be used if default plan selection is enabled (see: https://api.ynab.com/#oauth-default-plan)."
+          },
+          "payeeId": {
+            "type": "string",
+            "description": "The id of the payee"
+          },
+          "sinceDate": {
+            "type": "string",
+            "format": "date",
+            "description": "If specified, only transactions on or after this date will be included.  The date should be ISO formatted (e.g. 2016-12-30). Defaults to one year ago when not specified."
+          },
+          "untilDate": {
+            "type": "string",
+            "format": "date",
+            "description": "If specified, only transactions on or before this date will be included.  The date should be ISO formatted (e.g. 2016-12-30)."
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "uncategorized",
+              "unapproved"
+            ],
+            "description": "If specified, only transactions of the specified type will be included. \"uncategorized\" and \"unapproved\" are currently supported."
+          },
+          "lastKnowledgeOfServer": {
+            "type": "integer",
+            "format": "int64",
+            "description": "The starting server knowledge.  If provided, only entities that have changed since `last_knowledge_of_server` will be included."
+          }
+        },
+        "required": [
+          "planId",
+          "payeeId"
+        ],
+        "additionalProperties": false
+      },
+      "readOnly": true,
+      "destructive": false,
+      "idempotent": true
+    },
+    {
+      "name": "list_transactions_by_month",
+      "operationId": "getTransactionsByMonth",
+      "method": "GET",
+      "path": "/plans/{plan_id}/months/{month}/transactions",
+      "summary": "Get plan month transactions",
+      "description": "Returns all transactions for a specified month, excluding any pending transactions",
+      "parameters": [
+        {
+          "apiName": "plan_id",
+          "inputName": "planId",
+          "location": "path",
+          "required": true
+        },
+        {
+          "apiName": "month",
+          "inputName": "month",
+          "location": "path",
+          "required": true
+        },
+        {
+          "apiName": "since_date",
+          "inputName": "sinceDate",
+          "location": "query",
+          "required": false
+        },
+        {
+          "apiName": "until_date",
+          "inputName": "untilDate",
+          "location": "query",
+          "required": false
+        },
+        {
+          "apiName": "type",
+          "inputName": "type",
+          "location": "query",
+          "required": false
+        },
+        {
+          "apiName": "last_knowledge_of_server",
+          "inputName": "lastKnowledgeOfServer",
+          "location": "query",
+          "required": false
+        }
+      ],
+      "bodyKeys": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "planId": {
+            "type": "string",
+            "description": "The id of the plan. \"last-used\" can be used to specify the last used plan and \"default\" can be used if default plan selection is enabled (see: https://api.ynab.com/#oauth-default-plan)."
+          },
+          "month": {
+            "oneOf": [
+              {
+                "const": "current",
+                "description": "The current UTC calendar month."
+              },
+              {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-01$",
+                "description": "A plan month in YYYY-MM-01 format."
+              }
+            ],
+            "description": "The plan month in ISO format (e.g. 2016-12-01) (\"current\" can also be used to specify the current calendar month (UTC))"
+          },
+          "sinceDate": {
+            "type": "string",
+            "format": "date",
+            "description": "If specified, only transactions on or after this date will be included.  The date should be ISO formatted (e.g. 2016-12-30)."
+          },
+          "untilDate": {
+            "type": "string",
+            "format": "date",
+            "description": "If specified, only transactions on or before this date will be included.  The date should be ISO formatted (e.g. 2016-12-30)."
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "uncategorized",
+              "unapproved"
+            ],
+            "description": "If specified, only transactions of the specified type will be included. \"uncategorized\" and \"unapproved\" are currently supported."
+          },
+          "lastKnowledgeOfServer": {
+            "type": "integer",
+            "format": "int64",
+            "description": "The starting server knowledge.  If provided, only entities that have changed since `last_knowledge_of_server` will be included."
+          }
+        },
+        "required": [
+          "planId",
+          "month"
+        ],
+        "additionalProperties": false
+      },
+      "readOnly": true,
+      "destructive": false,
+      "idempotent": true
+    },
+    {
+      "name": "list_scheduled_transactions",
+      "operationId": "getScheduledTransactions",
+      "method": "GET",
+      "path": "/plans/{plan_id}/scheduled_transactions",
+      "summary": "Get all scheduled transactions",
+      "description": "Returns all scheduled transactions",
+      "parameters": [
+        {
+          "apiName": "plan_id",
+          "inputName": "planId",
+          "location": "path",
+          "required": true
+        },
+        {
+          "apiName": "last_knowledge_of_server",
+          "inputName": "lastKnowledgeOfServer",
+          "location": "query",
+          "required": false
+        }
+      ],
+      "bodyKeys": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "planId": {
+            "type": "string",
+            "description": "The id of the plan. \"last-used\" can be used to specify the last used plan and \"default\" can be used if default plan selection is enabled (see: https://api.ynab.com/#oauth-default-plan)."
+          },
+          "lastKnowledgeOfServer": {
+            "type": "integer",
+            "format": "int64",
+            "description": "The starting server knowledge.  If provided, only entities that have changed since `last_knowledge_of_server` will be included."
+          }
+        },
+        "required": [
+          "planId"
+        ],
+        "additionalProperties": false
+      },
+      "readOnly": true,
+      "destructive": false,
+      "idempotent": true
+    },
+    {
+      "name": "create_scheduled_transaction",
+      "operationId": "createScheduledTransaction",
+      "method": "POST",
+      "path": "/plans/{plan_id}/scheduled_transactions",
+      "summary": "Create a scheduled transaction",
+      "description": "Creates a single scheduled transaction (a transaction with a future date).",
+      "parameters": [
+        {
+          "apiName": "plan_id",
+          "inputName": "planId",
+          "location": "path",
+          "required": true
+        }
+      ],
+      "bodyKeys": [
+        "scheduled_transaction"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "planId": {
+            "type": "string",
+            "description": "The id of the plan. \"last-used\" can be used to specify the last used plan and \"default\" can be used if default plan selection is enabled (see: https://api.ynab.com/#oauth-default-plan)."
+          },
+          "scheduled_transaction": {
+            "required": [
+              "account_id",
+              "date"
+            ],
+            "type": "object",
+            "properties": {
+              "account_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "date": {
+                "type": "string",
+                "description": "The scheduled transaction date in ISO format (e.g. 2016-12-01).  This should be a future date no more than 5 years into the future.",
+                "format": "date"
+              },
+              "amount": {
+                "type": "integer",
+                "description": "The scheduled transaction amount in milliunits format.",
+                "format": "int64"
+              },
+              "payee_id": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "The payee for the scheduled transaction.  To create a transfer between two accounts, use the account transfer payee pointing to the target account.  Account transfer payees are specified as `transfer_payee_id` on the account resource.",
+                "format": "uuid"
+              },
+              "payee_name": {
+                "maxLength": 200,
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "The payee name for the the scheduled transaction.  If a `payee_name` value is provided and `payee_id` has a null value, the `payee_name` value will be used to resolve the payee by either (1) a payee with the same name or (2) creation of a new payee."
+              },
+              "category_id": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "The category for the scheduled transaction. Credit Card Payment categories are not permitted. Creating a split scheduled transaction is not currently supported.",
+                "format": "uuid"
+              },
+              "memo": {
+                "maxLength": 500,
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "flag_color": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "The transaction flag",
+                "enum": [
+                  "red",
+                  "orange",
+                  "yellow",
+                  "green",
+                  "blue",
+                  "purple",
+                  "",
+                  null
+                ]
+              },
+              "frequency": {
+                "type": "string",
+                "description": "The scheduled transaction frequency",
+                "enum": [
+                  "never",
+                  "daily",
+                  "weekly",
+                  "everyOtherWeek",
+                  "twiceAMonth",
+                  "every4Weeks",
+                  "monthly",
+                  "everyOtherMonth",
+                  "every3Months",
+                  "every4Months",
+                  "twiceAYear",
+                  "yearly",
+                  "everyOtherYear"
+                ]
+              }
+            }
+          }
+        },
+        "required": [
+          "planId",
+          "scheduled_transaction"
+        ],
+        "additionalProperties": false
+      },
+      "readOnly": false,
+      "destructive": false,
+      "idempotent": false
+    },
+    {
+      "name": "get_scheduled_transaction",
+      "operationId": "getScheduledTransactionById",
+      "method": "GET",
+      "path": "/plans/{plan_id}/scheduled_transactions/{scheduled_transaction_id}",
+      "summary": "Get a scheduled transaction",
+      "description": "Returns a single scheduled transaction",
+      "parameters": [
+        {
+          "apiName": "plan_id",
+          "inputName": "planId",
+          "location": "path",
+          "required": true
+        },
+        {
+          "apiName": "scheduled_transaction_id",
+          "inputName": "scheduledTransactionId",
+          "location": "path",
+          "required": true
+        }
+      ],
+      "bodyKeys": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "planId": {
+            "type": "string",
+            "description": "The id of the plan. \"last-used\" can be used to specify the last used plan and \"default\" can be used if default plan selection is enabled (see: https://api.ynab.com/#oauth-default-plan)."
+          },
+          "scheduledTransactionId": {
+            "type": "string",
+            "description": "The id of the scheduled transaction"
+          }
+        },
+        "required": [
+          "planId",
+          "scheduledTransactionId"
+        ],
+        "additionalProperties": false
+      },
+      "readOnly": true,
+      "destructive": false,
+      "idempotent": true
+    },
+    {
+      "name": "update_scheduled_transaction",
+      "operationId": "updateScheduledTransaction",
+      "method": "PUT",
+      "path": "/plans/{plan_id}/scheduled_transactions/{scheduled_transaction_id}",
+      "summary": "Update a scheduled transaction",
+      "description": "Updates a single scheduled transaction",
+      "parameters": [
+        {
+          "apiName": "plan_id",
+          "inputName": "planId",
+          "location": "path",
+          "required": true
+        },
+        {
+          "apiName": "scheduled_transaction_id",
+          "inputName": "scheduledTransactionId",
+          "location": "path",
+          "required": true
+        }
+      ],
+      "bodyKeys": [
+        "scheduled_transaction"
+      ],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "planId": {
+            "type": "string",
+            "description": "The id of the plan. \"last-used\" can be used to specify the last used plan and \"default\" can be used if default plan selection is enabled (see: https://api.ynab.com/#oauth-default-plan)."
+          },
+          "scheduledTransactionId": {
+            "type": "string",
+            "description": "The id of the scheduled transaction"
+          },
+          "scheduled_transaction": {
+            "required": [
+              "account_id",
+              "date"
+            ],
+            "type": "object",
+            "properties": {
+              "account_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "date": {
+                "type": "string",
+                "description": "The scheduled transaction date in ISO format (e.g. 2016-12-01).  This should be a future date no more than 5 years into the future.",
+                "format": "date"
+              },
+              "amount": {
+                "type": "integer",
+                "description": "The scheduled transaction amount in milliunits format.",
+                "format": "int64"
+              },
+              "payee_id": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "The payee for the scheduled transaction.  To create a transfer between two accounts, use the account transfer payee pointing to the target account.  Account transfer payees are specified as `transfer_payee_id` on the account resource.",
+                "format": "uuid"
+              },
+              "payee_name": {
+                "maxLength": 200,
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "The payee name for the the scheduled transaction.  If a `payee_name` value is provided and `payee_id` has a null value, the `payee_name` value will be used to resolve the payee by either (1) a payee with the same name or (2) creation of a new payee."
+              },
+              "category_id": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "The category for the scheduled transaction. Credit Card Payment categories are not permitted. Creating a split scheduled transaction is not currently supported.",
+                "format": "uuid"
+              },
+              "memo": {
+                "maxLength": 500,
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "flag_color": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "The transaction flag",
+                "enum": [
+                  "red",
+                  "orange",
+                  "yellow",
+                  "green",
+                  "blue",
+                  "purple",
+                  "",
+                  null
+                ]
+              },
+              "frequency": {
+                "type": "string",
+                "description": "The scheduled transaction frequency",
+                "enum": [
+                  "never",
+                  "daily",
+                  "weekly",
+                  "everyOtherWeek",
+                  "twiceAMonth",
+                  "every4Weeks",
+                  "monthly",
+                  "everyOtherMonth",
+                  "every3Months",
+                  "every4Months",
+                  "twiceAYear",
+                  "yearly",
+                  "everyOtherYear"
+                ]
+              }
+            }
+          }
+        },
+        "required": [
+          "planId",
+          "scheduledTransactionId",
+          "scheduled_transaction"
+        ],
+        "additionalProperties": false
+      },
+      "readOnly": false,
+      "destructive": true,
+      "idempotent": true
+    },
+    {
+      "name": "delete_scheduled_transaction",
+      "operationId": "deleteScheduledTransaction",
+      "method": "DELETE",
+      "path": "/plans/{plan_id}/scheduled_transactions/{scheduled_transaction_id}",
+      "summary": "Delete a scheduled transaction",
+      "description": "Deletes a scheduled transaction",
+      "parameters": [
+        {
+          "apiName": "plan_id",
+          "inputName": "planId",
+          "location": "path",
+          "required": true
+        },
+        {
+          "apiName": "scheduled_transaction_id",
+          "inputName": "scheduledTransactionId",
+          "location": "path",
+          "required": true
+        }
+      ],
+      "bodyKeys": [],
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "planId": {
+            "type": "string",
+            "description": "The id of the plan. \"last-used\" can be used to specify the last used plan and \"default\" can be used if default plan selection is enabled (see: https://api.ynab.com/#oauth-default-plan)."
+          },
+          "scheduledTransactionId": {
+            "type": "string",
+            "description": "The id of the scheduled transaction"
+          }
+        },
+        "required": [
+          "planId",
+          "scheduledTransactionId"
+        ],
+        "additionalProperties": false
+      },
+      "readOnly": false,
+      "destructive": true,
+      "idempotent": true
+    }
+  ]
+}

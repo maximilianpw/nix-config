@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 
 import { execFile } from "node:child_process";
+import { readFile } from "node:fs/promises";
+import { isAbsolute } from "node:path";
 import { pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 import readline from "node:readline";
@@ -10,99 +12,37 @@ const execFileAsync = promisify(execFile);
 const YNAB_API_ORIGIN = "https://api.ynab.com";
 const YNAB_API_BASE_PATH = "/v1";
 const MAX_RESPONSE_BYTES = 8 * 1024 * 1024;
+const MAX_REQUEST_BYTES = 1024 * 1024;
 const REQUEST_TIMEOUT_MS = 30_000;
+const ALLOWED_METHODS = new Set(["GET", "POST", "PUT", "PATCH", "DELETE"]);
 const SUPPORTED_PROTOCOL_VERSIONS = new Set([
   "2024-11-05",
   "2025-03-26",
   "2025-06-18",
 ]);
 
-export const YNAB_MCP_TOOLS = [
-  {
-    name: "get_user",
-    description: "Get the authenticated YNAB user. Read-only.",
-    inputSchema: objectSchema({}),
-    annotations: readOnlyAnnotations("Get YNAB user"),
-  },
-  {
-    name: "list_plans",
-    description: "List the authenticated user's YNAB plans. Read-only.",
-    inputSchema: objectSchema({}),
-    annotations: readOnlyAnnotations("List YNAB plans"),
-  },
-  {
-    name: "list_accounts",
-    description: "List accounts and balances for one YNAB plan. Read-only.",
-    inputSchema: planInputSchema(),
-    annotations: readOnlyAnnotations("List YNAB accounts"),
-  },
-  {
-    name: "list_categories",
-    description: "List category groups, categories, and balances for one YNAB plan. Read-only.",
-    inputSchema: planInputSchema(),
-    annotations: readOnlyAnnotations("List YNAB categories"),
-  },
-  {
-    name: "list_months",
-    description: "List monthly budget summaries for one YNAB plan. Read-only.",
-    inputSchema: planInputSchema(),
-    annotations: readOnlyAnnotations("List YNAB months"),
-  },
-  {
-    name: "list_transactions",
-    description: "List YNAB transactions on or after an ISO date, optionally filtered by status. Read-only.",
-    inputSchema: objectSchema(
-      {
-        planId: planIdProperty(),
-        sinceDate: {
-          type: "string",
-          format: "date",
-          description: "Inclusive ISO 8601 date (YYYY-MM-DD). Required to bound the response.",
-        },
-        type: {
-          type: "string",
-          enum: ["uncategorized", "unapproved"],
-          description: "Optional YNAB transaction status filter.",
-        },
-      },
-      ["planId", "sinceDate"],
-    ),
-    annotations: readOnlyAnnotations("List YNAB transactions"),
-  },
-];
+const operationCatalog = JSON.parse(
+  await readFile(new URL("./ynab-mcp-operations.json", import.meta.url), "utf8"),
+);
+const YNAB_OPERATIONS = operationCatalog.operations;
 
-function objectSchema(properties, required = []) {
-  return {
-    type: "object",
-    properties,
-    required,
-    additionalProperties: false,
-  };
-}
-
-function planIdProperty() {
-  return {
-    type: "string",
-    description: "YNAB plan UUID returned by list_plans.",
-  };
-}
-
-function planInputSchema() {
-  return objectSchema({ planId: planIdProperty() }, ["planId"]);
-}
-
-function readOnlyAnnotations(title) {
-  return {
-    title,
-    readOnlyHint: true,
-    destructiveHint: false,
-    idempotentHint: true,
+export const YNAB_MCP_TOOLS = YNAB_OPERATIONS.map((operation) => ({
+  name: operation.name,
+  description: `${operation.description} ${operation.readOnly ? "Read-only." : "Writes to YNAB and requires explicit approval."}`,
+  inputSchema: operation.inputSchema,
+  annotations: {
+    title: operation.summary,
+    readOnlyHint: operation.readOnly,
+    destructiveHint: operation.destructive,
+    idempotentHint: operation.idempotent,
     openWorldHint: true,
-  };
-}
+  },
+}));
+
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export function validatePlanId(value) {
-  if (typeof value !== "string" || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)) {
+  if (value !== "default" && value !== "last-used" && (typeof value !== "string" || !UUID_PATTERN.test(value))) {
     throw new YnabMcpError("YNAB MCP invalid plan ID", "invalid_plan_id");
   }
   return value;
@@ -120,6 +60,47 @@ export function validateIsoDate(value) {
   return value;
 }
 
+function validateResourceId(value) {
+  if (typeof value !== "string" || !UUID_PATTERN.test(value)) {
+    throw new YnabMcpError("YNAB MCP invalid resource ID", "invalid_resource_id");
+  }
+  return value;
+}
+
+function validateMonth(value) {
+  if (value === "current") return value;
+  if (validateIsoDate(value).slice(8) !== "01") {
+    throw new YnabMcpError("YNAB MCP month must use the first day", "invalid_month");
+  }
+  return value;
+}
+
+function validateParameter(parameter, value) {
+  if (parameter.apiName === "plan_id") return validatePlanId(value);
+  if (parameter.apiName === "month") return validateMonth(value);
+  if (parameter.apiName.endsWith("_id")) return validateResourceId(value);
+  if (parameter.apiName === "since_date" || parameter.apiName === "until_date") return validateIsoDate(value);
+  if (parameter.apiName === "last_knowledge_of_server") {
+    if (!Number.isSafeInteger(value) || value < 0) {
+      throw new YnabMcpError("YNAB MCP invalid server knowledge", "invalid_server_knowledge");
+    }
+    return String(value);
+  }
+  if (parameter.apiName === "include_accounts") {
+    if (typeof value !== "boolean") {
+      throw new YnabMcpError("YNAB MCP invalid boolean parameter", "invalid_boolean");
+    }
+    return String(value);
+  }
+  if (parameter.apiName === "type") {
+    if (value !== "uncategorized" && value !== "unapproved") {
+      throw new YnabMcpError("YNAB MCP invalid transaction type", "invalid_transaction_type");
+    }
+    return value;
+  }
+  throw new YnabMcpError("YNAB MCP unsupported endpoint parameter", "unsupported_parameter");
+}
+
 function assertOnlyKeys(input, allowedKeys) {
   const unexpectedKeys = Object.keys(input).filter((key) => !allowedKeys.has(key));
   if (unexpectedKeys.length > 0) {
@@ -135,46 +116,61 @@ function requireObject(value) {
   return value;
 }
 
-export function createYnabToolHandlers(apiClient) {
-  return new Map([
-    ["get_user", async (rawInput) => {
-      const input = requireObject(rawInput);
-      assertOnlyKeys(input, new Set());
-      return apiClient.get(["user"]);
-    }],
-    ["list_plans", async (rawInput) => {
-      const input = requireObject(rawInput);
-      assertOnlyKeys(input, new Set());
-      return apiClient.get(["plans"]);
-    }],
-    ["list_accounts", async (rawInput) => {
-      const input = requireObject(rawInput);
-      assertOnlyKeys(input, new Set(["planId"]));
-      return apiClient.get(["plans", validatePlanId(input.planId), "accounts"]);
-    }],
-    ["list_categories", async (rawInput) => {
-      const input = requireObject(rawInput);
-      assertOnlyKeys(input, new Set(["planId"]));
-      return apiClient.get(["plans", validatePlanId(input.planId), "categories"]);
-    }],
-    ["list_months", async (rawInput) => {
-      const input = requireObject(rawInput);
-      assertOnlyKeys(input, new Set(["planId"]));
-      return apiClient.get(["plans", validatePlanId(input.planId), "months"]);
-    }],
-    ["list_transactions", async (rawInput) => {
-      const input = requireObject(rawInput);
-      assertOnlyKeys(input, new Set(["planId", "sinceDate", "type"]));
-      const query = new URLSearchParams({ since_date: validateIsoDate(input.sinceDate) });
-      if (input.type !== undefined) {
-        if (input.type !== "uncategorized" && input.type !== "unapproved") {
-          throw new YnabMcpError("YNAB MCP invalid transaction type", "invalid_transaction_type");
-        }
-        query.set("type", input.type);
-      }
-      return apiClient.get(["plans", validatePlanId(input.planId), "transactions"], query);
-    }],
-  ]);
+function buildOperationRequest(operation, rawInput) {
+  const input = requireObject(rawInput);
+  const allowedKeys = new Set(Object.keys(operation.inputSchema.properties));
+  assertOnlyKeys(input, allowedKeys);
+  for (const requiredKey of operation.inputSchema.required) {
+    if (!Object.hasOwn(input, requiredKey)) {
+      throw new YnabMcpError("YNAB MCP missing required tool argument", "missing_argument");
+    }
+  }
+
+  if (!operation.readOnly && (input.planId === "default" || input.planId === "last-used")) {
+    throw new YnabMcpError("YNAB MCP writes require an explicit plan UUID", "explicit_plan_required");
+  }
+
+  const pathValues = new Map();
+  const query = new URLSearchParams();
+  for (const parameter of operation.parameters) {
+    if (input[parameter.inputName] === undefined) continue;
+    const value = validateParameter(parameter, input[parameter.inputName]);
+    if (parameter.location === "path") pathValues.set(parameter.apiName, value);
+    if (parameter.location === "query") query.set(parameter.apiName, value);
+  }
+
+  const pathSegments = operation.path.split("/").filter(Boolean).map((segment) => {
+    const match = /^\{([^}]+)\}$/.exec(segment);
+    return match ? pathValues.get(match[1]) : segment;
+  });
+  if (pathSegments.some((segment) => typeof segment !== "string")) {
+    throw new YnabMcpError("YNAB MCP missing path argument", "missing_argument");
+  }
+
+  const body = operation.bodyKeys.length === 0
+    ? undefined
+    : Object.fromEntries(operation.bodyKeys.filter((key) => Object.hasOwn(input, key)).map((key) => [key, input[key]]));
+  if (operation.name === "create_transactions" && (Object.hasOwn(body, "transaction") === Object.hasOwn(body, "transactions"))) {
+    throw new YnabMcpError("YNAB MCP requires exactly one transaction payload", "invalid_transaction_payload");
+  }
+  if (body !== undefined && Buffer.byteLength(JSON.stringify(body), "utf8") > MAX_REQUEST_BYTES) {
+    throw new YnabMcpError("YNAB MCP request exceeded size limit", "request_too_large");
+  }
+  return { pathSegments, query, body };
+}
+
+export function createYnabToolHandlers(apiClient, { allowWrites = process.env.YNAB_ALLOW_WRITES === "1" } = {}) {
+  return new Map(YNAB_OPERATIONS.map((operation) => [operation.name, async (rawInput) => {
+    if (!operation.readOnly && !allowWrites) {
+      throw new YnabMcpError("YNAB MCP write tools are disabled", "writes_disabled");
+    }
+    const request = buildOperationRequest(operation, rawInput);
+    return apiClient.request(operation.method, request.pathSegments, request);
+  }]));
+}
+
+export function getYnabMcpTools({ allowWrites = process.env.YNAB_ALLOW_WRITES === "1" } = {}) {
+  return allowWrites ? YNAB_MCP_TOOLS : YNAB_MCP_TOOLS.filter((tool) => tool.annotations.readOnlyHint);
 }
 
 export function createYnabApiClient({ fetchImpl = globalThis.fetch, tokenLoader = loadYnabToken } = {}) {
@@ -193,22 +189,30 @@ export function createYnabApiClient({ fetchImpl = globalThis.fetch, tokenLoader 
     }
   };
 
-  return {
-    async get(pathSegments, query = new URLSearchParams()) {
-      const token = await getToken();
-      const path = pathSegments.map((segment) => encodeURIComponent(segment)).join("/");
-      const url = new URL(`${YNAB_API_BASE_PATH}/${path}`, YNAB_API_ORIGIN);
-      url.search = query.toString();
+  const request = async (method, pathSegments, { query = new URLSearchParams(), body } = {}) => {
+    if (!ALLOWED_METHODS.has(method)) {
+      throw new YnabMcpError("YNAB MCP unsupported HTTP method", "unsupported_method");
+    }
+    const token = await getToken();
+    const path = pathSegments.map((segment) => encodeURIComponent(segment)).join("/");
+    const url = new URL(`${YNAB_API_BASE_PATH}/${path}`, YNAB_API_ORIGIN);
+    url.search = query.toString();
+    const serializedBody = body === undefined ? undefined : JSON.stringify(body);
+    if (serializedBody !== undefined && Buffer.byteLength(serializedBody, "utf8") > MAX_REQUEST_BYTES) {
+      throw new YnabMcpError("YNAB MCP request exceeded size limit", "request_too_large");
+    }
 
-      const response = await fetchImpl(url, {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        redirect: "error",
-        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-      });
+    const response = await fetchImpl(url, {
+      method,
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
+        ...(serializedBody === undefined ? {} : { "Content-Type": "application/json" }),
+      },
+      ...(serializedBody === undefined ? {} : { body: serializedBody }),
+      redirect: "error",
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+    });
 
       const contentLength = Number(response.headers.get("content-length"));
       if (Number.isFinite(contentLength) && contentLength > MAX_RESPONSE_BYTES) {
@@ -237,8 +241,12 @@ export function createYnabApiClient({ fetchImpl = globalThis.fetch, tokenLoader 
         );
       }
 
-      return responseBody;
-    },
+    return responseBody;
+  };
+
+  return {
+    request,
+    get: (pathSegments, query = new URLSearchParams()) => request("GET", pathSegments, { query }),
   };
 }
 
@@ -264,10 +272,25 @@ export async function readBoundedResponseText(response, maxBytes) {
   return Buffer.concat(chunks, totalBytes).toString("utf8");
 }
 
-export async function loadYnabToken(env = process.env, runCommand = execFileAsync) {
+export async function loadYnabToken(env = process.env, runCommand = execFileAsync, readTokenFile = readFile) {
+  const tokenFile = env.YNAB_TOKEN_FILE;
+  if (typeof tokenFile === "string" && tokenFile.length > 0) {
+    if (!isAbsolute(tokenFile)) {
+      throw new YnabMcpError("YNAB MCP token file path must be absolute", "invalid_ynab_token_file");
+    }
+
+    let contents;
+    try {
+      contents = await readTokenFile(tokenFile, "utf8");
+    } catch {
+      throw new YnabMcpError("YNAB MCP could not read the token file", "token_file_read_failed");
+    }
+    return validateYnabToken(contents, "token file");
+  }
+
   const opPath = env.YNAB_OP_PATH;
   if (typeof opPath !== "string" || !opPath.startsWith("op://")) {
-    throw new YnabMcpError("YNAB MCP requires a 1Password secret reference", "missing_ynab_op_path");
+    throw new YnabMcpError("YNAB MCP requires YNAB_TOKEN_FILE or a 1Password secret reference", "missing_ynab_credentials");
   }
 
   let stdout;
@@ -282,15 +305,22 @@ export async function loadYnabToken(env = process.env, runCommand = execFileAsyn
     throw new YnabMcpError("YNAB MCP could not resolve the token from 1Password", "onepassword_lookup_failed");
   }
 
-  const token = stdout.trim();
+  return validateYnabToken(stdout, "1Password");
+}
+
+function validateYnabToken(value, source) {
+  const token = value.trim();
   if (token.length === 0 || Buffer.byteLength(token, "utf8") > 4096) {
-    throw new YnabMcpError("YNAB MCP received an invalid token from 1Password", "invalid_ynab_token");
+    throw new YnabMcpError(`YNAB MCP received an invalid token from ${source}`, "invalid_ynab_token");
   }
   return token;
 }
 
-export function createYnabMcpServer({ apiClient = createYnabApiClient() } = {}) {
-  const toolHandlers = createYnabToolHandlers(apiClient);
+export function createYnabMcpServer({
+  apiClient = createYnabApiClient(),
+  allowWrites = process.env.YNAB_ALLOW_WRITES === "1",
+} = {}) {
+  const toolHandlers = createYnabToolHandlers(apiClient, { allowWrites });
 
   return {
     async handle(message) {
@@ -312,14 +342,16 @@ export function createYnabMcpServer({ apiClient = createYnabApiClient() } = {}) 
           return jsonRpcResult(message.id, {
             protocolVersion,
             capabilities: { tools: { listChanged: false } },
-            serverInfo: { name: "ynab-readonly", version: "1.0.0" },
-            instructions: "Read-only local access to the official YNAB API. No create, update, import, or delete tools exist.",
+            serverInfo: { name: "ynab-local", version: "2.0.0" },
+            instructions: allowWrites
+              ? "Local access to all official YNAB API v1.86.0 endpoints. Mutations require client approval."
+              : "Local access to all official YNAB API v1.86.0 endpoints. Write tools are disabled unless YNAB_ALLOW_WRITES=1.",
           });
         }
         case "ping":
           return jsonRpcResult(message.id, {});
         case "tools/list":
-          return jsonRpcResult(message.id, { tools: YNAB_MCP_TOOLS });
+          return jsonRpcResult(message.id, { tools: getYnabMcpTools({ allowWrites }) });
         case "tools/call": {
           const toolName = message.params?.name;
           const handler = toolHandlers.get(toolName);
