@@ -185,6 +185,11 @@
         eval-kim-desktop = desktopKim.config.system.build.toplevel;
         eval-cuno = self.nixosConfigurations.cuno.config.system.build.toplevel;
         pre-commit-check = mkPreCommitCheck "x86_64-linux";
+        actual-config-regression = import ./tests/actual-config-regression.nix {
+          config = self.nixosConfigurations.kim.config;
+          inherit lib;
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        };
         executor-config-regression = import ./tests/executor-config-regression.nix {
           config = self.nixosConfigurations.kim.config;
           inherit lib;

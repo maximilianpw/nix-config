@@ -31,6 +31,7 @@
     "paperless-task-queue.service"
     "paperless-web.service"
   ];
+  quiescesActual = builtins.elem "actual.service" homelab.backup.archiveUnits;
   quiescesImmichWrites = builtins.elem "immich-server.service" homelab.backup.archiveUnits;
   quiescesUptimeKuma = builtins.elem "uptime-kuma.service" homelab.backup.archiveUnits;
   quiescesExecutor = builtins.elem "docker-executor.service" homelab.backup.archiveUnits;
@@ -76,12 +77,15 @@ in
     manifest.schemaVersion
     == 1
     && manifest.expectedDatabases == ["hass" "immich" "miniflux" "nextcloud" "paperless" "vaultwarden"]
+    && builtins.hasAttr "actual" manifest.applicationVersions
     && builtins.hasAttr "executor" manifest.applicationVersions
     && builtins.hasAttr "immich" manifest.applicationVersions
     && builtins.hasAttr "nextcloud" manifest.applicationVersions
     && builtins.hasAttr "kuma" manifest.applicationVersions
     && builtins.hasAttr "uptimeKuma" manifest.applicationVersions
     && manifest.postgresql.majorVersion != ""
+    && builtins.elem "/var/lib/actual" manifest.expectedPrimaryStatePaths
+    && builtins.elem "/var/lib/actual" manifest.expectedArchivePaths
     && builtins.elem "/srv/nextcloud" manifest.expectedPrimaryStatePaths
     && builtins.elem "/srv/immich" manifest.expectedPrimaryStatePaths
     && builtins.elem "/var/lib/executor" manifest.expectedPrimaryStatePaths
@@ -102,6 +106,8 @@ in
   "the backup must prevent mutable Nextcloud app updates while copying store-apps";
   assert lib.assertMsg quiescesPaperlessIngestion
   "Paperless ingestion must remain quiesced until pending consume files are copied";
+  assert lib.assertMsg quiescesActual
+  "the backup must quiesce Actual Budget's account and synchronized budget state";
   assert lib.assertMsg quiescesImmichWrites
   "Immich must remain quiesced while its matching database and media are backed up";
   assert lib.assertMsg quiescesUptimeKuma

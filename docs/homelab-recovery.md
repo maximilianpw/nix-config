@@ -56,7 +56,7 @@ application from initializing an intended restore destination:
 sudo systemctl mask --runtime \
   cloudflared-tunnel-5b712ae4-3ce4-4499-9cb7-a57cde1c571f.service \
   tailscale-serve.service borgbackup-job-main.service \
-  home-assistant.service nextcloud-cron.service nextcloud-cron.timer \
+  actual.service home-assistant.service nextcloud-cron.service nextcloud-cron.timer \
   nextcloud-setup.service nextcloud-update-db.service \
   nextcloud-update-store-apps.service nextcloud-update-store-apps.timer \
   phpfpm-nextcloud.service paperless-consumer.service \
@@ -89,7 +89,7 @@ sudo borg-restore-main <archive> /var/tmp/homelab-state \
   var/backup/homelab/manifest.json \
   var/backup/home-assistant/config.tar var/backup/postgresql \
   srv/immich srv/nextcloud srv/paperless/export srv/paperless/consume \
-  srv/paperless/media var/lib/bazarr var/lib/bitwarden_rs var/lib/jellyfin \
+  srv/paperless/media var/lib/actual var/lib/bazarr var/lib/bitwarden_rs var/lib/jellyfin \
   var/lib/lidarr/.config/Lidarr var/lib/nixos-containers/qbt \
   var/lib/nixos-containers/sab \
   var/lib/private/jellyseerr var/lib/private/prowlarr \
@@ -257,6 +257,19 @@ and data files. Never combine that route with an exporter import.
    restrictive ownership and modes before starting the service.
 3. Log in through isolated ingress; open representative vault items and an
    attachment; verify a Send; and confirm the service identity did not rotate.
+
+### Actual Budget
+
+Keep `actual.service` stopped and restore the complete staged
+`/var/lib/actual` directory. Its `server-files/account.sqlite` contains the
+hashed server password, registered budget files, and active session state;
+`user-files` contains the synchronized budget blobs. Preserve the complete tree
+as one recovery point and start the Actual package version recorded at
+`applicationVersions.actual` on loopback. Sign in with the existing server
+password, open a representative budget, and verify a client can synchronize
+before enabling tailnet ingress. If end-to-end encryption is enabled for a
+budget, its encryption password is separate recovery material and is not
+recoverable from the server state.
 
 ### Executor
 

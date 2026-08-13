@@ -1,6 +1,33 @@
 # Data only. Validation, defaults, and all derived views live in
 # lib/homelab-inventory.nix and lib/homelab.nix.
 {
+  actual = {
+    endpoint = {
+      authorizationOwner = "tailscale";
+      exposure = "tailnet";
+      port = 19006;
+      monitorPath = "/health";
+    };
+    state.paths = ["/var/lib/actual"];
+    backup.quiesce = [
+      {
+        unit = "actual.service";
+        until = "archive";
+      }
+    ];
+    operations.units = ["actual.service"];
+    recovery = {
+      order = 72;
+      versionPolicy = "restore-archived-version-first";
+      runbook = "docs/homelab-recovery.md#actual-budget";
+      acceptance = [
+        "server-password-authentication-succeeds"
+        "representative-budget-syncs-and-opens"
+      ];
+      secretOwners = ["mutable-state:/var/lib/actual"];
+    };
+  };
+
   bazarr = {
     endpoint = {
       authorizationOwner = "tailscale";
