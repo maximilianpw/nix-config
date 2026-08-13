@@ -10,7 +10,7 @@ fi
 
 token=""
 token_source=""
-fallback_dir="$HOME/local/vev platform services/vev-docker-compose/submodules/vev-server"
+fallback_dir="$HOME/local/vev/vev-docker-compose/submodules/vev-server"
 
 for f in .env.local .env "$fallback_dir/.env.local" "$fallback_dir/.env"; do
   if [[ -f "$f" ]]; then

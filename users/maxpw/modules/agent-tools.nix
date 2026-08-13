@@ -51,6 +51,7 @@ in {
         ".config/opencode/opencode.json".source = source "opencode/opencode.json";
 
         ".pi/agent/settings.json".source = piConfigSource "settings.json";
+        ".pi/agent/mcp.json".source = piConfigSource "mcp.json";
         ".pi/agent/cloak.json".source = piConfigSource "cloak.json";
         ".pi/agent/extensions" = {
           source = piConfigSource "extensions";

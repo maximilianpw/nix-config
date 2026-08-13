@@ -27,6 +27,13 @@ in {
       text = builtins.readFile ../../../../scripts/npmrc-token.sh;
     })
     (pkgs.writeShellApplication {
+      name = "ynab-mcp-server";
+      runtimeInputs = [pkgs.nodejs pkgs._1password-cli];
+      text = ''
+        exec ${pkgs.nodejs}/bin/node ${../../../../scripts/ynab-mcp-server.mjs} "$@"
+      '';
+    })
+    (pkgs.writeShellApplication {
       name = "vault-backup";
       runtimeInputs = [
         pkgs.bitwarden-cli
