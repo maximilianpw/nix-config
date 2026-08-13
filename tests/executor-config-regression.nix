@@ -1,0 +1,34 @@
+{
+  config,
+  lib,
+  pkgs,
+}: let
+  homelab = import ../lib/homelab.nix {inherit lib;};
+  endpoint = (homelab.endpoints config.homelab.tailnet.domain).executor;
+  container = config.virtualisation.oci-containers.containers.executor;
+  image = "ghcr.io/rhyssullivan/executor-selfhost@sha256:125123681a14e44d679f22d259ce178bf605886e54c10b5b08b09b19c09f4695";
+in
+  assert lib.assertMsg (config.virtualisation.oci-containers.backend == "docker")
+  "Executor must use Kim's existing Docker backend";
+  assert lib.assertMsg (container.image == image)
+  "Executor must use the reviewed immutable image digest";
+  assert lib.assertMsg (container.ports == ["127.0.0.1:${toString endpoint.port}:4788"])
+  "Executor must only publish its HTTP endpoint on loopback";
+  assert lib.assertMsg (container.volumes == ["/var/lib/executor:/data"])
+  "Executor must persist its database and generated encryption keys outside Docker";
+  assert lib.assertMsg (
+    container.environment.EXECUTOR_WEB_BASE_URL
+    == endpoint.url
+    && container.environment.EXECUTOR_ALLOW_LOCAL_NETWORK == "false"
+  )
+  "Executor must use its exact tailnet URL and deny sandbox access to private networks";
+  assert lib.assertMsg (
+    builtins.elem "docker-executor.service" homelab.backup.archiveUnits
+    && builtins.elem "/var/lib" config.services.borgbackup.jobs.main.paths
+    && builtins.elem "/var/lib/executor" config.custom.backup.manifestMetadata.expectedPrimaryStatePaths
+    && config.custom.backup.manifestMetadata.applicationVersions.executor == image
+  )
+  "Executor state must be quiesced, archived, and tied to its image in the recovery manifest";
+    pkgs.runCommand "executor-config-regression" {} ''
+      touch "$out"
+    ''

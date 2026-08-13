@@ -33,6 +33,7 @@
   ];
   quiescesImmichWrites = builtins.elem "immich-server.service" homelab.backup.archiveUnits;
   quiescesUptimeKuma = builtins.elem "uptime-kuma.service" homelab.backup.archiveUnits;
+  quiescesExecutor = builtins.elem "docker-executor.service" homelab.backup.archiveUnits;
   quiescesT3Code = builtins.elem "maxpw:t3code.service" homelab.backup.userArchiveUnits;
   mutatesNextcloudMaintenance = lib.hasInfix "maintenance:mode" backup.preHook;
   exporterIsSynchronous = exporter.serviceConfig.Type or null == "oneshot";
@@ -75,6 +76,7 @@ in
     manifest.schemaVersion
     == 1
     && manifest.expectedDatabases == ["hass" "immich" "miniflux" "nextcloud" "paperless" "vaultwarden"]
+    && builtins.hasAttr "executor" manifest.applicationVersions
     && builtins.hasAttr "immich" manifest.applicationVersions
     && builtins.hasAttr "nextcloud" manifest.applicationVersions
     && builtins.hasAttr "kuma" manifest.applicationVersions
@@ -82,6 +84,8 @@ in
     && manifest.postgresql.majorVersion != ""
     && builtins.elem "/srv/nextcloud" manifest.expectedPrimaryStatePaths
     && builtins.elem "/srv/immich" manifest.expectedPrimaryStatePaths
+    && builtins.elem "/var/lib/executor" manifest.expectedPrimaryStatePaths
+    && builtins.elem "/var/lib/executor" manifest.expectedArchivePaths
     && builtins.elem "/var/lib/private/uptime-kuma" manifest.expectedPrimaryStatePaths
     && builtins.elem "/home/maxpw/.local/share/t3code" manifest.expectedPrimaryStatePaths
     && builtins.elem "/home/maxpw/.local/share/t3code" manifest.expectedArchivePaths
@@ -102,6 +106,8 @@ in
   "Immich must remain quiesced while its matching database and media are backed up";
   assert lib.assertMsg quiescesUptimeKuma
   "the backup must quiesce Uptime Kuma's mutable local database";
+  assert lib.assertMsg quiescesExecutor
+  "the backup must quiesce Executor's database and generated encryption keys";
   assert lib.assertMsg quiescesT3Code
   "the backup must quiesce T3 Code's user-scoped SQLite and identity state";
   assert lib.assertMsg usesPersistentCoordinator

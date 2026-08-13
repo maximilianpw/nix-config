@@ -68,7 +68,8 @@ sudo systemctl mask --runtime \
   container@qbt.service container@sab.service \
   qbittorrent-proxy.service qbittorrent-proxy.socket \
   sabnzbd-proxy.service sabnzbd-proxy.socket \
-  syncthing.service uptime-kuma.service vaultwarden.service
+  syncthing.service uptime-kuma.service vaultwarden.service \
+  docker-executor.service
 ```
 
 Also keep `t3code.service` stopped in `maxpw`'s user manager while restoring its
@@ -93,6 +94,7 @@ sudo borg-restore-main <archive> /var/tmp/homelab-state \
   var/lib/nixos-containers/sab \
   var/lib/private/jellyseerr var/lib/private/prowlarr \
   var/lib/private/uptime-kuma var/lib/radarr/.config/Radarr \
+  var/lib/executor \
   var/lib/sabnzbd var/lib/sonarr/.config/NzbDrone \
   home/maxpw/.config/syncthing home/maxpw/.local/share/t3code \
   home/maxpw/Sync
@@ -255,6 +257,17 @@ and data files. Never combine that route with an exporter import.
    restrictive ownership and modes before starting the service.
 3. Log in through isolated ingress; open representative vault items and an
    attachment; verify a Send; and confirm the service identity did not rotate.
+
+### Executor
+
+Keep `docker-executor.service` stopped and restore the complete staged
+`/var/lib/executor` directory, including `data.db` and the generated encryption
+keys. Preserve restrictive ownership and modes. Start the image reference
+recorded at `applicationVersions.executor` on loopback before attempting an
+upgrade. Sign in as the existing owner, verify the integration catalog and
+policies, then make one harmless read-only tool call through the MCP endpoint.
+Do not expose an empty replacement instance: its first account would become the
+new owner and newly generated keys could not decrypt the archived credentials.
 
 ### Miniflux
 

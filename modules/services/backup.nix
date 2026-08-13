@@ -47,6 +47,7 @@
     homelab.backup.archivePaths;
   applicationVersions = {
     bazarr = config.services.bazarr.package.version;
+    executor = config.virtualisation.oci-containers.containers.executor.image;
     grafana = config.services.grafana.package.version;
     homeassistant = config.services.home-assistant.package.version;
     homepage = config.services.homepage-dashboard.package.version;

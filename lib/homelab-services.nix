@@ -32,6 +32,32 @@
     };
   };
 
+  executor = {
+    endpoint = {
+      authorizationOwner = "tailscale";
+      exposure = "tailnet";
+      port = 19005;
+    };
+    state.paths = ["/var/lib/executor"];
+    backup.quiesce = [
+      {
+        unit = "docker-executor.service";
+        until = "archive";
+      }
+    ];
+    operations.units = ["docker-executor.service"];
+    recovery = {
+      order = 75;
+      versionPolicy = "restore-pinned-image-first";
+      runbook = "docs/homelab-recovery.md#executor";
+      acceptance = [
+        "owner-can-sign-in"
+        "configured-integration-tool-call-succeeds"
+      ];
+      secretOwners = ["mutable-state:/var/lib/executor"];
+    };
+  };
+
   grafana = {
     endpoint = {
       authorizationOwner = "tailscale";
