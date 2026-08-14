@@ -1,5 +1,6 @@
 {
   "agentPushNotifEnabled": true,
+  "disableClaudeAiConnectors": true,
   "effortLevel": "high",
   "enabledPlugins": {
     "claude-code-setup@claude-plugins-official": true,
