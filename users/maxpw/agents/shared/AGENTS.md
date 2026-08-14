@@ -18,7 +18,7 @@
 
 ## Integrations
 
-Route remote MCP and API integrations through the self-hosted Executor gateway. Add integrations, credentials, and policies in Executor rather than configuring them directly in each agent client. Keep device-local capability servers local when moving them would change their security or runtime boundary.
+Use Executor as the only gateway for remote MCP servers and remote API integrations. Keep device-local capabilities local when moving them would change their security or runtime boundary. For adding, migrating, authenticating, or auditing an integration, follow `~/nix-config/docs/executor-mcp-gateway.md`.
 
 ## Delegation
 
