@@ -12,6 +12,10 @@ in {
       image = "ghcr.io/rhyssullivan/executor-selfhost@sha256:125123681a14e44d679f22d259ce178bf605886e54c10b5b08b09b19c09f4695";
       ports = ["127.0.0.1:${toString executor.port}:4788"];
       volumes = ["/var/lib/executor:/data"];
+      # v1.5.37 is the current upstream image, but its inherited CMD-SHELL
+      # healthcheck cannot run in the distroless image because /bin/sh is
+      # absent. The declared blackbox /health probe remains authoritative.
+      extraOptions = ["--no-healthcheck"];
       environment = {
         PORT = "4788";
         EXECUTOR_HOST = "0.0.0.0";

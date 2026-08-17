@@ -25,9 +25,9 @@ case ${1:-} in
   inspect)
     cat <<'INSPECT'
 [
-  {"Name":"/old-dev","Created":"1970-01-01T00:16:40Z","HostConfig":{"RestartPolicy":{"Name":"no"}},"Config":{"Labels":{"com.docker.compose.project":"stocket-dev","com.docker.compose.project.working_dir":"/home/maxpw/stocket","homelab.ephemeral":"true","homelab.keep":"false"}},"NetworkSettings":{"Ports":{"5432/tcp":[{"HostIp":"127.0.0.1","HostPort":"5432"}]}}},
-  {"Name":"/kept-prod","Created":"1970-01-01T00:16:40Z","HostConfig":{"RestartPolicy":{"Name":"always"}},"Config":{"Labels":{"com.docker.compose.project":"buzz-prod","com.docker.compose.project.working_dir":"/nix/store/example","homelab.ephemeral":"false","homelab.keep":"true"}},"NetworkSettings":{"Ports":{}}},
-  {"Name":"/new-unmanaged","Created":"1970-01-05T12:20:00Z","HostConfig":{"RestartPolicy":{"Name":"no"}},"Config":{"Labels":{}},"NetworkSettings":{"Ports":{}}}
+  {"Name":"/old-dev","Created":"1970-01-01T00:16:40Z","State":{"Health":{"Status":"unhealthy"}},"HostConfig":{"RestartPolicy":{"Name":"no"}},"Config":{"Labels":{"com.docker.compose.project":"stocket-dev","com.docker.compose.project.working_dir":"/home/maxpw/stocket","homelab.ephemeral":"true","homelab.keep":"false"}},"NetworkSettings":{"Ports":{"5432/tcp":[{"HostIp":"127.0.0.1","HostPort":"5432"}]}}},
+  {"Name":"/kept-prod","Created":"1970-01-01T00:16:40Z","State":{"Health":{"Status":"healthy"}},"HostConfig":{"RestartPolicy":{"Name":"always"}},"Config":{"Labels":{"com.docker.compose.project":"buzz-prod","com.docker.compose.project.working_dir":"/nix/store/example","homelab.ephemeral":"false","homelab.keep":"true"}},"NetworkSettings":{"Ports":{}}},
+  {"Name":"/new-unmanaged","Created":"1970-01-05T12:20:00Z","State":{},"HostConfig":{"RestartPolicy":{"Name":"no"}},"Config":{"Labels":{}},"NetworkSettings":{"Ports":{}}}
 ]
 INSPECT
     ;;
@@ -52,6 +52,9 @@ DOCKER_BIN="$fake_docker" \
 metrics_file="$metrics_dir/homelab-docker-containers.prom"
 grep -F 'homelab_docker_containers 3' "$metrics_file"
 grep -F 'homelab_docker_stale_containers 1' "$metrics_file"
+grep -F 'homelab_docker_unhealthy_containers 1' "$metrics_file"
+grep -F 'homelab_docker_container_health{name="old-dev",project="stocket-dev",status="unhealthy"} 1' "$metrics_file"
+grep -F 'homelab_docker_container_health{name="new-unmanaged",project="unmanaged",status="none"} 1' "$metrics_file"
 grep -F 'homelab_docker_stale_container_info{name="old-dev",project="stocket-dev",ephemeral="true"} 1' "$metrics_file"
 grep -F 'homelab_docker_container_age_seconds{name="new-unmanaged",project="unmanaged",ephemeral="false",keep="false"} 10000' "$metrics_file"
 if grep -Fq 'name="kept-prod"' < <(grep 'homelab_docker_stale_container_info' "$metrics_file"); then
@@ -72,5 +75,6 @@ FAKE_EMPTY=1 DOCKER_BIN="$fake_docker" HOMELAB_METRICS_DIR="$metrics_dir" \
   "$script_dir/homelab-container-audit.sh" >/dev/null
 grep -F 'homelab_docker_containers 0' "$metrics_file"
 grep -F 'homelab_docker_stale_containers 0' "$metrics_file"
+grep -F 'homelab_docker_unhealthy_containers 0' "$metrics_file"
 
 echo "homelab container audit tests passed"

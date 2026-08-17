@@ -35,10 +35,9 @@ in {
       description = "Audit long-running Docker containers";
       wantedBy = ["timers.target"];
       timerConfig = {
-        OnBootSec = "10m";
-        OnCalendar = "daily";
-        Persistent = true;
-        RandomizedDelaySec = "30m";
+        OnBootSec = "2m";
+        OnUnitActiveSec = "5m";
+        AccuracySec = "30s";
       };
     };
 

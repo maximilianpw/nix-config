@@ -93,7 +93,7 @@
       "gridPos": {"h": 4, "w": 4, "x": 16, "y": 0},
       "id": 5,
       "options": {"colorMode": "value", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
-      "targets": [{"editorMode": "code", "expr": "(sum(systemd_unit_state{state=\"failed\"}) or vector(0)) + (1 - (max(pg_up) or vector(0))) + (sum(homelab_docker_stale_containers) or vector(0))", "instant": true, "legendFormat": "Issues", "range": false, "refId": "A"}],
+      "targets": [{"editorMode": "code", "expr": "(sum(systemd_unit_state{state=\"failed\"}) or vector(0)) + (1 - (max(pg_up) or vector(0))) + (sum(homelab_docker_stale_containers) or vector(0)) + (sum(homelab_docker_unhealthy_containers) or vector(0))", "instant": true, "legendFormat": "Issues", "range": false, "refId": "A"}],
       "title": "Operational issues",
       "type": "stat"
     },
@@ -200,6 +200,7 @@
     },
     {
       "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "description": "Mean completed-I/O latency. Delta is intentional: Linux disk-time counters may move backward during lockless per-CPU aggregation, which makes rate() invent counter resets and impossible multi-minute spikes.",
       "fieldConfig": {
         "defaults": {"color": {"mode": "palette-classic"}, "custom": {"drawStyle": "line", "fillOpacity": 10, "lineInterpolation": "smooth", "lineWidth": 2, "showPoints": "never", "spanNulls": false}, "mappings": [], "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]}, "unit": "s"},
         "overrides": []
@@ -208,8 +209,8 @@
       "id": 11,
       "options": {"legend": {"calcs": ["lastNotNull"], "displayMode": "table", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "desc"}},
       "targets": [
-        {"editorMode": "code", "expr": "rate(node_disk_read_time_seconds_total{device=~\"nvme[01]n1\"}[$__rate_interval]) / clamp_min(rate(node_disk_reads_completed_total{device=~\"nvme[01]n1\"}[$__rate_interval]), 0.001)", "legendFormat": "{{device}} read", "range": true, "refId": "A"},
-        {"editorMode": "code", "expr": "rate(node_disk_write_time_seconds_total{device=~\"nvme[01]n1\"}[$__rate_interval]) / clamp_min(rate(node_disk_writes_completed_total{device=~\"nvme[01]n1\"}[$__rate_interval]), 0.001)", "legendFormat": "{{device}} write", "range": true, "refId": "B"}
+        {"editorMode": "code", "expr": "clamp_min(delta(node_disk_read_time_seconds_total{device=~\"nvme[01]n1\"}[$__rate_interval]), 0) / clamp_min(delta(node_disk_reads_completed_total{device=~\"nvme[01]n1\"}[$__rate_interval]), 1)", "legendFormat": "{{device}} read", "range": true, "refId": "A"},
+        {"editorMode": "code", "expr": "clamp_min(delta(node_disk_write_time_seconds_total{device=~\"nvme[01]n1\"}[$__rate_interval]), 0) / clamp_min(delta(node_disk_writes_completed_total{device=~\"nvme[01]n1\"}[$__rate_interval]), 1)", "legendFormat": "{{device}} write", "range": true, "refId": "B"}
       ],
       "title": "Disk I/O latency",
       "type": "timeseries"

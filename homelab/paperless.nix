@@ -44,6 +44,14 @@ in {
   };
 
   systemd.services = {
+    gotenberg.environment = {
+      # The native NixOS package does not inherit upstream's container-image
+      # defaults and otherwise exports OTLP data to an absent localhost agent.
+      OTEL_TRACES_EXPORTER = "none";
+      OTEL_METRICS_EXPORTER = "none";
+      OTEL_LOGS_EXPORTER = "none";
+    };
+
     paperless-exporter = {
       # The upstream unit defaults to Type=simple, so `systemctl start` returns
       # before document_exporter finishes. Borg requires completion semantics.

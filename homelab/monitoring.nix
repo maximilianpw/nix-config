@@ -170,7 +170,8 @@
           (alert "HomelabRepeatedServiceRestarts" ''increase(systemd_service_restart_total[30m]) > 3'' "10m" "warning" "An important homelab service is repeatedly restarting")
           (alert "HomelabCpuAnomaly" ''count_over_time(homelab:node_cpu_busy:ratio5m[24h]) >= 1380 and homelab:node_cpu_busy:ratio5m > clamp_min(homelab:node_cpu_busy:upper24h, 0.4)'' "15m" "warning" "CPU use is above both 40% and Kim's adaptive 24-hour baseline")
           (alert "HomelabStaleDockerContainers" ''homelab_docker_stale_containers > 0'' "1h" "warning" "One or more running Docker containers are older than three days without a keep label")
-          (alert "HomelabContainerAuditStale" ''absent(node_textfile_mtime_seconds{file="${nodeExporterTextfileDirectory}/homelab-docker-containers.prom"}) or time() - node_textfile_mtime_seconds{file="${nodeExporterTextfileDirectory}/homelab-docker-containers.prom"} > 93600'' "30m" "warning" "The Docker container audit has not refreshed for more than 26 hours")
+          (alert "HomelabDockerContainerUnhealthy" ''homelab_docker_unhealthy_containers > 0'' "10m" "warning" "One or more Docker containers report an unhealthy state")
+          (alert "HomelabContainerAuditStale" ''absent(node_textfile_mtime_seconds{file="${nodeExporterTextfileDirectory}/homelab-docker-containers.prom"}) or time() - node_textfile_mtime_seconds{file="${nodeExporterTextfileDirectory}/homelab-docker-containers.prom"} > 900'' "10m" "warning" "The Docker container audit has not refreshed for more than 15 minutes")
           (alert "HomelabSystemdMetricsStale" ''absent(node_textfile_mtime_seconds{file="${nodeExporterTextfileDirectory}/homelab-systemd-resources.prom"}) or time() - node_textfile_mtime_seconds{file="${nodeExporterTextfileDirectory}/homelab-systemd-resources.prom"} > 180'' "3m" "warning" "Systemd resource metrics have not refreshed for more than three minutes")
         ];
       }

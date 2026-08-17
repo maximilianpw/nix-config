@@ -56,6 +56,7 @@ if ((${#container_ids[@]} > 0)); then
         (.Config.Labels["com.docker.compose.project.working_dir"] // ""),
         (.Config.Labels["homelab.ephemeral"] // ""),
         (.Config.Labels["homelab.keep"] // ""),
+        ((.State.Health.Status // "none") | ascii_downcase),
         ((.NetworkSettings.Ports // {}) | tojson)
       ]
     | join("\u001f")
@@ -71,6 +72,7 @@ fi
 
 container_count=0
 stale_count=0
+unhealthy_count=0
 
 {
   printf '# HELP homelab_docker_containers Number of running Docker containers.\n'
@@ -81,8 +83,12 @@ stale_count=0
   printf '# TYPE homelab_docker_container_age_seconds gauge\n'
   printf '# HELP homelab_docker_stale_container_info Metadata for a stale running Docker container.\n'
   printf '# TYPE homelab_docker_stale_container_info gauge\n'
+  printf '# HELP homelab_docker_unhealthy_containers Number of running Docker containers reporting unhealthy.\n'
+  printf '# TYPE homelab_docker_unhealthy_containers gauge\n'
+  printf '# HELP homelab_docker_container_health Container health state as reported by Docker.\n'
+  printf '# TYPE homelab_docker_container_health gauge\n'
 
-  while IFS=$field_separator read -r raw_name created restart_policy project working_dir ephemeral keep ports; do
+  while IFS=$field_separator read -r raw_name created restart_policy project working_dir ephemeral keep health ports; do
     [[ -n $raw_name ]] || continue
     name=${raw_name#/}
     for variable in project working_dir ephemeral keep; do
@@ -94,6 +100,10 @@ stale_count=0
     [[ $keep == true ]] || keep=false
     [[ -n $project ]] || project=unmanaged
     [[ -n $restart_policy ]] || restart_policy=none
+    case $health in
+      healthy | unhealthy | starting | none) ;;
+      *) health=unknown ;;
+    esac
 
     created_epoch=$($DATE_BIN --date="$created" +%s)
     if [[ ! $created_epoch =~ ^[0-9]+$ ]] || ((created_epoch > now_epoch)); then
@@ -106,14 +116,19 @@ stale_count=0
     stats=$(awk -F "$field_separator" -v name="$name" -v separator="$field_separator" \
       '$1 == name { print $2 separator $3 separator $4; exit }' "$stats_tmp")
     IFS=$field_separator read -r cpu_usage memory_usage block_io <<< "$stats"
-    printf 'container=%q project=%q age=%ss cpu=%q memory=%q block_io=%q restart=%q ephemeral=%s keep=%s working_dir=%q ports=%q\n' \
-      "$name" "$project" "$age_seconds" "${cpu_usage:-unknown}" "${memory_usage:-unknown}" \
+    printf 'container=%q project=%q age=%ss health=%q cpu=%q memory=%q block_io=%q restart=%q ephemeral=%s keep=%s working_dir=%q ports=%q\n' \
+      "$name" "$project" "$age_seconds" "$health" "${cpu_usage:-unknown}" "${memory_usage:-unknown}" \
       "${block_io:-unknown}" "$restart_policy" "$ephemeral" "$keep" "${working_dir:-unknown}" "${ports:-unknown}" >&2
 
     escaped_name=$(prometheus_escape "$name")
     escaped_project=$(prometheus_escape "$project")
     printf 'homelab_docker_container_age_seconds{name="%s",project="%s",ephemeral="%s",keep="%s"} %s\n' \
       "$escaped_name" "$escaped_project" "$ephemeral" "$keep" "$age_seconds"
+    printf 'homelab_docker_container_health{name="%s",project="%s",status="%s"} 1\n' \
+      "$escaped_name" "$escaped_project" "$health"
+    if [[ $health == unhealthy ]]; then
+      unhealthy_count=$((unhealthy_count + 1))
+    fi
 
     if ((age_seconds >= HOMELAB_CONTAINER_STALE_AFTER_SECONDS)) && [[ $keep != true ]]; then
       stale_count=$((stale_count + 1))
@@ -124,6 +139,7 @@ stale_count=0
 
   printf 'homelab_docker_containers %s\n' "$container_count"
   printf 'homelab_docker_stale_containers %s\n' "$stale_count"
+  printf 'homelab_docker_unhealthy_containers %s\n' "$unhealthy_count"
 } > "$metrics_tmp"
 
 chmod 0644 "$metrics_tmp"
@@ -131,4 +147,5 @@ mv -f "$metrics_tmp" "$metrics_file"
 trap - EXIT
 rm -f "$inspect_tmp" "$stats_tmp"
 
-printf 'Docker container audit complete: %s running, %s stale\n' "$container_count" "$stale_count"
+printf 'Docker container audit complete: %s running, %s stale, %s unhealthy\n' \
+  "$container_count" "$stale_count" "$unhealthy_count"

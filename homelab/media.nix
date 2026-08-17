@@ -155,6 +155,19 @@
         --settings.ffmpeg.ffprobeExecutablePath=${ffprobe} \
         >/dev/null
     '';
+  prowlarrReconcile = pkgs.writeShellApplication {
+    name = "prowlarr-reconcile";
+    runtimeInputs = [pkgs.coreutils pkgs.curl pkgs.gnused pkgs.jq];
+    text = ''
+      export CURL_BIN=${lib.getExe pkgs.curl}
+      export JQ_BIN=${lib.getExe pkgs.jq}
+      export SED_BIN=${lib.getExe pkgs.gnused}
+      export SLEEP_BIN=${lib.getExe' pkgs.coreutils "sleep"}
+      export PROWLARR_CONFIG_FILE=/var/lib/prowlarr/config.xml
+      export PROWLARR_URL=${lib.escapeShellArg (homelab.loopbackUrl endpoints.prowlarr.port)}
+      exec ${lib.getExe pkgs.bash} ${../scripts/prowlarr-reconcile.sh}
+    '';
+  };
   mediaDirectories = [
     mediaRoot
     "${mediaRoot}/torrents"
@@ -322,6 +335,9 @@ in {
         lidarr.serviceConfig.UMask = lib.mkForce "0002";
         sonarr.serviceConfig.UMask = lib.mkForce "0002";
         radarr.serviceConfig.UMask = lib.mkForce "0002";
+        # Mutable-state reconciliation must report errors without taking the
+        # search service down or causing an activation restart loop.
+        prowlarr.serviceConfig.ExecStartPost = lib.mkAfter ["-${lib.getExe prowlarrReconcile}"];
         seerr.environment.HOST = "127.0.0.1";
         tunarr = {
           description = "Tunarr personal TV server";
