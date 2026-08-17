@@ -109,7 +109,6 @@
         tunarr = final.callPackage ./packages/tunarr.nix {};
         obsidian = final.callPackage ./packages/obsidian.nix {};
         cliproxyapi = final.callPackage ./packages/cliproxyapi.nix {};
-        plannotator = final.callPackage ./packages/plannotator.nix {};
         nextcloud-calendar = final.callPackage ./packages/nextcloud-calendar.nix {};
       })
     ];
@@ -290,12 +289,12 @@
       x86_64-linux = let
         pkgs = mkPkgs "x86_64-linux";
       in {
-        inherit (pkgs) helium obsidian skills cliproxyapi plannotator nextcloud-calendar hunkdiff nix-update tunarr;
+        inherit (pkgs) helium obsidian skills cliproxyapi nextcloud-calendar hunkdiff nix-update tunarr;
       };
       aarch64-darwin = let
         pkgs = mkPkgs "aarch64-darwin";
       in {
-        inherit (pkgs) skills plannotator nextcloud-calendar hunkdiff nix-update;
+        inherit (pkgs) skills nextcloud-calendar hunkdiff nix-update;
       };
     };
 

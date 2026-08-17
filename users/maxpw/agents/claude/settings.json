@@ -6,7 +6,6 @@
     "claude-code-setup@claude-plugins-official": true,
     "claude-md-management@claude-plugins-official": true,
     "code-review@claude-plugins-official": true,
-    "plannotator@plannotator": true,
     "rust-analyzer-lsp@claude-plugins-official": true,
     "typescript-lsp@claude-plugins-official": true
   },
@@ -14,14 +13,6 @@
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "CLAUDE_CODE_NEW_INIT": "1",
     "CLAUDE_CODE_NO_FLICKER": "1"
-  },
-  "extraKnownMarketplaces": {
-    "plannotator": {
-      "source": {
-        "repo": "backnotprop/plannotator",
-        "source": "github"
-      }
-    }
   },
   "hooks": {
     "SessionStart": [

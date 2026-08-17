@@ -18,7 +18,6 @@
           clientEnrolled = host.client != null;
         }
         // optionalAttrs (host.hostKey != null) {inherit (host) hostKey;}
-        // optionalAttrs (host.plannotatorPort != null) {inherit (host) plannotatorPort;}
         // optionalAttrs (host.t3codePort != null) {inherit (host) t3codePort;}
     )
     inventory;
@@ -47,7 +46,6 @@
         - GUI/screenshot surface: ${boolText host.gui}
         - Long-running agents: ${boolText host.longRunningAgents}
         - Outbound Fleet identity enrolled: ${boolText host.clientEnrolled}
-        ${optionalString (host ? plannotatorPort) "- Plannotator port: ${toString host.plannotatorPort} (forward on demand with `fleet forward`)\n"}
         ${optionalString (host ? t3codePort) "- T3 Code port: ${toString host.t3codePort}\n"}
       ''
     )

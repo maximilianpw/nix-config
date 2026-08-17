@@ -1,6 +1,7 @@
 ---
 name: add-fleet-host
 description: Add a trusted SSH/tmux development machine to this nix-config fleet. Use when adding, changing, or reviewing hosts for `fleet ssh`, `fleet run`, cmux machine launchers, SSH aliases, per-host tmux colors, Tailscale/MagicDNS targets, or long-running agent placement.
+disable-model-invocation: true
 ---
 
 # Add Fleet Host
