@@ -1,7 +1,6 @@
 {
   config,
   hostRecord,
-  hostname,
   isDarwin,
   isLinuxDesktop,
   isWSL,
@@ -108,12 +107,7 @@ in {
           SSH_AUTH_SOCK = "${config.home.homeDirectory}/.1password/agent.sock";
         }
         else {}
-      )
-      // lib.optionalAttrs (hostname == "kim") {
-        # Clients forward this fixed inventory port on demand with Fleet.
-        PLANNOTATOR_REMOTE = "1";
-        PLANNOTATOR_PORT = "19432";
-      };
+      );
   };
 
   programs = {

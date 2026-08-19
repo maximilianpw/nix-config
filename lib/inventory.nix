@@ -65,10 +65,6 @@
         type = types.port;
         default = 22;
       };
-      plannotatorPort = mkOption {
-        type = types.nullOr types.port;
-        default = null;
-      };
       t3codePort = mkOption {
         type = types.nullOr types.port;
         default = null;
