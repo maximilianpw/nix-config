@@ -1,0 +1,72 @@
+[models]
+default = "grok-4.6"
+web_search = "grok-4.6"
+
+[ui]
+permission_mode = "auto"
+default_selected_permission = "allow_once"
+remember_tool_approvals = true
+show_thinking_blocks = true
+screen_mode = "fullscreen"
+
+[features]
+telemetry = false
+feedback = true
+codebase_indexing = true
+remote_fetch = true
+
+[session]
+load_envrc = true
+
+[tools]
+respect_gitignore = true
+
+[sandbox]
+profile = "workspace"
+
+[shell_environment_policy]
+inherit = "all"
+ignore_default_excludes = false
+
+[permission]
+deny = [
+  "Bash(git push*)",
+  "Bash(jj git push*)",
+  "Read(**/.env)",
+  "Read(**/.ssh/**)",
+  "Read(**/.aws/**)",
+  "Read(**/*.pem)",
+  "Read(**/*.key)",
+  "Read(**/.grok/auth.json)",
+  "Read(**/.cursor/mcp.json)",
+  "Edit(**/.env)",
+  "Edit(**/.ssh/**)",
+  "Edit(**/.aws/**)",
+  "Edit(**/*.pem)",
+  "Edit(**/*.key)",
+  "Edit(**/.grok/auth.json)",
+  "Edit(**/.cursor/mcp.json)",
+]
+ask = [
+  "Bash(rm *)",
+  "Bash(sudo *)",
+  "Bash(chmod *)",
+  "Bash(chown *)",
+  "Bash(kill *)",
+  "Bash(killall *)",
+  "Bash(pkill *)",
+  "Bash(git reset --hard*)",
+  "Bash(git clean *)",
+  "Bash(git commit *)",
+  "Bash(jj commit *)",
+  "Bash(* publish*)",
+  "Bash(* deploy*)",
+]
+
+[marketplace]
+default_skills_installs_purged = true
+official_marketplace_auto_installed = true
+
+[[marketplace.sources]]
+name = "xAI Official"
+git = "https://github.com/xai-org/plugin-marketplace.git"

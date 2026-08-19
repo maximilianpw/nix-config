@@ -32,6 +32,10 @@ in {
       ".config/opencode/AGENTS.md".source = source "shared/AGENTS.md";
       ".pi/agent/AGENTS.md".source = source "shared/AGENTS.md";
       ".claude/settings.json".source = source "claude/settings.json";
+      ".grok/config.toml" = {
+        source = source "grok/config.toml";
+        force = true;
+      };
 
       ".config/opencode/opencode.json".source = source "opencode/opencode.json";
 
