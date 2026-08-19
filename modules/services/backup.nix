@@ -19,6 +19,9 @@
   homelabBackupDir = "/var/backup/homelab";
   backupMetricsDir = "/var/lib/prometheus-node-exporter-text-files";
   homelab = import ../../lib/homelab.nix {inherit lib;};
+  t3codeSourceDir = builtins.head homelab.services.t3code.state.paths;
+  t3codeBackupArtifact = builtins.head homelab.services.t3code.backup.artifacts;
+  t3codeBackupDir = builtins.dirOf t3codeBackupArtifact;
   # Lifecycle ownership is declarative; service-specific export and archive
   # commands remain in this coordinator.
   databaseApplicationUnits = homelab.backup.dumpUnits;
@@ -102,6 +105,23 @@
     recovery = homelab.backup.recovery;
   };
   manifestStatic = builtins.toJSON manifestMetadata;
+  t3codeBackup = pkgs.writeShellApplication {
+    name = "t3code-backup";
+    runtimeInputs = [
+      pkgs.coreutils
+      pkgs.gnutar
+      pkgs.rsync
+      pkgs.sqlite
+    ];
+    text = ''
+      export T3CODE_SOURCE_DIR=${lib.escapeShellArg t3codeSourceDir}
+      export T3CODE_BACKUP_DIR=${lib.escapeShellArg t3codeBackupDir}
+      export SQLITE_BIN=${lib.getExe pkgs.sqlite}
+      export RSYNC_BIN=${lib.getExe pkgs.rsync}
+      export TAR_BIN=${tar}
+      exec ${lib.getExe pkgs.bash} ${../../scripts/t3code-backup.sh}
+    '';
+  };
   coordinator = pkgs.writeShellApplication {
     name = "homelab-backup-coordinator";
     runtimeInputs = [
@@ -120,6 +140,7 @@
       export HOMELAB_USER_ARCHIVE_UNITS=${lib.escapeShellArg (lib.concatStringsSep " " userFileApplicationUnits)}
       export HOMELAB_POSTGRESQL_BACKUP_UNIT=${lib.escapeShellArg homelab.infrastructure.postgresqlBackup.unit}
       export HOME_ASSISTANT_ARCHIVE_DIR=${lib.escapeShellArg homeAssistantBackupDir}
+      export T3CODE_BACKUP_BIN=${lib.getExe t3codeBackup}
       exec ${lib.getExe pkgs.bash} ${../../scripts/homelab-backup-coordinator.sh} "$@"
     '';
   };
@@ -150,10 +171,12 @@
       pkgs.gawk
       pkgs.gnutar
       pkgs.jq
+      pkgs.sqlite
     ];
     text = ''
       export BORG_BIN=${borg}
       export JQ_BIN=${jq}
+      export SQLITE_BIN=${lib.getExe pkgs.sqlite}
       export TAR_BIN=${tar}
       export BORG_REPO=${lib.escapeShellArg cfg.repo}
       export BORG_PASSCOMMAND=${lib.escapeShellArg "cat ${config.sops.secrets.borg-backup-passphrase.path}"}
@@ -206,6 +229,9 @@ in {
         # Home Assistant is archived while quiesced before Borg starts. Avoid
         # also capturing its live config tree after the service restarts.
         "/var/lib/hass"
+        # T3 Code remains online while its SQLite database and surrounding
+        # state are transformed into a consistent archive artifact.
+        t3codeSourceDir
         # PostgreSQL is recovered from the consistent logical dump produced
         # immediately before Borg starts, never from live database files.
         "/var/lib/postgresql"
@@ -336,6 +362,7 @@ in {
       readWritePaths = [
         homeAssistantBackupDir
         homelabBackupDir
+        t3codeBackupDir
         backupMetricsDir
         "/run/homelab-backup"
       ];
@@ -357,6 +384,7 @@ in {
       tmpfiles.rules = [
         "d ${homeAssistantBackupDir} 0700 root root -"
         "d ${homelabBackupDir} 0700 root root -"
+        "d ${t3codeBackupDir} 0700 root root -"
         "d /run/homelab-backup 0700 root root -"
       ];
       tmpfiles.settings."10-homelab-metrics"."${backupMetricsDir}".d = {

@@ -117,7 +117,7 @@ acceptance check.
 | Vaultwarden | PostgreSQL and `/var/lib/bitwarden_rs` | Logical dump plus file tree | Verify RSA identity, attachments, Sends, and DB as one recovery point |
 | Syncthing | Device identity/config and synchronized files | Home/config paths plus `/var/lib` coverage | Define restore-versus-repair policy before reconnecting peers |
 | Uptime Kuma | `/var/lib/private/uptime-kuma` SQLite state (`/var/lib/uptime-kuma` is a DynamicUser symlink) | Quiesced file copy | Restore monitors and notification test; later consider online SQLite snapshot |
-| T3 Code | `~/.local/share/t3code` SQLite/WAL, identity, keys, attachments, and worktrees | User-unit-quiesced file copy | Restore one version-matched tree; validate identity, workspace, attachment, and worktree behavior |
+| T3 Code | `~/.local/share/t3code` SQLite, identity, keys, attachments, and worktrees | Online SQLite snapshot plus transformed state archive | Restore one version-matched tree; validate identity, workspace, attachment, and worktree behavior |
 | Grafana | Local DB and generated secret key | Intentionally excluded | Confirm every important dashboard, datasource, alert, and role is provisioned |
 | Prometheus | Local TSDB | Intentionally excluded | Accept loss of history; keep retention bounded |
 | Tailscale | Node identity, ACLs, grants, Serve state | Partly external and partly imperative | Reconcile local Serve state; version and validate tailnet policy |
@@ -167,8 +167,9 @@ Implementation:
 5. Keep Uptime Kuma stopped while `/var/lib/private/uptime-kuma` is copied.
 6. Keep Vaultwarden stopped until both PostgreSQL and
    `/var/lib/bitwarden_rs` are captured.
-7. Keep the T3 Code user unit stopped while its SQLite, identity, attachment,
-   key, and worktree state is copied.
+7. Keep T3 Code online: use SQLite's backup API for the database, combine it
+   with identity, attachment, key, and worktree state in an atomic archive
+   artifact, and exclude the live tree from Borg.
 8. Restart archive-scoped units after archive creation, before Borg prune and
    compact.
 9. Restart exactly the units that were active before backup, even after a
@@ -351,6 +352,7 @@ Implementation:
    - lists archive metadata;
    - checks required members exist;
    - validates the Home Assistant tar structure;
+   - validates the T3 Code tar structure and SQLite integrity;
    - lists PostgreSQL dump files;
    - reports, but never restores, missing expected paths.
 3. Never add a one-command production restore that overwrites live paths.

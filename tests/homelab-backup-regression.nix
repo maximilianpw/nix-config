@@ -13,6 +13,11 @@
   hasProjectsPath = builtins.elem projectsPath backup.paths;
   backsUpPaperlessConsume = builtins.elem "/srv/paperless/consume" backup.paths;
   canWriteHomeAssistantArchive = builtins.elem "/var/backup/home-assistant" backupUnit.serviceConfig.ReadWritePaths;
+  t3codeSource = "/home/maxpw/.local/share/t3code";
+  t3codeArtifact = "/var/backup/t3code/state.tar";
+  archivesT3CodeArtifact = builtins.elem t3codeArtifact backup.paths;
+  excludesLiveT3CodeState = builtins.elem t3codeSource backup.exclude;
+  canWriteT3CodeArtifact = builtins.elem "/var/backup/t3code" backupUnit.serviceConfig.ReadWritePaths;
   manifest = config.custom.backup.manifestMetadata;
   archivesManifest = builtins.elem "/var/backup/homelab" backup.paths;
   canWriteManifest = builtins.elem "/var/backup/homelab" backupUnit.serviceConfig.ReadWritePaths;
@@ -69,6 +74,8 @@ in
   "the backup must preserve Paperless pending inputs and database-route media";
   assert lib.assertMsg canWriteHomeAssistantArchive
   "the sandboxed Borg unit must be able to write the quiesced Home Assistant archive";
+  assert lib.assertMsg (archivesT3CodeArtifact && excludesLiveT3CodeState && canWriteT3CodeArtifact)
+  "T3 Code must be backed up from its writable online snapshot artifact, never its live state tree";
   assert lib.assertMsg (archivesManifest && canWriteManifest)
   "every archive must include a writable, runtime-generated recovery manifest";
   assert lib.assertMsg canPersistRecoveryState
@@ -91,8 +98,9 @@ in
     && builtins.elem "/var/lib/executor" manifest.expectedPrimaryStatePaths
     && builtins.elem "/var/lib/executor" manifest.expectedArchivePaths
     && builtins.elem "/var/lib/private/uptime-kuma" manifest.expectedPrimaryStatePaths
-    && builtins.elem "/home/maxpw/.local/share/t3code" manifest.expectedPrimaryStatePaths
-    && builtins.elem "/home/maxpw/.local/share/t3code" manifest.expectedArchivePaths
+    && builtins.elem t3codeSource manifest.expectedPrimaryStatePaths
+    && builtins.elem t3codeArtifact manifest.expectedArchivePaths
+    && !(builtins.elem t3codeSource manifest.expectedArchivePaths)
     && manifest.applicationVersions.t3code != ""
     && manifest.recovery.t3code.runbook == "docs/homelab-recovery.md#t3-code"
     && builtins.elem "grafana" manifest.disposableState
@@ -114,8 +122,8 @@ in
   "the backup must quiesce Uptime Kuma's mutable local database";
   assert lib.assertMsg quiescesExecutor
   "the backup must quiesce Executor's database and generated encryption keys";
-  assert lib.assertMsg quiescesT3Code
-  "the backup must quiesce T3 Code's user-scoped SQLite and identity state";
+  assert lib.assertMsg (!quiescesT3Code)
+  "T3 Code must stay online while SQLite's backup API snapshots its state";
   assert lib.assertMsg usesPersistentCoordinator
   "backup preparation and cleanup must share the failure-safe persisted coordinator";
   assert lib.assertMsg serializesBorgOperations

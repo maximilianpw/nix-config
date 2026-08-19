@@ -66,7 +66,13 @@ cat > "$tmp/tar-fail" <<'EOF'
 #!/usr/bin/env bash
 exit 1
 EOF
-chmod +x "$tmp/systemctl" "$tmp/tar-fail"
+cat > "$tmp/t3code-backup" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+printf 't3code online snapshot\n' >> "$CASE_DIR/commands"
+[[ ${FAIL_T3CODE_BACKUP:-0} != 1 ]]
+EOF
+chmod +x "$tmp/systemctl" "$tmp/tar-fail" "$tmp/t3code-backup"
 
 new_case() {
   local name=$1
@@ -87,9 +93,10 @@ new_case() {
   export HOMELAB_DUMP_UNITS='db-a.service db-inactive.service'
   export HOMELAB_ARCHIVE_UNITS='file-a.service file-b.service'
   export HOMELAB_USER_DUMP_UNITS=''
-  export HOMELAB_USER_ARCHIVE_UNITS='maxpw:t3code.service'
+  export HOMELAB_USER_ARCHIVE_UNITS='maxpw:user-file.service'
+  export T3CODE_BACKUP_BIN=$tmp/t3code-backup
   export NEXTCLOUD_UPDATE_MAX_WAITS=1
-  unset FAIL_STOP_UNIT FAIL_START_UNIT UPDATE_STUCK SYSTEMCTL_USER_MANAGER_FAIL
+  unset FAIL_STOP_UNIT FAIL_START_UNIT FAIL_T3CODE_BACKUP UPDATE_STUCK SYSTEMCTL_USER_MANAGER_FAIL
 }
 
 is_active() {
@@ -98,24 +105,24 @@ is_active() {
 
 # Normal lifecycle, including a pre-existing inactive service.
 new_case normal
-printf '%s\n' db-a.service file-a.service file-b.service maxpw:t3code.service > "$CASE_DIR/active"
+printf '%s\n' db-a.service file-a.service file-b.service maxpw:user-file.service > "$CASE_DIR/active"
 bash "$coordinator" prepare
 is_active db-a.service
 ! is_active db-inactive.service
 ! is_active file-a.service
-! is_active maxpw:t3code.service
+! is_active maxpw:user-file.service
 [[ -s $CASE_DIR/archive/config.tar ]]
 bash "$coordinator" cleanup
 is_active file-a.service
 is_active file-b.service
-is_active maxpw:t3code.service
+is_active maxpw:user-file.service
 ! is_active db-inactive.service
 [[ ! -e $CASE_DIR/state/active-units ]]
-grep -Fq -- '--user --machine=maxpw@.host stop t3code.service' "$CASE_DIR/commands"
+grep -Fq -- '--user --machine=maxpw@.host stop user-file.service' "$CASE_DIR/commands"
 
 # A transport failure must not be mistaken for an inactive user unit and copied hot.
 new_case user-manager-failure
-printf '%s\n' maxpw:t3code.service > "$CASE_DIR/active"
+printf '%s\n' maxpw:user-file.service > "$CASE_DIR/active"
 export SYSTEMCTL_USER_MANAGER_FAIL=1
 if bash "$coordinator" prepare; then
   echo "unreachable user manager unexpectedly allowed backup preparation" >&2
@@ -126,7 +133,26 @@ if grep -Eq '^stop | stop ' "$CASE_DIR/commands"; then
   echo "prepare stopped units before validating the declared user manager" >&2
   exit 1
 fi
-is_active maxpw:t3code.service
+is_active maxpw:user-file.service
+
+# A failed online T3 Code snapshot happens before any service is stopped. The
+# persisted active-unit state still lets final cleanup complete safely.
+new_case t3code-snapshot-failure
+printf '%s\n' db-a.service file-a.service > "$CASE_DIR/active"
+export FAIL_T3CODE_BACKUP=1
+if bash "$coordinator" prepare; then
+  echo "failed T3 Code snapshot unexpectedly allowed backup preparation" >&2
+  exit 1
+fi
+unset FAIL_T3CODE_BACKUP
+is_active db-a.service
+is_active file-a.service
+if grep -Eq '^stop | stop ' "$CASE_DIR/commands"; then
+  echo "T3 Code snapshot failure stopped another service" >&2
+  exit 1
+fi
+bash "$coordinator" cleanup
+[[ ! -e $CASE_DIR/state/active-units ]]
 
 # Failure before exports still leaves enough persisted state for cleanup.
 new_case stop-failure

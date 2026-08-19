@@ -10,6 +10,7 @@ set -euo pipefail
 : "${HOMELAB_BACKUP_STATE_DIR:=/run/homelab-backup}"
 : "${HOME_ASSISTANT_SOURCE_DIR:=/var/lib}"
 : "${HOME_ASSISTANT_ARCHIVE_DIR:=/var/backup/home-assistant}"
+: "${T3CODE_BACKUP_BIN:?T3CODE_BACKUP_BIN must be set}"
 : "${NEXTCLOUD_UPDATE_MAX_WAITS:=360}"
 state_file="$HOMELAB_BACKUP_STATE_DIR/active-units"
 
@@ -103,6 +104,11 @@ prepare() {
     fi
   done
   mv -f "$state_file.tmp" "$state_file"
+
+  # T3 Code's SQLite online backup runs while the service remains available.
+  # Do this before quiescing unrelated applications so it cannot extend their
+  # outage window.
+  "$T3CODE_BACKUP_BIN"
 
   for entry in "${active_dump[@]}"; do
     IFS=$'\t' read -r scope user unit <<< "$entry"

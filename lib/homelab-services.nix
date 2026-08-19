@@ -811,14 +811,11 @@
       monitorPath = "/health";
     };
     state.paths = ["/home/maxpw/.local/share/t3code"];
-    backup.quiesce = [
-      {
-        scope = "user";
-        user = "maxpw";
-        unit = "t3code.service";
-        until = "archive";
-      }
-    ];
+    backup = {
+      strategy = "archive-transform";
+      artifacts = ["/var/backup/t3code/state.tar"];
+      transformedPaths = ["/home/maxpw/.local/share/t3code"];
+    };
     operations = {
       units = [];
       monitorException = "T3 Code is a user service; endpoint monitoring owns its availability.";

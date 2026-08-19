@@ -5,13 +5,16 @@ repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 inspect="$repo_root/scripts/homelab-backup-inspect.sh"
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
-mkdir -p "$tmp/ha/hass"
+mkdir -p "$tmp/ha/hass" "$tmp/t3code/userdata"
 printf 'configuration\n' > "$tmp/ha/hass/configuration.yaml"
+printf 'SQLite fixture\n' > "$tmp/t3code/userdata/state.sqlite"
 tar -cf "$tmp/ha.tar" -C "$tmp/ha" hass
+tar -cf "$tmp/t3code.tar" -C "$tmp/t3code" .
 
 cat > "$tmp/good.jsonl" <<'EOF'
 {"path":"var/backup/homelab/manifest.json"}
 {"path":"var/backup/home-assistant/config.tar"}
+{"path":"var/backup/t3code/state.tar"}
 {"path":"var/backup/postgresql/all.sql.zstd"}
 {"path":"srv/paperless/export/manifest.json"}
 {"path":"srv/paperless/consume"}
@@ -20,7 +23,6 @@ cat > "$tmp/good.jsonl" <<'EOF'
 {"path":"var/lib/private/uptime-kuma/kuma.db"}
 {"path":"var/lib/bitwarden_rs/rsa_key.pem"}
 {"path":"home/maxpw/nix-config/flake.nix"}
-{"path":"home/maxpw/.local/share/t3code/userdata/state.sqlite"}
 {"path":"srv/new-service/data"}
 EOF
 cat > "$tmp/missing.jsonl" <<'EOF'
@@ -34,6 +36,7 @@ cat > "$tmp/manifest.json" <<'EOF'
   "expectedArchivePaths": [
     "/var/backup/homelab/manifest.json",
     "/var/backup/home-assistant/config.tar",
+    "/var/backup/t3code/state.tar",
     "/var/backup/postgresql",
     "/srv/paperless/export",
     "/srv/paperless/consume",
@@ -42,7 +45,6 @@ cat > "$tmp/manifest.json" <<'EOF'
     "/var/lib/private/uptime-kuma",
     "/var/lib/bitwarden_rs",
     "/home/maxpw/nix-config",
-    "/home/maxpw/.local/share/t3code",
     "/srv/new-service"
   ]
 }
@@ -68,6 +70,7 @@ elif [[ $1 == extract && $2 == --stdout ]]; then
   case "$4" in
     var/backup/homelab/manifest.json) cat "$FIXTURE_DIR/manifest.json" ;;
     var/backup/home-assistant/config.tar) cat "$FIXTURE_DIR/ha.tar" ;;
+    var/backup/t3code/state.tar) cat "$FIXTURE_DIR/t3code.tar" ;;
     *) exit 2 ;;
   esac
 else
@@ -75,12 +78,20 @@ else
   exit 2
 fi
 EOF
-chmod +x "$tmp/borg"
+cat > "$tmp/sqlite3" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+[[ -s $1 ]]
+[[ $2 == 'PRAGMA integrity_check;' ]]
+printf 'ok\n'
+EOF
+chmod +x "$tmp/borg" "$tmp/sqlite3"
 
 export FIXTURE_DIR=$tmp
 export BORG_BIN=$tmp/borg
 export JQ_BIN
 JQ_BIN=$(command -v jq)
+export SQLITE_BIN=$tmp/sqlite3
 export TAR_BIN
 TAR_BIN=$(command -v tar)
 
@@ -99,7 +110,7 @@ if bash "$inspect" drift > "$tmp/drift.out" 2> "$tmp/drift.err"; then
 fi
 grep -Fq 'MISSING: srv/new-service' "$tmp/drift.err"
 
-if grep -Ev '^(list --json|list --json-lines ::[^ ]+|info --json ::[^ ]+|extract --stdout ::[^ ]+ (var/backup/homelab/manifest\.json|var/backup/home-assistant/config\.tar))$' "$tmp/calls" | grep -q .; then
+if grep -Ev '^(list --json|list --json-lines ::[^ ]+|info --json ::[^ ]+|extract --stdout ::[^ ]+ (var/backup/homelab/manifest\.json|var/backup/home-assistant/config\.tar|var/backup/t3code/state\.tar))$' "$tmp/calls" | grep -q .; then
   echo "inspector issued a mutating or unrecognized Borg command" >&2
   exit 1
 fi

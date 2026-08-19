@@ -107,6 +107,12 @@ in
   "state kind must derive from Paperless's declared files and database";
   assert lib.assertMsg (homelab.services.homeassistant.backup.archivePaths == ["/var/backup/home-assistant/config.tar"])
   "archive-transform services must replace live state with their generated artifacts";
+  assert lib.assertMsg (
+    homelab.services.t3code.backup.archivePaths
+    == ["/var/backup/t3code/state.tar"]
+    && homelab.services.t3code.backup.quiesce == []
+  )
+  "T3 Code must use an online archive transformation without service quiescing";
   assert lib.assertMsg (builtins.elem homelab.infrastructure.postgresqlBackup.archivePath homelab.backup.archivePaths)
   "the shared PostgreSQL dump must be included once whenever databases are declared";
     pkgs.runCommand "homelab-inventory-regression" {} ''

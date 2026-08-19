@@ -102,9 +102,9 @@ sudo nmcli connection modify <connection-name> 802-3-ethernet.wake-on-lan magic
 - [ ] Run `sudo borg-job-main list` and
       `sudo homelab-backup-inspect <archive>`, then stage a small restore with
       `borg-restore-main`; do not restore over live service paths.
-- [ ] Verify the manifest, Home Assistant config archive, Paperless export,
-      pending consume files and media, PostgreSQL dumps, Nextcloud, Kuma, Vaultwarden,
-      and archived checkout are present.
+- [ ] Verify the manifest, Home Assistant and T3 Code state archives, Paperless
+      export, pending consume files and media, PostgreSQL dumps, Nextcloud, Kuma,
+      Vaultwarden, and archived checkout are present.
 - [ ] Run the version-matched Paperless import and application checks in
       `docs/paperless.md`; the existence of an export alone is not a restore
       test.

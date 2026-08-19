@@ -310,12 +310,19 @@ opens.
 
 ### T3 Code
 
-T3 Code's `/home/maxpw/.local/share/t3code` tree is primary state. It contains
-the SQLite database and WAL, attachments, identity and cloud-link/signing key
-material, and managed worktrees. Keep `t3code.service` stopped in `maxpw`'s user
-manager and restore that complete tree from one archive, preserving ownership
-and restrictive key-file modes. Never mix its database, WAL, identity, keys,
-attachments, or worktrees from different recovery points.
+T3 Code's `/home/maxpw/.local/share/t3code` tree is primary state. The backup
+pre-hook transforms it into `/var/backup/t3code/state.tar` while T3 Code remains
+online: SQLite's backup API creates a standalone `state.sqlite`, then the
+identity, cloud-link/signing keys, attachments, logs, caches, and managed
+worktrees are copied around it. The live tree and transient SQLite WAL/SHM files
+are excluded from Borg.
+
+Keep `t3code.service` stopped in `maxpw`'s user manager during recovery. Extract
+`var/backup/t3code/state.tar` into an empty staging directory, verify its
+contents, then install that complete tree at `/home/maxpw/.local/share/t3code`
+while preserving ownership and restrictive key-file modes. Never mix the
+snapshot database, identity, keys, attachments, or worktrees from different
+recovery points.
 
 Use the package version recorded at `applicationVersions.t3code` in the archive
 manifest first. If a newer package must migrate the database, retain the staged

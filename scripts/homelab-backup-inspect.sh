@@ -4,6 +4,7 @@ set -euo pipefail
 
 : "${BORG_BIN:=borg}"
 : "${JQ_BIN:=jq}"
+: "${SQLITE_BIN:=sqlite3}"
 : "${TAR_BIN:=tar}"
 
 usage() {
@@ -11,8 +12,8 @@ usage() {
 Usage: homelab-backup-inspect [archive]
 
 Without an archive, list repository archives. With an archive, print its
-recovery manifest, verify required members, validate the Home Assistant tar,
-and list PostgreSQL dump files. No restore is performed.
+recovery manifest, verify required members, validate transformed application
+archives, and list PostgreSQL dump files. No restore is performed.
 EOF
 }
 
@@ -41,9 +42,12 @@ esac
 listing=$(mktemp)
 paths=$(mktemp)
 ha_tar=$(mktemp)
+t3code_tar=$(mktemp)
+t3code_extract=$(mktemp -d)
 manifest=$(mktemp)
 cleanup() {
-  rm -f "$listing" "$paths" "$ha_tar" "$manifest"
+  rm -f "$listing" "$paths" "$ha_tar" "$t3code_tar" "$manifest"
+  rm -rf "$t3code_extract"
 }
 trap cleanup EXIT
 
@@ -74,6 +78,18 @@ if grep -Fxq 'var/backup/home-assistant/config.tar' "$paths"; then
   "$BORG_BIN" extract --stdout "$archive_ref" var/backup/home-assistant/config.tar > "$ha_tar"
   if ! "$TAR_BIN" -tf "$ha_tar" | awk '$0 == "hass" || index($0, "hass/") == 1 { found = 1 } END { exit !found }'; then
     echo "INVALID: Home Assistant archive does not contain the hass tree" >&2
+    missing=1
+  fi
+fi
+
+if grep -Fxq 'var/backup/t3code/state.tar' "$paths"; then
+  "$BORG_BIN" extract --stdout "$archive_ref" var/backup/t3code/state.tar > "$t3code_tar"
+  if ! "$TAR_BIN" -tf "$t3code_tar" | awk '$0 == "./userdata/state.sqlite" { found = 1 } END { exit !found }'; then
+    echo "INVALID: T3 Code archive does not contain userdata/state.sqlite" >&2
+    missing=1
+  elif ! "$TAR_BIN" -xf "$t3code_tar" -C "$t3code_extract" ./userdata/state.sqlite \
+    || [[ $("$SQLITE_BIN" "$t3code_extract/userdata/state.sqlite" 'PRAGMA integrity_check;') != ok ]]; then
+    echo "INVALID: T3 Code SQLite snapshot failed its integrity check" >&2
     missing=1
   fi
 fi
