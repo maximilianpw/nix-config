@@ -62,6 +62,7 @@ in {
       "jsonlint"
       "pinentry-mac"
       "zsh"
+      "mole"
     ];
 
     casks = [
