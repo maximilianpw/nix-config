@@ -6,7 +6,7 @@
   homelab = import ../lib/homelab.nix {inherit lib;};
   endpoint = (homelab.endpoints config.homelab.tailnet.domain).executor;
   container = config.virtualisation.oci-containers.containers.executor;
-  image = "ghcr.io/rhyssullivan/executor-selfhost@sha256:125123681a14e44d679f22d259ce178bf605886e54c10b5b08b09b19c09f4695";
+  image = "ghcr.io/rhyssullivan/executor-selfhost@sha256:3fb4e7fdcd639dd5c8d3de51d168e6d3b78654a156a4f5f323a2f986565cb4dc";
 in
   assert lib.assertMsg (config.virtualisation.oci-containers.backend == "docker")
   "Executor must use Kim's existing Docker backend";

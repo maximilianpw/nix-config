@@ -169,7 +169,8 @@ in
   assert lib.assertMsg (
     config.systemd.timers.homelab-container-audit.wantedBy
     == ["timers.target"]
-    && config.systemd.timers.homelab-container-audit.timerConfig.OnCalendar == "daily"
+    && config.systemd.timers.homelab-container-audit.timerConfig.OnBootSec == "2m"
+    && config.systemd.timers.homelab-container-audit.timerConfig.OnUnitActiveSec == "5m"
     && config.systemd.services.homelab-container-audit.serviceConfig.Type == "oneshot"
     && builtins.elem "/var/lib/prometheus-node-exporter-text-files" config.systemd.services.homelab-container-audit.serviceConfig.ReadWritePaths
     && builtins.elem "homelab-container-audit.service" homelab.importantSystemdUnits

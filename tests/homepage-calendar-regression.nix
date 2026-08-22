@@ -177,8 +177,8 @@ in
       "integration_paperless"
     ])
   "Nextcloud declarative app ownership must remain complete and explicit";
-  assert lib.assertMsg (nextcloud.extraApps.calendar.version == "6.5.2")
-  "Nextcloud Calendar must retain the pinned 6.5.2 release";
+  assert lib.assertMsg (nextcloud.extraApps.calendar.version == "6.5.4")
+  "Nextcloud Calendar must retain the pinned 6.5.4 release";
   assert lib.assertMsg (!nextcloud.autoUpdateApps.enable)
   "Nextcloud's broad app updater must stay disabled for immutable extraApps";
   assert lib.assertMsg ((config.systemd.services.nextcloud-update-plugins.serviceConfig.ExecStart or null) == null)
