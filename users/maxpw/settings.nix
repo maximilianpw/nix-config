@@ -4,6 +4,7 @@
     port = 8317;
     baseUrl = "http://${host}:${toString port}";
     apiKey = "cliproxyapi-local-claudex";
+    managementKeyHash = "$2y$12$StNSbM2o2eq3Qw9ZJzu6XupgFJllQTVuMSkLM93IN2N3T3f8eBY4a";
     model = "gpt-5.6-sol";
   };
 

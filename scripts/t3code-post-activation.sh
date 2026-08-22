@@ -13,6 +13,11 @@ if [ -x /opt/homebrew/bin/brew ]; then
       -- /opt/homebrew/bin/brew "$@"
   }
 
+  # Homebrew Bundle's `trusted: true` permits installation but does not keep a
+  # changing file:// tap trusted for later CLI calls. Trust the current tap
+  # before inspecting or pinning its cask.
+  run_t3code_brew trust --tap "$T3CODE_TAP_NAME" >/dev/null
+
   installed_t3code="$(
     run_t3code_brew list --cask --versions "$T3CODE_CASK_TOKEN" \
       2>/dev/null || true

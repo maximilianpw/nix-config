@@ -25,7 +25,7 @@ in {
 
     remote-management:
       allow-remote: false
-      secret-key: ""
+      secret-key: "${cliProxy.managementKeyHash}"
 
     usage-statistics-enabled: false
   '';
@@ -91,6 +91,7 @@ in {
       "cmux"
       "linear"
       "wispr-flow"
+      "kitlangton-hex"
       "freelens"
       "nextcloud"
       "jellyfin-media-player"

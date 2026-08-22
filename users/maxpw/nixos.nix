@@ -123,7 +123,7 @@ in {
 
           remote-management:
             allow-remote: false
-            secret-key: ""
+            secret-key: "${settings.cliProxy.managementKeyHash}"
 
           usage-statistics-enabled: false
         '';
