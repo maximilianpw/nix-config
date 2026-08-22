@@ -89,6 +89,7 @@ in {
   # while storing provider OAuth credentials in the user's home directory.
   systemd.services.cliproxyapi = {
     description = "CLIProxyAPI local AI provider proxy";
+    environment.MANAGEMENT_STATIC_PATH = "/home/${currentSystemUser}/.local/share/cliproxyapi/static";
     wantedBy = ["multi-user.target"];
     wants = ["network-online.target"];
     after = ["network-online.target"];

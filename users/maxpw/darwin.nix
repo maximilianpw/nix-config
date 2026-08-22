@@ -38,6 +38,7 @@ in {
     ];
     RunAtLoad = true;
     KeepAlive = true;
+    EnvironmentVariables.MANAGEMENT_STATIC_PATH = "/Users/${currentSystemUser}/Library/Application Support/CLIProxyAPI";
     ProcessType = "Background";
     ThrottleInterval = 5;
     StandardOutPath = "/Users/${currentSystemUser}/Library/Logs/cliproxyapi.log";
