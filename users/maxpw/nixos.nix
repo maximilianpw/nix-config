@@ -126,6 +126,11 @@ in {
             allow-remote: false
             secret-key: "${settings.cliProxy.managementKeyHash}"
 
+          routing:
+            strategy: weighted-round-robin
+            session-affinity: true
+            session-affinity-ttl: "1h"
+
           usage-statistics-enabled: false
         '';
       }
