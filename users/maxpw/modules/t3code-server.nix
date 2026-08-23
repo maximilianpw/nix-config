@@ -1,4 +1,5 @@
 {
+  config,
   hostname,
   isLinuxDesktop,
   pkgs,
@@ -49,7 +50,7 @@ in {
       StandardError = "journal";
       WorkingDirectory = "%h";
       Environment = [
-        "PATH=/run/current-system/sw/bin:${lib.makeBinPath servicePath}"
+        "PATH=${config.home.homeDirectory}/.local/bin:/run/current-system/sw/bin:${lib.makeBinPath servicePath}"
         "SHELL=${pkgs.bash}/bin/bash"
       ];
     };
