@@ -18,7 +18,7 @@
     "${toString path} contains an unsubstituted template marker"; rendered;
 
   agentAliases = {
-    c = "codex --yolo";
+    c = "${config.home.homeDirectory}/.local/bin/codex --yolo";
     ccc = "DISABLE_ZOXIDE=1 claude --dangerously-skip-permissions";
     h = "herdr";
     claudex = "ANTHROPIC_BASE_URL=${cliProxy.baseUrl} ANTHROPIC_AUTH_TOKEN=${cliProxy.apiKey} ANTHROPIC_DEFAULT_OPUS_MODEL=${cliProxy.model} ANTHROPIC_DEFAULT_SONNET_MODEL=${cliProxy.model} ANTHROPIC_DEFAULT_HAIKU_MODEL=${cliProxy.model} CLAUDE_CODE_SUBAGENT_MODEL=${cliProxy.model} CLAUDE_CODE_ALWAYS_ENABLE_EFFORT=1 CLAUDE_CODE_MAX_TOOL_USE_CONCURRENCY=3 ENABLE_TOOL_SEARCH=false claude --model ${cliProxy.model}";

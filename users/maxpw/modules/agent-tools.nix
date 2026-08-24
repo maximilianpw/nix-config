@@ -13,6 +13,23 @@
   source = path: homeFiles.mkRepoSource config.home.homeDirectory "users/${currentSystemUserDir}/agents/${path}";
   piConfigSource = path: homeFiles.mkHomeSource config.home.homeDirectory "pi-config/${path}";
   inherit (import ../settings.nix {inherit pkgs;}) cliProxy;
+
+  grokProxyModel = "cliproxyapi-grok-4.6";
+  grokProxyConfig =
+    lib.replaceStrings
+    ["default = \"grok-4.6\"" "web_search = \"grok-4.6\""]
+    ["default = \"${grokProxyModel}\"" "web_search = \"${grokProxyModel}\""]
+    (builtins.readFile ../agents/grok/config.toml)
+    + ''
+
+      [model."${grokProxyModel}"]
+      model = "grok-4.6"
+      base_url = "${cliProxy.baseUrl}/v1"
+      name = "Grok 4.6 via CLIProxyAPI"
+      api_backend = "chat_completions"
+      env_key = "CLIPROXYAPI_API_KEY"
+      context_window = 500000
+    '';
 in {
   home = {
     packages = [
@@ -47,6 +64,7 @@ in {
         source = source "grok/config.toml";
         force = true;
       };
+      ".grok-cliproxyapi/config.toml".text = grokProxyConfig;
 
       ".config/opencode/opencode.json".source = source "opencode/opencode.json";
 
@@ -103,6 +121,22 @@ in {
         text = ''
           #!${pkgs.bash}/bin/bash
           exec ${lib.getExe pkgs.codex} "$@"
+        '';
+      };
+      ".local/bin/grok" = {
+        executable = true;
+        text = ''
+          #!${pkgs.bash}/bin/bash
+          export CLIPROXYAPI_API_KEY=${lib.escapeShellArg cliProxy.apiKey}
+          export GROK_HOME=${lib.escapeShellArg "${config.home.homeDirectory}/.grok-cliproxyapi"}
+          exec ${lib.getExe pkgs.grok} "$@"
+        '';
+      };
+      ".local/bin/grok-direct" = {
+        executable = true;
+        text = ''
+          #!${pkgs.bash}/bin/bash
+          exec ${lib.getExe pkgs.grok} --model grok-4.6 "$@"
         '';
       };
       ".local/bin/pi-direct" = {

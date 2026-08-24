@@ -113,14 +113,6 @@ if not ($ssh_dir | path exists) {
 }
 
 #-------------------------------------------------------------------------------
-# Programs
-#-------------------------------------------------------------------------------
-let local_bin = ($env.HOME | path join '.local' 'bin')
-if not (($env.PATH? | default []) | any {|path_entry| $path_entry == $local_bin }) {
-  $env.PATH = ($env.PATH? | default [] | prepend $local_bin)
-}
-
-#-------------------------------------------------------------------------------
 # Homebrew (macOS)
 #-------------------------------------------------------------------------------
 if ('/opt/homebrew' | path type) == 'dir' {
@@ -134,6 +126,19 @@ if ('/opt/homebrew' | path type) == 'dir' {
   $env.MANPATH = $"/opt/homebrew/share/man:($env.MANPATH? | default '')"
   $env.INFOPATH = $"/opt/homebrew/share/info:($env.INFOPATH? | default '')"
 }
+
+#-------------------------------------------------------------------------------
+# Programs
+#-------------------------------------------------------------------------------
+# Home Manager puts proxy-default agent wrappers here. Keep them ahead of
+# Homebrew and package binaries, and remove any older duplicate PATH entry.
+let local_bin = ($env.HOME | path join '.local' 'bin')
+$env.PATH = (
+  $env.PATH?
+  | default []
+  | where {|path_entry| $path_entry != $local_bin }
+  | prepend $local_bin
+)
 
 #-------------------------------------------------------------------------------
 # GPG
