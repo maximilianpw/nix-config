@@ -369,13 +369,12 @@ openai-compatibility:
         alias: "deepseek-v4-pro"
 ```
 
-The implementation declares 10 models. It keeps the latest configured model in
-each paid family, distinct current tiers, Big Pickle, and free models that
-models.dev does not mark deprecated. Older non-deprecated versions
-`glm-5.1`, `minimax-m2.7`, `kimi-k2.6`, and `kimi-k2.7-code` are intentionally
-omitted from the curated proxy catalog because newer models from those families
-are already present. Model display names, context lengths, and text/image
-capabilities come from the OpenCode-owned
+The implementation declares five models: the current paid DeepSeek Pro and
+Flash tiers, GLM, MiniMax, and Kimi entries. Free and novelty routes are omitted
+to keep the local catalog small and stable. Older non-deprecated versions
+`glm-5.1`, `minimax-m2.7`, `kimi-k2.6`, and `kimi-k2.7-code` are also omitted
+because newer models from those families are already present. Model display
+names, context lengths, and text/image capabilities come from the OpenCode-owned
 [`models.dev/api.json`](https://models.dev/api.json) catalog; audio and video are
 excluded because CLIProxyAPI's OpenAI-compatible model metadata only supports
 text and image inputs.

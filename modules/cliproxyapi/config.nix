@@ -33,36 +33,6 @@ let
         contextLength = 1048576;
         inputModalities = ["text" "image"];
       }
-      {
-        id = "big-pickle";
-        displayName = "Big Pickle";
-        contextLength = 200000;
-        inputModalities = ["text"];
-      }
-      {
-        id = "mimo-v2.5-free";
-        displayName = "MiMo V2.5 Free";
-        contextLength = 200000;
-        inputModalities = ["text" "image"];
-      }
-      {
-        id = "hy3-free";
-        displayName = "Hy3 Free";
-        contextLength = 190000;
-        inputModalities = ["text"];
-      }
-      {
-        id = "nemotron-3-ultra-free";
-        displayName = "Nemotron 3 Ultra Free";
-        contextLength = 1000000;
-        inputModalities = ["text"];
-      }
-      {
-        id = "nemotron-3.5-lightning-free";
-        displayName = "Nemotron 3.5 Lightning Free";
-        contextLength = 262144;
-        inputModalities = ["text"];
-      }
     ];
   };
 
