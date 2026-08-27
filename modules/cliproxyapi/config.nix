@@ -22,39 +22,15 @@ let
         inputModalities = ["text"];
       }
       {
-        id = "glm-5.1";
-        displayName = "GLM-5.1";
-        contextLength = 204800;
-        inputModalities = ["text"];
-      }
-      {
         id = "minimax-m3";
         displayName = "MiniMax-M3";
         contextLength = 512000;
         inputModalities = ["text" "image"];
       }
       {
-        id = "minimax-m2.7";
-        displayName = "MiniMax-M2.7";
-        contextLength = 204800;
-        inputModalities = ["text"];
-      }
-      {
         id = "kimi-k3";
         displayName = "Kimi K3";
         contextLength = 1048576;
-        inputModalities = ["text" "image"];
-      }
-      {
-        id = "kimi-k2.7-code";
-        displayName = "Kimi K2.7 Code";
-        contextLength = 262144;
-        inputModalities = ["text" "image"];
-      }
-      {
-        id = "kimi-k2.6";
-        displayName = "Kimi K2.6";
-        contextLength = 262144;
         inputModalities = ["text" "image"];
       }
       {
