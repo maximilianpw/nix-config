@@ -14,6 +14,18 @@
   piConfigSource = path: homeFiles.mkHomeSource config.home.homeDirectory "pi-config/${path}";
   inherit (import ../settings.nix {inherit pkgs;}) cliProxy;
 
+  jsonFormat = pkgs.formats.json {};
+  opencodeConfig =
+    lib.recursiveUpdate
+    (builtins.fromJSON (builtins.readFile ../agents/opencode/opencode.json))
+    {
+      model = "cliproxyapi/${cliProxy.model}";
+      provider.cliproxyapi.options = {
+        baseURL = "${cliProxy.baseUrl}/v1";
+        inherit (cliProxy) apiKey;
+      };
+    };
+
   grokProxyModel = "cliproxyapi-grok-4.6";
   grokProxyConfig =
     lib.replaceStrings
@@ -49,6 +61,8 @@ in {
       ".codex/cliproxyapi.config.toml".text = ''
         model = "${cliProxy.model}"
         model_provider = "cliproxyapi"
+        cli_auth_credentials_store = "file"
+        mcp_oauth_credentials_store = "file"
 
         [model_providers.cliproxyapi]
         name = "CLIProxyAPI"
@@ -66,7 +80,7 @@ in {
       };
       ".grok-cliproxyapi/config.toml".text = grokProxyConfig;
 
-      ".config/opencode/opencode.json".source = source "opencode/opencode.json";
+      ".config/opencode/opencode.json".source = jsonFormat.generate "opencode.json" opencodeConfig;
 
       ".pi/agent/settings.json".source = piConfigSource "settings.json";
       ".pi/agent/models.json".source = piConfigSource "models.json";
@@ -92,11 +106,6 @@ in {
           #!${pkgs.bash}/bin/bash
           export ANTHROPIC_BASE_URL=${lib.escapeShellArg cliProxy.baseUrl}
           export ANTHROPIC_AUTH_TOKEN=${lib.escapeShellArg cliProxy.apiKey}
-          export ANTHROPIC_MODEL=${lib.escapeShellArg cliProxy.model}
-          export ANTHROPIC_DEFAULT_OPUS_MODEL=${lib.escapeShellArg cliProxy.model}
-          export ANTHROPIC_DEFAULT_SONNET_MODEL=${lib.escapeShellArg cliProxy.model}
-          export ANTHROPIC_DEFAULT_HAIKU_MODEL=${lib.escapeShellArg cliProxy.model}
-          export CLAUDE_CODE_SUBAGENT_MODEL=${lib.escapeShellArg cliProxy.model}
           export CLAUDE_CODE_MAX_CONTEXT_TOKENS=272000
           exec ${lib.getExe pkgs.claude-code} "$@"
         '';
@@ -120,7 +129,7 @@ in {
         executable = true;
         text = ''
           #!${pkgs.bash}/bin/bash
-          exec ${lib.getExe pkgs.codex} "$@"
+          exec ${lib.getExe pkgs.codex} -c cli_auth_credentials_store=file -c mcp_oauth_credentials_store=file "$@"
         '';
       };
       ".local/bin/grok" = {
@@ -144,13 +153,6 @@ in {
         text = ''
           #!${pkgs.bash}/bin/bash
           exec ${lib.getExe pkgs.pi} --provider openai-codex --model ${lib.escapeShellArg cliProxy.model} "$@"
-        '';
-      };
-      ".local/bin/opencode" = {
-        executable = true;
-        text = ''
-          #!${pkgs.bash}/bin/bash
-          exec ${lib.getExe pkgs.opencode} --model ${lib.escapeShellArg "cliproxyapi/${cliProxy.model}"} "$@"
         '';
       };
       ".local/bin/opencode-direct" = {
