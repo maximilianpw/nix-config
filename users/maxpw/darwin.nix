@@ -5,50 +5,13 @@
   ...
 }: let
   settings = import ./settings.nix {inherit pkgs;};
-  inherit (settings) cliProxy;
 in {
   imports = [
+    ../../modules/cliproxyapi/darwin.nix
     ../../modules/core/shells.nix
     ../../modules/fleet/ssh-access.nix
     ./modules/t3code-darwin.nix
   ];
-
-  # Homebrew owns the CLIProxyAPI binary; nix-darwin owns its configuration
-  # and LaunchAgent so the service never falls back to Homebrew's sample keys.
-  environment.etc."cliproxyapi.conf".text = ''
-    host: "${cliProxy.host}"
-    port: ${toString cliProxy.port}
-    auth-dir: "/Users/${currentSystemUser}/.cli-proxy-api"
-
-    api-keys:
-      - "${cliProxy.apiKey}"
-
-    remote-management:
-      allow-remote: false
-      secret-key: "${cliProxy.managementKeyHash}"
-
-    routing:
-      strategy: weighted-round-robin
-      session-affinity: true
-      session-affinity-ttl: "1h"
-
-    usage-statistics-enabled: false
-  '';
-
-  launchd.user.agents.cliproxyapi.serviceConfig = {
-    ProgramArguments = [
-      "/opt/homebrew/opt/cliproxyapi/bin/cliproxyapi"
-      "-config"
-      "/etc/cliproxyapi.conf"
-    ];
-    RunAtLoad = true;
-    KeepAlive = true;
-    EnvironmentVariables.MANAGEMENT_STATIC_PATH = "/Users/${currentSystemUser}/Library/Application Support/CLIProxyAPI";
-    ProcessType = "Background";
-    ThrottleInterval = 5;
-    StandardOutPath = "/Users/${currentSystemUser}/Library/Logs/cliproxyapi.log";
-    StandardErrorPath = "/Users/${currentSystemUser}/Library/Logs/cliproxyapi.log";
-  };
 
   # Fonts come from Home Manager (users/maxpw/modules/fonts.nix), which
   # installs them to ~/Library/Fonts/HomeManager on macOS.
@@ -62,7 +25,6 @@ in {
     brews = [
       "maximilianpw/tap/loggle"
       "maximilianpw/tap/rmus"
-      "cliproxyapi"
       "ffmpeg"
       "gnupg"
       "jsonlint"

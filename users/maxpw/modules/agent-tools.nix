@@ -12,36 +12,6 @@
 
   source = path: homeFiles.mkRepoSource config.home.homeDirectory "users/${currentSystemUserDir}/agents/${path}";
   piConfigSource = path: homeFiles.mkHomeSource config.home.homeDirectory "pi-config/${path}";
-  inherit (import ../settings.nix {inherit pkgs;}) cliProxy;
-
-  jsonFormat = pkgs.formats.json {};
-  opencodeConfig =
-    lib.recursiveUpdate
-    (builtins.fromJSON (builtins.readFile ../agents/opencode/opencode.json))
-    {
-      model = "cliproxyapi/${cliProxy.model}";
-      provider.cliproxyapi.options = {
-        baseURL = "${cliProxy.baseUrl}/v1";
-        inherit (cliProxy) apiKey;
-      };
-    };
-
-  grokProxyModel = "cliproxyapi-grok-4.6";
-  grokProxyConfig =
-    lib.replaceStrings
-    ["default = \"grok-4.6\"" "web_search = \"grok-4.6\""]
-    ["default = \"${grokProxyModel}\"" "web_search = \"${grokProxyModel}\""]
-    (builtins.readFile ../agents/grok/config.toml)
-    + ''
-
-      [model."${grokProxyModel}"]
-      model = "grok-4.6"
-      base_url = "${cliProxy.baseUrl}/v1"
-      name = "Grok 4.6 via CLIProxyAPI"
-      api_backend = "chat_completions"
-      env_key = "CLIPROXYAPI_API_KEY"
-      context_window = 500000
-    '';
 in {
   home = {
     packages = [
@@ -58,18 +28,6 @@ in {
     file = {
       ".config/amp/settings.json".source = source "amp/settings.json";
       ".codex/AGENTS.md".source = source "shared/AGENTS.md";
-      ".codex/cliproxyapi.config.toml".text = ''
-        model = "${cliProxy.model}"
-        model_provider = "cliproxyapi"
-        cli_auth_credentials_store = "file"
-        mcp_oauth_credentials_store = "file"
-
-        [model_providers.cliproxyapi]
-        name = "CLIProxyAPI"
-        base_url = "${cliProxy.baseUrl}/v1"
-        env_key = "CLIPROXYAPI_API_KEY"
-        wire_api = "responses"
-      '';
       ".claude/CLAUDE.md".source = source "shared/AGENTS.md";
       ".config/opencode/AGENTS.md".source = source "shared/AGENTS.md";
       ".pi/agent/AGENTS.md".source = source "shared/AGENTS.md";
@@ -78,10 +36,9 @@ in {
         source = source "grok/config.toml";
         force = true;
       };
-      ".grok-cliproxyapi/config.toml".text = grokProxyConfig;
 
-      ".config/opencode/opencode.json".source = jsonFormat.generate "opencode.json" opencodeConfig;
-
+      # Pi is maintained in a separate repository and linked out of the Nix
+      # store so extension development does not require a system rebuild.
       ".pi/agent/settings.json".source = piConfigSource "settings.json";
       ".pi/agent/models.json".source = piConfigSource "models.json";
       ".pi/agent/cloak.json".source = piConfigSource "cloak.json";
@@ -96,71 +53,6 @@ in {
       ".pi/agent/themes" = {
         source = piConfigSource "themes";
         recursive = true;
-      };
-
-      # Put proxy-default wrappers ahead of package binaries. The matching
-      # *-direct commands keep first-party access available for diagnosis.
-      ".local/bin/claude" = {
-        executable = true;
-        text = ''
-          #!${pkgs.bash}/bin/bash
-          export ANTHROPIC_BASE_URL=${lib.escapeShellArg cliProxy.baseUrl}
-          export ANTHROPIC_AUTH_TOKEN=${lib.escapeShellArg cliProxy.apiKey}
-          export CLAUDE_CODE_MAX_CONTEXT_TOKENS=272000
-          exec ${lib.getExe pkgs.claude-code} "$@"
-        '';
-      };
-      ".local/bin/claude-direct" = {
-        executable = true;
-        text = ''
-          #!${pkgs.bash}/bin/bash
-          exec ${lib.getExe pkgs.claude-code} "$@"
-        '';
-      };
-      ".local/bin/codex" = {
-        executable = true;
-        text = ''
-          #!${pkgs.bash}/bin/bash
-          export CLIPROXYAPI_API_KEY=${lib.escapeShellArg cliProxy.apiKey}
-          exec ${lib.getExe pkgs.codex} --profile cliproxyapi "$@"
-        '';
-      };
-      ".local/bin/codex-direct" = {
-        executable = true;
-        text = ''
-          #!${pkgs.bash}/bin/bash
-          exec ${lib.getExe pkgs.codex} -c cli_auth_credentials_store=file -c mcp_oauth_credentials_store=file "$@"
-        '';
-      };
-      ".local/bin/grok" = {
-        executable = true;
-        text = ''
-          #!${pkgs.bash}/bin/bash
-          export CLIPROXYAPI_API_KEY=${lib.escapeShellArg cliProxy.apiKey}
-          export GROK_HOME=${lib.escapeShellArg "${config.home.homeDirectory}/.grok-cliproxyapi"}
-          exec ${lib.getExe pkgs.grok} "$@"
-        '';
-      };
-      ".local/bin/grok-direct" = {
-        executable = true;
-        text = ''
-          #!${pkgs.bash}/bin/bash
-          exec ${lib.getExe pkgs.grok} --model grok-4.6 "$@"
-        '';
-      };
-      ".local/bin/pi-direct" = {
-        executable = true;
-        text = ''
-          #!${pkgs.bash}/bin/bash
-          exec ${lib.getExe pkgs.pi} --provider openai-codex --model ${lib.escapeShellArg cliProxy.model} "$@"
-        '';
-      };
-      ".local/bin/opencode-direct" = {
-        executable = true;
-        text = ''
-          #!${pkgs.bash}/bin/bash
-          exec ${lib.getExe pkgs.opencode} --model openai/gpt-5.5 "$@"
-        '';
       };
     };
   };

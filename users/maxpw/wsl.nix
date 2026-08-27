@@ -6,6 +6,7 @@
   settings = import ./settings.nix {inherit pkgs;};
 in {
   imports = [
+    ../../modules/cliproxyapi/nixos.nix
     ../../modules/core/nix-settings.nix
     ../../modules/core/security.nix
     ../../modules/core/shells.nix

@@ -67,6 +67,7 @@ The `userDir` parameter allows the macOS username (`max-vev`) to differ from the
 machines/           # Per-host: boot, hardware, services (kim.nix, joyce.nix, cuno.nix)
 homelab/            # kim self-hosted services exposed through Cloudflare Tunnel and Tailscale Serve
 modules/
+  cliproxyapi/      # Shared local AI proxy config + NixOS, Darwin, and HM adapters
   core/             # Shared: nix-settings.nix, security.nix, sops.nix, shells.nix (login shells)
   desktop/          # Hyprland + greetd (Linux only)
   fleet/            # Remote dev fleet: NixOS Tailscale/mosh/tmux + HM SSH/fleet CLI
@@ -80,7 +81,7 @@ modules/
     shells.nix      # Nushell, Fish, Bash; all shell aliases defined here
     git.nix         # Git + Jujutsu (jj) config
     vcs/jujutsu.nix # Jujutsu config
-    agent-tools.nix # LLM agent CLIs + configuration, including the Skills CLI
+    agent-tools.nix # LLM agent packages and shared config; proxy adapters live in modules/cliproxyapi/
     t3code-darwin.nix # Pinned macOS Homebrew cask and activation migration
     t3code-server.nix # Headless T3 Code server integration
     fonts.nix       # Nerd fonts + system fonts with fontconfig

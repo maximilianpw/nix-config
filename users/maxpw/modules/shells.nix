@@ -6,10 +6,6 @@
   isDarwin,
   ...
 }: let
-  settings = import ../settings.nix {inherit pkgs;};
-  inherit (settings) cliProxy;
-  climiModel = "kimi-k3";
-
   renderTemplate = path: markers: values: let
     rendered = lib.replaceStrings markers values (builtins.readFile path);
   in
@@ -22,7 +18,6 @@
     ccc = "DISABLE_ZOXIDE=1 claude --dangerously-skip-permissions";
     h = "herdr";
     claudex = "CLAUDE_CODE_ALWAYS_ENABLE_EFFORT=1 CLAUDE_CODE_MAX_TOOL_USE_CONCURRENCY=3 ENABLE_TOOL_SEARCH=false claude";
-    climi = "ANTHROPIC_BASE_URL=${cliProxy.baseUrl} ANTHROPIC_AUTH_TOKEN=${cliProxy.apiKey} ANTHROPIC_DEFAULT_OPUS_MODEL=${climiModel} ANTHROPIC_DEFAULT_SONNET_MODEL=${climiModel} ANTHROPIC_DEFAULT_HAIKU_MODEL=${climiModel} CLAUDE_CODE_SUBAGENT_MODEL=${climiModel} CLAUDE_CODE_ALWAYS_ENABLE_EFFORT=1 CLAUDE_CODE_MAX_TOOL_USE_CONCURRENCY=3 ENABLE_TOOL_SEARCH=false claude-direct --model ${climiModel} --effort max";
     oc = "opencode";
     p = "pi";
   };
@@ -98,13 +93,9 @@ in {
       enable = true;
       shellAliases =
         (builtins.removeAttrs shellAliases ["jtp" "ls" "fnix"])
-        // (builtins.removeAttrs agentAliases ["ccc" "claudex" "climi"]);
+        // (builtins.removeAttrs agentAliases ["ccc" "claudex"]);
       configFile.source = ../config.nu;
-      extraConfig =
-        renderTemplate
-        ../extra-config.nu
-        ["@CLI_PROXY_BASE_URL@" "@CLI_PROXY_API_KEY@" "@CLIMI_MODEL@"]
-        [cliProxy.baseUrl cliProxy.apiKey climiModel];
+      extraConfig = builtins.readFile ../extra-config.nu;
       extraEnv =
         renderTemplate
         ../extra-env.nu

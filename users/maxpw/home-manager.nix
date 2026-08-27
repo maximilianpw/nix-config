@@ -25,6 +25,9 @@ in {
     [
       inputs.nix-index-database.homeModules.nix-index
       inputs.stylix.homeModules.stylix
+      (import ../../modules/cliproxyapi/home-manager.nix {
+        agentConfigDirectory = ./agents;
+      })
       ./modules/fonts.nix
       ./modules/git.nix
       ./modules/vcs/jujutsu.nix
