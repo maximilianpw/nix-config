@@ -1,4 +1,9 @@
-{currentSystemUser, ...}: let
+{
+  config,
+  currentSystemUser,
+  lib,
+  ...
+}: let
   cliProxy = import ./config.nix;
   homeDirectory = "/Users/${currentSystemUser}";
 in {
@@ -6,13 +11,30 @@ in {
   # so the process never falls back to Homebrew's sample configuration.
   homebrew.brews = ["cliproxyapi"];
 
-  environment.etc."cliproxyapi.conf".text = cliProxy.mkServerConfig {inherit homeDirectory;};
+  sops = {
+    secrets."opencode-zen-api-key" = {};
+    templates."cliproxyapi.conf" = {
+      owner = currentSystemUser;
+      mode = "0400";
+      content = cliProxy.mkServerConfig {
+        inherit homeDirectory;
+        openCodeZenApiKey = config.sops.placeholder."opencode-zen-api-key";
+      };
+    };
+  };
+
+  # sops-nix renders the stable runtime path after activation. Restart the
+  # existing agent so key rotations and model-list changes take effect now.
+  system.activationScripts.postActivation.text = lib.mkOrder 1600 ''
+    user_uid=$(/usr/bin/id -u ${lib.escapeShellArg currentSystemUser})
+    /bin/launchctl kickstart -k "gui/$user_uid/org.nixos.cliproxyapi" 2>/dev/null || true
+  '';
 
   launchd.user.agents.cliproxyapi.serviceConfig = {
     ProgramArguments = [
       "/opt/homebrew/opt/cliproxyapi/bin/cliproxyapi"
       "-config"
-      "/etc/cliproxyapi.conf"
+      config.sops.templates."cliproxyapi.conf".path
     ];
     RunAtLoad = true;
     KeepAlive = true;

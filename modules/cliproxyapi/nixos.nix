@@ -1,4 +1,5 @@
 {
+  config,
   currentSystemUser,
   lib,
   pkgs,
@@ -7,9 +8,19 @@
   cliProxy = import ./config.nix;
   homeDirectory = "/home/${currentSystemUser}";
 in {
-  environment = {
-    systemPackages = [pkgs.cliproxyapi];
-    etc."cliproxyapi.conf".text = cliProxy.mkServerConfig {inherit homeDirectory;};
+  environment.systemPackages = [pkgs.cliproxyapi];
+
+  sops = {
+    secrets."opencode-zen-api-key" = {};
+    templates."cliproxyapi.conf" = {
+      owner = currentSystemUser;
+      mode = "0400";
+      restartUnits = ["cliproxyapi.service"];
+      content = cliProxy.mkServerConfig {
+        inherit homeDirectory;
+        openCodeZenApiKey = config.sops.placeholder."opencode-zen-api-key";
+      };
+    };
   };
 
   systemd.services.cliproxyapi = {
@@ -20,7 +31,7 @@ in {
     after = ["network-online.target"];
     serviceConfig = {
       User = currentSystemUser;
-      ExecStart = "${lib.getExe pkgs.cliproxyapi} -config /etc/cliproxyapi.conf";
+      ExecStart = "${lib.getExe pkgs.cliproxyapi} -config ${config.sops.templates."cliproxyapi.conf".path}";
       Restart = "always";
       RestartSec = 5;
       WorkingDirectory = homeDirectory;

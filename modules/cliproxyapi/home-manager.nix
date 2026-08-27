@@ -15,9 +15,27 @@
     (builtins.fromJSON (builtins.readFile (agentConfigDirectory + "/opencode/cliproxyapi.json")))
     {
       model = "cliproxyapi/${cliProxy.defaultModel}";
-      provider.cliproxyapi.options = {
-        baseURL = "${cliProxy.baseUrl}/v1";
-        inherit (cliProxy) apiKey;
+      provider.cliproxyapi = {
+        options = {
+          baseURL = "${cliProxy.baseUrl}/v1";
+          inherit (cliProxy) apiKey;
+        };
+        models = builtins.listToAttrs (
+          map (model: {
+            name = "${cliProxy.openCodeZen.prefix}/${model.id}";
+            value = {
+              name = "${model.displayName} via OpenCode Zen";
+              reasoning = true;
+              tool_call = true;
+              limit.context = model.contextLength;
+              modalities = {
+                input = model.inputModalities;
+                output = ["text"];
+              };
+            };
+          })
+          cliProxy.openCodeZen.chatModels
+        );
       };
     };
 

@@ -9,6 +9,7 @@ in {
   imports = [
     ../../modules/cliproxyapi/darwin.nix
     ../../modules/core/shells.nix
+    ../../modules/core/sops-user-key.nix
     ../../modules/fleet/ssh-access.nix
     ./modules/t3code-darwin.nix
   ];

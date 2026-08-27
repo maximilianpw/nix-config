@@ -8,6 +8,7 @@ in {
   imports = [
     ../../modules/cliproxyapi/nixos.nix
     ../../modules/core/nix-settings.nix
+    ../../modules/core/sops-user-key.nix
     ../../modules/core/security.nix
     ../../modules/core/shells.nix
     ../../modules/fleet/nixos.nix

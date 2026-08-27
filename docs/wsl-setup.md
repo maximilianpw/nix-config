@@ -29,6 +29,13 @@ Inside the WSL shell:
 ```bash
 git clone <your-repo-url> ~/nix-config
 cd ~/nix-config
+
+# Restore the shared sops identity before the first rebuild. The CLIProxyAPI
+# service uses it to render its OpenCode Zen provider configuration.
+mkdir -p ~/.config/sops/age
+nix-shell -p _1password age --run 'echo "# created: $(date -Iseconds)" > ~/.config/sops/age/keys.txt && eval $(op signin) && op item get "sops nixos" --fields password --reveal >> ~/.config/sops/age/keys.txt'
+chmod 600 ~/.config/sops/age/keys.txt
+
 sudo nixos-rebuild switch --flake .#cuno
 ```
 

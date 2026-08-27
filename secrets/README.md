@@ -60,8 +60,8 @@ git commit -m "Add encrypted secrets"
 ## Usage
 
 NixOS secrets are decrypted by system sops-nix under `/run/secrets`. Darwin
-and WSL user secrets are decrypted by Home Manager sops-nix under the user
-account. `github-ssh-private-key` is the GitHub authentication key used by
+and WSL use the user age identity for both the system CLIProxyAPI template and
+Home Manager user secrets. `github-ssh-private-key` is the GitHub authentication key used by
 non-desktop NixOS hosts; desktop hosts use the 1Password SSH agent instead.
 
 ### Linear API key
@@ -152,8 +152,8 @@ sudo nixos-rebuild switch --flake .#MACHINE_NAME
 ls -la /run/secrets/maxpw-password
 ```
 
-On Darwin and WSL, only the user key is needed because Home Manager decrypts
-user secrets:
+On Darwin and WSL, only the user key is needed. System sops-nix uses it for the
+CLIProxyAPI template, and Home Manager uses it for user secrets:
 
 ```bash
 mkdir -p ~/.config/sops/age
@@ -166,8 +166,8 @@ chmod 600 ~/.config/sops/age/keys.txt
 If you get decryption errors:
 
 1. Make sure your age private key is in both:
-   - `~/.config/sops/age/keys.txt` (for local editing and Darwin/WSL Home Manager secrets)
-   - `/var/lib/sops-nix/key.txt` (for NixOS system decryption)
+   - `~/.config/sops/age/keys.txt` (for local editing and Darwin/WSL system and Home Manager secrets)
+   - `/var/lib/sops-nix/key.txt` (for standard NixOS system decryption)
 2. Verify the public key in `.sops.yaml` matches your private key:
    ```bash
    age-keygen -y ~/.config/sops/age/keys.txt
