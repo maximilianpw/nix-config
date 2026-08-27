@@ -135,6 +135,13 @@ in {
         exec ${lib.getExe pkgs.grok} --model ${grokModel} "$@"
       '';
     };
+    ".local/bin/cliproxyapi-util" = {
+      executable = true;
+      text = ''
+        #!${pkgs.bash}/bin/bash
+        exec ${lib.getExe pkgs.bun} ${lib.escapeShellArg "${config.home.homeDirectory}/pi-config/cli/cliproxyapi-util.ts"} "$@"
+      '';
+    };
     ".local/bin/pi-direct" = {
       executable = true;
       text = ''
