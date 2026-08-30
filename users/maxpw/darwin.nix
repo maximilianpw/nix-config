@@ -56,15 +56,13 @@ in {
       "mullvad-vpn"
       "termius"
       "obsidian"
-      "tidal"
       "cmux"
       "linear"
-      "wispr-flow"
       "kitlangton-hex"
+      "granola"
       "freelens"
       "nextcloud"
       "jellyfin-media-player"
-      "thebrowsercompany-dia"
     ];
 
     onActivation = {

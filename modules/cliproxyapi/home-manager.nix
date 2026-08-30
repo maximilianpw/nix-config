@@ -57,19 +57,6 @@
     '';
 in {
   home.file = {
-    ".codex/cliproxyapi.config.toml".text = ''
-      model = "${cliProxy.defaultModel}"
-      model_provider = "cliproxyapi"
-      cli_auth_credentials_store = "file"
-      mcp_oauth_credentials_store = "file"
-
-      [model_providers.cliproxyapi]
-      name = "CLIProxyAPI"
-      base_url = "${cliProxy.baseUrl}/v1"
-      env_key = "CLIPROXYAPI_API_KEY"
-      wire_api = "responses"
-    '';
-
     ".grok-cliproxyapi/config.toml".text = grokProxyConfig;
     ".config/opencode/opencode.json".source = jsonFormat.generate "opencode.json" opencodeConfig;
 
@@ -109,7 +96,19 @@ in {
       text = ''
         #!${pkgs.bash}/bin/bash
         export CLIPROXYAPI_API_KEY=${lib.escapeShellArg cliProxy.apiKey}
-        exec ${lib.getExe pkgs.codex} --profile cliproxyapi "$@"
+
+        # Command-line overrides keep proxy routing declarative while leaving
+        # ~/.codex/config.toml as Codex's writable persistence target.
+        exec ${lib.getExe pkgs.codex} \
+          -c ${lib.escapeShellArg "model=${builtins.toJSON cliProxy.defaultModel}"} \
+          -c ${lib.escapeShellArg "model_provider=\"cliproxyapi\""} \
+          -c ${lib.escapeShellArg "cli_auth_credentials_store=\"file\""} \
+          -c ${lib.escapeShellArg "mcp_oauth_credentials_store=\"file\""} \
+          -c ${lib.escapeShellArg "model_providers.cliproxyapi.name=\"CLIProxyAPI\""} \
+          -c ${lib.escapeShellArg "model_providers.cliproxyapi.base_url=${builtins.toJSON "${cliProxy.baseUrl}/v1"}"} \
+          -c ${lib.escapeShellArg "model_providers.cliproxyapi.env_key=\"CLIPROXYAPI_API_KEY\""} \
+          -c ${lib.escapeShellArg "model_providers.cliproxyapi.wire_api=\"responses\""} \
+          "$@"
       '';
     };
     ".local/bin/codex-direct" = {

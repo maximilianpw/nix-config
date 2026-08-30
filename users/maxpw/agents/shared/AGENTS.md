@@ -3,7 +3,7 @@
 ## Defaults
 
 - Follow the project's package manager and lockfile; use pnpm only when neither exists.
-- For greenfield frontends, prefer Tailwind, TypeScript, Bun, React, Clerk, Cloudflare, and TanStack.
+- For greenfield frontends, prefer StyleX, TypeScript, Bun, React, Clerk, Cloudflare, and TanStack.
 - For greenfield personal backends, prefer Effect and Drizzle; otherwise follow the repository.
 - Before adding TypeScript type escapes such as `any`, casts, or non-null assertions, load `typescript-standards`.
 - Prefer the smallest relevant check. Start development servers or full builds only when the user asks.
