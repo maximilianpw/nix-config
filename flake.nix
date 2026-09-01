@@ -306,7 +306,20 @@
       pkgs = nixpkgs.legacyPackages.${system};
     in {
       default = pkgs.mkShell {
-        buildInputs = with pkgs; [git nix shellcheck];
+        buildInputs = with pkgs; [
+          actionlint
+          alejandra
+          deadnix
+          git
+          gnumake
+          jq
+          nix
+          nodejs
+          python3
+          rsync
+          shellcheck
+          statix
+        ];
         shellHook = ''
           ${self.checks.${system}.pre-commit-check.shellHook or ""}
           echo "Welcome to the Nix dev shell for ${system}"

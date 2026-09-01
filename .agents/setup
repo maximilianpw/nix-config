@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+nix_profile=/nix/var/nix/profiles/default
+nix_bin=$nix_profile/bin/nix
+nix_daemon_profile=$nix_profile/etc/profile.d/nix-daemon.sh
+
+run_step() {
+  local label=$1
+  shift
+  local started=$SECONDS
+
+  printf '==> %s\n' "$label"
+  "$@"
+  printf '<== %s (%ss)\n' "$label" "$((SECONDS - started))"
+}
+
+install_system_packages() {
+  local package
+  local -a missing=()
+
+  for package in ca-certificates curl xz-utils; do
+    if ! dpkg-query -W -f='${Status}' "$package" 2>/dev/null | grep -Fqx 'install ok installed'; then
+      missing+=("$package")
+    fi
+  done
+
+  if ((${#missing[@]})); then
+    sudo apt-get update
+    sudo apt-get install -y "${missing[@]}"
+  fi
+}
+
+install_nix() {
+  curl --proto '=https' --tlsv1.2 -sSfL https://install.determinate.systems/nix \
+    | sh -s -- install linux --no-confirm
+}
+
+configure_login_shell() {
+  local marker='# nix-config Nix development shell (Amp orb)'
+  local profile_fragment=$HOME/.config/amp/nix-config-dev-env.sh
+
+  mkdir -p "$(dirname "$profile_fragment")"
+  cat > "$profile_fragment" <<EOF
+if [[ -z "\${NIX_CONFIG_DEV_ENV_ACTIVATING:-}" && "\${PWD:-}" == "$repo_root" ]]; then
+  export NIX_CONFIG_DEV_ENV_ACTIVATING=1
+  eval "\$("$nix_bin" print-dev-env "$repo_root")"
+  unset NIX_CONFIG_DEV_ENV_ACTIVATING
+fi
+EOF
+
+  touch "$HOME/.bash_profile"
+  if grep -Fqx "$marker" "$HOME/.bash_profile"; then
+    return
+  fi
+
+  cat >> "$HOME/.bash_profile" <<EOF
+
+$marker
+[[ ! -r "\$HOME/.config/amp/nix-config-dev-env.sh" ]] || source "\$HOME/.config/amp/nix-config-dev-env.sh"
+EOF
+}
+
+run_step 'Checking system prerequisites' install_system_packages
+
+if [[ ! -x $nix_bin ]]; then
+  run_step 'Installing Determinate Nix' install_nix
+fi
+
+if [[ -r $nix_daemon_profile ]]; then
+  # shellcheck disable=SC1090
+  source "$nix_daemon_profile"
+else
+  export PATH="$nix_profile/bin:$PATH"
+fi
+
+run_step 'Realizing the locked Nix development shell' \
+  "$nix_bin" develop "$repo_root" --command true
+run_step 'Configuring future login shells' configure_login_shell
+
+printf 'Orb setup complete: %s\n' "$("$nix_bin" --version)"
