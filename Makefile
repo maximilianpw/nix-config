@@ -69,7 +69,7 @@ check-nvim: ## Verify every tool the Neovim config uses is on PATH
 	@$(SCRIPT_DIR)/check-nvim-tooling.sh
 
 check-scripts: ## Run shell syntax, ShellCheck, and safety regression tests
-	@bash -n $(SCRIPT_DIR)/*.sh $(SCRIPT_DIR)/ci/*.sh $(SCRIPT_DIR)/lib/*.sh $(SCRIPT_DIR)/tests/*.sh packages/scripts/*.sh
+	@set -e; for script in $(SCRIPT_DIR)/*.sh $(SCRIPT_DIR)/ci/*.sh $(SCRIPT_DIR)/lib/*.sh $(SCRIPT_DIR)/tests/*.sh packages/scripts/*.sh; do bash -n "$$script"; done
 	@shellcheck --severity=warning $(SCRIPT_DIR)/*.sh $(SCRIPT_DIR)/ci/*.sh $(SCRIPT_DIR)/lib/*.sh $(SCRIPT_DIR)/tests/*.sh packages/scripts/*.sh
 	@set -e; for test in $(SCRIPT_DIR)/tests/*-test.sh; do bash "$$test"; done
 
@@ -78,13 +78,7 @@ lint: ## Run Nix linters (statix, deadnix) and format check
 
 build: ## Build system configuration without switching
 	@echo "Building system configuration..."
-	@if [ "$$(uname -s)" = "Darwin" ]; then \
-		nix build ".#darwinConfigurations.joyce.system"; \
-	else \
-		host="$$(hostname -s)"; \
-		case "$$host" in main-pc) host=kim ;; wsl) host=cuno ;; esac; \
-		nix build ".#nixosConfigurations.$$host.config.system.build.toplevel"; \
-	fi
+	@$(SCRIPT_DIR)/nixos-build.sh "$(CONFIG_DIR)"
 	@echo "Build complete!"
 
 generations: ## List system generations

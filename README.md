@@ -220,6 +220,19 @@ make chezmoi-apply
 
 Suggested clone path: `~/nix-config` (the rebuild script assumes this).
 
+Pi's content is maintained separately in
+[`maximilianpw/pi-config`](https://github.com/maximilianpw/pi-config). Clone it
+at `~/pi-config` and follow that repository's dependency/setup instructions
+before using Pi: Home Manager links its settings, models, extensions, prompts,
+and themes without cloning or copying them. The CLIProxyAPI utility also uses
+that checkout. Neovim/app content follows the separate chezmoi flow above.
+
+`make build` uses the same host detection and inventory validation as rebuild,
+including WSL detection and the explicit `NIX_CONFIG_HOST` override. Unknown
+Darwin logins must supply a reviewed override rather than defaulting to Joyce.
+Build only creates the system result; it does not switch, format, or maintain
+`/etc/nixos`.
+
 - macOS (Apple Silicon)
   - Apply: `sudo darwin-rebuild switch --flake .#joyce`
   - Or run: `./scripts/nixos-rebuild.sh`

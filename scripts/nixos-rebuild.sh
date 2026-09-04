@@ -100,8 +100,8 @@ pushd "$CONFIG_DIR" >/dev/null
 # Keep failure summaries scoped to the current rebuild attempt.
 : > "$LOG_FILE"
 
-# Ensure /etc/nixos points to this repo (optional override: set SKIP_ETC_NIXOS_LINK=1)
-if [[ "${SKIP_ETC_NIXOS_LINK:-0}" != "1" ]]; then
+# Only NixOS uses /etc/nixos (optional override: set SKIP_ETC_NIXOS_LINK=1).
+if [[ "$PLATFORM" == "nixos" && "${SKIP_ETC_NIXOS_LINK:-0}" != "1" ]]; then
     TARGET_REAL=$(readlink -f /etc/nixos 2>/dev/null || echo "")
     if [[ -L /etc/nixos && "$TARGET_REAL" != "$CONFIG_DIR" ]]; then
         warn "/etc/nixos symlink points elsewhere ($TARGET_REAL). Updating to $CONFIG_DIR" && sudo ln -sfn "$CONFIG_DIR" /etc/nixos || warn "Failed to update symlink"
