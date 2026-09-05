@@ -2,7 +2,15 @@
 
 set -euo pipefail
 
-read -r -a packages <<<"${PACKAGES:-$DEFAULT_PACKAGES}"
+selected=${PACKAGES:-}
+if [[ -z "$selected" ]]; then
+  selected=$(nix eval --raw .#lib.packageUpdates)
+fi
+read -r -a packages <<<"$selected"
+if ((${#packages[@]} == 0)); then
+  echo "No updateable packages registered or selected" >&2
+  exit 1
+fi
 failed=()
 
 for package in "${packages[@]}"; do

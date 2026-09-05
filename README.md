@@ -43,6 +43,7 @@ The remote development fleet is named Revachol; its CLI remains `fleet`.
 │   └── services/
 │       └── backup.nix       # Borg backup service
 ├── packages/
+│   ├── default.nix          # Local package sources, output platforms, update eligibility
 │   ├── helium.nix           # Custom package: Helium floating browser
 │   └── obsidian.nix         # Custom package: Obsidian
 ├── scripts/
@@ -131,6 +132,10 @@ The remote development fleet is named Revachol; its CLI remains `fleet`.
 
 - modules/desktop/hyprland.nix
   - Hyprland from upstream input, xdg-desktop-portal-hyprland, Xwayland, greetd login manager.
+
+- packages/default.nix
+  - Register repo-local packages here once: source, exposed flake-output systems, and update eligibility.
+  - The overlay, flake package outputs, `make update-packages`, and CI update defaults derive from this registry. Upstream tools still update through their flake inputs.
 
 - users/maxpw/home-manager.nix
   - Shared HM config for Linux/macOS; imports fonts and package modules.

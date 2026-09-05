@@ -51,6 +51,7 @@
   }: let
     inherit (nixpkgs) lib;
     hosts = import ./lib/inventory.nix {inherit lib;};
+    localPackages = import ./packages;
 
     # Overlay to pull select packages from nixpkgs-unstable and add custom packages
     overlays = [
@@ -89,28 +90,25 @@
       })
       (final: prev: let
         unstable = inputs.nixpkgs-unstable.legacyPackages.${prev.stdenv.hostPlatform.system};
-      in {
-        # Expose the full unstable channel for consumers that need a single
-        # unstable package without shadowing the stable one globally (which
-        # would force mass rebuilds of everything depending on it).
-        inherit unstable;
-        # direnv 2.37.1 fish tests get killed during build on macOS (sandbox/OOM)
-        direnv = prev.direnv.overrideAttrs (_: {doCheck = false;});
-        # Home Assistant integrations move on a monthly cadence, so keep Core
-        # and its declarative extensions on the same current package set.
-        inherit
-          (unstable)
-          home-assistant
-          home-assistant-custom-lovelace-modules
-          jujutsu
-          zig
-          ;
-        helium = final.callPackage ./packages/helium.nix {};
-        tunarr = final.callPackage ./packages/tunarr.nix {};
-        obsidian = final.callPackage ./packages/obsidian.nix {};
-        cliproxyapi = final.callPackage ./packages/cliproxyapi.nix {};
-        nextcloud-calendar = final.callPackage ./packages/nextcloud-calendar.nix {};
-      })
+      in
+        {
+          # Expose the full unstable channel for consumers that need a single
+          # unstable package without shadowing the stable one globally (which
+          # would force mass rebuilds of everything depending on it).
+          inherit unstable;
+          # direnv 2.37.1 fish tests get killed during build on macOS (sandbox/OOM)
+          direnv = prev.direnv.overrideAttrs (_: {doCheck = false;});
+          # Home Assistant integrations move on a monthly cadence, so keep Core
+          # and its declarative extensions on the same current package set.
+          inherit
+            (unstable)
+            home-assistant
+            home-assistant-custom-lovelace-modules
+            jujutsu
+            zig
+            ;
+        }
+        // lib.mapAttrs (_: package: final.callPackage package.source {}) localPackages)
     ];
 
     mkSystem = import ./lib/mksystem.nix {
@@ -151,6 +149,10 @@
   in {
     # Host outputs and fleet metadata derive from one typed, data-only source.
     lib.hosts = hosts;
+    # Shared by local and CI update entrypoints; excludes upstream flake tools.
+    lib.packageUpdates = lib.concatStringsSep " " (builtins.attrNames (
+      lib.filterAttrs (_: package: package.update) localPackages
+    ));
     nixosConfigurations = lib.mapAttrs mkConfiguredSystem nixosHosts;
     darwinConfigurations = lib.mapAttrs mkConfiguredSystem darwinHosts;
 
@@ -285,18 +287,15 @@
           inherit system overlays;
           config.allowUnfree = true;
         };
-    in {
-      x86_64-linux = let
-        pkgs = mkPkgs "x86_64-linux";
-      in {
-        inherit (pkgs) helium obsidian skills cliproxyapi nextcloud-calendar hunkdiff nix-update tunarr;
-      };
-      aarch64-darwin = let
-        pkgs = mkPkgs "aarch64-darwin";
-      in {
-        inherit (pkgs) skills nextcloud-calendar hunkdiff nix-update;
-      };
-    };
+    in
+      lib.genAttrs ["x86_64-linux" "aarch64-darwin"] (system: let
+        pkgs = mkPkgs system;
+        exposed = lib.filterAttrs (_: package: builtins.elem system package.systems) localPackages;
+      in
+        lib.mapAttrs (name: _: pkgs.${name}) exposed
+        // {
+          inherit (pkgs) skills hunkdiff nix-update;
+        });
 
     formatter = nixpkgs.lib.genAttrs ["aarch64-linux" "x86_64-linux" "aarch64-darwin"] (
       system: nixpkgs.legacyPackages.${system}.alejandra

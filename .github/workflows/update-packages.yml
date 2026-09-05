@@ -7,19 +7,13 @@ on:
   workflow_dispatch:
     inputs:
       packages:
-        description: 'Space-separated package names (default: all, see env.DEFAULT_PACKAGES)'
+        description: 'Space-separated package names (default: updateable entries in packages/default.nix)'
         required: false
         default: ''
 
 concurrency:
   group: update-packages
   cancel-in-progress: false
-
-env:
-  # Single source of truth for the default package list (schedule + dispatch).
-  # Only packages defined in this repo (packages/*.nix) — skills/hunkdiff come
-  # from the llm-agents input and are bumped via `nix flake update llm-agents`.
-  DEFAULT_PACKAGES: 'helium obsidian cliproxyapi nextcloud-calendar tunarr'
 
 jobs:
   update:
@@ -41,7 +35,7 @@ jobs:
       - name: Run nix-update for each package
         id: bump
         env:
-          PACKAGES: ${{ github.event.inputs.packages || env.DEFAULT_PACKAGES }}
+          PACKAGES: ${{ github.event.inputs.packages }}
         run: scripts/ci/update-packages.sh
 
       - name: Check for changes
