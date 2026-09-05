@@ -42,8 +42,8 @@ This script will:
   2. Check platform prerequisites (macOS: Xcode CLT + Homebrew)
   3. Enable flakes and nix-command
   4. Clone the nix-config repository to ~/nix-config (if not present)
-  5. Set up /etc/nixos symlink (NixOS only)
-  6. Verify this host has a configuration in flake.nix
+  5. Verify this host has a configuration in flake.nix
+  6. Set up /etc/nixos symlink (NixOS only)
   7. Verify the sops age key is in place
   8. Optionally update flake inputs (--update), then offer the initial rebuild
 
@@ -224,9 +224,35 @@ else
     fi
 fi
 
-# Step 5: Set up /etc/nixos symlink (NixOS only)
+# Step 5: Reject unknown or incompatible hosts before privileged link upkeep.
+step "5/8: Verifying this host has a flake configuration..."
+# shellcheck source=lib/host-detect.sh
+source "$CONFIG_DIR/scripts/lib/host-detect.sh"
+detect_host
+info "Detected host: $HOSTNAME ($PLATFORM)"
+
+# The data-only inventory is the single source used to generate flake outputs
+# and fleet metadata. Evaluating one string also validates the flake shape.
+if validate_host_configuration "$CONFIG_DIR"; then
+    success "Found $HOSTNAME in lib/hosts.nix for $PLATFORM"
+else
+    error "Host detection did not resolve to a compatible inventory entry"
+    echo ""
+    echo "This looks like a new machine. To add it (see BOOTSTRAP.md, 'Adding a new host'):"
+    echo "  1. Create machines/${HOSTNAME}.nix (and hardware config under machines/hardware/)"
+    echo "  2. Add '${HOSTNAME}' to lib/hosts.nix"
+    echo "  3. On Darwin, add the login mapping in scripts/lib/host-detect.sh"
+    echo "  4. Commit, then re-run this script with --skip-clone"
+    if [[ "$DRY_RUN" == "true" ]]; then
+        warn "[DRY-RUN] This would abort the bootstrap"
+    else
+        exit 1
+    fi
+fi
+
+# Step 6: Set up /etc/nixos symlink (NixOS only)
 if [[ "$PLATFORM" == "nixos" ]]; then
-    step "5/8: Setting up /etc/nixos symlink..."
+    step "6/8: Setting up /etc/nixos symlink..."
     TARGET_REAL=$(readlink -f /etc/nixos 2>/dev/null || echo "")
 
     if [[ -L /etc/nixos && "$TARGET_REAL" == "$CONFIG_DIR" ]]; then
@@ -254,33 +280,7 @@ if [[ "$PLATFORM" == "nixos" ]]; then
         echo "  sudo ln -sfn $CONFIG_DIR /etc/nixos"
     fi
 else
-    step "5/8: Skipping /etc/nixos symlink (not on NixOS)"
-fi
-
-# Step 6: Verify this host has a configuration in the flake
-step "6/8: Verifying this host has a flake configuration..."
-# shellcheck source=lib/host-detect.sh
-source "$CONFIG_DIR/scripts/lib/host-detect.sh"
-detect_host
-info "Detected host: $HOSTNAME ($PLATFORM)"
-
-# The data-only inventory is the single source used to generate flake outputs
-# and fleet metadata. Evaluating one string also validates the flake shape.
-if validate_host_configuration "$CONFIG_DIR"; then
-    success "Found $HOSTNAME in lib/hosts.nix for $PLATFORM"
-else
-    error "Host detection did not resolve to a compatible inventory entry"
-    echo ""
-    echo "This looks like a new machine. To add it (see BOOTSTRAP.md, 'Adding a new host'):"
-    echo "  1. Create machines/${HOSTNAME}.nix (and hardware config under machines/hardware/)"
-    echo "  2. Add '${HOSTNAME}' to lib/hosts.nix"
-    echo "  3. On Darwin, add the login mapping in scripts/lib/host-detect.sh"
-    echo "  4. Commit, then re-run this script with --skip-clone"
-    if [[ "$DRY_RUN" == "true" ]]; then
-        warn "[DRY-RUN] This would abort the bootstrap"
-    else
-        exit 1
-    fi
+    step "6/8: Skipping /etc/nixos symlink (not on NixOS)"
 fi
 
 # Step 7: Verify the sops age key is in place.

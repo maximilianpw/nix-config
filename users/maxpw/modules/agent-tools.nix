@@ -41,7 +41,6 @@ in {
       # store so extension development does not require a system rebuild.
       ".pi/agent/settings.json".source = piConfigSource "settings.json";
       ".pi/agent/models.json".source = piConfigSource "models.json";
-      ".pi/agent/cloak.json".source = piConfigSource "cloak.json";
       ".pi/agent/extensions" = {
         source = piConfigSource "extensions";
         recursive = true;

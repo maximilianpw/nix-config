@@ -8,8 +8,8 @@ driver". There are three scenarios, from most to least work:
 3. [Reinstalling an existing host / repo already cloned](#scenario-3-existing-host)
 
 In all cases the finishing move is the same: `./scripts/bootstrap.sh`, which
-checks prerequisites, enables flakes, sets up the repo and `/etc/nixos`
-symlink, verifies the host exists in the flake, verifies the sops age key
+checks prerequisites, enables flakes, sets up the repo, verifies the host exists
+in the flake before maintaining the NixOS-only `/etc/nixos` symlink, checks the sops age key
 (NixOS and Darwin), and offers to run the first rebuild. Run
 `./scripts/bootstrap.sh --dry-run` to see what it would do.
 
