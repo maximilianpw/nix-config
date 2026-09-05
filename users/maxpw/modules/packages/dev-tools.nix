@@ -28,6 +28,7 @@
     pkgs.eslint
     pkgs.gofumpt
     pkgs.gotools # goimports and other Go source tools
+    pkgs.lldb # lldb-dap for Neovim's Rust debug configurations
     pkgs.oxlint
     pkgs.prettier
     pkgs.prettierd
