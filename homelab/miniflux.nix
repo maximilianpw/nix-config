@@ -6,6 +6,8 @@
   homelab = import ../lib/homelab.nix {inherit lib;};
   inherit ((homelab.endpoints config.homelab.tailnet.domain)) miniflux;
 in {
+  custom.backup.applicationVersions.miniflux = config.services.miniflux.package.version;
+
   sops.secrets.miniflux-admin-credentials = {
     restartUnits = ["miniflux.service"];
   };

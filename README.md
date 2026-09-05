@@ -190,7 +190,10 @@ To add a service:
 3. Declare exposure and authorization ownership, health path, and important
    units.
 4. Declare non-default backup transformations/exports, quiesce phase, restore
-   order, and functional acceptance checks.
+   order, and functional acceptance checks. Contribute the service's package
+   version or image to `custom.backup.applicationVersions.<name>` in its owning
+   module; the backup manifest checks coverage against the inventory. Kim bridges
+   the Home Manager-owned T3 Code version from the shared user settings.
 5. Verify both addition and removal so stale ingress cannot survive.
 
 Application options, shell implementation, secrets, dashboards, and

@@ -6,6 +6,8 @@
   homelab = import ../lib/homelab.nix {inherit lib;};
   inherit ((homelab.endpoints config.homelab.tailnet.domain)) immich;
 in {
+  custom.backup.applicationVersions.immich = config.services.immich.package.version;
+
   services.immich = {
     enable = true;
     host = "127.0.0.1";

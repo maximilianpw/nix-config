@@ -6,6 +6,8 @@
   homelab = import ../lib/homelab.nix {inherit lib;};
   inherit ((homelab.endpoints config.homelab.tailnet.domain)) executor;
 in {
+  custom.backup.applicationVersions.executor = config.virtualisation.oci-containers.containers.executor.image;
+
   virtualisation.oci-containers = {
     backend = "docker";
     containers.executor = {

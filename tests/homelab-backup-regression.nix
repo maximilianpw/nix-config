@@ -19,6 +19,33 @@
   excludesLiveT3CodeState = builtins.elem t3codeSource backup.exclude;
   canWriteT3CodeArtifact = builtins.elem "/var/backup/t3code" backupUnit.serviceConfig.ReadWritePaths;
   manifest = config.custom.backup.manifestMetadata;
+  expectedApplicationVersions = {
+    actual = config.services.actual.package.version;
+    bazarr = config.services.bazarr.package.version;
+    executor = config.virtualisation.oci-containers.containers.executor.image;
+    grafana = config.services.grafana.package.version;
+    homeassistant = config.services.home-assistant.package.version;
+    homepage = config.services.homepage-dashboard.package.version;
+    immich = config.services.immich.package.version;
+    jellyfin = config.services.jellyfin.package.version;
+    kuma = config.services.uptime-kuma.package.version;
+    lidarr = config.services.lidarr.package.version;
+    miniflux = config.services.miniflux.package.version;
+    nextcloud = config.services.nextcloud.package.version;
+    paperless = config.services.paperless.package.version;
+    prowlarr = config.services.prowlarr.package.version;
+    prometheus = config.services.prometheus.package.version;
+    qbittorrent = config.containers.qbt.config.services.qbittorrent.package.version;
+    radarr = config.services.radarr.package.version;
+    sabnzbd = config.containers.sab.config.services.sabnzbd.package.version;
+    seerr = config.services.seerr.package.version;
+    sonarr = config.services.sonarr.package.version;
+    syncthing = config.services.syncthing.package.version;
+    t3code = (import ../users/maxpw/settings.nix {inherit pkgs;}).t3codeRelease.version;
+    tunarr = (pkgs.callPackage ../packages/tunarr.nix {}).version;
+    vaultwarden = config.services.vaultwarden.package.version;
+    uptimeKuma = config.services.uptime-kuma.package.version;
+  };
   archivesManifest = builtins.elem "/var/backup/homelab" backup.paths;
   canWriteManifest = builtins.elem "/var/backup/homelab" backupUnit.serviceConfig.ReadWritePaths;
   canPersistRecoveryState = builtins.elem "/run/homelab-backup" backupUnit.serviceConfig.ReadWritePaths;
@@ -84,12 +111,8 @@ in
     manifest.schemaVersion
     == 1
     && manifest.expectedDatabases == ["hass" "immich" "miniflux" "nextcloud" "paperless" "vaultwarden"]
-    && builtins.hasAttr "actual" manifest.applicationVersions
-    && builtins.hasAttr "executor" manifest.applicationVersions
-    && builtins.hasAttr "immich" manifest.applicationVersions
-    && builtins.hasAttr "nextcloud" manifest.applicationVersions
-    && builtins.hasAttr "kuma" manifest.applicationVersions
-    && builtins.hasAttr "uptimeKuma" manifest.applicationVersions
+    && config.custom.backup.applicationVersions == expectedApplicationVersions
+    && manifest.applicationVersions == config.custom.backup.applicationVersions
     && manifest.postgresql.majorVersion != ""
     && builtins.elem "/var/lib/actual" manifest.expectedPrimaryStatePaths
     && builtins.elem "/var/lib/actual" manifest.expectedArchivePaths

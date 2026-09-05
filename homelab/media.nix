@@ -192,6 +192,19 @@
     group = "media";
   };
 in {
+  custom.backup.applicationVersions = {
+    bazarr = config.services.bazarr.package.version;
+    jellyfin = config.services.jellyfin.package.version;
+    lidarr = config.services.lidarr.package.version;
+    prowlarr = config.services.prowlarr.package.version;
+    qbittorrent = config.containers.qbt.config.services.qbittorrent.package.version;
+    radarr = config.services.radarr.package.version;
+    sabnzbd = config.containers.sab.config.services.sabnzbd.package.version;
+    seerr = config.services.seerr.package.version;
+    sonarr = config.services.sonarr.package.version;
+    tunarr = pkgs.tunarr.version;
+  };
+
   # Download and library paths share one ext4 filesystem so the Servarr apps
   # can import by hardlink while qBittorrent keeps seeding originals.
   users = {
