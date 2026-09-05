@@ -5,23 +5,13 @@
   pkgs,
   ...
 }: let
-  cliProxy = import ./config.nix;
   homeDirectory = "/home/${currentSystemUser}";
 in {
+  imports = [(import ./sops.nix {inherit homeDirectory;})];
+
   environment.systemPackages = [pkgs.cliproxyapi];
 
-  sops = {
-    secrets."opencode-zen-api-key" = {};
-    templates."cliproxyapi.conf" = {
-      owner = currentSystemUser;
-      mode = "0400";
-      restartUnits = ["cliproxyapi.service"];
-      content = cliProxy.mkServerConfig {
-        inherit homeDirectory;
-        openCodeZenApiKey = config.sops.placeholder."opencode-zen-api-key";
-      };
-    };
-  };
+  sops.templates."cliproxyapi.conf".restartUnits = ["cliproxyapi.service"];
 
   systemd.services.cliproxyapi = {
     description = "CLIProxyAPI local AI provider proxy";

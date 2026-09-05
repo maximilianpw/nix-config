@@ -3,6 +3,7 @@
 This folder owns the local CLIProxyAPI gateway and the agent clients that use it.
 
 - `config.nix` is the shared endpoint, authentication, model, and server configuration.
+- `sops.nix` owns the shared secret and rendered template declaration; adapters supply their home path and retain their platform-specific restart policy.
 - `nixos.nix` installs the Linux package and runs the systemd service on NixOS and WSL.
 - `darwin.nix` installs the Homebrew formula and runs the nix-darwin LaunchAgent.
 - `home-manager.nix` generates the Claude, Codex, Grok, and OpenCode client adapters, their direct-access commands, and `cliproxyapi-util`. Its caller supplies the user's agent-config directory explicitly.

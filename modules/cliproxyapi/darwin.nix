@@ -4,24 +4,13 @@
   lib,
   ...
 }: let
-  cliProxy = import ./config.nix;
   homeDirectory = "/Users/${currentSystemUser}";
 in {
+  imports = [(import ./sops.nix {inherit homeDirectory;})];
+
   # Homebrew owns the binary. nix-darwin owns the configuration and LaunchAgent
   # so the process never falls back to Homebrew's sample configuration.
   homebrew.brews = ["cliproxyapi"];
-
-  sops = {
-    secrets."opencode-zen-api-key" = {};
-    templates."cliproxyapi.conf" = {
-      owner = currentSystemUser;
-      mode = "0400";
-      content = cliProxy.mkServerConfig {
-        inherit homeDirectory;
-        openCodeZenApiKey = config.sops.placeholder."opencode-zen-api-key";
-      };
-    };
-  };
 
   # sops-nix renders the stable runtime path after activation. Restart the
   # existing agent so key rotations and model-list changes take effect now.
