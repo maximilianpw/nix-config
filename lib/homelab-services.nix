@@ -90,8 +90,9 @@
 
   executor = {
     endpoint = {
-      authorizationOwner = "tailscale";
-      exposure = "tailnet";
+      authorizationOwner = "executor";
+      exposure = "public";
+      hostname = "executor.maximilian.pw";
       port = 19005;
     };
     state.paths = ["/var/lib/executor"];

@@ -4,10 +4,25 @@
   pkgs,
 }: let
   homelab = import ../lib/homelab.nix {inherit lib;};
-  endpoint = (homelab.endpoints config.homelab.tailnet.domain).executor;
+  endpoint = homelab.publicEndpoints.executor;
+  ingress = config.services.cloudflared.tunnels.${homelab.infrastructure.cloudflare.tunnelId}.ingress;
   container = config.virtualisation.oci-containers.containers.executor;
   image = "ghcr.io/rhyssullivan/executor-selfhost@sha256:3fb4e7fdcd639dd5c8d3de51d168e6d3b78654a156a4f5f323a2f986565cb4dc";
 in
+  assert lib.assertMsg (
+    homelab.services.executor.endpoint.exposure
+    == "public"
+    && homelab.services.executor.endpoint.authorizationOwner == "executor"
+    && !(builtins.hasAttr "executor" homelab.privateServices)
+  )
+  "Executor must be public with application-owned authentication, not Tailscale-only";
+  assert lib.assertMsg (
+    endpoint.url
+    == "https://executor.maximilian.pw"
+    && ingress.${endpoint.host}.service == homelab.loopbackUrl endpoint.port
+    && ingress.${endpoint.host}.originRequest.httpHostHeader == endpoint.host
+  )
+  "Cloudflare must route executor.maximilian.pw to Executor's loopback endpoint";
   assert lib.assertMsg (config.virtualisation.oci-containers.backend == "docker")
   "Executor must use Kim's existing Docker backend";
   assert lib.assertMsg (container.image == image)
@@ -21,7 +36,7 @@ in
     == endpoint.url
     && container.environment.EXECUTOR_ALLOW_LOCAL_NETWORK == "false"
   )
-  "Executor must use its exact tailnet URL and deny sandbox access to private networks";
+  "Executor must use its exact public URL and deny sandbox access to private networks";
   assert lib.assertMsg (
     builtins.elem "docker-executor.service" homelab.backup.archiveUnits
     && builtins.elem "/var/lib" config.services.borgbackup.jobs.main.paths

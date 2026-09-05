@@ -1,10 +1,6 @@
-{
-  config,
-  lib,
-  ...
-}: let
+{lib, ...}: let
   homelab = import ../lib/homelab.nix {inherit lib;};
-  inherit ((homelab.endpoints config.homelab.tailnet.domain)) executor;
+  inherit (homelab.publicEndpoints) executor;
 in {
   virtualisation.oci-containers = {
     backend = "docker";
