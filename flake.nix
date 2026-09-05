@@ -179,103 +179,27 @@
     };
 
     # Eval-only checks: catch typos, missing modules, type errors without building
-    checks = {
-      x86_64-linux = {
-        eval-kim = self.nixosConfigurations.kim.config.system.build.toplevel;
-        # Keep the parked Hyprland profile evaluable while kim is headless.
-        eval-kim-desktop = desktopKim.config.system.build.toplevel;
-        eval-cuno = self.nixosConfigurations.cuno.config.system.build.toplevel;
-        pre-commit-check = mkPreCommitCheck "x86_64-linux";
-        actual-config-regression = import ./tests/actual-config-regression.nix {
-          config = self.nixosConfigurations.kim.config;
-          inherit lib;
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        };
-        executor-config-regression = import ./tests/executor-config-regression.nix {
-          config = self.nixosConfigurations.kim.config;
-          inherit lib;
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        };
-        homelab-ingress-regression = import ./tests/homelab-ingress-regression.nix {
-          config = self.nixosConfigurations.kim.config;
-          inherit lib;
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        };
-        homelab-inventory-regression = import ./tests/homelab-inventory-regression.nix {
-          config = self.nixosConfigurations.kim.config;
-          inherit lib;
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        };
-        immich-config-regression = import ./tests/immich-config-regression.nix {
-          config = self.nixosConfigurations.kim.config;
-          inherit lib;
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        };
-        media-stack-regression = import ./tests/media-stack-regression.nix {
-          config = self.nixosConfigurations.kim.config;
-          inherit lib;
-          pkgs = self.nixosConfigurations.kim.pkgs;
-        };
-        tailscale-serve-regression = import ./tests/tailscale-serve-regression.nix {
-          inherit lib;
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        };
-        homelab-backup-regression = import ./tests/homelab-backup-regression.nix {
-          config = self.nixosConfigurations.kim.config;
-          inherit lib;
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        };
-        paperless-config-regression = import ./tests/paperless-config-regression.nix {
-          config = self.nixosConfigurations.kim.config;
-          inherit lib;
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        };
-        homepage-calendar-regression = import ./tests/homepage-calendar-regression.nix {
-          config = self.nixosConfigurations.kim.config;
-          inherit lib;
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        };
-        monitoring-regression = import ./tests/monitoring-regression.nix {
-          config = self.nixosConfigurations.kim.config;
-          inherit lib;
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        };
-        fleet-agent-forwarding-regression = import ./tests/fleet-agent-forwarding-regression.nix {
-          inherit lib;
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        };
-        fleet-ssh-regression = import ./tests/fleet-ssh-regression.nix {
-          inherit lib;
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        };
-        fleet-ghostty-regression = import ./tests/fleet-ghostty-regression.nix {
-          config = self.nixosConfigurations.kim.config;
-          inherit lib;
-          pkgs = self.nixosConfigurations.kim.pkgs;
-        };
-        fleet-trust-regression = import ./tests/fleet-trust-regression.nix {
-          inherit hosts lib;
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-          configs =
-            lib.mapAttrsToList (name: host: {
-              config =
-                if host.darwin
-                then self.darwinConfigurations.${name}.config
-                else self.nixosConfigurations.${name}.config;
-              inherit (host) user;
-              isDarwin = host.darwin;
-            })
-            hosts;
-        };
+    checks = let
+      regressions = import ./tests {
+        inherit hosts lib nixpkgs;
+        inherit (self) nixosConfigurations darwinConfigurations;
       };
-      aarch64-darwin = {
-        eval-joyce = self.darwinConfigurations.joyce.system;
-        fleet-ssh-regression = import ./tests/fleet-ssh-regression.nix {
-          inherit lib;
-          pkgs = nixpkgs.legacyPackages.aarch64-darwin;
+    in {
+      x86_64-linux =
+        regressions.x86_64-linux
+        // {
+          eval-kim = self.nixosConfigurations.kim.config.system.build.toplevel;
+          # Keep the parked Hyprland profile evaluable while kim is headless.
+          eval-kim-desktop = desktopKim.config.system.build.toplevel;
+          eval-cuno = self.nixosConfigurations.cuno.config.system.build.toplevel;
+          pre-commit-check = mkPreCommitCheck "x86_64-linux";
         };
-        pre-commit-check = mkPreCommitCheck "aarch64-darwin";
-      };
+      aarch64-darwin =
+        regressions.aarch64-darwin
+        // {
+          eval-joyce = self.darwinConfigurations.joyce.system;
+          pre-commit-check = mkPreCommitCheck "aarch64-darwin";
+        };
     };
 
     # Custom packages exposed as flake outputs so `nix build .#<name>` and

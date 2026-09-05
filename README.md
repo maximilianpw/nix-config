@@ -137,6 +137,9 @@ The remote development fleet is named Revachol; its CLI remains `fleet`.
   - Register repo-local packages here once: source, exposed flake-output systems, and update eligibility.
   - The overlay, flake package outputs, `make update-packages`, and CI update defaults derive from this registry. Upstream tools still update through their flake inputs.
 
+- tests/default.nix
+  - Register regression checks beside their implementations, using the plain or host-overlaid package arguments as needed. CI selects every `*-regression` flake check automatically; host evaluation and lint wiring remain in `flake.nix`.
+
 - users/maxpw/home-manager.nix
   - Shared HM config for Linux/macOS; imports fonts and package modules.
   - Sets EDITOR/PAGER/MANPAGER; links macOS Rectangle config and Linux Ghostty config.
