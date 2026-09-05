@@ -83,7 +83,7 @@ in
   assert lib.assertMsg (
     manifest.schemaVersion
     == 1
-    && manifest.expectedDatabases == ["hass" "immich" "miniflux" "nextcloud" "paperless" "vaultwarden"]
+    && manifest.expectedDatabases == ["atuin" "hass" "immich" "miniflux" "nextcloud" "paperless" "vaultwarden"]
     && builtins.hasAttr "actual" manifest.applicationVersions
     && builtins.hasAttr "executor" manifest.applicationVersions
     && builtins.hasAttr "immich" manifest.applicationVersions

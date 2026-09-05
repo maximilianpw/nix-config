@@ -56,7 +56,7 @@ application from initializing an intended restore destination:
 sudo systemctl mask --runtime \
   cloudflared-tunnel-5b712ae4-3ce4-4499-9cb7-a57cde1c571f.service \
   tailscale-serve.service borgbackup-job-main.service \
-  actual.service home-assistant.service nextcloud-cron.service nextcloud-cron.timer \
+  actual.service atuin.service home-assistant.service nextcloud-cron.service nextcloud-cron.timer \
   nextcloud-setup.service nextcloud-update-db.service \
   nextcloud-update-store-apps.service nextcloud-update-store-apps.timer \
   phpfpm-nextcloud.service paperless-consumer.service \
@@ -120,7 +120,7 @@ sudo -u postgres zstdcat \
 
 If the archive contains per-database custom dumps instead, create the recorded
 roles/databases and use `pg_restore --exit-on-error`. Do not guess the format.
-Confirm that `hass`, `immich`, `miniflux`, `nextcloud`, `paperless`, and
+Confirm that `atuin`, `hass`, `immich`, `miniflux`, `nextcloud`, `paperless`, and
 `vaultwarden` exist with their expected owners. Restore files before starting
 applications.
 
@@ -287,6 +287,22 @@ new owner and newly generated keys could not decrypt the archived credentials.
 Restore the `miniflux` database, start the archived package on loopback, log in,
 open representative feeds, refresh one feed, and verify read/starred state and
 custom preferences.
+
+### Atuin
+
+Keep `atuin.service` stopped and restore the `atuin` database and its role from
+the shared PostgreSQL dump. The backup coordinator stops Atuin until the dump
+completes. Start the package recorded at `applicationVersions.atuin` first,
+with registration closed, on isolated ingress. The database contains account
+and session state plus encrypted history; the client encryption key must be
+recovered separately from 1Password. Do not generate a replacement key for an
+existing account or merge live client SQLite files using file sync.
+
+Log in with the existing account and encryption key using isolated test client
+data directories. Confirm an existing history item decrypts, then synchronize
+a harmless new marker between two test clients before restoring production
+ingress. Preserve the pre-migration dump if upgrading afterward. See
+[enrollment and verification](atuin.md) for normal client setup.
 
 ### Syncthing
 

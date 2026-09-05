@@ -189,6 +189,9 @@ Application options, shell implementation, secrets, dashboards, and
 provider/Terraform state stay in their owning modules rather than the inventory.
 See the [recovery runbook](docs/homelab-recovery.md) before handling archives.
 
+For private shell history sync between Kim and Joyce, see the
+[Atuin enrollment and usage guide](docs/atuin.md).
+
 ## Using this flake
 
 ### For new systems

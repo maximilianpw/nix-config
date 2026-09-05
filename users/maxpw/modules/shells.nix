@@ -4,8 +4,10 @@
   pkgs,
   lib,
   isDarwin,
+  hostname,
   ...
 }: let
+  homelab = import ../../../lib/homelab.nix {inherit lib;};
   renderTemplate = path: markers: values: let
     rendered = lib.replaceStrings markers values (builtins.readFile path);
   in
@@ -79,6 +81,23 @@ in {
   home.sessionVariables.RIPGREP_CONFIG_PATH = "${config.xdg.configHome}/ripgrep/config";
 
   programs = {
+    atuin = lib.mkIf (builtins.elem hostname ["kim" "joyce"]) {
+      enable = true;
+      enableBashIntegration = true;
+      enableFishIntegration = true;
+      enableNushellIntegration = true;
+      flags = ["--disable-up-arrow" "--disable-ai"];
+      settings = {
+        sync_address = (homelab.endpoints homelab.defaultTailnetDomain).atuin.url;
+        auto_sync = true;
+        sync_frequency = "5m";
+        filter_mode = "global";
+        secrets_filter = true;
+        # Leading-space commands are deliberately omitted from history.
+        history_filter = ["^ "];
+      };
+    };
+
     bash = {
       enable = true;
       shellAliases = shellAliases // agentAliases;

@@ -189,6 +189,13 @@
           inherit lib;
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
         };
+        atuin-config-regression = import ./tests/atuin-config-regression.nix {
+          config = self.nixosConfigurations.kim.config;
+          joyce = self.darwinConfigurations.joyce.config;
+          cuno = self.nixosConfigurations.cuno.config;
+          inherit lib;
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        };
         executor-config-regression = import ./tests/executor-config-regression.nix {
           config = self.nixosConfigurations.kim.config;
           inherit lib;

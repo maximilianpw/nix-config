@@ -1,6 +1,7 @@
 {lib, ...}: {
   imports = [
     ./actual.nix
+    ./atuin.nix
     ./cloudflared.nix
     ./container-hygiene.nix
     ./executor.nix

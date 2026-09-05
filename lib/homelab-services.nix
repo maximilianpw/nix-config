@@ -28,6 +28,35 @@
     };
   };
 
+  atuin = {
+    endpoint = {
+      authorizationOwner = "tailscale";
+      exposure = "tailnet";
+      port = 19007;
+    };
+    state.database = "atuin";
+    backup.quiesce = [
+      {
+        unit = "atuin.service";
+        until = "dump";
+      }
+    ];
+    operations.units = ["atuin.service"];
+    recovery = {
+      order = 55;
+      versionPolicy = "restore-archived-version-first";
+      runbook = "docs/homelab-recovery.md#atuin";
+      acceptance = [
+        "existing-account-login-succeeds"
+        "encrypted-history-syncs-between-two-clients"
+      ];
+      secretOwners = [
+        "mutable-state:atuin-database"
+        "interactive:client-encryption-key-in-1password"
+      ];
+    };
+  };
+
   bazarr = {
     endpoint = {
       authorizationOwner = "tailscale";
