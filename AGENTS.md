@@ -22,7 +22,7 @@ Home Manager configuration, and Kim's homelab services.
 
 Local edits, formatting, evaluation, builds, and tests are safe without asking.
 Use `nix develop` when the required repository tools are not already available.
-Run checks proportional to the change and persist through inspect/fix/re-run:
+Choose checks for the affected behavior; these are not a checklist for every edit:
 
 - Documentation or guidance only: `git diff --check`.
 - Changed Nix files: `alejandra --check <files>` and `make lint`.
@@ -33,15 +33,16 @@ Run checks proportional to the change and persist through inspect/fix/re-run:
 - Broad or release-level work: `nix flake check` (full build checks).
 
 `make build` builds the detected host without switching it. Do not use the full
-suite for a trivial documentation edit. Completion means the diff was inspected,
-the narrowest meaningful checks pass, and affected documentation still matches
-the behavior; report any check that could not run.
+suite for a documentation edit. Fix failures caused by the change and rerun the
+affected checks without asking; report checks that could not run.
 
 ## Safety boundaries and traps
 
 - Never run rebuild, bootstrap, rollback, WSL-image, restore, migration, cleanup,
-  or deployment commands unless explicitly requested. Building/evaluating is
-  not permission to switch a host or contact a service.
+  or deployment commands against a real host or data unless explicitly requested.
+  This does not prohibit regression tests using disposable fixtures or removing
+  task-created scratch files. Building/evaluating is not permission to activate
+  a configuration or operate a live service.
 - Keep secrets encrypted with sops. Never print decrypted values or place keys,
   credentials, mutable service data, or restore artifacts in Git/Nix store.
 - Do not edit generated `.pre-commit-config.yaml` or generated hardware config.
@@ -50,5 +51,6 @@ the behavior; report any check that could not run.
   settings live in `/etc/nix/nix.custom.conf` via `machines/joyce.nix`.
 - macOS GUI apps belong in Homebrew declarations; activation cleanup is `zap`.
 - Hyprland comes from the flake input, not nixpkgs.
-- Storage/recovery work requires the dedicated runbooks. Never point restore or
-  provisioning tools at live paths or unconfirmed disks.
+- For storage/recovery work, use `docs/homelab-recovery.md` and the affected
+  service's runbook. Never point restore or provisioning tools at live paths or
+  unconfirmed disks.
