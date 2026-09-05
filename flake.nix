@@ -51,6 +51,7 @@
   }: let
     inherit (nixpkgs) lib;
     hosts = import ./lib/inventory.nix {inherit lib;};
+    localPackages = import ./packages;
 
     # Overlay to pull select packages from nixpkgs-unstable and add custom packages
     overlays = [
@@ -89,28 +90,25 @@
       })
       (final: prev: let
         unstable = inputs.nixpkgs-unstable.legacyPackages.${prev.stdenv.hostPlatform.system};
-      in {
-        # Expose the full unstable channel for consumers that need a single
-        # unstable package without shadowing the stable one globally (which
-        # would force mass rebuilds of everything depending on it).
-        inherit unstable;
-        # direnv 2.37.1 fish tests get killed during build on macOS (sandbox/OOM)
-        direnv = prev.direnv.overrideAttrs (_: {doCheck = false;});
-        # Home Assistant integrations move on a monthly cadence, so keep Core
-        # and its declarative extensions on the same current package set.
-        inherit
-          (unstable)
-          home-assistant
-          home-assistant-custom-lovelace-modules
-          jujutsu
-          zig
-          ;
-        helium = final.callPackage ./packages/helium.nix {};
-        tunarr = final.callPackage ./packages/tunarr.nix {};
-        obsidian = final.callPackage ./packages/obsidian.nix {};
-        cliproxyapi = final.callPackage ./packages/cliproxyapi.nix {};
-        nextcloud-calendar = final.callPackage ./packages/nextcloud-calendar.nix {};
-      })
+      in
+        {
+          # Expose the full unstable channel for consumers that need a single
+          # unstable package without shadowing the stable one globally (which
+          # would force mass rebuilds of everything depending on it).
+          inherit unstable;
+          # direnv 2.37.1 fish tests get killed during build on macOS (sandbox/OOM)
+          direnv = prev.direnv.overrideAttrs (_: {doCheck = false;});
+          # Home Assistant integrations move on a monthly cadence, so keep Core
+          # and its declarative extensions on the same current package set.
+          inherit
+            (unstable)
+            home-assistant
+            home-assistant-custom-lovelace-modules
+            jujutsu
+            zig
+            ;
+        }
+        // lib.mapAttrs (_: package: final.callPackage package.source {}) localPackages)
     ];
 
     mkSystem = import ./lib/mksystem.nix {
@@ -151,6 +149,10 @@
   in {
     # Host outputs and fleet metadata derive from one typed, data-only source.
     lib.hosts = hosts;
+    # Shared by local and CI update entrypoints; excludes upstream flake tools.
+    lib.packageUpdates = lib.concatStringsSep " " (builtins.attrNames (
+      lib.filterAttrs (_: package: package.update) localPackages
+    ));
     nixosConfigurations = lib.mapAttrs mkConfiguredSystem nixosHosts;
     darwinConfigurations = lib.mapAttrs mkConfiguredSystem darwinHosts;
 
@@ -177,103 +179,27 @@
     };
 
     # Eval-only checks: catch typos, missing modules, type errors without building
-    checks = {
-      x86_64-linux = {
-        eval-kim = self.nixosConfigurations.kim.config.system.build.toplevel;
-        # Keep the parked Hyprland profile evaluable while kim is headless.
-        eval-kim-desktop = desktopKim.config.system.build.toplevel;
-        eval-cuno = self.nixosConfigurations.cuno.config.system.build.toplevel;
-        pre-commit-check = mkPreCommitCheck "x86_64-linux";
-        actual-config-regression = import ./tests/actual-config-regression.nix {
-          config = self.nixosConfigurations.kim.config;
-          inherit lib;
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        };
-        executor-config-regression = import ./tests/executor-config-regression.nix {
-          config = self.nixosConfigurations.kim.config;
-          inherit lib;
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        };
-        homelab-ingress-regression = import ./tests/homelab-ingress-regression.nix {
-          config = self.nixosConfigurations.kim.config;
-          inherit lib;
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        };
-        homelab-inventory-regression = import ./tests/homelab-inventory-regression.nix {
-          config = self.nixosConfigurations.kim.config;
-          inherit lib;
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        };
-        immich-config-regression = import ./tests/immich-config-regression.nix {
-          config = self.nixosConfigurations.kim.config;
-          inherit lib;
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        };
-        media-stack-regression = import ./tests/media-stack-regression.nix {
-          config = self.nixosConfigurations.kim.config;
-          inherit lib;
-          pkgs = self.nixosConfigurations.kim.pkgs;
-        };
-        tailscale-serve-regression = import ./tests/tailscale-serve-regression.nix {
-          inherit lib;
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        };
-        homelab-backup-regression = import ./tests/homelab-backup-regression.nix {
-          config = self.nixosConfigurations.kim.config;
-          inherit lib;
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        };
-        paperless-config-regression = import ./tests/paperless-config-regression.nix {
-          config = self.nixosConfigurations.kim.config;
-          inherit lib;
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        };
-        homepage-calendar-regression = import ./tests/homepage-calendar-regression.nix {
-          config = self.nixosConfigurations.kim.config;
-          inherit lib;
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        };
-        monitoring-regression = import ./tests/monitoring-regression.nix {
-          config = self.nixosConfigurations.kim.config;
-          inherit lib;
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        };
-        fleet-agent-forwarding-regression = import ./tests/fleet-agent-forwarding-regression.nix {
-          inherit lib;
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        };
-        fleet-ssh-regression = import ./tests/fleet-ssh-regression.nix {
-          inherit lib;
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        };
-        fleet-ghostty-regression = import ./tests/fleet-ghostty-regression.nix {
-          config = self.nixosConfigurations.kim.config;
-          inherit lib;
-          pkgs = self.nixosConfigurations.kim.pkgs;
-        };
-        fleet-trust-regression = import ./tests/fleet-trust-regression.nix {
-          inherit hosts lib;
-          pkgs = nixpkgs.legacyPackages.x86_64-linux;
-          configs =
-            lib.mapAttrsToList (name: host: {
-              config =
-                if host.darwin
-                then self.darwinConfigurations.${name}.config
-                else self.nixosConfigurations.${name}.config;
-              inherit (host) user;
-              isDarwin = host.darwin;
-            })
-            hosts;
-        };
+    checks = let
+      regressions = import ./tests {
+        inherit hosts lib nixpkgs;
+        inherit (self) nixosConfigurations darwinConfigurations;
       };
-      aarch64-darwin = {
-        eval-joyce = self.darwinConfigurations.joyce.system;
-        fleet-ssh-regression = import ./tests/fleet-ssh-regression.nix {
-          inherit lib;
-          pkgs = nixpkgs.legacyPackages.aarch64-darwin;
+    in {
+      x86_64-linux =
+        regressions.x86_64-linux
+        // {
+          eval-kim = self.nixosConfigurations.kim.config.system.build.toplevel;
+          # Keep the parked Hyprland profile evaluable while kim is headless.
+          eval-kim-desktop = desktopKim.config.system.build.toplevel;
+          eval-cuno = self.nixosConfigurations.cuno.config.system.build.toplevel;
+          pre-commit-check = mkPreCommitCheck "x86_64-linux";
         };
-        pre-commit-check = mkPreCommitCheck "aarch64-darwin";
-      };
+      aarch64-darwin =
+        regressions.aarch64-darwin
+        // {
+          eval-joyce = self.darwinConfigurations.joyce.system;
+          pre-commit-check = mkPreCommitCheck "aarch64-darwin";
+        };
     };
 
     # Custom packages exposed as flake outputs so `nix build .#<name>` and
@@ -285,18 +211,15 @@
           inherit system overlays;
           config.allowUnfree = true;
         };
-    in {
-      x86_64-linux = let
-        pkgs = mkPkgs "x86_64-linux";
-      in {
-        inherit (pkgs) helium obsidian skills cliproxyapi nextcloud-calendar hunkdiff nix-update tunarr;
-      };
-      aarch64-darwin = let
-        pkgs = mkPkgs "aarch64-darwin";
-      in {
-        inherit (pkgs) skills nextcloud-calendar hunkdiff nix-update;
-      };
-    };
+    in
+      lib.genAttrs ["x86_64-linux" "aarch64-darwin"] (system: let
+        pkgs = mkPkgs system;
+        exposed = lib.filterAttrs (_: package: builtins.elem system package.systems) localPackages;
+      in
+        lib.mapAttrs (name: _: pkgs.${name}) exposed
+        // {
+          inherit (pkgs) skills hunkdiff nix-update;
+        });
 
     formatter = nixpkgs.lib.genAttrs ["aarch64-linux" "x86_64-linux" "aarch64-darwin"] (
       system: nixpkgs.legacyPackages.${system}.alejandra

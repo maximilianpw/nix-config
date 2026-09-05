@@ -1,4 +1,5 @@
 {
+  config,
   lib,
   pkgs,
   ...
@@ -14,6 +15,12 @@
     '';
   };
 in {
+  custom.backup.applicationVersions = {
+    kuma = config.services.uptime-kuma.package.version;
+    # Preserve the schema-v1 manifest key alongside the canonical service name.
+    uptimeKuma = config.services.uptime-kuma.package.version;
+  };
+
   services.uptime-kuma = {
     enable = true;
     appriseSupport = true;

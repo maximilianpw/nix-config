@@ -3,7 +3,6 @@
   pkgs,
   lib,
   currentSystemUser ? "maxpw",
-  currentSystemUserDir ? currentSystemUser,
   ...
 }: let
   cfg = config.custom.backup;
@@ -28,7 +27,6 @@
   fileApplicationUnits = homelab.backup.archiveUnits;
   userDatabaseApplicationUnits = homelab.backup.userDumpUnits;
   userFileApplicationUnits = homelab.backup.userArchiveUnits;
-  t3codeVersion = (import ../../users/${currentSystemUserDir}/settings.nix {inherit pkgs;}).t3codeRelease.version;
   baseBackupPaths = [
     "${homeDir}/nix-config"
     "${homeDir}/Documents"
@@ -48,35 +46,7 @@
       path: !(pathCoveredBy baseBackupPaths path)
     )
     homelab.backup.archivePaths;
-  applicationVersions = {
-    actual = config.services.actual.package.version;
-    bazarr = config.services.bazarr.package.version;
-    executor = config.virtualisation.oci-containers.containers.executor.image;
-    grafana = config.services.grafana.package.version;
-    homeassistant = config.services.home-assistant.package.version;
-    homepage = config.services.homepage-dashboard.package.version;
-    immich = config.services.immich.package.version;
-    jellyfin = config.services.jellyfin.package.version;
-    kuma = config.services.uptime-kuma.package.version;
-    lidarr = config.services.lidarr.package.version;
-    miniflux = config.services.miniflux.package.version;
-    nextcloud = config.services.nextcloud.package.version;
-    paperless = config.services.paperless.package.version;
-    prowlarr = config.services.prowlarr.package.version;
-    prometheus = config.services.prometheus.package.version;
-    qbittorrent = config.containers.qbt.config.services.qbittorrent.package.version;
-    radarr = config.services.radarr.package.version;
-    sabnzbd = config.containers.sab.config.services.sabnzbd.package.version;
-    seerr = config.services.seerr.package.version;
-    sonarr = config.services.sonarr.package.version;
-    syncthing = config.services.syncthing.package.version;
-    t3code = t3codeVersion;
-    tunarr = pkgs.tunarr.version;
-    vaultwarden = config.services.vaultwarden.package.version;
-    # Preserve the schema-v1 manifest key while the canonical inventory name
-    # above lets coverage track the service directly.
-    uptimeKuma = config.services.uptime-kuma.package.version;
-  };
+  inherit (cfg) applicationVersions;
   statefulServiceNames = builtins.attrNames (
     lib.filterAttrs (_: service: service.state.kind != "none") homelab.services
   );
@@ -201,6 +171,12 @@
 in {
   options.custom.backup = {
     enable = lib.mkEnableOption "borgbackup to external drive";
+
+    applicationVersions = lib.mkOption {
+      type = lib.types.attrsOf lib.types.str;
+      default = {};
+      description = "Service-owned application versions included in the recovery manifest.";
+    };
 
     paths = lib.mkOption {
       type = lib.types.listOf lib.types.str;

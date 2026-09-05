@@ -1,4 +1,5 @@
 {
+  currentSystemUserDir,
   pkgs,
   lib,
   ...
@@ -9,7 +10,11 @@
     ../modules/services/backup.nix
   ];
 
-  custom.backup.enable = true;
+  custom.backup = {
+    enable = true;
+    applicationVersions.t3code =
+      (import ../users/${currentSystemUserDir}/settings.nix {inherit pkgs;}).t3codeRelease.version;
+  };
 
   # Core system identity
   networking.hostName = "kim";

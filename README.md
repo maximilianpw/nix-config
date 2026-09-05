@@ -43,6 +43,7 @@ The remote development fleet is named Revachol; its CLI remains `fleet`.
 │   └── services/
 │       └── backup.nix       # Borg backup service
 ├── packages/
+│   ├── default.nix          # Local package sources, output platforms, update eligibility
 │   ├── helium.nix           # Custom package: Helium floating browser
 │   └── obsidian.nix         # Custom package: Obsidian
 ├── scripts/
@@ -132,6 +133,13 @@ The remote development fleet is named Revachol; its CLI remains `fleet`.
 - modules/desktop/hyprland.nix
   - Hyprland from upstream input, xdg-desktop-portal-hyprland, Xwayland, greetd login manager.
 
+- packages/default.nix
+  - Register repo-local packages here once: source, exposed flake-output systems, and update eligibility.
+  - The overlay, flake package outputs, `make update-packages`, and CI update defaults derive from this registry. Upstream tools still update through their flake inputs.
+
+- tests/default.nix
+  - Register regression checks beside their implementations, using the plain or host-overlaid package arguments as needed. CI selects every `*-regression` flake check automatically; host evaluation and lint wiring remain in `flake.nix`.
+
 - users/maxpw/home-manager.nix
   - Shared HM config for Linux/macOS; imports fonts and package modules.
   - Sets EDITOR/PAGER/MANPAGER; links macOS Rectangle config and Linux Ghostty config.
@@ -182,7 +190,10 @@ To add a service:
 3. Declare exposure and authorization ownership, health path, and important
    units.
 4. Declare non-default backup transformations/exports, quiesce phase, restore
-   order, and functional acceptance checks.
+   order, and functional acceptance checks. Contribute the service's package
+   version or image to `custom.backup.applicationVersions.<name>` in its owning
+   module; the backup manifest checks coverage against the inventory. Kim bridges
+   the Home Manager-owned T3 Code version from the shared user settings.
 5. Verify both addition and removal so stale ingress cannot survive.
 
 Application options, shell implementation, secrets, dashboards, and
