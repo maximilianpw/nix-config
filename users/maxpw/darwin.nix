@@ -45,6 +45,7 @@ in {
       "notion"
       "slack"
       "proton-mail"
+      "fastmail"
       "ghostty"
       "aws-vpn-client"
       "orbstack"

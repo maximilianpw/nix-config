@@ -271,6 +271,35 @@ in
   )
   "Mullvad's early blocker and pre-start connection gate must fail both downloaders closed without affecting Kim";
   assert lib.assertMsg (
+    qbtConfig.services.tinyproxy.enable
+    && qbtConfig.services.tinyproxy.settings.Listen == "10.89.0.2"
+    && qbtConfig.services.tinyproxy.settings.Port == 8888
+    && qbtConfig.services.tinyproxy.settings.Allow == ["10.89.0.3"]
+    && qbtConfig.services.tinyproxy.settings.ConnectPort == [443]
+    && qbtConfig.services.tinyproxy.settings.FilterDefaultDeny == [true]
+    && qbtConfig.services.tinyproxy.settings.FilterType == ["ere"]
+    && qbtConfig.services.flaresolverr.enable
+    && !qbtConfig.services.flaresolverr.openFirewall
+    && qbtConfig.systemd.services.flaresolverr.environment.HOST == "10.89.0.2"
+    && lib.sort builtins.lessThan qbtConfig.networking.firewall.interfaces.eth0.allowedTCPPorts == [8191 8888]
+    && !config.services.tinyproxy.enable
+    && !config.services.flaresolverr.enable
+  )
+  "indexer proxies must stay inside Mullvad, restrict HTTP clients and destinations, and avoid public listeners";
+  assert lib.assertMsg (lib.all (name: let
+    service = qbtConfig.systemd.services.${name};
+    timer = qbtConfig.systemd.timers."${name}-deferred-start";
+  in
+    service.wantedBy
+    == []
+    && builtins.elem "mullvad-daemon.service" service.requires
+    && lib.hasPrefix "+/nix/store/" service.serviceConfig.ExecStartPre
+    && builtins.elem "${mediaRoot}/torrents" service.serviceConfig.InaccessiblePaths
+    && service.serviceConfig.UMask == "0077"
+    && timer.wantedBy == ["timers.target"]
+    && timer.timerConfig.OnUnitInactiveSec == "30s") ["tinyproxy" "flaresolverr"])
+  "indexer proxies must wait for Mullvad without blocking boot or accessing downloaded files";
+  assert lib.assertMsg (
     qbtService.wantedBy
     == []
     && qbtDeferredTimer.wantedBy == ["timers.target"]

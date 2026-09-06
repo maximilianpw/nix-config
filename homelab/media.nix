@@ -18,6 +18,8 @@
   qbitContainerLocalAddress = "${qbitContainerAddress}/31";
   qbitContainerHostAddress = "10.89.0.3";
   qbitContainerPort = 8080;
+  indexerProxyPort = 8888;
+  indexerSolverPort = 8191;
   qbitNetworkInterface = "wg0-mullvad";
   sabContainerAddress = "10.89.1.2";
   sabContainerLocalAddress = "${sabContainerAddress}/31";
@@ -480,31 +482,96 @@ in {
           ${mullvadConnectionGate "qBittorrent"}
         '';
       };
+      indexerProxyPreStart = pkgs.writeShellApplication {
+        name = "indexer-proxy-vpn-prestart";
+        runtimeInputs = [pkgs.coreutils pkgs.gnugrep pkgs.mullvad];
+        text = mullvadConnectionGate "Indexer proxies";
+      };
     in {
       users.users.qbittorrent.uid = qbitUid;
 
-      services.qbittorrent = {
-        enable = true;
-        group = "media";
-        openFirewall = false;
-        webuiPort = qbitContainerPort;
-        extraArgs = ["--confirm-legal-notice"];
+      # Prowlarr reaches these services over the container veth. Neither
+      # listener is exposed through Kim's LAN or Tailscale ingress.
+      networking.firewall.interfaces.eth0.allowedTCPPorts = [indexerProxyPort indexerSolverPort];
+      services = {
+        tinyproxy = {
+          enable = true;
+          settings = {
+            Listen = qbitContainerAddress;
+            Port = indexerProxyPort;
+            Allow = [qbitContainerHostAddress];
+            ConnectPort = [443];
+            Timeout = 180;
+            MaxClients = 16;
+            LogLevel = "Warning";
+            FilterDefaultDeny = true;
+            FilterType = "ere";
+            Filter = pkgs.writeText "indexer-proxy-domains" ''
+              ^1337x\.(to|st)$
+              ^x1337x\.(ws|eu|cc)$
+              ^prowlarr\.servarr\.com$
+            '';
+          };
+        };
+        flaresolverr = {
+          enable = true;
+          port = indexerSolverPort;
+          openFirewall = false;
+        };
+
+        qbittorrent = {
+          enable = true;
+          group = "media";
+          openFirewall = false;
+          webuiPort = qbitContainerPort;
+          extraArgs = ["--confirm-legal-notice"];
+        };
       };
 
-      systemd = mkDeferredVpnService {
-        serviceName = "qbittorrent";
-        description = "Start qBittorrent after the container reports ready";
-        environment = {
-          QBIT_BOOTSTRAP_CONFIG = qbitBootstrapConfig;
-          QBIT_NETWORK_INTERFACE = qbitNetworkInterface;
-          QBIT_WEBUI_CSRF_PROTECTION = qbitWebUICSRFProtection;
-          QBIT_WEBUI_HOST_HEADER_VALIDATION = qbitWebUIHostHeaderValidation;
-          QBIT_WEBUI_MAX_AUTHENTICATION_FAIL_COUNT = qbitWebUIMaxAuthenticationFailCount;
-        };
-        # The leading + runs the leak check with full privileges even though
-        # the daemon remains the unprivileged qBittorrent user.
-        vpnGate = "+${lib.getExe qbitPreStart}";
-      };
+      systemd = lib.mkMerge [
+        (mkDeferredVpnService {
+          serviceName = "qbittorrent";
+          description = "Start qBittorrent after the container reports ready";
+          environment = {
+            QBIT_BOOTSTRAP_CONFIG = qbitBootstrapConfig;
+            QBIT_NETWORK_INTERFACE = qbitNetworkInterface;
+            QBIT_WEBUI_CSRF_PROTECTION = qbitWebUICSRFProtection;
+            QBIT_WEBUI_HOST_HEADER_VALIDATION = qbitWebUIHostHeaderValidation;
+            QBIT_WEBUI_MAX_AUTHENTICATION_FAIL_COUNT = qbitWebUIMaxAuthenticationFailCount;
+          };
+          # The leading + runs the leak check with full privileges even though
+          # the daemon remains the unprivileged qBittorrent user.
+          vpnGate = "+${lib.getExe qbitPreStart}";
+        })
+        (mkDeferredVpnService {
+          serviceName = "tinyproxy";
+          description = "Start the indexer HTTP proxy after Mullvad connects";
+          vpnGate = "+${lib.getExe indexerProxyPreStart}";
+          extraServiceConfig = {
+            UMask = "0077";
+            NoNewPrivileges = true;
+            ProtectSystem = "strict";
+            ProtectHome = true;
+            PrivateTmp = true;
+            InaccessiblePaths = ["${mediaRoot}/torrents"];
+          };
+        })
+        (mkDeferredVpnService {
+          serviceName = "flaresolverr";
+          description = "Start the indexer challenge helper after Mullvad connects";
+          vpnGate = "+${lib.getExe indexerProxyPreStart}";
+          environment = {
+            HOST = qbitContainerAddress;
+            LOG_LEVEL = "warning";
+          };
+          extraServiceConfig = {
+            UMask = lib.mkForce "0077";
+            Restart = lib.mkForce "on-failure";
+            RestartSec = lib.mkForce "30s";
+            InaccessiblePaths = ["${mediaRoot}/torrents"];
+          };
+        })
+      ];
     };
   };
 

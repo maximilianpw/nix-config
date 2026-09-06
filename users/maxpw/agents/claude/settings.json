@@ -20,6 +20,7 @@
     "ask": [],
     "defaultMode": "auto"
   },
+  "model": "opus[1m]",
   "disableClaudeAiConnectors": true,
   "hooks": {
     "SessionStart": [
@@ -48,6 +49,5 @@
   "theme": "dark",
   "preferredNotifChannel": "ghostty",
   "agentPushNotifEnabled": true,
-  "skipAutoPermissionPrompt": true,
-  "model": "opus"
+  "skipAutoPermissionPrompt": true
 }
