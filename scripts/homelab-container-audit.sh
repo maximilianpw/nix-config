@@ -7,10 +7,16 @@ set -euo pipefail
 : "${JQ_BIN:=jq}"
 : "${HOMELAB_METRICS_DIR:=/var/lib/prometheus-node-exporter-text-files}"
 : "${HOMELAB_CONTAINER_STALE_AFTER_SECONDS:=259200}"
+: "${HOMELAB_CONTAINER_SNAPSHOT_ATTEMPTS:=3}"
 
 if [[ ! $HOMELAB_CONTAINER_STALE_AFTER_SECONDS =~ ^[0-9]+$ ]] ||
   ((HOMELAB_CONTAINER_STALE_AFTER_SECONDS == 0)); then
   echo "HOMELAB_CONTAINER_STALE_AFTER_SECONDS must be a positive integer" >&2
+  exit 2
+fi
+if [[ ! $HOMELAB_CONTAINER_SNAPSHOT_ATTEMPTS =~ ^[0-9]+$ ]] ||
+  ((HOMELAB_CONTAINER_SNAPSHOT_ATTEMPTS == 0)); then
+  echo "HOMELAB_CONTAINER_SNAPSHOT_ATTEMPTS must be a positive integer" >&2
   exit 2
 fi
 
@@ -39,13 +45,22 @@ prometheus_escape() {
   printf '%s' "$value"
 }
 
-container_id_output=$("$DOCKER_BIN" ps --quiet)
 container_ids=()
-if [[ -n $container_id_output ]]; then
-  mapfile -t container_ids <<< "$container_id_output"
-fi
+collect_container_snapshot() {
+  local container_id_output
 
-if ((${#container_ids[@]} > 0)); then
+  : > "$inspect_tmp"
+  : > "$stats_tmp"
+  container_id_output=$("$DOCKER_BIN" ps --quiet) || return
+  container_ids=()
+  if [[ -n $container_id_output ]]; then
+    mapfile -t container_ids <<< "$container_id_output"
+  fi
+
+  if ((${#container_ids[@]} == 0)); then
+    return 0
+  fi
+
   "$DOCKER_BIN" inspect "${container_ids[@]}" | "$JQ_BIN" -r '
     .[]
     | [
@@ -60,14 +75,30 @@ if ((${#container_ids[@]} > 0)); then
         ((.NetworkSettings.Ports // {}) | tojson)
       ]
     | join("\u001f")
-  ' > "$inspect_tmp"
+  ' > "$inspect_tmp" || return
   "$DOCKER_BIN" stats --no-stream \
     --format '{{json .}}' \
     "${container_ids[@]}" | "$JQ_BIN" -Rr '
       fromjson
       | [(.Name // ""), (.CPUPerc // ""), (.MemUsage // ""), (.BlockIO // "")]
       | join("\u001f")
-    ' > "$stats_tmp"
+    ' > "$stats_tmp" || return
+}
+
+snapshot_collected=false
+for ((snapshot_attempt = 1; snapshot_attempt <= HOMELAB_CONTAINER_SNAPSHOT_ATTEMPTS; snapshot_attempt++)); do
+  if collect_container_snapshot; then
+    snapshot_collected=true
+    break
+  fi
+  if ((snapshot_attempt < HOMELAB_CONTAINER_SNAPSHOT_ATTEMPTS)); then
+    printf 'Docker snapshot collection failed; retrying (%s/%s)\n' \
+      "$snapshot_attempt" "$HOMELAB_CONTAINER_SNAPSHOT_ATTEMPTS" >&2
+  fi
+done
+if [[ $snapshot_collected != true ]]; then
+  echo "Cannot collect a stable Docker container snapshot" >&2
+  exit 1
 fi
 
 container_count=0

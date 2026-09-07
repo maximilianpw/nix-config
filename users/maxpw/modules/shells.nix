@@ -26,6 +26,7 @@
 
   shellAliases = {
     ls = "eza";
+    claer = "clear";
 
     ga = "git add";
     gaa = "git add .";

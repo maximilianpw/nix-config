@@ -20,9 +20,18 @@ fi
 
 case ${1:-} in
   ps)
-    [[ ${FAKE_EMPTY:-0} == 1 ]] || printf 'old\nkept\nnew\n'
+    if [[ -n ${RACE_STATE_FILE:-} && ! -e $RACE_STATE_FILE ]]; then
+      : > "$RACE_STATE_FILE"
+      printf 'gone\nold\nkept\nnew\n'
+    elif [[ ${FAKE_EMPTY:-0} != 1 ]]; then
+      printf 'old\nkept\nnew\n'
+    fi
     ;;
   inspect)
+    if [[ " $* " == *" gone "* ]]; then
+      echo 'Error response from daemon: No such container: gone' >&2
+      exit 1
+    fi
     cat <<'INSPECT'
 [
   {"Name":"/old-dev","Created":"1970-01-01T00:16:40Z","State":{"Health":{"Status":"unhealthy"}},"HostConfig":{"RestartPolicy":{"Name":"no"}},"Config":{"Labels":{"com.docker.compose.project":"stocket-dev","com.docker.compose.project.working_dir":"/home/maxpw/stocket","homelab.ephemeral":"true","homelab.keep":"false"}},"NetworkSettings":{"Ports":{"5432/tcp":[{"HostIp":"127.0.0.1","HostPort":"5432"}]}}},
@@ -70,6 +79,14 @@ if FAIL_DOCKER=1 DOCKER_BIN="$fake_docker" HOMELAB_METRICS_DIR="$metrics_dir" \
   exit 1
 fi
 cmp "$test_root/expected.prom" "$metrics_file"
+
+race_state_file="$test_root/race-state"
+RACE_STATE_FILE="$race_state_file" DOCKER_BIN="$fake_docker" HOMELAB_METRICS_DIR="$metrics_dir" \
+  HOMELAB_CONTAINER_SNAPSHOT_ATTEMPTS=2 NOW_EPOCH=400000 \
+  "$script_dir/homelab-container-audit.sh" >/dev/null
+# The vanished container is excluded from the retried snapshot.
+grep -F 'homelab_docker_containers 3' "$metrics_file"
+test -e "$race_state_file"
 
 FAKE_EMPTY=1 DOCKER_BIN="$fake_docker" HOMELAB_METRICS_DIR="$metrics_dir" \
   "$script_dir/homelab-container-audit.sh" >/dev/null

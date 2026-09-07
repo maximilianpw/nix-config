@@ -10,6 +10,8 @@
 in
   assert lib.assertMsg immich.enable
   "Immich must remain enabled on Kim";
+  assert lib.assertMsg (lib.versionAtLeast immich.package.version "3")
+  "Immich must use the supported 3.x series rather than the insecure 2.x package from NixOS 26.05";
   assert lib.assertMsg (
     immich.host
     == "127.0.0.1"

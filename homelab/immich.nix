@@ -1,6 +1,7 @@
 {
   config,
   lib,
+  pkgs,
   ...
 }: let
   homelab = import ../lib/homelab.nix {inherit lib;};
@@ -8,6 +9,9 @@
 in {
   services.immich = {
     enable = true;
+    # NixOS 26.05 is frozen on the unsupported Immich 2.x series. Keep the
+    # service on the current package while retaining the stable NixOS module.
+    package = pkgs.unstable.immich;
     host = "127.0.0.1";
     inherit (immich) port;
     openFirewall = false;
