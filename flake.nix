@@ -107,6 +107,11 @@
           ;
         helium = final.callPackage ./packages/helium.nix {};
         tunarr = final.callPackage ./packages/tunarr.nix {};
+        # Keep Jellyfin's server, web client, and patched FFmpeg together until
+        # nixpkgs carries 12.0. Remove these overrides as one upgrade.
+        jellyfin = final.callPackage ./packages/jellyfin.nix {};
+        jellyfin-web = final.callPackage ./packages/jellyfin-web.nix {inherit (prev) jellyfin-web;};
+        jellyfin-ffmpeg = final.callPackage ./packages/jellyfin-ffmpeg.nix {};
         obsidian = final.callPackage ./packages/obsidian.nix {};
         cliproxyapi = final.callPackage ./packages/cliproxyapi.nix {};
         nextcloud-calendar = final.callPackage ./packages/nextcloud-calendar.nix {};
@@ -296,7 +301,7 @@
       x86_64-linux = let
         pkgs = mkPkgs "x86_64-linux";
       in {
-        inherit (pkgs) helium obsidian skills cliproxyapi nextcloud-calendar hunkdiff nix-update tunarr;
+        inherit (pkgs) helium obsidian skills cliproxyapi nextcloud-calendar hunkdiff nix-update tunarr jellyfin jellyfin-web jellyfin-ffmpeg;
       };
       aarch64-darwin = let
         pkgs = mkPkgs "aarch64-darwin";

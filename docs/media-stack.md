@@ -393,6 +393,65 @@ space but are not backups: deleting both directory entries or losing the `/srv`
 filesystem loses the media. Irreplaceable personal media needs a separate
 off-host copy.
 
+## Jellyfin 12.0 upgrade
+
+[Jellyfin 12.0 release notes](https://jellyfin.org/posts/jellyfin-release-12.0/)
+describe a database rewrite on first start. Building the new configuration does
+not perform this migration. Schedule a maintenance window before activating it
+on Kim.
+
+The local packages are `packages/jellyfin.nix`, `packages/jellyfin-web.nix`, and
+`packages/jellyfin-ffmpeg.nix`. They pin server/web 12.0.0 and Jellyfin FFmpeg
+8.1.2-4 because the pinned nixpkgs packages still ship 10.11.11. The server uses
+.NET 10 and `packages/jellyfin/nuget-deps.json`; regenerate that manifest with
+`jellyfin.fetch-deps` when changing its dependencies. Update server and web
+together, and remove the coordinated overrides when nixpkgs catches up.
+
+Build without activating:
+
+```sh
+nix build .#jellyfin .#jellyfin-web .#jellyfin-ffmpeg --no-link
+```
+
+1. Check the **running** server version in the dashboard. Direct upgrades are
+   supported from 10.10.7 and any 10.11.x release. Older servers must first
+   upgrade to 10.10.7. The previous flake package was 10.11.11, but that does not
+   prove which generation Kim is running.
+2. Resolve usernames that differ only by capitalization before the upgrade.
+   Usernames become case insensitive and collisions make the migration fail.
+   Remove third-party plugins, not just disable them. Only reinstall versions
+   rebuilt for 12.0 and .NET 10. Bookshelf is deprecated; its replacements are
+   built-in book support and the GoogleBooks, ComicVine, and OpenLibrary
+   metadata providers.
+3. Stop Jellyfin and take a full manual backup of `/var/lib/jellyfin`, including
+   its `config/` directory, before activating the new generation. Preserve
+   ownership and permissions. Keep the backup outside Git and the Nix store,
+   verify it can be read, and retain an off-host copy. Record the old Git
+   revision, system generation, and running Jellyfin version with it. The
+   regular Borg backup is useful but does not replace this pre-upgrade backup.
+4. Activate only after confirming the backup. Watch `journalctl -u jellyfin -f`
+   and let migrations finish without stopping or restarting the server. The
+   upstream `--mode MigrateSystem` option can migrate and exit, but is not an
+   automatic pre-start hook here.
+5. Run a **full library scan** after migration. Automatically grouped alternate
+   versions are cleared during the upgrade and look missing until the scan
+   rebuilds them. The first scan takes longer than usual and some corrected
+   movies may appear newly added. Let it finish.
+6. Hard-refresh the web client or clear its cache. Check subtitle settings in
+   each library; the server-wide settings have been removed. Update old clients
+   that use `/emby/`, `/mediabrowser/`, or deprecated authentication.
+7. Run the [acceptance checks](#acceptance-checks), including direct play and
+   VA-API transcoding. Verify Seerr login and requests, Tunarr source sync, and
+   a Live TV channel with guide data. M3U tuners now remux rather than direct
+   play. Confirm users, watch state, collections, playlists, and alternate
+   versions survived before reinstalling compatible plugins.
+
+**A NixOS generation rollback alone is not a database rollback.** If the upgrade
+fails, keep Jellyfin stopped and restore the full pre-upgrade state with the
+matching old package version. Follow the staging and ownership rules in
+[the homelab recovery runbook](homelab-recovery.md); do not start 10.11 against
+a database already migrated by 12.0.
+
 ## Recovery
 
 1. Restore and mount `/srv` before starting any media service.

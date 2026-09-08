@@ -7,7 +7,7 @@
   endpoint = homelab.publicEndpoints.executor;
   ingress = config.services.cloudflared.tunnels.${homelab.infrastructure.cloudflare.tunnelId}.ingress;
   container = config.virtualisation.oci-containers.containers.executor;
-  image = "ghcr.io/rhyssullivan/executor-selfhost@sha256:3fb4e7fdcd639dd5c8d3de51d168e6d3b78654a156a4f5f323a2f986565cb4dc";
+  image = "ghcr.io/usefulsoftwareco/executor-selfhost@sha256:200315d519a8c19685de05e88aa9a3cf1e1cb9869a2b0aecf604f6ebf47c6ea1";
 in
   assert lib.assertMsg (
     homelab.services.executor.endpoint.exposure
