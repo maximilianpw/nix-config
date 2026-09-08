@@ -321,6 +321,7 @@
         buildInputs = with pkgs; [
           actionlint
           alejandra
+          bashInteractive
           deadnix
           git
           gnumake
@@ -333,6 +334,8 @@
           statix
         ];
         shellHook = ''
+          # Child terminals need completion/readline support, not stdenv's minimal Bash.
+          export SHELL=${pkgs.bashInteractive}/bin/bash
           ${self.checks.${system}.pre-commit-check.shellHook or ""}
           echo "Welcome to the Nix dev shell for ${system}"
         '';
