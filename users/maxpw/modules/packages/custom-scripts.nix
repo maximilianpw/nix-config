@@ -1,5 +1,4 @@
 {
-  hostname,
   lib,
   pkgs,
   ...
@@ -13,20 +12,6 @@
   '';
 in {
   home.packages = [
-    (pkgs.writeShellApplication {
-      name = "hs";
-      runtimeInputs = [
-        pkgs.coreutils
-        pkgs.fzf
-        pkgs.herdr
-        pkgs.jq
-        pkgs.openssh
-      ];
-      text = ''
-        export HERDR_SESSION_PICKER_LOCAL_HOST=${lib.escapeShellArg hostname}
-        ${builtins.readFile ../../../../scripts/herdr-session-picker.sh}
-      '';
-    })
     (pkgs.writeShellApplication {
       name = "npmrc-token";
       text = builtins.readFile ../../../../scripts/npmrc-token.sh;
