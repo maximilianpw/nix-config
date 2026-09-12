@@ -21,6 +21,9 @@ CLI remains `fleet`.
 - `fleet forward stop <pid...>` or `fleet forward delete <pid...>` stops active
   SSH local forward processes.
 - `fleet t3 <host> [local-port]` forwards a host's declared T3 Code server port.
+- `fleet tunnel status` shows login-supervised localhost forwards declared for this machine.
+- `fleet tunnel pause <port>` / `fleet tunnel resume <port>` persist a Darwin launchd pause without killing unrelated listeners.
+- `fleet doctor <host>` checks SSH reachability, supervisor state, local port ownership, and whether the remote app accepts TCP.
 
 For Herdr, use the native saved machines described below. `fleet ssh` remains
 an independent tmux workflow: the remote tmux session owns its shells and
@@ -39,7 +42,91 @@ fleet ssh kim agents --forward 3000 --forward 5173
 ```
 
 Use standalone `fleet forward` when a tunnel must remain independent of the
-tmux attachment.
+tmux attachment. Use `fleet tunnel` for the login-supervised Joyce localhost
+forwards that should survive closing the terminal.
+
+## Managed localhost tunnels
+
+Joyce declares two persistent localhost forwards to Kim: local `3000` to Kim
+`localhost:3000`, and local `5173` to Kim `localhost:5173`. Edit the defaults in
+`modules/fleet/default-tunnels.nix` to change these mappings. The typed option is
+`fleet.tunnels.mappings` in `modules/fleet/home-manager.nix`. Home Manager
+installs one user LaunchAgent per local port
+(`org.nix-community.home.fleet-tunnel-<port>`). That is Home Manager's
+`launchd.agents`, not nix-darwin `launchd.user.agents`. No Kim-side service is
+required: the remote process only has to listen on loopback.
+
+Each job starts at login (`RunAtLoad`) and retries on failure (`KeepAlive`)
+with a 30-second `ThrottleInterval`. A small runner owns one `ssh -N` child,
+using the `fleet-forward-<host>` alias so pinned host keys and the 1Password
+`IdentityAgent` still apply. Extra argv flags force `BatchMode`, a 10s connect
+timeout, `ExitOnForwardFailure`, SSH keepalives, no multiplexing, no agent
+forwarding, and `127.0.0.1` as the local bind address. Open your Mac's browser at
+`http://localhost:3000` or `http://localhost:5173`. Browsers normally fall back
+to IPv4 for localhost. IPv6-only clients need `127.0.0.1` instead: these jobs do
+not bind `::1`. Changing the hostname to `127.0.0.1` changes the browser origin,
+so keep `localhost` for projects whose authentication callbacks require it.
+
+Use Herdr's saved Kim machine for project terminals and agents. These tunnels
+are independent of Herdr and tmux: do not also request `fleet forward` or
+`fleet ssh --forward` on a managed local port. Use `fleet tunnel pause PORT`
+before running a project locally or using an ad-hoc forward on that port;
+`fleet forward delete PID` would merely cause a supervised SSH job to restart.
+Starting the remote app is still the project's responsibility. Prefer a fixed
+port and fail on collisions rather than silently choosing a different port.
+
+A reconnect still needs the existing 1Password SSH agent to authorize it.
+`BatchMode` prevents password prompts in SSH, but does not bypass 1Password's
+lock/approval policy. If reconnects fail after sleep, unlock 1Password, approve
+any required SSH request, and let launchd retry. The runner checks after 45
+seconds that its own SSH child has bound the local listener; otherwise it
+terminates that child so launchd can retry (plus at most 4 seconds for the
+listener probe). This startup deadline does not
+limit a healthy tunnel's lifetime.
+
+`fleet tunnel pause 3000` runs `launchctl disable` for that labeled job and
+boots it out. The disabled override lives outside the plist, so it survives
+logout, login, and Home Manager activation. Activation only re-bootstraps an
+agent when its plist contents change, and launchd still honors disable. Pause
+never sends signals to an unrelated listener. `fleet tunnel resume 3000` enables
+and starts that job. If another process already owns the local port, resume
+refuses, leaves the pause in place, and does not kill the occupant.
+
+There is no dedicated tunnel log file: SSH stdout/stderr are discarded, not
+automatically captured by the unified log. This avoids unbounded retry logs.
+Inspect launchd's lifecycle state and last exit code with
+`launchctl print gui/$UID/org.nix-community.home.fleet-tunnel-3000`, and use
+`fleet doctor kim` for fresh connectivity checks.
+
+`fleet doctor kim` (or a Fleet alias such as `main-pc`) is read-only, needs no
+sudo, and applies a 15-second wall-clock timeout to each SSH check plus a
+2-second forced-exit grace period. It distinguishes reachable SSH from
+unavailability and authentication failure, reports each mapping's
+supervisor/pause state, verifies the listener belongs to the job or its direct
+SSH child, and TCP-probes the remote app (not HTTP). Remote probes require Bash and
+`timeout`, already available on Kim. An SSH/probe failure is reported as
+unknown rather than incorrectly calling the app down. A local listener is
+not treated as end-to-end health: if the tunnel is up and the remote app is
+down, doctor fails. Intentionally paused mappings skip the remote probe and
+do not make the command fail; the host-level SSH check still runs.
+
+After an explicitly approved Joyce activation, verify:
+
+```sh
+fleet tunnel status
+fleet doctor kim
+# Start the project on Kim, then open http://localhost:3000 on the Mac.
+fleet tunnel pause 3000   # Frees the port for a local app; survives login.
+fleet tunnel resume 3000  # Run after stopping the local app.
+```
+
+Sleep/wake, a temporary network outage, and locked-agent recovery need a live
+acceptance test after activation. Unit tests exercise supervisor state and
+failures with disposable mocks; they do not prove actual launchd reconnects.
+
+On non-Darwin hosts the existing `fleet` commands stay available. Managed
+tunnel pause/resume explain that launchd supervision is macOS-only. `fleet
+doctor HOST` still checks SSH when this machine has no managed mappings.
 
 Home Manager also writes direct plain-shell and `tm-` SSH aliases for every
 remote inventory host. For example, `ssh kim` opens a plain shell while

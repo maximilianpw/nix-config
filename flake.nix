@@ -258,6 +258,10 @@
           inherit lib;
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
         };
+        fleet-tunnel-regression = import ./tests/fleet-tunnel-regression.nix {
+          inherit lib;
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        };
         fleet-ghostty-regression = import ./tests/fleet-ghostty-regression.nix {
           config = self.nixosConfigurations.kim.config;
           inherit lib;
@@ -281,6 +285,10 @@
       aarch64-darwin = {
         eval-joyce = self.darwinConfigurations.joyce.system;
         fleet-ssh-regression = import ./tests/fleet-ssh-regression.nix {
+          inherit lib;
+          pkgs = nixpkgs.legacyPackages.aarch64-darwin;
+        };
+        fleet-tunnel-regression = import ./tests/fleet-tunnel-regression.nix {
           inherit lib;
           pkgs = nixpkgs.legacyPackages.aarch64-darwin;
         };

@@ -277,6 +277,26 @@ t3code_port() {
   esac
 }
 
+canonical_fleet_host() {
+  case "$1" in
+    # @CANONICAL_HOST_ROWS@
+    *) echo "fleet: unknown Fleet host: $1" >&2; return 2 ;;
+  esac
+}
+
+tunnel_supervisor() {
+  # @TUNNEL_SUPERVISOR@
+  printf '%s\n' none
+}
+
+list_tunnel_mappings() {
+  cat <<'FLEET_TUNNELS'
+# @TUNNEL_MAPPING_ROWS@
+FLEET_TUNNELS
+}
+
+# @TUNNEL_HELPERS@
+
 usage() {
   printf '%s\n' \
     'usage:' \
@@ -289,6 +309,10 @@ usage() {
     '  fleet forward stop PID...' \
     '  fleet forward delete PID...' \
     '  fleet t3 HOST [LOCAL_PORT]' \
+    '  fleet tunnel status' \
+    '  fleet tunnel pause PORT' \
+    '  fleet tunnel resume PORT' \
+    '  fleet doctor HOST' \
     "" \
     'examples:' \
     '  fleet ssh kim' \
@@ -298,7 +322,11 @@ usage() {
     '  fleet forward kim 3000 3000' \
     '  fleet forward list 3000' \
     '  fleet forward delete 12345' \
-    '  fleet t3 kim 51001'
+    '  fleet t3 kim 51001' \
+    '  fleet tunnel status' \
+    '  fleet tunnel pause 3000' \
+    '  fleet tunnel resume 3000' \
+    '  fleet doctor kim'
 }
 
 cmd="${1:-list}"
@@ -438,6 +466,43 @@ case "$cmd" in
     local_port="${3:-$remote_port}"
     ensure_no_forward_on_port "$local_port"
     ssh_forward "127.0.0.1:$local_port:127.0.0.1:$remote_port" "$host"
+    ;;
+  tunnel)
+    case "${2:-status}" in
+      status|ls)
+        if [ "$#" -gt 2 ]; then
+          usage >&2
+          exit 2
+        fi
+        tunnel_status
+        ;;
+      pause)
+        if [ "$#" -ne 3 ]; then
+          usage >&2
+          exit 2
+        fi
+        tunnel_pause "$3"
+        ;;
+      resume)
+        if [ "$#" -ne 3 ]; then
+          usage >&2
+          exit 2
+        fi
+        tunnel_resume "$3"
+        ;;
+      *)
+        echo "fleet: unknown tunnel command: ${2:-}" >&2
+        usage >&2
+        exit 2
+        ;;
+    esac
+    ;;
+  doctor)
+    if [ "$#" -ne 2 ]; then
+      usage >&2
+      exit 2
+    fi
+    fleet_doctor "$2"
     ;;
   -h|--help|help)
     usage
