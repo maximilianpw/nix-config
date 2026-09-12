@@ -22,12 +22,11 @@ CLI remains `fleet`.
   SSH local forward processes.
 - `fleet t3 <host> [local-port]` forwards a host's declared T3 Code server port.
 
-Keep Herdr local and run `fleet ssh <host> [session]` inside one of its panes
-when work belongs on another machine. The remote tmux session owns the running
-shells and agents, so losing SSH does not stop them; rerun the same command and
-session name to reattach. Herdr sees the local `ssh` process rather than the
-remote process tree, so remote agents intentionally do not appear in its agent
-menu.
+For Herdr, use the native saved machines described below. `fleet ssh` remains
+an independent tmux workflow: the remote tmux session owns its shells and
+agents, so losing SSH does not stop them. Rerun the same command and session
+name to reattach. Agents inside tmux over plain SSH are not included in Herdr's
+combined agent list.
 
 Add `--forward 3000` to expose the remote loopback port on the same local port,
 or `--forward 3000:5173` to map local port 3000 to remote port 5173. The option
@@ -49,6 +48,35 @@ remote inventory host. For example, `ssh kim` opens a plain shell while
 All records in `lib/hosts.nix` are Fleet members. Home Manager omits the local
 machine from its SSH blocks, so each machine receives aliases for every peer
 without a directional allow-list.
+
+## Herdr machines
+
+Herdr v0.9.0 replaces the `hs` session picker with Local and saved SSH machines
+in one window. Run `h` (or `herdr`), then select a machine in the sidebar.
+Home Manager generates `$XDG_STATE_HOME/herdr/client/endpoints.json` (normally
+`~/.local/state/herdr/client/endpoints.json`) from the fleet inventory, excluding
+the current host and Cuno. Each included peer targets its `default` Herdr session using the same
+plain SSH alias as `ssh kim`. A profile covers one session, not every session
+on a host. Remote agents appear in Herdr's combined agent list, and disconnects
+retry independently without stopping the remote processes.
+
+The catalog is Nix-owned: edit `users/maxpw/modules/agent-tools.nix` or the fleet
+inventory rather than using `herdr machine add/rename/enable/disable/remove`.
+Those commands refuse to overwrite the managed symlink. Machine selection is
+stored separately and remains writable. Herdr configuration and other runtime
+state remain unmanaged by this module.
+
+The flake temporarily overrides the upstream 0.8.2 package to 0.9.0. Apply the
+configuration on each participating host only when ready. Check `type -a herdr`
+for an older `~/.local/bin/herdr` shadowing the Nix package. Saved connections
+never install or replace servers in the background. An old server may show
+**Attention**; run `herdr --remote <host> --session default` interactively when
+ready to follow its setup prompts. Replacing a pre-v0.9 server can stop its panes
+and agents: finish or save work first, and do not approve a replacement merely
+because the client and server versions differ.
+
+See the [v0.9.0 release notes](https://github.com/herdrdev/herdr/releases/tag/v0.9.0)
+and [machine guide](https://herdr.dev/docs/connecting-machines/).
 
 ## Agent Fleet Contract
 
