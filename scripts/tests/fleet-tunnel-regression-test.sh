@@ -190,6 +190,16 @@ expect_file_contains() {
   fi
 }
 
+expect_single_inspection() {
+  local port="$1" reads
+  reads=$(grep -Fxc "print gui/$(id -u)/$(label_for "$port")" "$FLEET_LAUNCHCTL_STATE/commands" || true)
+  if [[ $reads != 1 ]]; then
+    echo "expected one job snapshot for port $port, got $reads" >&2
+    cat "$FLEET_LAUNCHCTL_STATE/commands" >&2
+    exit 1
+  fi
+}
+
 # Existing SSH dispatch still works with managed tunnels present.
 reset_tunnels
 "$FLEET_BIN" ssh kim
@@ -204,12 +214,24 @@ reset_tunnels
 start_job 3000
 start_job 5173
 status=$("$FLEET_BIN" tunnel)
+expect_single_inspection 3000
+expect_single_inspection 5173
+[[ $(grep -c '^print-disabled ' "$FLEET_LAUNCHCTL_STATE/commands") == 2 ]]
 status_explicit=$("$FLEET_BIN" tunnel status)
 [[ $status == "$status_explicit" ]]
 expect_file_contains <(printf '%s\n' "$status") "3000"
 expect_file_contains <(printf '%s\n' "$status") "5173"
 expect_file_contains <(printf '%s\n' "$status") "running"
 expect_file_contains <(printf '%s\n' "$status") "owned"
+
+# An already-running resume uses that same snapshot and does not mutate state.
+: >"$FLEET_LAUNCHCTL_STATE/commands"
+expect_success "$FLEET_BIN" tunnel resume 3000
+expect_single_inspection 3000
+if grep -Eq '^(enable|bootstrap|kickstart) ' "$FLEET_LAUNCHCTL_STATE/commands"; then
+  echo "already-running resume unexpectedly changed launchd state" >&2
+  exit 1
+fi
 
 # Disabled state matches the entire label, not another port with the same prefix.
 touch "$FLEET_LAUNCHCTL_STATE/disabled/$(label_for 30000)"
@@ -276,6 +298,16 @@ expect_file_contains "$FLEET_LAUNCHCTL_STATE/commands" "enable gui/$(id -u)/$(la
 test ! -e "$FLEET_LAUNCHCTL_STATE/disabled/$(label_for 3000)"
 test -e "$FLEET_LAUNCHCTL_STATE/running/$(label_for 3000)"
 
+# A missing job is bootstrapped, then observed again before deciding to kickstart.
+reset_tunnels
+expect_success "$FLEET_BIN" tunnel resume 3000
+expect_file_contains "$FLEET_LAUNCHCTL_STATE/commands" "bootstrap gui/$(id -u) $(plist_for 3000)"
+[[ $(grep -Fxc "print gui/$(id -u)/$(label_for 3000)" "$FLEET_LAUNCHCTL_STATE/commands") == 3 ]]
+if grep -q '^kickstart ' "$FLEET_LAUNCHCTL_STATE/commands"; then
+  echo "resume reused stale state after RunAtLoad started the bootstrapped job" >&2
+  exit 1
+fi
+
 # Doctor: healthy tunnel is not claimed from local listen alone.
 reset_tunnels
 start_job 3000
@@ -284,7 +316,14 @@ export FLEET_SSH_STATUS=ok
 export FLEET_REMOTE_LISTEN=up
 export FLEET_SSH_CONSUME_STDIN=yes
 expect_success "$FLEET_BIN" doctor kim >"$TMPDIR/doctor-ok.out"
+expect_single_inspection 3000
+expect_single_inspection 5173
+[[ $(grep -c '^print-disabled ' "$FLEET_LAUNCHCTL_STATE/commands") == 2 ]]
 expect_file_contains "$TMPDIR/doctor-ok.out" "SSH: reachable"
+if compgen -G "${TMPDIR%/}/fleet-doctor.*" >/dev/null; then
+  echo "doctor left a temporary file after success" >&2
+  exit 1
+fi
 expect_file_contains "$TMPDIR/doctor-ok.out" "tunnel 3000: supervisor=running local=owned remote=listening"
 expect_file_contains "$TMPDIR/doctor-ok.out" "tunnel 5173: supervisor=running local=owned remote=listening"
 expect_file_contains "$SSH_ARGS_ALL" "BatchMode=yes"
@@ -360,6 +399,10 @@ if "$FLEET_BIN" doctor kim >"$TMPDIR/doctor-unavail.out" 2>&1; then
   exit 1
 fi
 expect_file_contains "$TMPDIR/doctor-unavail.out" "SSH: unavailable"
+if compgen -G "${TMPDIR%/}/fleet-doctor.*" >/dev/null; then
+  echo "doctor left a temporary file after failure" >&2
+  exit 1
+fi
 expect_file_contains "$TMPDIR/doctor-unavail.out" "unhealthy: SSH to kim is unavailable"
 expect_file_contains "$TMPDIR/doctor-unavail.out" "remote=skipped"
 if grep -Fq "/dev/tcp/" "$SSH_ARGS_ALL"; then

@@ -23,8 +23,7 @@ validate_remote_host() {
 }
 
 tcp_probe() {
-  host="$1"
-  port="$2"
+  local host="$1" port="$2"
   if [ -n "${FLEET_TCP_PROBE:-}" ]; then
     "$FLEET_TCP_PROBE" "$host" "$port"
     return
@@ -49,7 +48,7 @@ require_launchctl() {
 }
 
 lookup_tunnel() {
-  want="$1"
+  local want="$1" local_port host remote_port remote_host label
   while IFS='|' read -r local_port host remote_port remote_host label; do
     [ -n "${local_port:-}" ] || continue
     case "$local_port" in
@@ -66,7 +65,7 @@ EOF
 }
 
 tunnels_for_host() {
-  want="$1"
+  local want="$1" local_port host remote_port remote_host label
   while IFS='|' read -r local_port host remote_port remote_host label; do
     [ -n "${local_port:-}" ] || continue
     case "$local_port" in
@@ -81,6 +80,7 @@ EOF
 }
 
 has_managed_tunnels() {
+  local local_port _rest
   while IFS='|' read -r local_port _rest; do
     [ -n "${local_port:-}" ] || continue
     case "$local_port" in
@@ -97,54 +97,51 @@ launchctl_print() {
   launchctl print "$1" 2>/dev/null
 }
 
-tunnel_is_disabled() {
-  label="$1"
-  # launchctl print-disabled is the persistent override; do not infer pause
-  # from a missing job, which would confuse logout with an explicit pause.
-  disabled_out="$(launchctl print-disabled "gui/$(tunnel_uid)" 2>/dev/null || true)"
-  line="$(printf '%s\n' "$disabled_out" | grep -F "\"$label\"" | head -n 1 || true)"
-  if [ -z "$line" ]; then
-    return 1
+# Output: state|loaded|pid, with an empty PID when the job has none.
+supervisor_snapshot() {
+  local label="$1" state=stopped loaded=no pid=
+  local job_output key equals value rest
+  if [ "$(tunnel_supervisor)" != launchd ]; then
+    printf '%s\n' 'unsupervised|no|'
+    return
   fi
-  case "$line" in
-    *false* | *enabled*)
-      return 1
-      ;;
-    *true* | *disabled*)
-      return 0
-      ;;
-  esac
-  return 1
-}
 
-tunnel_is_loaded() {
-  launchctl_print "$(tunnel_target "$1")" >/dev/null
-}
-
-tunnel_is_running() {
-  label="$1"
-  print_out="$(launchctl_print "$(tunnel_target "$label")" || true)"
-  [ -n "$print_out" ] || return 1
-  printf '%s\n' "$print_out" | grep -Eq 'state[[:space:]]*=[[:space:]]*running'
-}
-
-tunnel_pid() {
-  local key equals value rest
+  # State and PID must come from the same job read. A restart between separate
+  # reads could otherwise combine an old state with a replacement process.
+  if job_output="$(launchctl_print "$(tunnel_target "$label")")"; then
+    loaded=yes
+  fi
   while read -r key equals value rest; do
-    if [ "$key" = pid ] && [ "$equals" = = ]; then
-      case "$value" in
-        ""|*[!0-9]*) return 1 ;;
-        *) printf '%s\n' "$value"; return 0 ;;
-      esac
-    fi
+    [ "$equals" = = ] || continue
+    case "$key" in
+      state) [ "$value" != running ] || state=running ;;
+      pid)
+        case "$value" in
+          ""|*[!0-9]*) ;;
+          *) pid="$value" ;;
+        esac
+        ;;
+    esac
   done <<EOF
-$(launchctl_print "$(tunnel_target "$1")" || true)
+$job_output
 EOF
-  return 1
+
+  # Pause is a persistent override, independent of whether the job is loaded.
+  # This is a separate launchd read, not an atomic snapshot of the whole OS.
+  while read -r key equals value rest; do
+    [ "$key" = "\"$label\"" ] && [ "$equals" = '=>' ] || continue
+    case "$value" in
+      true|disabled) state=paused ;;
+    esac
+    break
+  done <<EOF
+$(launchctl print-disabled "gui/$(tunnel_uid)" 2>/dev/null || true)
+EOF
+  printf '%s|%s|%s\n' "$state" "$loaded" "$pid"
 }
 
 classify_local_listen() {
-  local port="$1" label="$2" listeners pid listener parent command
+  local port="$1" pid="$2" listeners listener parent command
   # A running job might still be authenticating while another process owns the
   # port. Match launchd's process or the runner's direct SSH child, not merely
   # the fact that some process is listening.
@@ -157,7 +154,6 @@ classify_local_listen() {
     fi
     return
   fi
-  pid="$(tunnel_pid "$label" || true)"
   while IFS= read -r listener; do
     if [ "$listener" != "$pid" ]; then
       parent=
@@ -174,44 +170,36 @@ EOF
   printf '%s\n' owned
 }
 
-supervisor_state() {
-  label="$1"
-  if [ "$(tunnel_supervisor)" != launchd ]; then
-    printf '%s\n' none
-    return
-  fi
-  if tunnel_is_disabled "$label"; then
-    printf '%s\n' paused
-    return
-  fi
-  if tunnel_is_running "$label"; then
-    printf '%s\n' running
-    return
-  fi
-  printf '%s\n' stopped
+# Output: supervisor state|listener ownership (owned, unrelated, or none).
+inspect_tunnel() {
+  local port="$1" label="$2" state _loaded pid listen
+  IFS='|' read -r state _loaded pid <<EOF
+$(supervisor_snapshot "$label")
+EOF
+  listen="$(classify_local_listen "$port" "$pid")"
+  # Shared observation for status, doctor, and resume. Ownership uses the PID
+  # already captured above; it must not independently query launchd again.
+  printf '%s|%s\n' "$state" "$listen"
 }
 
 print_tunnel_status_table() {
+  local found=0 local_port host remote_port remote_host label
+  local state listen supervisor
+  supervisor="$(tunnel_supervisor)"
   printf '%-8s %-28s %-12s %-10s %s\n' LOCAL REMOTE SUPERVISOR STATE LOCAL_LISTEN
-  found=0
   while IFS='|' read -r local_port host remote_port remote_host label; do
     [ -n "${local_port:-}" ] || continue
     case "$local_port" in
       \#*) continue ;;
     esac
     found=1
-    if [ "$(tunnel_supervisor)" = launchd ]; then
-      require_launchctl
-      state="$(supervisor_state "$label")"
-      listen="$(classify_local_listen "$local_port" "$label")"
-    else
-      state=unsupervised
-      listen="$(classify_local_listen "$local_port" "$label")"
-    fi
+    IFS='|' read -r state listen <<EOF
+$(inspect_tunnel "$local_port" "$label")
+EOF
     printf '%-8s %-28s %-12s %-10s %s\n' \
       "$local_port" \
       "${host}:${remote_host}:${remote_port}" \
-      "$(tunnel_supervisor)" \
+      "$supervisor" \
       "$state" \
       "$listen"
   done <<EOF
@@ -220,7 +208,7 @@ EOF
 
   if [ "$found" -eq 0 ]; then
     printf '%s\n' 'No managed tunnels configured on this host.'
-  elif [ "$(tunnel_supervisor)" != launchd ]; then
+  elif [ "$supervisor" != launchd ]; then
     printf '%s\n' 'Managed tunnel jobs are installed only on macOS (launchd).'
   fi
 }
@@ -233,6 +221,7 @@ tunnel_status() {
 }
 
 tunnel_pause() {
+  local row local_port _host _remote_port _remote_host label target
   if [ "$#" -ne 1 ]; then
     echo "fleet: pause requires a local port" >&2
     exit 2
@@ -253,7 +242,7 @@ EOF
     echo "fleet: failed to persist pause for $target" >&2
     exit 1
   fi
-  if tunnel_is_loaded "$label"; then
+  if launchctl_print "$target" >/dev/null; then
     if ! launchctl bootout --wait "$target"; then
       echo "fleet: failed to stop managed tunnel job $target" >&2
       exit 1
@@ -263,6 +252,8 @@ EOF
 }
 
 tunnel_resume() {
+  local row local_port _host _remote_port _remote_host label target plist
+  local state loaded listen _pid
   if [ "$#" -ne 1 ]; then
     echo "fleet: resume requires a local port" >&2
     exit 2
@@ -280,17 +271,11 @@ $row
 EOF
   target="$(tunnel_target "$label")"
   plist="$(tunnel_plist_path "$label")"
-  disabled=no
-  running=no
-  if tunnel_is_disabled "$label"; then
-    disabled=yes
-  fi
-  if tunnel_is_running "$label"; then
-    running=yes
-  fi
-  listen="$(classify_local_listen "$local_port" "$label")"
+  IFS='|' read -r state listen <<EOF
+$(inspect_tunnel "$local_port" "$label")
+EOF
 
-  if [ "$running" = yes ] && [ "$disabled" = no ] && [ "$listen" = owned ]; then
+  if [ "$state" = running ] && [ "$listen" = owned ]; then
     printf 'fleet: managed tunnel for local port %s is already running\n' "$local_port"
     return 0
   fi
@@ -310,13 +295,21 @@ EOF
     echo "fleet: failed to clear pause for $target" >&2
     exit 1
   fi
-  if ! tunnel_is_loaded "$label"; then
+  # Mutations invalidate the earlier observation. Refresh once after enable,
+  # and again only if bootstrap may have started a new RunAtLoad process.
+  IFS='|' read -r state loaded _pid <<EOF
+$(supervisor_snapshot "$label")
+EOF
+  if [ "$loaded" = no ]; then
     if ! launchctl bootstrap "gui/$(tunnel_uid)" "$plist"; then
       echo "fleet: failed to load managed tunnel job $target" >&2
       exit 1
     fi
+    IFS='|' read -r state loaded _pid <<EOF
+$(supervisor_snapshot "$label")
+EOF
   fi
-  if ! tunnel_is_running "$label"; then
+  if [ "$state" != running ]; then
     if ! launchctl kickstart "$target"; then
       echo "fleet: failed to start managed tunnel job $target" >&2
       exit 1
@@ -326,7 +319,7 @@ EOF
 }
 
 classify_ssh_failure() {
-  stderr_file="$1"
+  local stderr_file="$1" stderr
   stderr="$(cat "$stderr_file" 2>/dev/null || true)"
   case "$stderr" in
     *"Permission denied"* | *"publickey"* | *"Too many authentication"* | *"Host key verification failed"* | *"No more authentication methods"*)
@@ -367,14 +360,16 @@ doctor_remote_listen() {
     "bash -c 'command -v timeout >/dev/null || exit 69; if timeout 3 bash -c \"exec 3<>/dev/tcp/${remote_host}/${remote_port}\"; then exit 0; else exit 1; fi'"
 }
 
-fleet_doctor() {
+fleet_doctor() (
+  # A subshell scopes the temporary-file EXIT trap as well as local variables.
+  local host unhealthy=0 ssh_state=skipped stderr_file found=0
+  local local_port mapping_host remote_port remote_host label state listen
+  local remote probe_status
   if [ "$#" -ne 1 ]; then
     echo "fleet: doctor requires a host" >&2
     exit 2
   fi
   host="$(canonical_fleet_host "$1")" || exit 2
-  unhealthy=0
-  ssh_state=skipped
   stderr_file="$(mktemp "${TMPDIR:-/tmp}/fleet-doctor.XXXXXX")"
   trap 'rm -f -- "$stderr_file"' EXIT
 
@@ -403,7 +398,6 @@ fleet_doctor() {
     require_launchctl
   fi
 
-  found=0
   while IFS='|' read -r local_port mapping_host remote_port remote_host label; do
     [ -n "${local_port:-}" ] || continue
     case "$local_port" in
@@ -411,12 +405,9 @@ fleet_doctor() {
     esac
     [ "$mapping_host" = "$host" ] || continue
     found=1
-    if [ "$(tunnel_supervisor)" = launchd ]; then
-      state="$(supervisor_state "$label")"
-    else
-      state=unsupervised
-    fi
-    listen="$(classify_local_listen "$local_port" "$label")"
+    IFS='|' read -r state listen <<EOF
+$(inspect_tunnel "$local_port" "$label")
+EOF
 
     remote=skipped
     if [ "$ssh_state" = reachable ] && [ "$state" != paused ]; then
@@ -474,4 +465,4 @@ EOF
   if [ "$unhealthy" -ne 0 ]; then
     exit 1
   fi
-}
+)
