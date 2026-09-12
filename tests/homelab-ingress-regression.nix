@@ -43,6 +43,19 @@ in
   "Home Assistant trusted proxies must remain loopback-only";
   assert lib.assertMsg (builtins.length privatePorts == builtins.length (lib.unique privatePorts))
   "tailnet backends must retain unique loopback ports";
+  assert lib.assertMsg (
+    homelab.services.leerr.endpoint.exposure
+    == "tailnet"
+    && config.systemd.services.leerr.environment.HOST == "127.0.0.1"
+    && config.systemd.services.leerr.environment.LEERR_ORIGIN == "https://leerr.${config.homelab.tailnet.domain}"
+    && config.systemd.services.leerr.environment.LEERR_TRUST_PROXY == "127.0.0.1"
+    && config.systemd.services.leerr.serviceConfig.User == "leerr"
+    && config.systemd.services.leerr.serviceConfig.StateDirectoryMode == "0700"
+    && config.sops.secrets.leerr-encryption-key.owner == "leerr"
+    && !(lib.hasPrefix "/var/lib/leerr/" config.systemd.services.leerr.environment.LEERR_KEY_FILE)
+    && !(builtins.elem homelab.privateServices.leerr.port config.networking.firewall.allowedTCPPorts)
+  )
+  "Leerr must use private HTTPS, loopback-only proxy trust, isolated state and a separate encryption key";
     pkgs.runCommand "homelab-ingress-regression" {} ''
       touch "$out"
     ''

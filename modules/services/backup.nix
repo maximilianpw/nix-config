@@ -59,6 +59,7 @@
     immich = config.services.immich.package.version;
     jellyfin = config.services.jellyfin.package.version;
     kuma = config.services.uptime-kuma.package.version;
+    leerr = (pkgs.callPackage ../../packages/leerr.nix {}).version;
     lidarr = config.services.lidarr.package.version;
     miniflux = config.services.miniflux.package.version;
     nextcloud = config.services.nextcloud.package.version;

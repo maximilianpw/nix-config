@@ -310,6 +310,36 @@
     };
   };
 
+  leerr = {
+    endpoint = {
+      authorizationOwner = "tailscale";
+      exposure = "tailnet";
+      port = 19008;
+      monitorPath = "/health";
+    };
+    state.paths = ["/var/lib/leerr"];
+    backup.quiesce = [
+      {
+        unit = "leerr.service";
+        until = "archive";
+      }
+    ];
+    operations.units = ["leerr.service"];
+    recovery = {
+      order = 95;
+      versionPolicy = "restore-archived-version-first";
+      runbook = "docs/leerr.md#recovery";
+      acceptance = [
+        "sqlite-integrity-and-account-login-pass"
+        "per-user-jellyfin-library-loads-without-fixtures"
+      ];
+      secretOwners = [
+        "sops:leerr-encryption-key"
+        "mutable-state:/var/lib/leerr"
+      ];
+    };
+  };
+
   lidarr = {
     endpoint = {
       authorizationOwner = "tailscale";

@@ -8,6 +8,7 @@
     ./home-assistant.nix
     ./homepage.nix
     ./immich.nix
+    ./leerr.nix
     ./media.nix
     ./miniflux.nix
     ./monitoring.nix
