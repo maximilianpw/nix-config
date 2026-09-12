@@ -10,8 +10,12 @@ The source is `packages/leerr/source.tar.gz`, based on the handoff directly from
 not GitHub `main`, plus the tested setup fixes from
 [the setup investigation](https://ampcode.com/threads/T-01a0880a-ed61-76dc-939f-8e3caa112195).
 Archive SHA256:
-`35bfe39eed6f2681757ca9eaa9e685e62ecc6ff1c4d4f5b140651632a41d80bc`.
-This fixes stale HTML validators and missing-asset fallback on top of archive
+`b4dc546fa8cea3f7b5643b27ff154d7b38b2e3670f6a5ece20a0b8cc284a54a3`.
+This adds artist/album search filters, artist discographies and matched Last.fm
+artwork from [the search investigation](https://ampcode.com/threads/T-01a09537-cac2-7599-a2fb-755cc4c4757a),
+on top of archive
+`35bfe39eed6f2681757ca9eaa9e685e62ecc6ff1c4d4f5b140651632a41d80bc`,
+which fixed stale HTML validators and missing-asset fallback on top of archive
 `59db059104b594a4307f6b4d119eb9fff5d1b9a1726f1a31f54636af90792b05`,
 which added modern Jellyfin token headers and Discover failure/empty-state fixes to
 the rose archive
@@ -33,6 +37,50 @@ production start and operator npm commands. Shared `fixturePreview` API/UI
 warning code remains, but `main.ts` always uses real `Upstreams` and exposes no
 environment switch to enable preview. Missing or denied Jellyfin access returns
 an error, never sample albums.
+
+## Search and cover art
+
+Search is MusicBrainz, not Last.fm. All / Artists / Albums filters preserve the
+query and select from separately returned artist and album matches. Search treats
+input as literal words, requires all words, and limits album results to album
+release groups. Artist matches retain disambiguation, country and person/group
+type. Their **Browse albums** action pages through the selected artist's MBID,
+ranking official releases ahead of other albums without excluding the latter.
+The UI shows the 10-artist/25-album search limits and pages artist albums by 25.
+Album **Request** still requires edition selection and server identity validation.
+
+The public repro `the life of pablo` returned many unrelated single-word Pablo
+titles with the old raw MusicBrainz query. The all-term query returned three
+matching album groups. Its intended group is
+`8c18657a-6338-490d-a952-897663596b96`; MusicBrainz credits Kanye West while the
+canonical artist name is Ye. Search now preserves that credited name.
+
+On 2026-09-12, CAA correctly redirected that group to release
+`99e14f9e-5831-4b2c-b595-531be0f225ea` on Internet Archive, but the image download
+reset/timed out from Kim and Chromium. This was not a wrong entity path or a
+missing CSP host. The same album's public Last.fm Fastly cover loaded normally.
+When the caller already has Last.fm connected, search now makes one read-only
+`album.search` call and attaches artwork only for exact case-insensitive album
+title and credited-artist matches. Artist browsing uses `artist.getTopAlbums`
+scoped by artist MBID; recommendations retain their existing top-album images.
+Only HTTPS image paths on `lastfm-img.freetls.fastly.net` are accepted. Images
+load directly in the browser, with CAA fallback and **Cover unavailable** when
+both fail. No arbitrary URL proxy, shared image cache or new credential is used.
+Without a usable Last.fm match, CAA remains the source; provider outages can still
+leave missing covers. Last.fm MBIDs never replace MusicBrainz release-group IDs.
+
+Contracts: [MusicBrainz search](https://musicbrainz.org/doc/Indexed_Search_Syntax),
+[CAA API](https://musicbrainz.org/doc/Cover_Art_Archive/API),
+[Last.fm album.search](https://www.last.fm/api/show/album.search), and
+[artist.getTopAlbums](https://www.last.fm/api/show/artist.getTopAlbums).
+Source verification includes real-socket HTTP regressions with captured public
+MusicBrainz responses and controlled Last.fm envelopes, plus
+`scripts/check-search-browser.mjs`. Set `PLAYWRIGHT_MODULE` and `CHROMIUM` to
+installed tooling and run it with `node --import tsx` after `npm run build`.
+It creates disposable in-memory users, fetches the public Fastly cover live, and
+tests controlled image failure/fallback, filters, keyboard, pagination and mobile
+states without production data or acquisition writes. Last.fm's keyed API was
+not exercised live during this investigation; no stored credentials were read.
 
 HTML entry points are served directly with `Cache-Control: no-store`, without
 stat-derived validators. Nix normalizes output mtimes; same-length HTML in
@@ -64,6 +112,18 @@ interactive deployment command on Kim (requires sudo):
 ```sh
 make -C /home/maxpw/nix-config rebuild
 ```
+
+This is a **full system switch**, not a Leerr-only deployment. The September 12
+search package builds successfully, and its closure differs from the unchanged
+repository baseline only in Leerr. Compared with Kim's active September 5
+generation, however, the build also includes existing kernel, Home Assistant,
+SABnzbd and other updates. Those unrelated changes require separate review and
+approval before running the command above. No narrow Leerr activation command
+is currently supported; do not substitute an imperative service override.
+This investigation did not activate anything (ordinary sudo requires a password).
+Full flake evaluation and the headless Kim generation build pass. An initial
+missing-store-source evaluation failure cleared after evaluating the unchanged
+baseline and rerunning with the evaluation cache disabled.
 
 The inventory adds `svc:leerr` to the existing Tailscale Serve reconciler.
 No Cloudflare ingress, public Funnel or new firewall opening is needed. If the

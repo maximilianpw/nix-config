@@ -6,8 +6,8 @@
 }:
 buildNpmPackage {
   pname = "leerr";
-  version = "0-unstable-2026-09-10-35bfe39e";
-  # Production handoff plus setup, rose, auth and static-cache fixes, not stale main.
+  version = "0-unstable-2026-09-12-b4dc546f";
+  # Production handoff plus setup, rose, auth, cache and search/artwork fixes.
   # Provenance and archive SHA256 are recorded in docs/leerr.md.
   src = ./leerr/source.tar.gz;
   sourceRoot = ".";
