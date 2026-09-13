@@ -4,6 +4,10 @@
   lib,
   pkgs,
   tunnels ? [],
+  # Explicit candidate hook for isolated adapter tests. Production Home
+  # Manager installs the pinned Rust package directly; this library retains
+  # the Bash package as a regression oracle.
+  candidatePackage ? null,
 }: let
   inherit (lib) concatStringsSep escapeShellArg filterAttrs listToAttrs mapAttrs mapAttrs' mapAttrsToList nameValuePair optionalAttrs optionalString unique;
 
@@ -310,7 +314,7 @@
     (lib.all (marker: !lib.hasInfix marker rendered) fleetTemplateMarkers)
     "scripts/fleet.sh contains an unsubstituted template marker"; rendered;
 
-  package = pkgs.writeShellApplication {
+  legacyPackage = pkgs.writeShellApplication {
     name = "fleet";
     runtimeInputs = [
       pkgs.openssh
@@ -322,12 +326,62 @@
     ];
     text = fleetScript;
   };
+  package =
+    if candidatePackage == null
+    then legacyPackage
+    else candidatePackage;
+
+  # Closed v1 runtime projection for the standalone Rust CLI. Inventory keys
+  # and alias tokens are ssh_target values; host.hostName is display_target
+  # only. SSH identities stay out of this schema.
+  mkAliasTargetTriple = token: {
+    ssh_target = token;
+    tmux_target = "tm-${token}";
+    forward_target = "fleet-forward-${token}";
+  };
+  mkV1Host = name: host: let
+    remote = name != hostname;
+    canonical = mkAliasTargetTriple name;
+  in
+    {
+      inherit (canonical) ssh_target;
+      inherit (host) aliases gui os role user;
+      display_target = host.hostName;
+      client_enrolled = host.clientEnrolled;
+      long_running_agents = host.longRunningAgents;
+      tmux_command = host.tmuxCommand;
+      tmux_session = host.tmuxSession;
+    }
+    // optionalAttrs (host ? t3codePort) {t3code_port = host.t3codePort;}
+    // optionalAttrs remote {
+      inherit (canonical) tmux_target forward_target;
+    }
+    // optionalAttrs (remote && host.aliases != []) {
+      alias_targets = listToAttrs (map (alias: nameValuePair alias (mkAliasTargetTriple alias)) host.aliases);
+    };
+  settings = {
+    schema_version = 1;
+    current_host = hostname;
+    hosts = mapAttrs mkV1Host hosts;
+    tunnels = {
+      supervisor = tunnelSupervisor;
+      mappings =
+        map (t: {
+          inherit (t) host;
+          local_port = t.localPort;
+          remote_port = t.remotePort;
+          remote_host = t.remoteHost;
+          label = tunnelLabel t;
+        })
+        managedTunnels;
+    };
+  };
 in
   assert lib.assertMsg (lib.length tunnelLocalPorts == lib.length (unique tunnelLocalPorts))
   "Fleet managed tunnels must use unique local ports";
   assert lib.assertMsg (lib.all (t: lib.elem t.host remoteTunnelNames) managedTunnels)
   "Fleet managed tunnel host must be a remote Fleet host or alias"; {
-    inherit hosts launchdAgents managedTunnels package tunnelRunner;
+    inherit hosts launchdAgents legacyPackage managedTunnels package settings tunnelRunner;
 
     aliases = {
       fl = "fleet list";

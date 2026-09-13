@@ -30,8 +30,9 @@ plist_for() {
 printf 'placeholder\n' >"$(plist_for 3000)"
 printf 'placeholder\n' >"$(plist_for 5173)"
 
-cat >"$TMPDIR/bin/launchctl" <<'EOF'
-#!/usr/bin/env bash
+# The Nix sandbox has no /usr/bin/env. Reuse this test's Bash interpreter.
+printf '#!%s\n' "$BASH" >"$TMPDIR/bin/launchctl"
+cat >>"$TMPDIR/bin/launchctl" <<'EOF'
 set -euo pipefail
 state="${FLEET_LAUNCHCTL_STATE:?}"
 log="${state}/commands"
@@ -125,8 +126,8 @@ esac
 EOF
 chmod +x "$TMPDIR/bin/launchctl"
 
-cat >"$TMPDIR/bin/tcp-probe" <<'EOF'
-#!/usr/bin/env bash
+printf '#!%s\n' "$BASH" >"$TMPDIR/bin/tcp-probe"
+cat >>"$TMPDIR/bin/tcp-probe" <<'EOF'
 set -euo pipefail
 host="$1"
 port="$2"
@@ -134,8 +135,8 @@ grep -Fxq "${host}:${port}" "${FLEET_LISTEN_FILE:?}"
 EOF
 chmod +x "$TMPDIR/bin/tcp-probe"
 
-cat >"$TMPDIR/bin/ps" <<'EOF'
-#!/usr/bin/env bash
+printf '#!%s\n' "$BASH" >"$TMPDIR/bin/ps"
+cat >>"$TMPDIR/bin/ps" <<'EOF'
 case "$*" in
   '-p 43 -o ppid=,comm=') printf '42 /nix/store/fixture/bin/ssh\n' ;;
   '-p 44 -o ppid=,comm=') printf '43 /nix/store/fixture/bin/ssh\n' ;;
@@ -199,6 +200,11 @@ expect_single_inspection() {
     exit 1
   fi
 }
+
+# Fail directly if a mock cannot execute, before Fleet suppresses probe stderr.
+reset_tunnels
+expect_success launchctl print-disabled "gui/$(id -u)" >"$TMPDIR/mock-launchctl.out"
+expect_file_contains "$TMPDIR/mock-launchctl.out" 'disabled services = {'
 
 # Existing SSH dispatch still works with managed tunnels present.
 reset_tunnels
@@ -320,10 +326,11 @@ expect_single_inspection 3000
 expect_single_inspection 5173
 [[ $(grep -c '^print-disabled ' "$FLEET_LAUNCHCTL_STATE/commands") == 2 ]]
 expect_file_contains "$TMPDIR/doctor-ok.out" "SSH: reachable"
-if compgen -G "${TMPDIR%/}/fleet-doctor.*" >/dev/null; then
-  echo "doctor left a temporary file after success" >&2
+for leftover in "${TMPDIR%/}"/fleet-doctor.*; do
+  [[ -e "$leftover" || -L "$leftover" ]] || continue
+  echo "doctor left a temporary file after success: $leftover" >&2
   exit 1
-fi
+done
 expect_file_contains "$TMPDIR/doctor-ok.out" "tunnel 3000: supervisor=running local=owned remote=listening"
 expect_file_contains "$TMPDIR/doctor-ok.out" "tunnel 5173: supervisor=running local=owned remote=listening"
 expect_file_contains "$SSH_ARGS_ALL" "BatchMode=yes"
@@ -399,10 +406,11 @@ if "$FLEET_BIN" doctor kim >"$TMPDIR/doctor-unavail.out" 2>&1; then
   exit 1
 fi
 expect_file_contains "$TMPDIR/doctor-unavail.out" "SSH: unavailable"
-if compgen -G "${TMPDIR%/}/fleet-doctor.*" >/dev/null; then
-  echo "doctor left a temporary file after failure" >&2
+for leftover in "${TMPDIR%/}"/fleet-doctor.*; do
+  [[ -e "$leftover" || -L "$leftover" ]] || continue
+  echo "doctor left a temporary file after failure: $leftover" >&2
   exit 1
-fi
+done
 expect_file_contains "$TMPDIR/doctor-unavail.out" "unhealthy: SSH to kim is unavailable"
 expect_file_contains "$TMPDIR/doctor-unavail.out" "remote=skipped"
 if grep -Fq "/dev/tcp/" "$SSH_ARGS_ALL"; then

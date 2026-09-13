@@ -282,6 +282,30 @@
         "type": "github"
       }
     },
+    "fleet": {
+      "inputs": {
+        "home-manager": [
+          "home-manager"
+        ],
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1789298004,
+        "narHash": "sha256-K/iWyQ0VP6IrOLJCYn/kMXAmYjQdQAaeha6l/QPC6Vo=",
+        "owner": "maximilianpw",
+        "repo": "fleet",
+        "rev": "3c8ec46b526d08673bbd29f362742dc79bde7965",
+        "type": "github"
+      },
+      "original": {
+        "owner": "maximilianpw",
+        "repo": "fleet",
+        "rev": "3c8ec46b526d08673bbd29f362742dc79bde7965",
+        "type": "github"
+      }
+    },
     "fromYaml": {
       "flake": false,
       "locked": {
@@ -895,6 +919,7 @@
       "inputs": {
         "disko": "disko",
         "fenix": "fenix",
+        "fleet": "fleet",
         "git-hooks": "git-hooks",
         "home-manager": "home-manager",
         "hyprland": "hyprland",

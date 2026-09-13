@@ -3,6 +3,13 @@
 Revachol is the name of this repo's remote development fleet. The operational
 CLI remains `fleet`.
 
+Home Manager installs the Rust package and module from the pinned `fleet`
+flake input. `lib/fleet.nix` projects the personal inventory into the v1 TOML
+schema while retaining SSH settings, trust exports, aliases, and the legacy
+Bash package as a regression oracle. `tests/fleet-rust-integration.nix` checks
+the pinned package/module and can still accept an explicit checkout during
+migration work.
+
 ## Commands
 
 - `fleet` or `fleet list` identifies the current machine, then shows every
@@ -138,29 +145,23 @@ without a directional allow-list.
 
 ## Herdr machines
 
-Herdr v0.9.0 replaces the `hs` session picker with Local and saved SSH machines
-in one window. Run `h` (or `herdr`), then select a machine in the sidebar.
-Home Manager generates `$XDG_STATE_HOME/herdr/client/endpoints.json` (normally
-`~/.local/state/herdr/client/endpoints.json`) from the fleet inventory, excluding
-the current host and Cuno. Each included peer targets its `default` Herdr session using the same
-plain SSH alias as `ssh kim`. A profile covers one session, not every session
-on a host. Remote agents appear in Herdr's combined agent list, and disconnects
-retry independently without stopping the remote processes.
+Herdr 0.9.0 is the native session UI: Local plus saved SSH machines in one
+window. Run `h` (or `herdr`) and pick a machine in the sidebar. Home Manager
+installs the `herdr` package through `users/maxpw/modules/agent-tools.nix`. It
+does not generate a machine catalog from the fleet inventory. Saved machines,
+selection, and other client state stay in Herdr's own files. Add or edit
+machines with Herdr itself, including `herdr machine ...` or the sidebar.
 
-The catalog is Nix-owned: edit `users/maxpw/modules/agent-tools.nix` or the fleet
-inventory rather than using `herdr machine add/rename/enable/disable/remove`.
-Those commands refuse to overwrite the managed symlink. Machine selection is
-stored separately and remains writable. Herdr configuration and other runtime
-state remain unmanaged by this module.
+A saved profile is one session on a host, not every session. Remote agents show
+up in Herdr's combined list, and a disconnect retries without stopping remote
+processes.
 
-The flake temporarily overrides the upstream 0.8.2 package to 0.9.0. Apply the
-configuration on each participating host only when ready. Check `type -a herdr`
-for an older `~/.local/bin/herdr` shadowing the Nix package. Saved connections
-never install or replace servers in the background. An old server may show
-**Attention**; run `herdr --remote <host> --session default` interactively when
-ready to follow its setup prompts. Replacing a pre-v0.9 server can stop its panes
-and agents: finish or save work first, and do not approve a replacement merely
-because the client and server versions differ.
+Check `type -a herdr` if an older `~/.local/bin/herdr` is shadowing the Nix
+package. Saved connections never install or replace servers in the background.
+An old server may show Attention; run `herdr --remote <host> --session default`
+interactively when you are ready to follow its setup prompts. Replacing a
+pre-v0.9 server can stop its panes and agents. Finish or save work first, and
+do not approve a replacement just because the client and server versions differ.
 
 See the [v0.9.0 release notes](https://github.com/herdrdev/herdr/releases/tag/v0.9.0)
 and [machine guide](https://herdr.dev/docs/connecting-machines/).

@@ -8,6 +8,12 @@
     home-manager.url = "github:nix-community/home-manager/release-26.05";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
+    fleet = {
+      url = "github:maximilianpw/fleet/3c8ec46b526d08673bbd29f362742dc79bde7965";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.home-manager.follows = "home-manager";
+    };
+
     nix-darwin.url = "github:nix-darwin/nix-darwin/nix-darwin-26.05";
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
 
@@ -257,6 +263,19 @@
         fleet-ssh-regression = import ./tests/fleet-ssh-regression.nix {
           inherit lib;
           pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        };
+        fleet-rust-integration = import ./tests/fleet-rust-integration.nix {
+          inherit lib;
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+          fleetSrc = inputs.fleet;
+          homeManager = inputs.home-manager;
+        };
+        fleet-installed-regression = import ./tests/fleet-installed-regression.nix {
+          inherit lib;
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+          fleetPackages = inputs.fleet.packages;
+          kim = self.nixosConfigurations.kim.config.home-manager.users.maxpw;
+          joyce = self.darwinConfigurations.joyce.config.home-manager.users.max-vev;
         };
         fleet-tunnel-regression = import ./tests/fleet-tunnel-regression.nix {
           inherit lib;

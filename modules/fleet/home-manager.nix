@@ -1,8 +1,9 @@
 {
   config,
+  hostname,
+  inputs,
   lib,
   pkgs,
-  hostname,
   ...
 }: let
   defaultTunnels = (import ./default-tunnels.nix).${hostname} or [];
@@ -13,6 +14,8 @@
   };
   localPorts = map (t: t.localPort) config.fleet.tunnels.mappings;
 in {
+  imports = [inputs.fleet.homeManagerModules.default];
+
   options.fleet.tunnels.mappings = lib.mkOption {
     type = lib.types.listOf (lib.types.submodule {
       options = {
@@ -44,40 +47,32 @@ in {
     '';
   };
 
-  config = lib.mkMerge [
-    {
-      assertions = [
-        {
-          assertion = lib.length localPorts == lib.length (lib.unique localPorts);
-          message = "fleet.tunnels.mappings local ports must be unique";
-        }
-      ];
+  config = {
+    assertions = [
+      {
+        assertion = lib.length localPorts == lib.length (lib.unique localPorts);
+        message = "fleet.tunnels.mappings local ports must be unique";
+      }
+    ];
 
-      home = {
-        packages = [fleet.package];
+    home.file = {
+      ".config/fleet/hosts.json".text = fleet.files.hostsJson;
+      ".config/fleet/FLEET.md".text = fleet.files.contract;
+      ".ssh/fleet_known_hosts".text = fleet.files.knownHosts;
+    };
 
-        file = {
-          ".config/fleet/hosts.json".text = fleet.files.hostsJson;
-          ".config/fleet/FLEET.md".text = fleet.files.contract;
-          ".ssh/fleet_known_hosts".text = fleet.files.knownHosts;
-        };
+    programs = {
+      fleet = {
+        enable = true;
+        package = inputs.fleet.packages.${pkgs.stdenv.hostPlatform.system}.fleet;
+        inherit (fleet) settings;
       };
 
-      programs = {
-        ssh.settings = fleet.sshSettings;
+      ssh.settings = fleet.sshSettings;
 
-        bash.shellAliases = fleet.aliases;
-        fish.shellAliases = fleet.aliases;
-        nushell.shellAliases = fleet.aliases;
-      };
-    }
-    (lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
-      # Home Manager launchd.agents, not nix-darwin launchd.user.agents.
-      # Labels are org.nix-community.home.fleet-tunnel-<port>. KeepAlive and
-      # RunAtLoad start at login and retry; ThrottleInterval bounds respawn.
-      # No dedicated stdout/stderr files: diagnostics probe current state
-      # rather than accumulating an unbounded SSH retry log.
-      launchd.agents = fleet.launchdAgents;
-    })
-  ];
+      bash.shellAliases = fleet.aliases;
+      fish.shellAliases = fleet.aliases;
+      nushell.shellAliases = fleet.aliases;
+    };
+  };
 }
