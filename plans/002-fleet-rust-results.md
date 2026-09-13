@@ -6,8 +6,10 @@ The standalone Rust extraction is complete and published at <https://github.com/
 
 The user selected `/home/maxpw/local/fleet` instead of the plan's original `/home/maxpw/fleet` path. The public repository has no license, as requested.
 
-- Commit: `3c8ec46b526d08673bbd29f362742dc79bde7965`
-- Git archive SHA-256: `206ac06093d82811c53f3435e461bcf665aa67cf1e877580a1d426f93eb01d3e`
+- Initial extraction commit: `3c8ec46b526d08673bbd29f362742dc79bde7965`
+- Initial Git archive SHA-256: `206ac06093d82811c53f3435e461bcf665aa67cf1e877580a1d426f93eb01d3e`
+- Current nix-config pin: `5b725c2adc939ae5012e51cff465c444bac9b6ac`
+- Current pin NAR hash: `sha256-jF7rAFYZXPG4RL8DB5gF2Kkva9Z3vxg89rsaP4hZ24I=`
 - Visibility: public
 - Crates.io publishing: disabled with `publish = false`
 - Installed-host cutover: Kim activated successfully
@@ -138,7 +140,7 @@ nix build \
 git diff --check
 ```
 
-The integration check first passed against the explicit local candidate path. Gate G then added a durable GitHub input pinned to `3c8ec46b526d08673bbd29f362742dc79bde7965` and promoted the same test into the flake checks without adding an absolute developer path. `tests/fleet-installed-regression.nix` additionally verifies that Kim and Joyce each select exactly one package from the pinned input, generated TOML validates, Kim has no Fleet launchd jobs, and Joyce retains the two expected labels using the Rust runner.
+The integration check first passed against the explicit local candidate path. Gate G then added a durable GitHub input, currently pinned to `5b725c2adc939ae5012e51cff465c444bac9b6ac`, and promoted the same test into the flake checks without adding an absolute developer path. `tests/fleet-installed-regression.nix` additionally verifies that Kim and Joyce each select exactly one package from the pinned input, generated TOML validates, Kim has no Fleet launchd jobs, and Joyce retains the two expected labels using the Rust runner.
 
 ```sh
 nix build \
@@ -154,6 +156,10 @@ make build
 Kim activation required an interactive sudo terminal. The user ran `make rebuild`; the resulting system generation matched the previously built candidate.
 
 `nix flake check --no-build` still fails while evaluating the unrelated `eval-kim-desktop` check in man-db with `path '...-source' is not valid`. The scoped Fleet checks and `make lint` pass, and the failure predates or lies outside the Fleet file allowlist.
+
+## Darwin rebuild follow-up
+
+A real Joyce build exposed scheduler-sensitive runner tests: test-only 80 ms startup and 100 ms listener-probe deadlines could expire before mock child processes ran. The production deadline remained 45 seconds and was not implicated. Linux reproduced the failure under single-CPU scheduler pressure. Commit `5b725c2adc939ae5012e51cff465c444bac9b6ac` gives ordinary ownership tests a two-second scheduling budget, retains short deadlines only in deadline-specific cases, and extends PID observation to five seconds. The original stressed runner command then passed three consecutive times, followed by all Cargo and Linux Nix checks. GitHub Actions run `34755974406` passed all four jobs, including the aarch64-darwin Nix package build that exercises the previously failing check phase.
 
 ## Compatibility notes
 

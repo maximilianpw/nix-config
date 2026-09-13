@@ -9,7 +9,7 @@
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
     fleet = {
-      url = "github:maximilianpw/fleet/3c8ec46b526d08673bbd29f362742dc79bde7965";
+      url = "github:maximilianpw/fleet/5b725c2adc939ae5012e51cff465c444bac9b6ac";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.home-manager.follows = "home-manager";
     };
