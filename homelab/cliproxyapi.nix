@@ -10,6 +10,7 @@ in {
   sops = {
     secrets.cliproxyapi-public-api-key = {};
     templates."cliproxyapi-public-auth.conf" = {
+      owner = config.services.nginx.user;
       mode = "0400";
       restartUnits = ["nginx.service"];
       content = ''

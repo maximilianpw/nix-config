@@ -50,10 +50,11 @@ in
     && cliproxy.locations."/".return == "404"
     && cliproxy.locations."/v1/".proxyPass == "http://127.0.0.1:8317"
     && lib.hasInfix "if ($cliproxyapi_public_authorized = 0) { return 401; }" cliproxy.locations."/v1/".extraConfig
+    && config.sops.templates."cliproxyapi-public-auth.conf".owner == config.services.nginx.user
     && config.sops.templates."cliproxyapi-public-auth.conf".mode == "0400"
     && !(builtins.elem 19009 config.networking.firewall.allowedTCPPorts)
   )
-  "CLIProxyAPI must require its public token through a loopback gateway and deny non-API routes";
+  "CLIProxyAPI must use a nginx-readable token template, require that token through a loopback gateway, and deny non-API routes";
   assert lib.assertMsg (config.services.home-assistant.config.http.server_host == "127.0.0.1")
   "Home Assistant must bind only its declared loopback origin";
   assert lib.assertMsg (config.services.nextcloud.settings.trusted_proxies == ["127.0.0.1" "::1"])
