@@ -88,6 +88,16 @@
     };
   };
 
+  cliproxy = {
+    endpoint = {
+      authorizationOwner = "nginx-bearer-token";
+      exposure = "public";
+      hostname = "cliproxy.maximilian.pw";
+      port = 19009;
+    };
+    operations.units = ["cliproxyapi.service" "nginx.service"];
+  };
+
   executor = {
     endpoint = {
       authorizationOwner = "executor";

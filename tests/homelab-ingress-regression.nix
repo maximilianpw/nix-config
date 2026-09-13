@@ -13,10 +13,11 @@
   in
     lib.hasPrefix "http://127.0.0.1:" ingress.service
     && ingress.originRequest.httpHostHeader == host;
+  cliproxy = config.services.nginx.virtualHosts.${homelab.publicEndpoints.cliproxy.host};
   nextcloudListen = config.services.nginx.virtualHosts.${homelab.publicEndpoints.nextcloud.host}.listen;
   privatePorts = map (service: service.port) (builtins.attrValues homelab.privateServices);
 in
-  assert lib.assertMsg (publicNames == ["executor" "homeassistant" "jellyfin" "nextcloud" "seerr"])
+  assert lib.assertMsg (publicNames == ["cliproxy" "executor" "homeassistant" "jellyfin" "nextcloud" "seerr"])
   "Cloudflare ingress must expose the declared public application set";
   assert lib.assertMsg (ingressHosts == publicHosts)
   "Cloudflare ingress must derive exactly from the public service inventory";
@@ -35,6 +36,24 @@ in
     nextcloudListen
   )
   "Nextcloud nginx must bind only its declared loopback origin";
+  assert lib.assertMsg (
+    cliproxy.listen
+    == [
+      {
+        addr = "127.0.0.1";
+        port = 19009;
+        ssl = false;
+        proxyProtocol = false;
+        extraParameters = [];
+      }
+    ]
+    && cliproxy.locations."/".return == "404"
+    && cliproxy.locations."/v1/".proxyPass == "http://127.0.0.1:8317"
+    && lib.hasInfix "if ($cliproxyapi_public_authorized = 0) { return 401; }" cliproxy.locations."/v1/".extraConfig
+    && config.sops.templates."cliproxyapi-public-auth.conf".mode == "0400"
+    && !(builtins.elem 19009 config.networking.firewall.allowedTCPPorts)
+  )
+  "CLIProxyAPI must require its public token through a loopback gateway and deny non-API routes";
   assert lib.assertMsg (config.services.home-assistant.config.http.server_host == "127.0.0.1")
   "Home Assistant must bind only its declared loopback origin";
   assert lib.assertMsg (config.services.nextcloud.settings.trusted_proxies == ["127.0.0.1" "::1"])

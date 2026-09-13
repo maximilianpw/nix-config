@@ -3,6 +3,7 @@
     ./actual.nix
     ./atuin.nix
     ./cloudflared.nix
+    ./cliproxyapi.nix
     ./container-hygiene.nix
     ./executor.nix
     ./home-assistant.nix
