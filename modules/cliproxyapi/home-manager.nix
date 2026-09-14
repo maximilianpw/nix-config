@@ -1,10 +1,24 @@
 {agentConfigDirectory}: {
   config,
+  currentSystemName,
   lib,
   pkgs,
   ...
 }: let
   cliProxy = import ./config.nix;
+  useLocalProxy = currentSystemName == "kim";
+  proxyBaseUrl =
+    if useLocalProxy
+    then cliProxy.baseUrl
+    else cliProxy.publicBaseUrl;
+  proxyApiKey =
+    if useLocalProxy
+    then cliProxy.apiKey
+    else "{env:CLIPROXYAPI_API_KEY}";
+  exportProxyApiKey =
+    if useLocalProxy
+    then "export CLIPROXYAPI_API_KEY=${lib.escapeShellArg cliProxy.apiKey}"
+    else "export CLIPROXYAPI_API_KEY=\"$(${pkgs.coreutils}/bin/cat ${lib.escapeShellArg cliProxy.publicApiKeyPath})\"";
   jsonFormat = pkgs.formats.json {};
   kimiModel = "kimi-k3";
   grokModel = "grok-4.6";
@@ -17,8 +31,8 @@
       model = "cliproxyapi/${cliProxy.defaultModel}";
       provider.cliproxyapi = {
         options = {
-          baseURL = "${cliProxy.baseUrl}/v1";
-          inherit (cliProxy) apiKey;
+          baseURL = "${proxyBaseUrl}/v1";
+          apiKey = proxyApiKey;
         };
         models = builtins.listToAttrs (
           map (model: {
@@ -49,13 +63,19 @@
 
       [model."${grokProxyModel}"]
       model = "${grokModel}"
-      base_url = "${cliProxy.baseUrl}/v1"
+      base_url = "${proxyBaseUrl}/v1"
       name = "Grok 4.6 via CLIProxyAPI"
       api_backend = "chat_completions"
       env_key = "CLIPROXYAPI_API_KEY"
       context_window = 500000
     '';
 in {
+  home.sessionVariables = {
+    CLIPROXYAPI_ROOT_URL = proxyBaseUrl;
+    CLIPROXYAPI_API_KEY_FILE = lib.mkIf (!useLocalProxy) cliProxy.publicApiKeyPath;
+    CLIPROXYAPI_API_KEY = lib.mkIf useLocalProxy cliProxy.apiKey;
+  };
+
   home.file = {
     ".grok-cliproxyapi/config.toml".text = grokProxyConfig;
     ".config/opencode/opencode.json".source = jsonFormat.generate "opencode.json" opencodeConfig;
@@ -66,8 +86,9 @@ in {
       executable = true;
       text = ''
         #!${pkgs.bash}/bin/bash
-        export ANTHROPIC_BASE_URL=${lib.escapeShellArg cliProxy.baseUrl}
-        export ANTHROPIC_AUTH_TOKEN=${lib.escapeShellArg cliProxy.apiKey}
+        ${exportProxyApiKey}
+        export ANTHROPIC_BASE_URL=${lib.escapeShellArg proxyBaseUrl}
+        export ANTHROPIC_AUTH_TOKEN="$CLIPROXYAPI_API_KEY"
         export CLAUDE_CODE_MAX_CONTEXT_TOKENS=272000
         exec ${lib.getExe pkgs.claude-code} "$@"
       '';
@@ -83,8 +104,9 @@ in {
       executable = true;
       text = ''
         #!${pkgs.bash}/bin/bash
-        export ANTHROPIC_BASE_URL=${lib.escapeShellArg cliProxy.baseUrl}
-        export ANTHROPIC_AUTH_TOKEN=${lib.escapeShellArg cliProxy.apiKey}
+        ${exportProxyApiKey}
+        export ANTHROPIC_BASE_URL=${lib.escapeShellArg proxyBaseUrl}
+        export ANTHROPIC_AUTH_TOKEN="$CLIPROXYAPI_API_KEY"
         export ANTHROPIC_DEFAULT_OPUS_MODEL=${kimiModel} ANTHROPIC_DEFAULT_SONNET_MODEL=${kimiModel} ANTHROPIC_DEFAULT_HAIKU_MODEL=${kimiModel}
         export CLAUDE_CODE_SUBAGENT_MODEL=${kimiModel} CLAUDE_CODE_ALWAYS_ENABLE_EFFORT=1
         export CLAUDE_CODE_MAX_TOOL_USE_CONCURRENCY=3 ENABLE_TOOL_SEARCH=false
@@ -95,7 +117,7 @@ in {
       executable = true;
       text = ''
         #!${pkgs.bash}/bin/bash
-        export CLIPROXYAPI_API_KEY=${lib.escapeShellArg cliProxy.apiKey}
+        ${exportProxyApiKey}
 
         # Command-line overrides keep proxy routing declarative while leaving
         # ~/.codex/config.toml as Codex's writable persistence target.
@@ -105,7 +127,7 @@ in {
           -c ${lib.escapeShellArg "cli_auth_credentials_store=\"file\""} \
           -c ${lib.escapeShellArg "mcp_oauth_credentials_store=\"file\""} \
           -c ${lib.escapeShellArg "model_providers.cliproxyapi.name=\"CLIProxyAPI\""} \
-          -c ${lib.escapeShellArg "model_providers.cliproxyapi.base_url=${builtins.toJSON "${cliProxy.baseUrl}/v1"}"} \
+          -c ${lib.escapeShellArg "model_providers.cliproxyapi.base_url=${builtins.toJSON "${proxyBaseUrl}/v1"}"} \
           -c ${lib.escapeShellArg "model_providers.cliproxyapi.env_key=\"CLIPROXYAPI_API_KEY\""} \
           -c ${lib.escapeShellArg "model_providers.cliproxyapi.wire_api=\"responses\""} \
           "$@"
@@ -122,7 +144,7 @@ in {
       executable = true;
       text = ''
         #!${pkgs.bash}/bin/bash
-        export CLIPROXYAPI_API_KEY=${lib.escapeShellArg cliProxy.apiKey}
+        ${exportProxyApiKey}
         export GROK_HOME=${lib.escapeShellArg "${config.home.homeDirectory}/.grok-cliproxyapi"}
         exec ${lib.getExe pkgs.grok} "$@"
       '';
@@ -146,6 +168,14 @@ in {
       text = ''
         #!${pkgs.bash}/bin/bash
         exec ${lib.getExe pkgs.pi} --provider openai-codex --model ${lib.escapeShellArg cliProxy.defaultModel} "$@"
+      '';
+    };
+    ".local/bin/opencode" = {
+      executable = true;
+      text = ''
+        #!${pkgs.bash}/bin/bash
+        ${exportProxyApiKey}
+        exec ${lib.getExe pkgs.opencode} "$@"
       '';
     };
     ".local/bin/opencode-direct" = {

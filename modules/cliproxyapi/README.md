@@ -1,19 +1,19 @@
 # CLIProxyAPI
 
-This folder owns the local CLIProxyAPI gateway and the agent clients that use it.
+This folder owns the CLIProxyAPI gateway on Kim and the agent clients that use it.
 
 - `config.nix` is the shared endpoint, authentication, model, and server configuration.
-- `nixos.nix` installs the Linux package and runs the systemd service on NixOS and WSL.
-- `darwin.nix` installs the Homebrew formula and runs the nix-darwin LaunchAgent.
+- `nixos.nix` runs the systemd server only on Kim and installs the public client token on every NixOS/WSL host.
+- `darwin.nix` installs only the public client token; Joyce no longer runs a local proxy.
 - `home-manager.nix` generates the Claude, Codex, Grok, and OpenCode client adapters, their direct-access commands, and `cliproxyapi-util`. Its caller supplies the user's agent-config directory explicitly.
 
-Both server adapters render `/run/secrets/rendered/cliproxyapi.conf` through the shared `config.nix` function. They differ only in platform paths, package ownership, process management, and logging. The OpenCode base configuration lives at `users/maxpw/agents/opencode/cliproxyapi.json`; Home Manager injects the shared endpoint and credentials when it generates the deployed `opencode.json`.
+Kim's clients continue to use `127.0.0.1:8317`. Other hosts use `https://cliproxy.maximilian.pw` and read the public API token at runtime from `/run/secrets/cliproxyapi-public-api-key`, keeping it out of generated Nix-store files. Home Manager also exports the endpoint and token-file variables consumed by Pi's CLIProxyAPI extension in the separate `pi-config` repository. The OpenCode base configuration lives at `users/maxpw/agents/opencode/cliproxyapi.json`; Home Manager injects the host-specific endpoint and an environment-variable token reference when it generates the deployed `opencode.json`.
 
 ## Public API on Kim
 
 `homelab/cliproxyapi.nix` exposes `https://cliproxy.maximilian.pw/v1` through Kim's existing Cloudflare Tunnel. `lib/homelab-services.nix` declares the hostname and loopback gateway port, `19009`. The DNS record is a proxied CNAME to `5b712ae4-3ce4-4499-9cb7-a57cde1c571f.cfargotunnel.com`.
 
-The nginx gateway requires the SOPS secret `cliproxyapi-public-api-key` as a Bearer token for `/v1/`. It replaces that token with the local API key when forwarding to CLIProxyAPI on `127.0.0.1:8317`. The committed local key cannot authenticate public requests. Local clients remain unchanged.
+The nginx gateway requires the SOPS secret `cliproxyapi-public-api-key` as a Bearer token for `/v1/`. It replaces that token with the local API key when forwarding to CLIProxyAPI on `127.0.0.1:8317`. The committed local key cannot authenticate public requests. Kim remains local; Joyce and Cuno use the public endpoint.
 
 The root issues a relative redirect to `/management.html`. The UI and `/v0/management/` API use CLIProxyAPI's separate management key. Every management request requires that key, and five consecutive failures ban the client IP for about 30 minutes. The management key grants access to provider credentials, configuration, logs, and OAuth flows, so keep it in the password manager and do not reuse the public API key. Management responses and the UI are marked `Cache-Control: no-store`.
 
