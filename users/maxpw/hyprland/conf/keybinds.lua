@@ -95,7 +95,7 @@ hypr.combo_binds(mod, {
 
 -- Applications
 hypr.exec_combo_binds(mod, {
-	{ "SPACE", "rofi -show drun -show-icons" },
+	{ "SPACE", "vicinae vicinae://toggle" },
 	{ "E", "nautilus" },
 	{ "SHIFT + E", "ghostty -e yazi" },
 })
@@ -116,8 +116,7 @@ hypr.combo_binds(mod, {
 
 -- Utilities
 hypr.exec_combo_binds(mod, {
-	{ "V", [[cliphist list | rofi -dmenu -p "clipboard" | cliphist decode | wl-copy]] },
-	{ "SHIFT + V", "cliphist wipe" },
+	{ "V", [[vicinae 'vicinae://launch/clipboard/history?toggle=true']] },
 	{ "ESCAPE", "wlogout" },
 })
 

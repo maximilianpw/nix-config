@@ -70,7 +70,7 @@ hypr.window_rules({
 hypr.layer_rules({
 	{ match = { namespace = "waybar" }, blur = true, ignore_alpha = 0.2 },
 	{ match = { namespace = "waybar" }, no_anim = true },
-	{ match = { namespace = "rofi" }, blur = true, ignore_alpha = 0.2, dim_around = true },
+	{ match = { namespace = "vicinae" }, blur = true, ignore_alpha = 0, no_anim = true },
 	{ match = { namespace = "swaync.*" }, blur = true, ignore_alpha = 0.1 },
 	{ match = { namespace = "wlogout" }, blur = true, dim_around = true },
 })

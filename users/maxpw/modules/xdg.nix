@@ -114,8 +114,6 @@ in {
           "ghostty/config".text = ghosttyConfig;
           "gammastep/config.ini".text = builtins.readFile ../config.gammastep;
           "uwsm/env".text = uwsmEnv;
-          "rofi".source = ../rofi;
-          "rofi".recursive = true;
           "waybar".source = ../waybar;
           "waybar".recursive = true;
           "swaync".source = ../swaync;

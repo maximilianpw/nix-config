@@ -7,9 +7,6 @@
 }: {
   home.packages =
     lib.optionals isLinuxDesktop [
-      # App launcher
-      pkgs.rofi
-
       # Terminal emulators
       pkgs.ghostty
       pkgs.kitty
@@ -17,7 +14,6 @@
       # Wayland desktop essentials
       pkgs.waybar
       pkgs.wl-clipboard
-      pkgs.cliphist
       pkgs.grim
       pkgs.slurp
       pkgs.hyprpaper
@@ -27,6 +23,7 @@
       pkgs.gammastep
       pkgs.wlogout
       pkgs.networkmanagerapplet
+      pkgs.zenity
 
       # GUI applications
       pkgs.nautilus

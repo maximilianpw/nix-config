@@ -33,6 +33,8 @@ in {
       ./modules/vcs/jujutsu.nix
       ./modules/agent-tools.nix
       ./modules/cmux.nix
+      ./modules/karabiner.nix
+      ./modules/vicinae.nix
       ../../modules/fleet/home-manager.nix
       ./modules/t3code-server.nix
       ./modules/shells.nix

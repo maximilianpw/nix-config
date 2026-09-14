@@ -73,7 +73,7 @@ The remote development fleet is named Revachol; its CLI remains `fleet`.
 │       ├── config.nu        # nushell init (env, direnv hook, helpers)
 │       ├── ghostty.linux    # Ghostty config (Linux); linked by HM
 │       ├── RectangleConfig.json # Rectangle.app settings (macOS); linked by HM
-│       └── [various configs] # Hyprland, waybar, rofi, etc.
+│       └── [various configs] # Hyprland, Waybar, Vicinae, etc.
 ├── nixos-switch.log         # Last rebuild log (script output)
 └── plans/                   # Reviewed implementation plans
 ```
@@ -226,8 +226,8 @@ Suggested clone path: `~/nix-config` (the rebuild script assumes this).
 Pi's content is maintained separately in
 [`maximilianpw/pi-config`](https://github.com/maximilianpw/pi-config). Clone it
 at `~/pi-config` and follow that repository's dependency/setup instructions
-before using Pi: Home Manager links its settings, models, extensions, prompts,
-and themes without cloning or copying them. The CLIProxyAPI utility also uses
+before using Pi: Home Manager links its settings, models, MCP configuration,
+extensions, prompts, and themes without cloning or copying them. The CLIProxyAPI utility also uses
 that checkout. Neovim/app content follows the separate chezmoi flow above.
 
 `make build` uses the same host detection and inventory validation as rebuild,
@@ -258,6 +258,8 @@ make help             # show all make targets
 
 ## Notes
 
+- Vicinae is the declarative launcher on graphical Linux and macOS hosts. Linux uses the Home Manager user service and Hyprland-owned `Super+Space` / `Super+V` bindings; macOS uses the notarized Homebrew cask plus a Home Manager launch agent. Shared settings use Catppuccin, disable system-info telemetry, favor clipboard and file search, and remain overrides so Vicinae can still persist extension settings.
+- Rectangle remains the declarative macOS window-management cask; its checked-in settings file is available for manual import after reinstalling the app.
 - Hyprland comes from the upstream flake input to ensure recent builds on aarch64.
 - The Hyprland Lua config is installed by Home Manager at the documented default path, `$XDG_CONFIG_HOME/hypr/hyprland.lua` (`~/.config/hypr/hyprland.lua` in practice). The greetd session starts `start-hyprland` without `--config`; live edits can be reloaded with `hyprctl reload`.
 - Because Hyprland is launched with UWSM, Wayland toolkit and cursor environment variables are managed in `$XDG_CONFIG_HOME/uwsm/env` instead of the Lua config.
