@@ -120,6 +120,7 @@
         jellyfin-ffmpeg = final.callPackage ./packages/jellyfin-ffmpeg.nix {};
         obsidian = final.callPackage ./packages/obsidian.nix {};
         cliproxyapi = final.callPackage ./packages/cliproxyapi.nix {};
+        cua-driver = final.callPackage ./packages/cua-driver.nix {};
         nextcloud-calendar = final.callPackage ./packages/nextcloud-calendar.nix {};
       })
     ];
@@ -328,12 +329,12 @@
       x86_64-linux = let
         pkgs = mkPkgs "x86_64-linux";
       in {
-        inherit (pkgs) helium obsidian skills cliproxyapi nextcloud-calendar hunkdiff nix-update tunarr jellyfin jellyfin-web jellyfin-ffmpeg;
+        inherit (pkgs) helium obsidian skills cliproxyapi cua-driver nextcloud-calendar hunkdiff nix-update tunarr jellyfin jellyfin-web jellyfin-ffmpeg;
       };
       aarch64-darwin = let
         pkgs = mkPkgs "aarch64-darwin";
       in {
-        inherit (pkgs) skills nextcloud-calendar hunkdiff nix-update;
+        inherit (pkgs) cua-driver skills nextcloud-calendar hunkdiff nix-update;
       };
     };
 
