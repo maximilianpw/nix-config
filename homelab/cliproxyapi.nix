@@ -34,21 +34,44 @@ in {
           inherit (endpoint) port;
         }
       ];
-      # Cloudflared connects over loopback, so CLIProxyAPI's allow-remote=false
-      # does not protect management routes here. Expose only the client API.
-      locations."/".return = "404";
-      locations."/v1/" = {
-        proxyPass = cliProxy.baseUrl;
-        proxyWebsockets = true;
-        extraConfig = ''
-          if ($cliproxyapi_public_authorized = 0) { return 401; }
-          proxy_set_header Authorization "Bearer ${cliProxy.apiKey}";
-          proxy_buffering off;
-          proxy_request_buffering off;
-          proxy_read_timeout 600s;
-          proxy_send_timeout 600s;
-          client_max_body_size 100m;
-        '';
+      locations = {
+        "/" = {
+          return = "302 /management.html";
+          extraConfig = ''
+            absolute_redirect off;
+          '';
+        };
+        "= /management.html" = {
+          proxyPass = cliProxy.baseUrl;
+          extraConfig = ''
+            add_header Cache-Control "no-store" always;
+          '';
+        };
+        "/v0/management/" = {
+          proxyPass = cliProxy.baseUrl;
+          proxyWebsockets = true;
+          extraConfig = ''
+            proxy_buffering off;
+            proxy_request_buffering off;
+            proxy_read_timeout 600s;
+            proxy_send_timeout 600s;
+            client_max_body_size 100m;
+            add_header Cache-Control "no-store" always;
+          '';
+        };
+        "/v1/" = {
+          proxyPass = cliProxy.baseUrl;
+          proxyWebsockets = true;
+          extraConfig = ''
+            if ($cliproxyapi_public_authorized = 0) { return 401; }
+            proxy_set_header Authorization "Bearer ${cliProxy.apiKey}";
+            proxy_buffering off;
+            proxy_request_buffering off;
+            proxy_read_timeout 600s;
+            proxy_send_timeout 600s;
+            client_max_body_size 100m;
+          '';
+        };
       };
     };
   };

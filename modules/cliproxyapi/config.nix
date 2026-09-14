@@ -68,7 +68,7 @@ in
         - "${cliProxy.apiKey}"
 
       remote-management:
-        allow-remote: false
+        allow-remote: true
         secret-key: "${cliProxy.managementKeyHash}"
 
       routing:
