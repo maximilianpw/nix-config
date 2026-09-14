@@ -259,6 +259,7 @@ make help             # show all make targets
 ## Notes
 
 - Vicinae is the declarative launcher on graphical Linux and macOS hosts. Linux uses the Home Manager user service and Hyprland-owned `Super+Space` / `Super+V` bindings; macOS uses the notarized Homebrew cask plus a Home Manager launch agent. Shared settings use Catppuccin, disable system-info telemetry, favor clipboard and file search, and remain overrides so Vicinae can still persist extension settings.
+- Hyperkey replaces Raycast's Caps Lock-to-Hyper remapping on macOS. Configure Caps Lock as Hyper and enable quick-press Escape after granting Accessibility permission; Vicinae owns `Hyper+V` clipboard history.
 - Rectangle remains the declarative macOS window-management cask; its checked-in settings file is available for manual import after reinstalling the app.
 - Hyprland comes from the upstream flake input to ensure recent builds on aarch64.
 - The Hyprland Lua config is installed by Home Manager at the documented default path, `$XDG_CONFIG_HOME/hypr/hyprland.lua` (`~/.config/hypr/hyprland.lua` in practice). The greetd session starts `start-hyprland` without `--config`; live edits can be reloaded with `hyprctl reload`.

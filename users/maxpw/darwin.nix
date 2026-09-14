@@ -38,7 +38,7 @@ in {
       "colemak-dh"
       "bitwarden"
       "1password"
-      "karabiner-elements"
+      "hyperkey"
       "rectangle"
       "vicinae"
       "whatsapp"
