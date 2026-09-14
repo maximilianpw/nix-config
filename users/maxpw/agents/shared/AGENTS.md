@@ -13,7 +13,7 @@
 - Choose checks proportional to the change, not a full suite by default. Completion includes checking the affected behavior and reporting any remaining blocker or unverified result.
 - Ask when missing information prevents a correct result or a decision would be costly to reverse; make routine, reversible decisions directly. Plan-only requests stop at the plan.
 - Require explicit authorization before publishing or pushing, deploying, changing shared infrastructure or live data, or performing destructive operations. Authorization for local verification does not authorize those actions.
-- Use `grill-me` for explicitly requested planning or unresolved product/design decisions that need user input, not as a mandatory step for implementation.
+- Use `grilling` for explicitly requested planning or unresolved product/design decisions that need user input. Use `grill-with-docs` when that interview should update `CONTEXT.md` or ADRs. Neither is mandatory for implementation.
 
 ## Delegation
 
