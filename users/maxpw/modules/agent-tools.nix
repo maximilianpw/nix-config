@@ -97,6 +97,7 @@ in {
       ".pi/agent/settings.json".source = piConfigSource "settings.json";
       ".pi/agent/models.json".source = piConfigSource "models.json";
       ".pi/agent/mcp.json".source = piConfigSource "mcp.json";
+      ".pi/agent/cloudflare-deployment-allowlist.json".source = piConfigSource "cloudflare-deployment-allowlist.json";
       ".pi/agent/extensions" = {
         source = piConfigSource "extensions";
         recursive = true;
