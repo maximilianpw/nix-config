@@ -10,8 +10,12 @@ The source is `packages/leerr/source.tar.gz`, based on the handoff directly from
 not GitHub `main`, plus the tested setup fixes from
 [the setup investigation](https://ampcode.com/threads/T-01a0880a-ed61-76dc-939f-8e3caa112195).
 Archive SHA256:
-`b4dc546fa8cea3f7b5643b27ff154d7b38b2e3670f6a5ece20a0b8cc284a54a3`.
-This adds artist/album search filters, artist discographies and matched Last.fm
+`49d4fbabc9509a117034407d84eef1a276e2f07b778d49e32eda572430cb47c7`.
+This retries transient MusicBrainz HTTP 429/5xx responses up to two times with
+bounded backoff, preventing intermittent provider overload from failing album
+request identity confirmation. It is based on archive
+`b4dc546fa8cea3f7b5643b27ff154d7b38b2e3670f6a5ece20a0b8cc284a54a3`,
+which added artist/album search filters, artist discographies and matched Last.fm
 artwork from [the search investigation](https://ampcode.com/threads/T-01a09537-cac2-7599-a2fb-755cc4c4757a),
 on top of archive
 `35bfe39eed6f2681757ca9eaa9e685e62ecc6ff1c4d4f5b140651632a41d80bc`,
