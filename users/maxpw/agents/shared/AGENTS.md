@@ -17,4 +17,6 @@
 
 ## Delegation
 
+Keep decisions, synthesis, implementation, and user interaction in the current thread. Use subagents only for bounded research or review that can be described up front and returned as a concise report. Use Herdr when the user asks for a visible or multi-turn agent in another tab.
+
 When choosing a model rather than using the workflow's default, consult `model-routing`. Honor explicit model requests; for Amp threads using Astra, prefer Amp's built-in high mode unless another mode is requested.
