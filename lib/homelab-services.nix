@@ -94,6 +94,7 @@
       exposure = "public";
       hostname = "cliproxy.maximilian.pw";
       port = 19009;
+      publicMonitorPath = "/healthz";
     };
     operations.units = ["cliproxyapi.service" "nginx.service"];
   };

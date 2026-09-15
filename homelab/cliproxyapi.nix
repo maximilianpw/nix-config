@@ -41,6 +41,7 @@ in {
             absolute_redirect off;
           '';
         };
+        "= /healthz".return = "204";
         "= /management.html" = {
           proxyPass = cliProxy.baseUrl;
           extraConfig = ''

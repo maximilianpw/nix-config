@@ -49,6 +49,7 @@ in
     ]
     && cliproxy.locations."/".return == "302 /management.html"
     && lib.hasInfix "absolute_redirect off;" cliproxy.locations."/".extraConfig
+    && cliproxy.locations."= /healthz".return == "204"
     && cliproxy.locations."= /management.html".proxyPass == "http://127.0.0.1:8317"
     && cliproxy.locations."/v0/management/".proxyPass == "http://127.0.0.1:8317"
     && cliproxy.locations."/v1/".proxyPass == "http://127.0.0.1:8317"

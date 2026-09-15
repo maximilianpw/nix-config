@@ -15,7 +15,7 @@
     lib.filterAttrs (_: service: service.endpoint.exposure == exposure) services;
   endpointView = _: service:
     {
-      inherit (service.endpoint) monitorPath pathBackends port;
+      inherit (service.endpoint) monitorPath pathBackends port publicMonitorPath;
     }
     // lib.optionalAttrs (service.endpoint.hostname != null) {
       host = service.endpoint.hostname;
@@ -40,7 +40,11 @@
     inherit (serviceConfig) host port;
     inherit url;
     monitorUrl = "${loopbackUrl serviceConfig.port}${serviceConfig.monitorPath}";
-    publicMonitorUrl = "${url}${serviceConfig.monitorPath}";
+    publicMonitorUrl = "${url}${
+      if serviceConfig.publicMonitorPath == null
+      then serviceConfig.monitorPath
+      else serviceConfig.publicMonitorPath
+    }";
   };
   publicEndpoints = lib.mapAttrs (service: _: publicEndpoint service) publicServices;
   monitoredOrigins =
