@@ -134,10 +134,11 @@ in
   assert lib.assertMsg (
     localBackendScrape.scrape_interval
     == "1m"
-    && publicIngressScrape.scrape_interval == "1m"
+    && publicIngressScrape.scrape_interval == "5m"
     && publicIngressTargets == expectedPublicIngressTargets
+    && homelab.publicEndpoints.cliproxy.publicMonitorUrl == "https://cliproxy.maximilian.pw/healthz"
   )
-  "blackbox probes must use low-noise health URLs at a one-minute interval";
+  "local probes must stay responsive while public ingress probes use low-noise five-minute health checks";
   assert lib.assertMsg (
     builtins.elem "textfile" exporters.node.enabledCollectors
     && builtins.elem "--collector.textfile.directory=/var/lib/prometheus-node-exporter-text-files" exporters.node.extraFlags

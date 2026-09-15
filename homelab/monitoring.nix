@@ -80,6 +80,7 @@
       http = {
         preferred_ip_protocol = "ip4";
         follow_redirects = true;
+        headers.User-Agent = "maximilian-homelab-monitor/1";
         # Tunarr's health endpoint returns HTTP 200 even when a component is
         # unhealthy. Treat its compact JSON error marker as a failed probe.
         fail_if_body_matches_regexp = [
@@ -93,7 +94,7 @@
   };
   publicIngressScrape = {
     job_name = "public-ingress";
-    scrape_interval = "1m";
+    scrape_interval = "5m";
     metrics_path = "/probe";
     params.module = ["http_2xx"];
     static_configs = [

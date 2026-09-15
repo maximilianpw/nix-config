@@ -46,9 +46,10 @@ update: ## Update flake inputs (skips Hyprland & NixOS-only inputs)
 	@nix flake update nixpkgs nixpkgs-unstable home-manager nix-darwin fenix llm-agents
 	@echo "Done! Run 'make rebuild' to apply updates."
 
-update-all: ## Update all flake inputs including Hyprland & NixOS-only
+update-all: ## Update all flake inputs and repo-local custom packages
 	@echo "Updating all flake inputs..."
 	@nix flake update
+	@$(MAKE) update-packages
 	@echo "Done! Run 'make rebuild' to apply updates."
 
 update-packages: ## Bump repo-local custom packages via nix-update
@@ -56,9 +57,9 @@ update-packages: ## Bump repo-local custom packages via nix-update
 	@echo "Note: Linux-only packages cannot be built from macOS. The CI workflow"
 	@echo "handles them; here we only bump what this host can evaluate."
 	@echo "(skills/hunkdiff come from the llm-agents input: use 'make update')"
-	@for pkg in helium obsidian cliproxyapi nextcloud-calendar tunarr; do \
+	@for pkg in helium obsidian cliproxyapi cua-driver nextcloud-calendar tunarr; do \
 		echo ">> nix-update $$pkg"; \
-		nix run .#nix-update -- --flake "$$pkg" || echo "(skipped: $$pkg)"; \
+		nix run .#nix-update -- --flake --use-update-script "$$pkg" || echo "(skipped: $$pkg)"; \
 	done
 
 update-nextcloud-apps: ## Bump declaratively managed Nextcloud apps

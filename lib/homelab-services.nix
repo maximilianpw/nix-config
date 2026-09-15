@@ -94,6 +94,7 @@
       exposure = "public";
       hostname = "cliproxy.maximilian.pw";
       port = 19009;
+      publicMonitorPath = "/healthz";
     };
     operations.units = ["cliproxyapi.service" "nginx.service"];
   };
@@ -152,7 +153,7 @@
 
   homeassistant = {
     endpoint = {
-      authorizationOwner = "cloudflare";
+      authorizationOwner = "application";
       exposure = "public";
       hostname = "homeassistant.maximilian.pw";
       port = 19123;
@@ -245,7 +246,7 @@
 
   jellyfin = {
     endpoint = {
-      authorizationOwner = "cloudflare";
+      authorizationOwner = "application";
       # Jellyfin also serves clients on Kim's physical LAN; the firewall limits
       # this host-bound listener to the declared playback interface.
       bindScope = "host";
@@ -414,7 +415,7 @@
 
   nextcloud = {
     endpoint = {
-      authorizationOwner = "cloudflare";
+      authorizationOwner = "application";
       exposure = "public";
       hostname = "nextcloud.maximilian.pw";
       port = 19080;
@@ -735,7 +736,7 @@
 
   seerr = {
     endpoint = {
-      authorizationOwner = "cloudflare";
+      authorizationOwner = "application";
       exposure = "public";
       hostname = "seerr.maximilian.pw";
       port = 5055;

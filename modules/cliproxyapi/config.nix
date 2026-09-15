@@ -40,7 +40,9 @@ let
     host = "127.0.0.1";
     port = 8317;
     baseUrl = "http://${host}:${toString port}";
-    apiKey = "cliproxyapi-local-claudex";
+    publicBaseUrl = "https://cliproxy.maximilian.pw";
+    publicApiKeyPath = "/run/secrets/cliproxyapi-public-api-key";
+    localApiKeyPath = "/run/secrets/cliproxyapi-local-api-key";
     managementKeyHash = "$2b$12$NjrcwG.5nSCnzZRK0lAwAOTw0eDr.5PP1rVfd3q.YEdss3IHwP8CC";
     defaultModel = "gpt-5.6-sol";
     inherit openCodeZen;
@@ -58,6 +60,7 @@ in
   // {
     mkServerConfig = {
       homeDirectory,
+      localApiKey,
       openCodeZenApiKey,
     }: ''
       host: "${cliProxy.host}"
@@ -65,7 +68,7 @@ in
       auth-dir: "${homeDirectory}/.cli-proxy-api"
 
       api-keys:
-        - "${cliProxy.apiKey}"
+        - "${localApiKey}"
 
       remote-management:
         allow-remote: true

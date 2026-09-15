@@ -225,7 +225,7 @@ toggle() {
 
 pick_index() {
   prompt="$1"
-  rofi -dmenu -i -p "$prompt" -format i
+  vicinae dmenu --placeholder "$prompt" --format index
 }
 
 accounts_json() {
@@ -357,7 +357,7 @@ browse_machines() {
   [ -n "$ipv4" ] && actions="$actions\nCopy IPv4 address"
   [ -n "$ipv6" ] && actions="$actions\nCopy IPv6 address"
 
-  choice="$(printf '%b\n' "$actions" | rofi -dmenu -i -p "$name" || true)"
+  choice="$(printf '%b\n' "$actions" | vicinae dmenu --placeholder "$name" || true)"
   case "$choice" in
     "Copy machine name")
       copy_value "$name" "$name"
@@ -391,8 +391,8 @@ authorize_operator() {
 }
 
 show_menu() {
-  if ! command -v rofi >/dev/null 2>&1; then
-    notify "Tailscale" "rofi is required for the Tailscale menu"
+  if ! command -v vicinae >/dev/null 2>&1; then
+    notify "Tailscale" "Vicinae is required for the Tailscale menu"
     return
   fi
 
@@ -428,7 +428,7 @@ show_menu() {
   [ "$accounts_access_denied" = true ] && options="$options\nAuthorize operator…"
   options="$options\nRefresh"
 
-  choice="$(printf '%b\n' "$options" | rofi -dmenu -i -p "Tailscale" || true)"
+  choice="$(printf '%b\n' "$options" | vicinae dmenu --placeholder "Tailscale" || true)"
   case "$choice" in
     "Turn Tailscale off" | "Turn Tailscale on")
       toggle

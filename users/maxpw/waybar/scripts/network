@@ -553,12 +553,17 @@ print_status() {
 }
 
 show_details() {
+  local details
+
   if collect_network; then
     sample_connectivity
-    rofi -e "$(details_text)"
+    details="$(details_text)"
   else
-    rofi -e "Network disconnected"
+    details="Network disconnected"
   fi
+
+  printf '%s\n' "$details" |
+    vicinae dmenu --placeholder "Network details" --no-footer --no-quick-look >/dev/null || true
 }
 
 wifi_rows() {
@@ -647,7 +652,7 @@ choose_wifi() {
     return
   fi
 
-  index="$(rofi -dmenu -i -p "Wi-Fi network" -format i <"$menu_file" || true)"
+  index="$(vicinae dmenu --placeholder "Wi-Fi network" --format index <"$menu_file" || true)"
   if [[ ! "$index" =~ ^[0-9]+$ ]]; then
     rm -f "$rows_file" "$menu_file" "$map_file"
     return
@@ -666,8 +671,9 @@ choose_wifi() {
     notify "Network" "Connected to $network_ssid"
   elif [[ -n "$security" && "$security" != "--" ]]; then
     password="$(
-      printf '' |
-        rofi -dmenu -password -p "Passphrase for $network_ssid" || true
+      zenity --password \
+        --title="Wi-Fi authentication" \
+        --text="Passphrase for $network_ssid" 2>/dev/null || true
     )"
     if [[ -n "$password" ]] &&
       output="$(
@@ -838,8 +844,8 @@ show_menu() {
   local wifi_adapter
   local wifi_state
 
-  if ! command -v rofi >/dev/null 2>&1; then
-    notify "Network" "rofi is required for the network panel"
+  if ! command -v vicinae >/dev/null 2>&1; then
+    notify "Network" "Vicinae is required for the network panel"
     return
   fi
 
@@ -867,7 +873,7 @@ show_menu() {
   options+=$'\n'"Open connection editor"
   options+=$'\n'"Refresh"
 
-  choice="$(printf '%s\n' "$options" | rofi -dmenu -i -p "Network" || true)"
+  choice="$(printf '%s\n' "$options" | vicinae dmenu --placeholder "Network" || true)"
   case "$choice" in
     "Connection details")
       show_details

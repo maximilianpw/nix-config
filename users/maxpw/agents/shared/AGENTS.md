@@ -13,8 +13,10 @@
 - Choose checks proportional to the change, not a full suite by default. Completion includes checking the affected behavior and reporting any remaining blocker or unverified result.
 - Ask when missing information prevents a correct result or a decision would be costly to reverse; make routine, reversible decisions directly. Plan-only requests stop at the plan.
 - Require explicit authorization before publishing or pushing, deploying, changing shared infrastructure or live data, or performing destructive operations. Authorization for local verification does not authorize those actions.
-- Use `grill-me` for explicitly requested planning or unresolved product/design decisions that need user input, not as a mandatory step for implementation.
+- Use `grilling` for explicitly requested planning or unresolved product/design decisions that need user input. Use `grill-with-docs` when that interview should update `CONTEXT.md` or ADRs. Neither is mandatory for implementation.
 
 ## Delegation
+
+Keep decisions, synthesis, implementation, and user interaction in the current thread. Use subagents only for bounded research or review that can be described up front and returned as a concise report. Use Herdr when the user asks for a visible or multi-turn agent in another tab.
 
 When choosing a model rather than using the workflow's default, consult `model-routing`. Honor explicit model requests; for Amp threads using Astra, prefer Amp's built-in high mode unless another mode is requested.

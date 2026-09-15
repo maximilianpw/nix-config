@@ -45,6 +45,10 @@
         type = types.str;
         default = "";
       };
+      publicMonitorPath = mkOption {
+        type = types.nullOr types.str;
+        default = null;
+      };
       pathBackends = mkOption {
         type = types.attrsOf types.port;
         default = {};

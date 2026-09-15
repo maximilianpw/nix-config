@@ -6,7 +6,6 @@ local hypr = require("lib")
 hl.on("hyprland.start", function()
 	hypr.exec_once({
 		"waybar",
-		"wl-paste --watch cliphist store",
 		-- hyprpaper 0.8.4 (nixpkgs 26.05) ignores the `wallpaper=` line in
 		-- hyprpaper.conf at startup ("Monitor … has no target"), so apply it
 		-- over IPC once the daemon is up. The `preload=` line still works.
