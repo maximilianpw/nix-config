@@ -54,9 +54,13 @@ in
     && cliproxy.locations."/v0/management/".proxyPass == "http://127.0.0.1:8317"
     && cliproxy.locations."/v1/".proxyPass == "http://127.0.0.1:8317"
     && lib.hasInfix "if ($cliproxyapi_public_authorized = 0) { return 401; }" cliproxy.locations."/v1/".extraConfig
+    && lib.hasInfix config.sops.templates."cliproxyapi-upstream-auth.conf".path cliproxy.locations."/v1/".extraConfig
     && lib.hasInfix "allow-remote: true" config.sops.templates."cliproxyapi.conf".content
+    && !lib.hasInfix "cliproxyapi-local-claudex" config.sops.templates."cliproxyapi.conf".content
     && config.sops.templates."cliproxyapi-public-auth.conf".owner == config.services.nginx.user
     && config.sops.templates."cliproxyapi-public-auth.conf".mode == "0400"
+    && config.sops.templates."cliproxyapi-upstream-auth.conf".owner == config.services.nginx.user
+    && config.sops.templates."cliproxyapi-upstream-auth.conf".mode == "0400"
     && !(builtins.elem 19009 config.networking.firewall.allowedTCPPorts)
   )
   "CLIProxyAPI must expose its management UI behind the management key and protect its public API with a separate token";

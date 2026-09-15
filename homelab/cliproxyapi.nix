@@ -9,16 +9,26 @@
 in {
   sops = {
     secrets.cliproxyapi-public-api-key = {};
-    templates."cliproxyapi-public-auth.conf" = {
-      owner = config.services.nginx.user;
-      mode = "0400";
-      restartUnits = ["nginx.service"];
-      content = ''
-        map $http_authorization $cliproxyapi_public_authorized {
-          default 0;
-          "~^Bearer ${config.sops.placeholder.cliproxyapi-public-api-key}$" 1;
-        }
-      '';
+    templates = {
+      "cliproxyapi-public-auth.conf" = {
+        owner = config.services.nginx.user;
+        mode = "0400";
+        restartUnits = ["nginx.service"];
+        content = ''
+          map $http_authorization $cliproxyapi_public_authorized {
+            default 0;
+            "~^Bearer ${config.sops.placeholder.cliproxyapi-public-api-key}$" 1;
+          }
+        '';
+      };
+      "cliproxyapi-upstream-auth.conf" = {
+        owner = config.services.nginx.user;
+        mode = "0400";
+        restartUnits = ["nginx.service"];
+        content = ''
+          proxy_set_header Authorization "Bearer ${config.sops.placeholder.cliproxyapi-local-api-key}";
+        '';
+      };
     };
   };
 
@@ -65,7 +75,7 @@ in {
           proxyWebsockets = true;
           extraConfig = ''
             if ($cliproxyapi_public_authorized = 0) { return 401; }
-            proxy_set_header Authorization "Bearer ${cliProxy.apiKey}";
+            include ${config.sops.templates."cliproxyapi-upstream-auth.conf".path};
             proxy_buffering off;
             proxy_request_buffering off;
             proxy_read_timeout 600s;

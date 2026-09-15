@@ -11,14 +11,12 @@
     if useLocalProxy
     then cliProxy.baseUrl
     else cliProxy.publicBaseUrl;
-  proxyApiKey =
+  proxyApiKeyPath =
     if useLocalProxy
-    then cliProxy.apiKey
-    else "{env:CLIPROXYAPI_API_KEY}";
-  exportProxyApiKey =
-    if useLocalProxy
-    then "export CLIPROXYAPI_API_KEY=${lib.escapeShellArg cliProxy.apiKey}"
-    else "export CLIPROXYAPI_API_KEY=\"$(${pkgs.coreutils}/bin/cat ${lib.escapeShellArg cliProxy.publicApiKeyPath})\"";
+    then cliProxy.localApiKeyPath
+    else cliProxy.publicApiKeyPath;
+  proxyApiKey = "{env:CLIPROXYAPI_API_KEY}";
+  exportProxyApiKey = "export CLIPROXYAPI_API_KEY=\"$(${pkgs.coreutils}/bin/cat ${lib.escapeShellArg proxyApiKeyPath})\"";
   jsonFormat = pkgs.formats.json {};
   kimiModel = "kimi-k3";
   grokModel = "grok-4.6";
@@ -72,8 +70,7 @@
 in {
   home.sessionVariables = {
     CLIPROXYAPI_ROOT_URL = proxyBaseUrl;
-    CLIPROXYAPI_API_KEY_FILE = lib.mkIf (!useLocalProxy) cliProxy.publicApiKeyPath;
-    CLIPROXYAPI_API_KEY = lib.mkIf useLocalProxy cliProxy.apiKey;
+    CLIPROXYAPI_API_KEY_FILE = proxyApiKeyPath;
   };
 
   home.file = {

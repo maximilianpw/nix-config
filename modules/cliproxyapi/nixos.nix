@@ -13,17 +13,24 @@ in {
   environment.systemPackages = lib.optionals runServer [pkgs.cliproxyapi];
 
   sops = {
-    secrets."cliproxyapi-public-api-key" = {
-      owner = currentSystemUser;
-      mode = "0400";
+    secrets = {
+      "cliproxyapi-public-api-key" = {
+        owner = currentSystemUser;
+        mode = "0400";
+      };
+      "cliproxyapi-local-api-key" = lib.mkIf runServer {
+        owner = currentSystemUser;
+        mode = "0400";
+      };
+      "opencode-zen-api-key" = lib.mkIf runServer {};
     };
-    secrets."opencode-zen-api-key" = lib.mkIf runServer {};
     templates."cliproxyapi.conf" = lib.mkIf runServer {
       owner = currentSystemUser;
       mode = "0400";
       restartUnits = ["cliproxyapi.service"];
       content = cliProxy.mkServerConfig {
         inherit homeDirectory;
+        localApiKey = config.sops.placeholder."cliproxyapi-local-api-key";
         openCodeZenApiKey = config.sops.placeholder."opencode-zen-api-key";
       };
     };
