@@ -59,6 +59,15 @@ in
     && !(builtins.elem 19009 config.networking.firewall.allowedTCPPorts)
   )
   "CLIProxyAPI must expose its management UI behind the management key and protect its public API with a separate token";
+  assert lib.assertMsg (
+    lib.all (name: homelab.services.${name}.endpoint.authorizationOwner == "application") [
+      "homeassistant"
+      "jellyfin"
+      "nextcloud"
+      "seerr"
+    ]
+  )
+  "public applications must declare application-owned authentication accurately";
   assert lib.assertMsg (config.services.home-assistant.config.http.server_host == "127.0.0.1")
   "Home Assistant must bind only its declared loopback origin";
   assert lib.assertMsg (config.services.nextcloud.settings.trusted_proxies == ["127.0.0.1" "::1"])
