@@ -3,6 +3,8 @@
 set -euo pipefail
 
 script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck source=scripts/tests/portable-gnu-fixtures.sh
+source "$script_dir/tests/portable-gnu-fixtures.sh"
 test_root="$(mktemp -d)"
 trap 'rm -rf "$test_root"' EXIT
 
@@ -51,8 +53,11 @@ STATS
 esac
 EOF
 chmod +x "$fake_docker"
+install_portable_gnu_date_fixture "$test_root/date"
+export TEST_NOW_EPOCH=400000
 
 DOCKER_BIN="$fake_docker" \
+  DATE_BIN="$test_root/date" \
   HOMELAB_METRICS_DIR="$metrics_dir" \
   HOMELAB_CONTAINER_STALE_AFTER_SECONDS=86400 \
   NOW_EPOCH=400000 \
@@ -70,10 +75,10 @@ if grep -Fq 'name="kept-prod"' < <(grep 'homelab_docker_stale_container_info' "$
   echo "keep-labeled container was incorrectly reported as stale" >&2
   exit 1
 fi
-test "$(stat -c '%a' "$metrics_file")" = 644
+assert_file_mode "$metrics_file" 0644
 
 cp "$metrics_file" "$test_root/expected.prom"
-if FAIL_DOCKER=1 DOCKER_BIN="$fake_docker" HOMELAB_METRICS_DIR="$metrics_dir" \
+if FAIL_DOCKER=1 DOCKER_BIN="$fake_docker" DATE_BIN="$test_root/date" HOMELAB_METRICS_DIR="$metrics_dir" \
   "$script_dir/homelab-container-audit.sh" >/dev/null 2>&1; then
   echo "container audit unexpectedly accepted a Docker failure" >&2
   exit 1
@@ -81,14 +86,14 @@ fi
 cmp "$test_root/expected.prom" "$metrics_file"
 
 race_state_file="$test_root/race-state"
-RACE_STATE_FILE="$race_state_file" DOCKER_BIN="$fake_docker" HOMELAB_METRICS_DIR="$metrics_dir" \
+RACE_STATE_FILE="$race_state_file" DOCKER_BIN="$fake_docker" DATE_BIN="$test_root/date" HOMELAB_METRICS_DIR="$metrics_dir" \
   HOMELAB_CONTAINER_SNAPSHOT_ATTEMPTS=2 NOW_EPOCH=400000 \
   "$script_dir/homelab-container-audit.sh" >/dev/null
 # The vanished container is excluded from the retried snapshot.
 grep -F 'homelab_docker_containers 3' "$metrics_file"
 test -e "$race_state_file"
 
-FAKE_EMPTY=1 DOCKER_BIN="$fake_docker" HOMELAB_METRICS_DIR="$metrics_dir" \
+FAKE_EMPTY=1 DOCKER_BIN="$fake_docker" DATE_BIN="$test_root/date" HOMELAB_METRICS_DIR="$metrics_dir" \
   "$script_dir/homelab-container-audit.sh" >/dev/null
 grep -F 'homelab_docker_containers 0' "$metrics_file"
 grep -F 'homelab_docker_stale_containers 0' "$metrics_file"

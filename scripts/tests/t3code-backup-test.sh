@@ -3,6 +3,8 @@ set -euo pipefail
 
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 backup="$repo_root/scripts/t3code-backup.sh"
+# shellcheck source=scripts/tests/portable-gnu-fixtures.sh
+source "$repo_root/scripts/tests/portable-gnu-fixtures.sh"
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 source_dir="$tmp/source"
@@ -45,13 +47,18 @@ else:
     raise SystemExit(2)
 PY
 chmod +x "$tmp/sqlite3"
+install_portable_gnu_tar_fixture "$tmp/tar"
+install_portable_gnu_reference_fixtures "$tmp/coreutils"
+export TEST_REAL_TAR_BIN
+TEST_REAL_TAR_BIN=$(command -v tar)
 
 run_backup() {
   T3CODE_SOURCE_DIR=$source_dir \
     T3CODE_BACKUP_DIR=$backup_dir \
     SQLITE_BIN=$tmp/sqlite3 \
     RSYNC_BIN=$(command -v rsync) \
-    TAR_BIN=$(command -v tar) \
+    TAR_BIN=$tmp/tar \
+    PATH="$tmp/coreutils:$PATH" \
     bash "$backup"
 }
 
@@ -69,6 +76,16 @@ import sys
 with sqlite3.connect(sys.argv[1]) as connection:
     assert connection.execute("pragma integrity_check").fetchone()[0] == "ok"
     assert connection.execute("select title from threads").fetchall() == [("first",)]
+PY
+python3 - "$source_dir/userdata/state.sqlite" "$tmp/extracted/userdata/state.sqlite" <<'PY'
+import os
+import stat
+import sys
+
+source = os.stat(sys.argv[1])
+restored = os.stat(sys.argv[2])
+assert stat.S_IMODE(restored.st_mode) == stat.S_IMODE(source.st_mode)
+assert (restored.st_uid, restored.st_gid) == (source.st_uid, source.st_gid)
 PY
 
 python3 - "$source_dir/userdata/state.sqlite" <<'PY'

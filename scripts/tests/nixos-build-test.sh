@@ -6,6 +6,7 @@ tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 fixture="$tmp/config with spaces"
 mkdir -p "$tmp/bin" "$fixture/scripts/lib"
+fixture=$(cd "$fixture" && pwd -P)
 cp "$repo_root/Makefile" "$fixture/Makefile"
 cp "$repo_root/scripts/nixos-build.sh" "$fixture/scripts/"
 cp "$repo_root/scripts/lib/host-detect.sh" "$fixture/scripts/lib/"

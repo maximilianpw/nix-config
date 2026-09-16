@@ -35,6 +35,10 @@ cat >"$tmpdir/bin/nh" <<'EOF'
 touch "$NIX_TEST_NH_MARKER"
 exit 91
 EOF
+cat >"$tmpdir/bin/uname" <<'EOF'
+#!/usr/bin/env bash
+printf 'Linux\n'
+EOF
 chmod +x "$tmpdir/bin/"*
 
 run_preflight_failure() {

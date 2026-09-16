@@ -4,6 +4,8 @@ set -euo pipefail
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 coordinator="$repo_root/scripts/homelab-backup-coordinator.sh"
 posthook="$repo_root/scripts/homelab-backup-posthook.sh"
+# shellcheck source=scripts/tests/portable-gnu-fixtures.sh
+source "$repo_root/scripts/tests/portable-gnu-fixtures.sh"
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 
@@ -73,6 +75,7 @@ printf 't3code online snapshot\n' >> "$CASE_DIR/commands"
 [[ ${FAIL_T3CODE_BACKUP:-0} != 1 ]]
 EOF
 chmod +x "$tmp/systemctl" "$tmp/tar-fail" "$tmp/t3code-backup"
+install_portable_gnu_tar_fixture "$tmp/tar"
 
 new_case() {
   local name=$1
@@ -83,8 +86,9 @@ new_case() {
   : > "$CASE_DIR/commands"
   printf 'config\n' > "$CASE_DIR/source/hass/configuration.yaml"
   export SYSTEMCTL_BIN=$tmp/systemctl
-  export TAR_BIN
-  TAR_BIN=$(command -v tar)
+  export TAR_BIN=$tmp/tar
+  export TEST_REAL_TAR_BIN
+  TEST_REAL_TAR_BIN=$(command -v tar)
   export SLEEP_BIN
   SLEEP_BIN=$(command -v true)
   export HOMELAB_BACKUP_STATE_DIR=$CASE_DIR/state
@@ -175,8 +179,7 @@ if bash "$coordinator" prepare; then
   echo "tar failure unexpectedly succeeded" >&2
   exit 1
 fi
-export TAR_BIN
-TAR_BIN=$(command -v tar)
+export TAR_BIN=$tmp/tar
 bash "$coordinator" cleanup
 is_active db-a.service
 is_active file-a.service

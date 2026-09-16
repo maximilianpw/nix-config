@@ -3,6 +3,8 @@
 set -euo pipefail
 
 script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck source=scripts/tests/portable-gnu-fixtures.sh
+source "$script_dir/tests/portable-gnu-fixtures.sh"
 test_root="$(mktemp -d)"
 trap 'rm -rf "$test_root"' EXIT
 
@@ -63,7 +65,7 @@ homelab_systemd_unit_cpu_seconds_total{unit="jellyfin.service"} 9.000000000
 EOF
 
 cmp "$expected_metrics" "$metrics_file"
-test "$(stat -c '%a' "$metrics_file")" = "644"
+assert_file_mode "$metrics_file" 0644
 test -z "$(find "$metrics_dir" -type f ! -name 'homelab-systemd-resources.prom' -print -quit)"
 
 if FAIL_SYSTEMCTL=1 \
