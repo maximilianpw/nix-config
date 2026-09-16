@@ -74,6 +74,13 @@ in {
   };
 
   home.file = {
+    ".config/cliproxyapi/client.json" = {
+      force = true;
+      source = jsonFormat.generate "cliproxyapi-client.json" {
+        rootUrl = proxyBaseUrl;
+        apiKeyFile = proxyApiKeyPath;
+      };
+    };
     ".grok-cliproxyapi/config.toml".text = grokProxyConfig;
     ".config/opencode/opencode.json".source = jsonFormat.generate "opencode.json" opencodeConfig;
 
