@@ -19,6 +19,45 @@
   excludesLiveT3CodeState = builtins.elem t3codeSource backup.exclude;
   canWriteT3CodeArtifact = builtins.elem "/var/backup/t3code" backupUnit.serviceConfig.ReadWritePaths;
   manifest = config.custom.backup.manifestMetadata;
+  contributedVersions = config.custom.backup.applicationVersions;
+  statefulServiceNames = builtins.attrNames (
+    lib.filterAttrs (_: service: service.state.kind != "none") homelab.services
+  );
+  nixosOwnedVersionNames = lib.sort builtins.lessThan (
+    ["homepage"] ++ builtins.filter (name: name != "t3code") statefulServiceNames
+  );
+  missingVersionFixture = lib.evalModules {
+    specialArgs = {inherit pkgs;};
+    modules = [
+      ../modules/services/backup.nix
+      {
+        _module.check = false;
+        custom.backup = {
+          enable = true;
+          applicationVersions = builtins.removeAttrs contributedVersions ["vaultwarden"];
+        };
+        system.nixos.version = config.system.nixos.version;
+        services.postgresql.package = config.services.postgresql.package;
+      }
+    ];
+  };
+  rejectsMissingVersion =
+    !(builtins.tryEval (
+      builtins.deepSeq missingVersionFixture.config.custom.backup.manifestMetadata true
+    )).success;
+  conflictingVersionFixture = lib.evalModules {
+    specialArgs = {inherit pkgs;};
+    modules = [
+      ../modules/services/backup.nix
+      {_module.check = false;}
+      {custom.backup.applicationVersions.actual = "first";}
+      {custom.backup.applicationVersions.actual = "second";}
+    ];
+  };
+  rejectsConflictingVersion =
+    !(builtins.tryEval (
+      builtins.deepSeq conflictingVersionFixture.config.custom.backup.applicationVersions.actual true
+    )).success;
   archivesManifest = builtins.elem "/var/backup/homelab" backup.paths;
   canWriteManifest = builtins.elem "/var/backup/homelab" backupUnit.serviceConfig.ReadWritePaths;
   canPersistRecoveryState = builtins.elem "/run/homelab-backup" backupUnit.serviceConfig.ReadWritePaths;
@@ -83,6 +122,7 @@ in
   assert lib.assertMsg (
     manifest.schemaVersion
     == 1
+    && builtins.attrNames contributedVersions == nixosOwnedVersionNames
     && manifest.expectedDatabases == ["atuin" "hass" "immich" "miniflux" "nextcloud" "paperless" "vaultwarden"]
     && builtins.hasAttr "actual" manifest.applicationVersions
     && builtins.hasAttr "executor" manifest.applicationVersions
@@ -106,6 +146,10 @@ in
     && builtins.elem "grafana" manifest.disposableState
   )
   "the archive manifest must identify versions, databases, primary state, and accepted disposable state";
+  assert lib.assertMsg rejectsMissingVersion
+  "an enabled stateful service without a version contribution must fail evaluation";
+  assert lib.assertMsg rejectsConflictingVersion
+  "conflicting application-version contributions must fail evaluation";
   assert lib.assertMsg writesSuccessMetrics
   "the Borg post-hook must delegate final cleanup/status metrics with permission to write them";
   assert lib.assertMsg recoversBeforeRepositoryMaintenance

@@ -8,6 +8,8 @@
   inherit ((homelab.endpoints config.homelab.tailnet.domain)) leerr;
   package = pkgs.callPackage ../packages/leerr.nix {};
 in {
+  custom.backup.applicationVersions.leerr = package.version;
+
   sops.secrets.leerr-encryption-key = {
     sopsFile = ../secrets/leerr.yaml;
     owner = "leerr";

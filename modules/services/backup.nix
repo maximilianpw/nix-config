@@ -48,37 +48,16 @@
       path: !(pathCoveredBy baseBackupPaths path)
     )
     homelab.backup.archivePaths;
-  applicationVersions = {
-    actual = config.services.actual.package.version;
-    atuin = config.services.atuin.package.version;
-    bazarr = config.services.bazarr.package.version;
-    executor = config.virtualisation.oci-containers.containers.executor.image;
-    grafana = config.services.grafana.package.version;
-    homeassistant = config.services.home-assistant.package.version;
-    homepage = config.services.homepage-dashboard.package.version;
-    immich = config.services.immich.package.version;
-    jellyfin = config.services.jellyfin.package.version;
-    kuma = config.services.uptime-kuma.package.version;
-    leerr = (pkgs.callPackage ../../packages/leerr.nix {}).version;
-    lidarr = config.services.lidarr.package.version;
-    miniflux = config.services.miniflux.package.version;
-    nextcloud = config.services.nextcloud.package.version;
-    paperless = config.services.paperless.package.version;
-    prowlarr = config.services.prowlarr.package.version;
-    prometheus = config.services.prometheus.package.version;
-    qbittorrent = config.containers.qbt.config.services.qbittorrent.package.version;
-    radarr = config.services.radarr.package.version;
-    sabnzbd = config.containers.sab.config.services.sabnzbd.package.version;
-    seerr = config.services.seerr.package.version;
-    sonarr = config.services.sonarr.package.version;
-    syncthing = config.services.syncthing.package.version;
-    t3code = t3codeVersion;
-    tunarr = pkgs.tunarr.version;
-    vaultwarden = config.services.vaultwarden.package.version;
-    # Preserve the schema-v1 manifest key while the canonical inventory name
-    # above lets coverage track the service directly.
-    uptimeKuma = config.services.uptime-kuma.package.version;
-  };
+  applicationVersions =
+    cfg.applicationVersions
+    // {
+      # T3 Code is configured in Home Manager, which is a separate module
+      # system, so the NixOS backup coordinator keeps this one lookup.
+      t3code = t3codeVersion;
+      # Preserve the schema-v1 manifest key while the canonical inventory name
+      # lets coverage track the service directly as `kuma`.
+      uptimeKuma = cfg.applicationVersions.kuma;
+    };
   statefulServiceNames = builtins.attrNames (
     lib.filterAttrs (_: service: service.state.kind != "none") homelab.services
   );
@@ -203,6 +182,13 @@
 in {
   options.custom.backup = {
     enable = lib.mkEnableOption "borgbackup to external drive";
+
+    applicationVersions = lib.mkOption {
+      type = lib.types.attrsOf lib.types.str;
+      default = {};
+      internal = true;
+      description = "Non-secret application package and image identifiers recorded in backup manifests.";
+    };
 
     paths = lib.mkOption {
       type = lib.types.listOf lib.types.str;

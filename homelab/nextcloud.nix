@@ -26,6 +26,8 @@
     '';
   };
 in {
+  custom.backup.applicationVersions.nextcloud = config.services.nextcloud.package.version;
+
   sops.secrets.nextcloud-admin-password = {};
 
   services.nextcloud = {

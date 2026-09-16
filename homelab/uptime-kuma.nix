@@ -1,4 +1,5 @@
 {
+  config,
   lib,
   pkgs,
   ...
@@ -14,6 +15,8 @@
     '';
   };
 in {
+  custom.backup.applicationVersions.kuma = config.services.uptime-kuma.package.version;
+
   services.uptime-kuma = {
     enable = true;
     appriseSupport = true;

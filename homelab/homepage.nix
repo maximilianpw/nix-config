@@ -39,6 +39,8 @@
     ./homepage/layout.yaml
   ];
 in {
+  custom.backup.applicationVersions.homepage = config.services.homepage-dashboard.package.version;
+
   # The nixpkgs module exposes no listen-address option; Homepage is a
   # Next.js standalone server and binds the address given in $HOSTNAME.
   # Tailscale Serve is its only ingress path.

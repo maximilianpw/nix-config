@@ -7,6 +7,8 @@
   homelab = import ../lib/homelab.nix {inherit lib;};
   inherit ((homelab.endpoints config.homelab.tailnet.domain)) immich;
 in {
+  custom.backup.applicationVersions.immich = config.services.immich.package.version;
+
   services.immich = {
     enable = true;
     # NixOS 26.05 is frozen on the unsupported Immich 2.x series. Keep the

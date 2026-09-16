@@ -8,6 +8,8 @@
   home = "/home/${currentSystemUser}";
   inherit (homelab.privateServices) syncthing;
 in {
+  custom.backup.applicationVersions.syncthing = config.services.syncthing.package.version;
+
   sops.secrets.syncthing-gui-password = {
     owner = currentSystemUser;
     restartUnits = ["syncthing-init.service"];

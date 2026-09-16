@@ -6,6 +6,8 @@
   homelab = import ../lib/homelab.nix {inherit lib;};
   inherit ((homelab.endpoints config.homelab.tailnet.domain)) vaultwarden;
 in {
+  custom.backup.applicationVersions.vaultwarden = config.services.vaultwarden.package.version;
+
   sops.secrets.vaultwarden-environment = {
     restartUnits = ["vaultwarden.service"];
   };

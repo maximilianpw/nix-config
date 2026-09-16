@@ -19,6 +19,8 @@
     usenetRoot
     ;
 in {
+  custom.backup.applicationVersions.sabnzbd = config.containers.sab.config.services.sabnzbd.package.version;
+
   containers.sab = mkVpnContainer {
     hostAddress = sabContainerHostAddress;
     localAddress = sabContainerLocalAddress;

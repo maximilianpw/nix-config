@@ -22,6 +22,8 @@
     qbitUid
     ;
 in {
+  custom.backup.applicationVersions.qbittorrent = config.containers.qbt.config.services.qbittorrent.package.version;
+
   containers.qbt = mkVpnContainer {
     hostAddress = qbitContainerHostAddress;
     # Mullvad's LAN firewall must see the host endpoint in the container's

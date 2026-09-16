@@ -232,6 +232,11 @@ in {
   };
 
   config = {
+    custom.backup.applicationVersions = {
+      grafana = config.services.grafana.package.version;
+      prometheus = config.services.prometheus.package.version;
+    };
+
     environment.systemPackages = [homelabCheck];
 
     services = {

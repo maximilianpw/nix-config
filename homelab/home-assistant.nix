@@ -1,4 +1,5 @@
 {
+  config,
   lib,
   pkgs,
   ...
@@ -7,6 +8,8 @@
   inherit (homelab.publicEndpoints) homeassistant;
   database = homelab.services.homeassistant.state.database;
 in {
+  custom.backup.applicationVersions.homeassistant = config.services.home-assistant.package.version;
+
   services.postgresql = {
     enable = true;
     ensureDatabases = [database];

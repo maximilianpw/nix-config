@@ -17,6 +17,8 @@
         >/dev/null
     '';
 in {
+  custom.backup.applicationVersions.tunarr = pkgs.tunarr.version;
+
   users = {
     groups.tunarr = {};
     users.tunarr = {

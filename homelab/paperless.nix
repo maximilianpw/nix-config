@@ -7,6 +7,8 @@
   homelab = import ../lib/homelab.nix {inherit lib;};
   inherit ((homelab.endpoints config.homelab.tailnet.domain)) paperless;
 in {
+  custom.backup.applicationVersions.paperless = config.services.paperless.package.version;
+
   sops.secrets.paperless-admin-password = {
     restartUnits = ["paperless-scheduler.service"];
   };
