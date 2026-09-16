@@ -57,10 +57,7 @@ update-packages: ## Bump repo-local custom packages via nix-update
 	@echo "Note: Linux-only packages cannot be built from macOS. The CI workflow"
 	@echo "handles them; here we only bump what this host can evaluate."
 	@echo "(skills/hunkdiff come from the llm-agents input: use 'make update')"
-	@for pkg in helium obsidian cliproxyapi cua-driver nextcloud-calendar tunarr; do \
-		echo ">> nix-update $$pkg"; \
-		nix run .#nix-update -- --flake --use-update-script "$$pkg" || echo "(skipped: $$pkg)"; \
-	done
+	@$(SCRIPT_DIR)/ci/update-packages.sh --local
 
 update-nextcloud-apps: ## Bump declaratively managed Nextcloud apps
 	@nix run .#nix-update -- --flake nextcloud-calendar
