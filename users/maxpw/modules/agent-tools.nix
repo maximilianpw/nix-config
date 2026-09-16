@@ -18,6 +18,7 @@ in {
   home = {
     packages = [
       pkgs.claude-code
+      pkgs.cloudflared
       pkgs.codex
       pkgs.cua-driver
       pkgs.opencode
@@ -27,6 +28,11 @@ in {
       pkgs.pi
       pkgs.skills
     ];
+
+    sessionVariables = {
+      CFPASTE_PRIVATE_ORIGIN = "https://paste.maximilian.pw";
+      CFPASTE_PUBLIC_ORIGIN = "https://p.maximilian.pw";
+    };
 
     activation = lib.optionalAttrs isDarwin {
       # Cua Driver must be a real, stable /Applications bundle: its MCP mode
