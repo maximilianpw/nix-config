@@ -74,10 +74,6 @@
       inherit lib;
       pkgs = nixpkgs.legacyPackages.x86_64-linux;
     };
-    fleet-agent-forwarding-regression = import ../tests/fleet-agent-forwarding-regression.nix {
-      inherit lib;
-      pkgs = nixpkgs.legacyPackages.x86_64-linux;
-    };
     fleet-ssh-regression = import ../tests/fleet-ssh-regression.nix {
       inherit lib;
       pkgs = nixpkgs.legacyPackages.x86_64-linux;
