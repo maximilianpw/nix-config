@@ -37,6 +37,9 @@ The normalized records in `lib/homelab-inventory.nix` enforce the local state,
 backup, storage, monitoring, and endpoint classifications. Mutable UI state is
 not declarative merely because an activation hook could replay commands.
 
+External decisions and acceptance gates are tracked once in the
+[homelab backlog](homelab-backlog.md).
+
 ## Recovery layers
 
 The configuration repository recreates software and service definitions, not

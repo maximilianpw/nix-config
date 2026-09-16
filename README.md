@@ -1,272 +1,87 @@
-# Nix-Config
+# Nix configuration
 
-Unified NixOS + macOS (nix-darwin) flake for a headless homelab, Apple Silicon
-workstation, WSL environment, and a parked/tested Hyprland desktop profile.
-The remote development fleet is named Revachol; its CLI remains `fleet`.
+This flake manages three hosts for Maximilian:
 
-## Repository layout
+- `kim`, an x86_64 NixOS homelab;
+- `cuno`, an x86_64 NixOS-WSL environment;
+- `joyce`, an Apple Silicon nix-darwin workstation.
 
-```
-.
-├── AGENTS.md               # Agent instructions for this repository
-├── BOOTSTRAP.md            # New-system bootstrap guide
-├── CLAUDE.md               # Claude Code repository guidance
-├── Makefile                # Convenience commands for build/rebuild/update
-├── flake.nix                # Main flake: inputs, overlays, and outputs
-├── flake.lock
-├── docs/                    # Supplemental documentation
-│   ├── hardware-issues.md
-│   └── wsl-setup.md
-├── homelab/                 # self-hosted services; public Cloudflare + private Tailscale Serve
-├── lib/
-│   ├── hosts.nix            # Canonical typed host/profile/fleet inventory
-│   └── mksystem.nix         # mkSystem builder (NixOS & Darwin + Home Manager)
-├── machines/
-│   ├── cuno.nix             # NixOS-WSL host
-│   ├── joyce.nix            # macOS (nix-darwin) workstation
-│   ├── kim.nix              # Headless NixOS homelab (Ryzen)
-│   └── hardware/
-│       ├── kim-disko.nix    # Disko layout for kim
-│       └── kim.nix          # Hardware profile for kim
-├── modules/
-│   ├── core/
-│   │   ├── nix-settings.nix # Shared Nix settings (experimental-features, flakes)
-│   │   ├── security.nix     # Security defaults (SSH, polkit, rtkit)
-│   │   ├── shells.nix       # System-level shell registration
-│   │   └── sops.nix         # sops-nix integration
-│   ├── desktop/
-│   │   └── hyprland.nix     # Hyprland from upstream flake (+portals, env)
-│   ├── fleet/
-│   │   ├── README.md        # Remote dev fleet usage and adding-machine notes
-│   │   ├── home-manager.nix # Fleet inventory, SSH matchblocks, and fleet CLI
-│   │   └── nixos.nix        # Tailscale, mosh, and tmux for fleet nodes
-│   └── services/
-│       └── backup.nix       # Borg backup service
-├── packages/
-│   ├── helium.nix           # Custom package: Helium floating browser
-│   └── obsidian.nix         # Custom package: Obsidian
-├── scripts/
-│   └── nixos-rebuild.sh     # Smart rebuild script (Darwin/NixOS autodetect)
-├── secrets/                 # sops-nix encrypted secrets
-│   ├── README.md
-│   └── secrets.yaml
-├── templates/               # Nix flake templates
-│   ├── generic/
-│   ├── node/
-│   └── rust/
-├── users/
-│   └── maxpw/
-│       ├── home-manager.nix # Main Home Manager config (Linux & macOS)
-│       ├── nixos.nix        # NixOS user/system module
-│       ├── darwin.nix       # nix-darwin user/system module for joyce
-│       ├── wsl.nix          # NixOS-WSL user/system module
-│       ├── modules/
-│       │   ├── fonts.nix          # Fonts (Nerd Fonts + defaults, fontconfig)
-│       │   ├── neovim.nix         # Neovim configuration with LSPs
-│       │   ├── vcs/jujutsu.nix    # Jujutsu config
-│       │   └── packages/
-│       │       ├── custom-scripts.nix # Personal scripts
-│       │       ├── dev-tools.nix      # Development packages (languages, tools)
-│       │       ├── terminal-tools.nix # CLI utilities and terminal tools
-│       │       └── linux-desktop.nix  # Linux GUI apps and Wayland tools
-│       ├── config.fish      # fish init (ssh-agent, Homebrew, starship)
-│       ├── config.nu        # nushell init (env, direnv hook, helpers)
-│       ├── ghostty.linux    # Ghostty config (Linux); linked by HM
-│       ├── RectangleConfig.json # Rectangle.app settings (macOS); linked by HM
-│       └── [various configs] # Hyprland, Waybar, Vicinae, etc.
-├── nixos-switch.log         # Last rebuild log (script output)
-└── plans/                   # Reviewed implementation plans
-```
+It also keeps a parked, evaluable Hyprland profile for Kim. Revachol is the
+remote-development fleet name, while its command remains `fleet`.
 
-## Flake overview
+## Ownership map
 
-- Inputs: nixpkgs 26.05, nixpkgs-unstable (select pkgs), home-manager 26.05, nix-darwin 26.05, Hyprland, NixOS-WSL, fenix, sops-nix, llm-agents, disko, nix-index-database.
-- Overlays: fenix (Rust toolchain); llm-agents (claude-code, codex, opencode, amp-cli, pi, skills, hunkdiff, agent-browser); unstable passthrough (`pkgs.unstable`, plus jujutsu/zig pinned to unstable) and custom packages (helium, obsidian).
-- `lib/hosts.nix` is the data-only source for system outputs, profile labels,
-  platform metadata, and fleet hosts. Its profile labels are a typed migration
-  seam; platform flags still select modules today rather than a new role-module
-  framework.
-- mkSystem (`lib/mksystem.nix`):
-  - Picks nixosSystem or darwinSystem.
-  - Adds NixOS-WSL module when `wsl = true`.
-  - Integrates Home Manager at `home-manager.users.<user>` using `users/<userDir>/home-manager.nix`.
-  - Injects convenience args: `currentSystem*`, `isWSL`, `inputs`.
-- Outputs (derived from `lib/hosts.nix`):
-  - `nixosConfigurations.kim` (x86_64-linux homelab; user: `maxpw`).
-  - `nixosConfigurations.cuno` (x86_64-linux under WSL; user: `maxpw`).
-  - `darwinConfigurations.joyce` (aarch64-darwin; login `max-vev`, userDir `maxpw`).
-  - Eval check for the parked `kim` Hyprland profile.
-  - `devShells` for aarch64/x86_64 Linux and aarch64 Darwin.
+- `lib/hosts.nix` is the host and Fleet inventory.
+  `lib/inventory.nix` validates and normalizes it, and `lib/mksystem.nix`
+  constructs system outputs.
+- `lib/homelab-services.nix` owns service exposure, state, backup, monitoring,
+  storage, and recovery metadata. Application implementation stays in the
+  owning module under `homelab/`.
+- `machines/` contains host-specific operating-system configuration.
+- `modules/` contains shared system, Fleet, desktop, and service modules.
+- `users/maxpw/` contains Home Manager and platform-specific user
+  configuration.
+- `packages/` contains repository-owned package definitions. Flake package and
+  check registration live in `flake.nix` and `lib/checks.nix`.
 
-## What each file/module does
+Nix and Home Manager own systems, packages, shells, and executables. The
+separate chezmoi repository owns Neovim and application content. The external
+`pi-config` repository owns Pi settings, prompts, extensions, and themes. The
+pinned Fleet input owns the installed runtime CLI and tunnel supervision.
+This repository owns the personal Fleet inventory, SSH policy, trust, aliases,
+generated contract, and consumer compatibility checks. It does not retain a
+second CLI implementation. Do not give two systems the same destination.
 
-- lib/mksystem.nix
-  - Chooses NixOS or Darwin system function, wires Home Manager and optional WSL, passes `currentSystem*` args.
+See the [documentation index](docs/README.md) for runbooks, recovery guidance,
+accepted decisions, and open work.
 
-- machines/joyce.nix (nix-darwin)
-  - stateVersion = 6; leaves Nix daemon to Determinate installer (`nix.enable = false`).
-  - Optional Linux builder (currently disabled); basic tools (e.g., cachix).
-  - Imports core modules for shared nix settings.
+## Common workflow
 
-- machines/kim.nix (headless NixOS homelab)
-  - Imports `hardware/kim.nix` for hardware configuration.
-  - AMD Ryzen setup with zen kernel, power management, and firmware updates.
-  - Docker and libvirtd for virtualization.
-  - System packages and optional GUI applications.
+Bootstrap a new machine with [BOOTSTRAP.md](BOOTSTRAP.md). For an existing
+checkout, choose checks that match the change:
 
-- machines/cuno.nix (NixOS-WSL)
-  - Enables WSL module, sets default user; stateVersion 24.05.
-  - Imports shared nix-settings module.
+```sh
+# Documentation or guidance
+git diff --check
 
-- modules/core/nix-settings.nix
-  - Shared Nix configuration: experimental-features (flakes, nix-command), store optimization, keep-outputs, keep-derivations.
-  - Imported by all machines for consistency.
+# Changed Nix files
+alejandra --check <files>
+make lint
 
-- modules/core/security.nix
-  - Security defaults: rtkit (for audio), polkit (privilege prompts), SSH with secure defaults.
-  - Centralized security configuration.
-
-- modules/fleet/
-  - Remote-development fleet module: Tailscale/mosh system setup, declarative host inventory, SSH matchblocks, host-key pinning, and the `fleet` helper CLI.
-
-- modules/desktop/hyprland.nix
-  - Hyprland from upstream input, xdg-desktop-portal-hyprland, Xwayland, greetd login manager.
-
-- users/maxpw/home-manager.nix
-  - Shared HM config for Linux/macOS; imports fonts and package modules.
-  - Sets EDITOR/PAGER/MANPAGER; links macOS Rectangle config and Linux Ghostty config.
-  - Configures git (signing key, aliases), shells (Bash/Fish/Nushell), neovim; Linux gpg-agent.
-
-- users/maxpw/packages/*.nix
-  - dev-tools.nix: Programming languages, LSPs, build tools, cloud/infrastructure tools.
-  - terminal-tools.nix: CLI utilities, git tools, shell prompts, AI tools.
-  - linux-desktop.nix: Wayland tools, GUI applications, desktop utilities (Linux only).
-
-- users/maxpw/nixos.nix (NixOS user/system)
-  - Imports core modules (nix-settings, security) and Hyprland desktop module.
-  - Sets timezone/locale; US Colemak xkb; PipeWire; user `maxpw` in useful groups; Firefox; stateVersion 24.05.
-
-- users/maxpw/darwin.nix (nix-darwin user/system)
-  - Homebrew brews & casks (1Password, Rectangle, browsers, IDEs, VPN, Docker Desktop, etc.).
-  - Declares `users.users.max-vev` and `system.primaryUser`.
-
-- users/maxpw/fonts.nix (Home Manager)
-  - Installs Nerd Fonts and common font families; enables fontconfig and defaults.
-
-- scripts/nixos-rebuild.sh
-  - Uses the actual Linux hostname (WSL is detected explicitly), validates it
-    against the inventory, enforces safe SOPS key metadata, then switches with
-    `nh` and cleans old generations.
-  - Records an identity-checked process tree under the user state directory;
-    `make rebuild-processes` and `make cleanup-rebuild` never regex-match
-    unrelated Nix jobs.
-
-## Homelab service inventory
-
-`lib/homelab-services.nix` is the data-only source for service exposure and
-authorization ownership, loopback ports, primary files/databases, exceptional
-backup strategies, quiesce phases, `/srv` dependencies, important units,
-recovery contracts, and shared presentation metadata. State kinds, ordinary
-file archive paths, the shared PostgreSQL dump, and the default recovery owner
-are derived rather than repeated per service. Quiescing supports both system
-and user units. `lib/homelab-inventory.nix` uses typed Nix submodules for field
-validation and defaults, then enforces cross-field and cross-service invariants.
-`lib/homelab.nix` exposes small derived views to Cloudflare, Tailscale Serve,
-Homepage, storage, backup, and monitoring modules.
-
-To add a service:
-
-1. Add its owning NixOS application module.
-2. Add one typed record; classify every database, mutable path, secret owner,
-   and deliberately disposable artifact.
-3. Declare exposure and authorization ownership, health path, and important
-   units.
-4. Declare non-default backup transformations/exports, quiesce phase, restore
-   order, and functional acceptance checks.
-5. Verify both addition and removal so stale ingress cannot survive.
-
-Application options, shell implementation, secrets, dashboards, and
-provider/Terraform state stay in their owning modules rather than the inventory.
-See the [recovery runbook](docs/homelab-recovery.md) before handling archives.
-
-For private shell history sync between Kim and Joyce, see the
-[Atuin enrollment and usage guide](docs/atuin.md).
-
-## Using this flake
-
-### For new systems
-
-See [BOOTSTRAP.md](BOOTSTRAP.md) for detailed instructions on setting up a new system.
-
-Quick start:
-```bash
-git clone <your-repo-url> ~/nix-config
-cd ~/nix-config
-./scripts/bootstrap.sh
-```
-
-Or with Make:
-```bash
-make bootstrap
-```
-
-After the first rebuild, initialize dotfiles without applying them, inspect the
-diff, then opt into an interactive apply:
-
-```bash
-make chezmoi-bootstrap
-make chezmoi-preview
-make chezmoi-apply
-```
-
-### For existing systems
-
-Suggested clone path: `~/nix-config` (the rebuild script assumes this).
-
-Pi's content is maintained separately in
-[`maximilianpw/pi-config`](https://github.com/maximilianpw/pi-config). Clone it
-at `~/pi-config` and follow that repository's dependency/setup instructions
-before using Pi: Home Manager links its settings, models, MCP configuration,
-extensions, prompts, and themes without cloning or copying them. The CLIProxyAPI utility also uses
-that checkout. Neovim/app content follows the separate chezmoi flow above.
-
-`make build` uses the same host detection and inventory validation as rebuild,
-including WSL detection and the explicit `NIX_CONFIG_HOST` override. Unknown
-Darwin logins must supply a reviewed override rather than defaulting to Joyce.
-Build only creates the system result; it does not switch, format, or maintain
-`/etc/nixos`.
-
-- macOS (Apple Silicon)
-  - Apply: `sudo darwin-rebuild switch --flake .#joyce`
-  - Or run: `./scripts/nixos-rebuild.sh`
-  - Or use: `make rebuild`
-
-- NixOS homelab
-  - Apply: `sudo nixos-rebuild switch --flake .#kim`
-  - Or run: `./scripts/nixos-rebuild.sh`
-  - Or use: `make rebuild`
-
-Optional checks
-
-```bash
+# Module, inventory, or flake behavior
 nix flake check --no-build
-make check-scripts   # shell syntax, ShellCheck, safety regression tests
-make update           # update inputs
-nix develop           # enter dev shell
-make help             # show all make targets
+
+# Shell scripts
+make check-scripts
+
+# One x86_64-linux regression
+nix build .#checks.x86_64-linux.<name> --no-link
+
+# Build the detected host without switching it
+make build
 ```
 
-## Notes
+`make help` lists the other supported targets. `make chezmoi-bootstrap` clones
+the dotfiles source without applying it. Review changes with
+`make chezmoi-preview` before an interactive `make chezmoi-apply`.
 
-- Vicinae is the declarative launcher on graphical Linux and macOS hosts. Linux uses the Home Manager user service and Hyprland-owned `Super+Space` / `Super+V` bindings; macOS uses the notarized Homebrew cask plus a Home Manager launch agent. Shared settings use Catppuccin, disable system-info telemetry, favor clipboard and file search, and remain overrides so Vicinae can still persist extension settings.
-- Hyperkey replaces Raycast's Caps Lock-to-Hyper remapping on macOS. Configure Caps Lock as Hyper and enable quick-press Escape after granting Accessibility permission; Vicinae owns `Hyper+V` clipboard history.
-- Rectangle remains the declarative macOS window-management cask; its checked-in settings file is available for manual import after reinstalling the app.
-- Hyprland comes from the upstream flake input to ensure recent builds on aarch64.
-- The Hyprland Lua config is installed by Home Manager at the documented default path, `$XDG_CONFIG_HOME/hypr/hyprland.lua` (`~/.config/hypr/hyprland.lua` in practice). The greetd session starts `start-hyprland` without `--config`; live edits can be reloaded with `hyprctl reload`.
-- Because Hyprland is launched with UWSM, Wayland toolkit and cursor environment variables are managed in `$XDG_CONFIG_HOME/uwsm/env` instead of the Lua config.
-- On macOS, Nix is managed by the Determinate installer; nix-darwin’s `nix.enable` is disabled accordingly.
-- Nix/Home Manager owns systems and executables; chezmoi owns Neovim/app
-  content. See [configuration ownership and recovery](docs/config-ownership-and-recovery.md).
+## Safety boundaries
+
+- Builds and evaluation do not activate a configuration. Rebuild, deployment,
+  restore, migration, disk, and cleanup commands require an explicit operator
+  decision.
+- Secrets stay encrypted with SOPS. Never put private keys, decrypted values,
+  mutable service data, or restore artifacts in Git or the Nix store.
+- Determinate owns Joyce's Nix daemon. Keep `nix.enable = false`; daemon
+  settings belong in `/etc/nix/nix.custom.conf` through `machines/joyce.nix`.
+- `system.stateVersion` and `home.stateVersion` are compatibility settings, not
+  package upgrade controls.
+- Hyprland comes from the flake input. macOS GUI applications belong in the
+  Homebrew declarations.
+- Before storage or recovery work, read
+  [the recovery runbook](docs/homelab-recovery.md) and the affected service
+  runbook. Never point restore or provisioning tools at live paths or an
+  unconfirmed disk.
 
 ## License
 
