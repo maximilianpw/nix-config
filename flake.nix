@@ -113,11 +113,9 @@
           ;
         helium = final.callPackage ./packages/helium.nix {};
         tunarr = final.callPackage ./packages/tunarr.nix {};
-        # Keep Jellyfin's server, web client, and patched FFmpeg together until
-        # nixpkgs carries 12.0. Remove these overrides as one upgrade.
-        jellyfin = final.callPackage ./packages/jellyfin.nix {};
-        jellyfin-web = final.callPackage ./packages/jellyfin-web.nix {inherit (prev) jellyfin-web;};
-        jellyfin-ffmpeg = final.callPackage ./packages/jellyfin-ffmpeg.nix {};
+        # Keep Jellyfin's server, web client, and patched FFmpeg together on the
+        # locked unstable package set so upgrades move them as one unit.
+        inherit (unstable) jellyfin jellyfin-web jellyfin-ffmpeg;
         obsidian = final.callPackage ./packages/obsidian.nix {};
         cliproxyapi = final.callPackage ./packages/cliproxyapi.nix {};
         cua-driver = final.callPackage ./packages/cua-driver.nix {};

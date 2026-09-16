@@ -400,12 +400,9 @@ describe a database rewrite on first start. Building the new configuration does
 not perform this migration. Schedule a maintenance window before activating it
 on Kim.
 
-The local packages are `packages/jellyfin.nix`, `packages/jellyfin-web.nix`, and
-`packages/jellyfin-ffmpeg.nix`. They pin server/web 12.0.0 and Jellyfin FFmpeg
-8.1.2-4 because the pinned nixpkgs packages still ship 10.11.11. The server uses
-.NET 10 and `packages/jellyfin/nuget-deps.json`; regenerate that manifest with
-`jellyfin.fetch-deps` when changing its dependencies. Update server and web
-together, and remove the coordinated overrides when nixpkgs catches up.
+The coordinated server, web client, and Jellyfin FFmpeg packages come from the
+locked `nixpkgs-unstable` input. Upgrade all three together by updating that
+input, then confirm their versions still satisfy the media stack regression.
 
 Build without activating:
 

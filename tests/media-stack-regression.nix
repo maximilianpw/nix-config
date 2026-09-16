@@ -201,13 +201,14 @@ in
   assert lib.assertMsg (
     config.services.jellyfin.package
     == pkgs.jellyfin
-    && pkgs.jellyfin.version == "12.0.0"
+    && lib.versions.major pkgs.jellyfin.version == "12"
     && pkgs.jellyfin-web.version == pkgs.jellyfin.version
+    && lib.versions.major pkgs.jellyfin-ffmpeg.version == "8"
     && lib.versionAtLeast pkgs.jellyfin-ffmpeg.version "8.1"
     && config.services.jellyfin.dataDir == "/var/lib/jellyfin"
     && config.services.jellyfin.configDir == "/var/lib/jellyfin/config"
   )
-  "Jellyfin 12 must use a matching web client, FFmpeg 8.1+, and the backed-up state paths";
+  "Jellyfin 12 must use a matching web client, Jellyfin FFmpeg 8.1+, and the backed-up state paths";
   assert lib.assertMsg (
     config.services.jellyfin.hardwareAcceleration.enable
     && config.services.jellyfin.hardwareAcceleration.type == "vaapi"
