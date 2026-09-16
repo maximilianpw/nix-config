@@ -5,10 +5,16 @@ CLI remains `fleet`.
 
 Home Manager installs the Rust package and module from the pinned `fleet`
 flake input. `lib/fleet.nix` projects the personal inventory into the v1 TOML
-schema while retaining SSH settings, trust exports, aliases, and the legacy
-Bash package as a regression oracle. `tests/fleet-rust-integration.nix` checks
-the pinned package/module and can still accept an explicit checkout during
-migration work.
+schema and generates SSH settings, trust exports, aliases, and the Fleet agent
+contract. The pinned Fleet input owns and tests the installed runtime CLI and
+tunnel supervision. This repository owns the personal inventory, SSH policy,
+trust, aliases, generated contract, and consumer compatibility checks.
+
+There is no Bash runtime or regression oracle in this repository.
+`tests/fleet-rust-regression.nix` checks the Nix projection against the pinned
+Fleet package and Home Manager module. `tests/fleet-installed-regression.nix`
+checks the installed Kim and Joyce configurations. Runtime behavior and its
+unit and integration tests belong to the standalone Fleet input.
 
 ## Commands
 
@@ -63,12 +69,13 @@ installs one user LaunchAgent per local port
 `launchd.agents`, not nix-darwin `launchd.user.agents`. No Kim-side service is
 required: the remote process only has to listen on loopback.
 
-Each job starts at login (`RunAtLoad`) and retries on failure (`KeepAlive`)
-with a 30-second `ThrottleInterval`. A small runner owns one `ssh -N` child,
-using the `fleet-forward-<host>` alias so pinned host keys and the 1Password
-`IdentityAgent` still apply. Extra argv flags force `BatchMode`, a 10s connect
-timeout, `ExitOnForwardFailure`, SSH keepalives, no multiplexing, no agent
-forwarding, and `127.0.0.1` as the local bind address. Open your Mac's browser at
+Each job starts at login (`RunAtLoad`). Launchd restarts an unsuccessful runner
+with a 30-second `ThrottleInterval`; it does not restart an intentional clean
+exit. The runner owns one `ssh -N` child and retries transport failures itself
+after a 30-second backoff. It uses the `fleet-forward-<host>` alias so pinned
+host keys and the 1Password `IdentityAgent` still apply. Extra argv flags force
+`BatchMode`, a 10s connect timeout, `ExitOnForwardFailure`, SSH keepalives, no
+multiplexing, no agent forwarding, and `127.0.0.1` as the local bind address. Open your Mac's browser at
 `http://localhost:3000` or `http://localhost:5173`. Browsers normally fall back
 to IPv4 for localhost. IPv6-only clients need `127.0.0.1` instead: these jobs do
 not bind `::1`. Changing the hostname to `127.0.0.1` changes the browser origin,
@@ -84,12 +91,11 @@ port and fail on collisions rather than silently choosing a different port.
 
 A reconnect still needs the existing 1Password SSH agent to authorize it.
 `BatchMode` prevents password prompts in SSH, but does not bypass 1Password's
-lock/approval policy. If reconnects fail after sleep, unlock 1Password, approve
-any required SSH request, and let launchd retry. The runner checks after 45
-seconds that its own SSH child has bound the local listener; otherwise it
-terminates that child so launchd can retry (plus at most 4 seconds for the
-listener probe). This startup deadline does not
-limit a healthy tunnel's lifetime.
+lock/approval policy. If reconnects fail after sleep, unlock 1Password and
+approve any required SSH request. The runner checks after 45 seconds that its
+own SSH child has bound the local listener; otherwise it terminates that child
+and retries after its backoff. The listener probe may add up to 4 seconds. This
+startup deadline does not limit a healthy tunnel's lifetime.
 
 `fleet tunnel pause 3000` runs `launchctl disable` for that labeled job and
 boots it out. The disabled override lives outside the plist, so it survives
@@ -127,9 +133,11 @@ fleet tunnel pause 3000   # Frees the port for a local app; survives login.
 fleet tunnel resume 3000  # Run after stopping the local app.
 ```
 
-Sleep/wake, a temporary network outage, and locked-agent recovery need a live
-acceptance test after activation. Unit tests exercise supervisor state and
-failures with disposable mocks; they do not prove actual launchd reconnects.
+The Joyce acceptance test verifies that terminating the runner-owned SSH child
+keeps the same runner alive, creates a new child and owned listener after the
+backoff, and returns the tunnel to a healthy state. It also verifies that an
+intentional pause prevents respawn. Physical sleep/wake and locked-agent
+disruption remain operational conditions rather than deterministic tests.
 
 On non-Darwin hosts the existing `fleet` commands stay available. Managed
 tunnel pause/resume explain that launchd supervision is macOS-only. `fleet
@@ -238,11 +246,11 @@ NixOS and WSL machines import `modules/fleet/nixos.nix`, which enables Tailscale
 and mosh. `modules/fleet/ssh-access.nix` owns key-only SSH hardening and tailnet
 source restrictions across NixOS, WSL, and Darwin.
 
-## Deployment Checks
+## Deployment checks
 
-After Joyce's first switch, keep the local GUI session open and verify Apple's
-Remote Login service; nix-darwin uses `launchctl` because `systemsetup` requires
-Full Disk Access and can otherwise report misleading state:
+When changing Joyce SSH access, keep the local GUI session open and verify
+Apple's Remote Login service. Nix-darwin uses `launchctl` because `systemsetup`
+requires Full Disk Access and can otherwise report misleading state:
 
 ```sh
 sudo launchctl print system/com.openssh.sshd

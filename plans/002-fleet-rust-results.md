@@ -8,15 +8,17 @@ The user selected `/home/maxpw/local/fleet` instead of the plan's original `/hom
 
 - Initial extraction commit: `3c8ec46b526d08673bbd29f362742dc79bde7965`
 - Initial Git archive SHA-256: `206ac06093d82811c53f3435e461bcf665aa67cf1e877580a1d426f93eb01d3e`
-- Current nix-config pin: `5b725c2adc939ae5012e51cff465c444bac9b6ac`
-- Current pin NAR hash: `sha256-jF7rAFYZXPG4RL8DB5gF2Kkva9Z3vxg89rsaP4hZ24I=`
+- Current nix-config pin: `f4f8d29df68150ea9807d10f9f98c3c776f88c77`
+- Current pin NAR hash: `sha256-XlWNvVEHsr//Iu82JxlsNkkGbPRwbjK/hpJg1qEFUGE=`
 - Visibility: public
 - Crates.io publishing: disabled with `publish = false`
 - Installed-host cutover: Kim activated successfully
 - Installed Kim generation: `/nix/store/s01jkq8v60xaw2qbfq85lm51yab2krij-nixos-system-kim-26.05.20260911.21a67dc`
 - Live Fleet process changes: none; Kim has no managed tunnel mappings
 
-The Rust package is now the Home Manager-installed default from the pinned `fleet` flake input. The legacy Bash implementation remains in nix-config only as a regression oracle while Joyce's launchd acceptance is pending.
+The Rust package is the Home Manager-installed runtime from the pinned `fleet`
+flake input. Joyce launchd and cross-machine acceptance passed, so nix-config no
+longer retains the legacy Bash implementation or its migration checks.
 
 ## Stage results
 
@@ -27,11 +29,11 @@ The Rust package is now the Home Manager-installed default from the pinned `flee
 | B: CLI and SSH behavior | PASS | list, ssh, shell, run, forward, T3, aliases, PTY/exec behavior, process discovery, and managed-delete protection; 38 SSH/forward tests. |
 | C: supervisor, doctor, runner | PASS | launchd state model, pause/resume, listener ownership, deadlines, diagnostics, signals, and child cleanup; 36 tunnel tests and 13 runner tests. |
 | D: independent packaging | PASS on Linux | Cargo release build/install and standalone Nix package/checks passed with Rust 1.95.0. |
-| D: Darwin package/runtime | PASS in CI | GitHub's macOS 14 runners passed Cargo fmt, Clippy, all tests, and the aarch64-darwin Nix package/check. Real launchd acceptance remains pending. |
+| D: Darwin package/runtime | PASS | GitHub's macOS runners passed Cargo and Nix checks; Joyce passed live launchd ownership, reconnect, pause, and resume acceptance. |
 | E: Home Manager module | PASS by evaluation | Typed snake_case settings, one package/config destination, Linux without launchd jobs, and Darwin job attributes validated with a placeholder package. |
-| F: nix-config consumer | PASS | Personal v1 projection, candidate package/module, legacy checks, and the parameterized integration derivation passed. |
+| F: nix-config consumer | PASS | Personal v1 projection, pinned package/module evaluation, generated configuration validation, and the final consumer regression passed. |
 | G: repository publication | PASS | Public GitHub repository and initial commit created and pushed with user authorization. |
-| G: durable nix-config pin and Kim activation | PASS | `flake.lock` pins the published commit; the real module owns the package/config, Kim built and activated, and installed local commands passed. Joyce launchd acceptance remains pending. |
+| G: durable nix-config pin and host acceptance | PASS | `flake.lock` pins the published commit; Kim and Joyce consumer builds passed, Joyce activated the exact candidate, and the scoped live acceptance passed. |
 
 ## Baseline and provenance
 
@@ -130,32 +132,39 @@ GitHub Actions run [34753878095](https://github.com/maximilianpw/fleet/actions/r
 The following nix-config checks passed after the consumer changes:
 
 ```sh
-alejandra --check lib/fleet.nix tests/fleet-rust-integration.nix
+alejandra --check lib/fleet.nix tests/fleet-rust-regression.nix
 make lint
 nix build \
-  .#checks.x86_64-linux.fleet-ssh-regression \
-  .#checks.x86_64-linux.fleet-tunnel-regression \
-  .#checks.x86_64-linux.fleet-agent-forwarding-regression \
+  .#checks.x86_64-linux.fleet-rust-regression \
+  .#checks.x86_64-linux.fleet-installed-regression \
+  .#checks.x86_64-linux.fleet-ghostty-regression \
   .#checks.x86_64-linux.fleet-trust-regression --no-link
 git diff --check
 ```
 
-The integration check first passed against the explicit local candidate path. Gate G then added a durable GitHub input, currently pinned to `5b725c2adc939ae5012e51cff465c444bac9b6ac`, and promoted the same test into the flake checks without adding an absolute developer path. `tests/fleet-installed-regression.nix` additionally verifies that Kim and Joyce each select exactly one package from the pinned input, generated TOML validates, Kim has no Fleet launchd jobs, and Joyce retains the two expected labels using the Rust runner.
+The integration check first passed against the explicit local candidate path.
+Gate G then added a durable GitHub input. The current pin is
+`f4f8d29df68150ea9807d10f9f98c3c776f88c77`. The final
+`tests/fleet-rust-regression.nix` checks the Nix projection against that input,
+and `tests/fleet-installed-regression.nix` verifies that Kim and Joyce each
+select exactly one pinned package and generate valid TOML.
 
 ```sh
 nix build \
-  .#checks.x86_64-linux.fleet-rust-integration \
+  .#checks.x86_64-linux.fleet-rust-regression \
   .#checks.x86_64-linux.fleet-installed-regression \
-  .#checks.x86_64-linux.fleet-ssh-regression \
-  .#checks.x86_64-linux.fleet-tunnel-regression \
-  .#checks.x86_64-linux.fleet-agent-forwarding-regression \
+  .#checks.x86_64-linux.fleet-ghostty-regression \
   .#checks.x86_64-linux.fleet-trust-regression --no-link
 make build
 ```
 
 Kim activation required an interactive sudo terminal. The user ran `make rebuild`; the resulting system generation matched the previously built candidate.
 
-`nix flake check --no-build` still fails while evaluating the unrelated `eval-kim-desktop` check in man-db with `path '...-source' is not valid`. The scoped Fleet checks and `make lint` pass, and the failure predates or lies outside the Fleet file allowlist.
+At that stage, `nix flake check --no-build` failed while evaluating the
+unrelated `eval-kim-desktop` check in man-db with `path '...-source' is not
+valid`. The scoped Fleet checks and `make lint` passed. Later disposable
+full-tree evaluations removed the path-flake limitation, and the final
+no-build checks passed locally and on Kim.
 
 ## Darwin rebuild follow-up
 
@@ -173,7 +182,7 @@ The port preserves the Bash command model and adds only the planned v1 commands 
 - unknown aliases keep command-specific legacy fallbacks
 - managed forwards bind `127.0.0.1`, disable agent forwarding and multiplexing, and retain the existing launchd labels
 - doctor separates SSH reachability, listener ownership, supervisor state, and remote TCP readiness
-- the runner owns one SSH child, uses a 45-second startup deadline, reaps it on INT/TERM, and leaves restart policy to launchd
+- the runner owns one SSH child, uses a 45-second startup deadline, reaps it on INT/TERM, and retries transport failures after a bounded backoff
 - managed delete protection refuses verified jobs/direct children and fails closed when process identity is uncertain
 - missing `ps` is reported only for commands that need forward inspection; plain `fleet ssh HOST` does not require it
 
@@ -197,8 +206,20 @@ fleet doctor main
 
 The local run printed the sentinel, and doctor correctly skipped SSH for the current host and reported no managed tunnels.
 
-## Remaining gates
+## Final Joyce acceptance
 
-- Joyce still needs separately approved activation and real launchd tunnel acceptance, including status, pause/resume, listener ownership, sleep/wake, and credential recovery.
-- Installed interactive SSH/tmux behavior still needs a real cross-machine TTY acceptance run.
-- Removing the Bash scripts and legacy checks must wait until the Joyce and interactive installed acceptance gates pass.
+- Joyce activated generation
+  `/nix/store/6wa4355miaiv6237014dilanbd8ynfd3-darwin-system-26.05.c3e90c8`
+  with Fleet revision `f4f8d29df68150ea9807d10f9f98c3c776f88c77`.
+- Installed interactive SSH/tmux behavior had already passed a real
+  cross-machine TTY attach, detach, and reattach run with task-owned artifacts.
+- The final transport-failure test resumed only managed port 5173 and verified
+  runner 23886, direct SSH child 23888, and listener ownership. Terminating only
+  that SSH child left the same runner alive. After 31 seconds it created child
+  24440 and a new owned listener; Fleet doctor reported the 5173 mapping
+  running, owned, and remotely listening.
+- Pause prevented any runner or listener from returning beyond the reconnect
+  backoff. Resume restored a runner, direct SSH child, and owned listener.
+- The exact enabled, loaded, stopped, no-listener baseline was restored for
+  ports 3000 and 5173. Physical sleep/wake and locked-credential disruption
+  were not forced.

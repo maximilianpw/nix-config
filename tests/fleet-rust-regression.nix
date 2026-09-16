@@ -1,4 +1,20 @@
-# Parameterized Stage F harness for the standalone Rust Fleet candidate.
+# Pinned standalone Fleet coverage matrix:
+# - SSH/tmux/session validation: ssh_named_session_uses_explicit_remote_tmux_and_tty,
+#   local_ssh_uses_path_tmux_and_main_default, and unsafe_session_is_rejected_before_planning_ssh.
+# - Attachment forwards, aliases, and SSH policy: ssh_named_session_repeatable_forwards_normalize_loopback,
+#   known_alias_keeps_nix_target_triple, ad_hoc_forward_passes_bracketed_remote_host_as_data,
+#   and argument_policy_is_passed_through_unchanged.
+# - Tunnel state and launchd parsing: status_uses_one_job_read_per_mapping,
+#   pause_only_requested_job_and_survives_relogin, and resume_loaded_stopped_uses_kickstart.
+# - Doctor classifications and deadlines: doctor_ssh_unavailable_skips_remote_probe,
+#   doctor_ssh_auth_skips_remote_probe, doctor_remote_down_is_not_local_health,
+#   and system_ssh_deadline_kills_hanging_child.
+# - Runner startup, reconnect, listener ownership, and signal cleanup:
+#   production_startup_deadline_is_forty_five_seconds, transport_failure_after_startup_reconnects,
+#   listener_ownership_accepts_job_or_direct_ssh_child, stop_during_startup_reaps_owned_child,
+#   and stop_after_healthy_listener_reaps_owned_child.
+# - Schema/config validation: nix_projection_fields_round_trip_through_validation and
+#   config_validate_success_and_invalid_exit_codes, plus the external Home Manager evaluations below.
 # Callers pass fleetSrc; this file must not bake a checkout path into the flake.
 {
   lib,
@@ -11,7 +27,7 @@
   defaultTunnels = import ../modules/fleet/default-tunnels.nix;
   mkFleet = args:
     import ../lib/fleet.nix ({
-        inherit lib pkgs;
+        inherit lib;
       }
       // args);
 
@@ -31,12 +47,6 @@
     : >"$out/bin/fleet-tunnel-runner"
     chmod +x "$out/bin/fleet" "$out/bin/fleet-tunnel-runner"
   '';
-  injected = mkFleet {
-    hostname = "kim";
-    homeDirectory = "/home/maxpw";
-    candidatePackage = placeholderPackage;
-  };
-
   expectedTriple = token: {
     ssh_target = token;
     tmux_target = "tm-${token}";
@@ -251,19 +261,9 @@
   darwinPersonal3000 = darwinPersonalAgents."fleet-tunnel-3000" or null;
   darwinPersonal5173 = darwinPersonalAgents."fleet-tunnel-5173" or null;
   darwinFictional5173 = darwinFictionalAgents."fleet-tunnel-5173" or null;
-  legacy3000 = joyce.launchdAgents."fleet-tunnel-3000";
-  dropRunner = args: lib.drop 1 args;
+  ordinarySshBlocks = builtins.attrValues joyce.sshSettings;
   hasArg = args: needle: lib.elem needle args;
 in
-  assert lib.assertMsg (
-    joyce.package
-    == joyce.legacyPackage
-    && kim.package == kim.legacyPackage
-    && injected.package == placeholderPackage
-    && injected.settings == kim.settings
-    && lib.getName kim.package == "fleet"
-  )
-  "candidatePackage must be explicit; the default package stays the Bash CLI";
   assert lib.assertMsg (
     joyce.aliases.fl
     == "fleet list"
@@ -271,11 +271,15 @@ in
     && joyce.files ? contract
     && joyce.files ? hostsJson
     && joyce.files ? knownHosts
-    && joyce.sshSettings != {}
-    && joyce.launchdAgents != {}
-    && kim.launchdAgents == {}
   )
-  "v1 settings projection must keep SSH blocks, known hosts, contract, aliases, and legacy jobs";
+  "projection must keep the generated contract, host data, known hosts, and aliases";
+  assert lib.assertMsg (
+    ordinarySshBlocks
+    != []
+    && lib.all (block: block.ForwardAgent == "no") ordinarySshBlocks
+    && lib.all (block: !(block ? LocalForward)) ordinarySshBlocks
+  )
+  "ordinary SSH blocks must be nonempty, disable agent forwarding, and omit LocalForward";
   assert lib.assertMsg (
     joyce.settings.schema_version
     == 1
@@ -363,7 +367,7 @@ in
     && darwinFictional5173.enable
     && darwinFictional5173.config.Label == "org.nix-community.home.fleet-tunnel-5173"
     && darwinFictional5173.config.RunAtLoad == true
-    && darwinFictional5173.config.KeepAlive == true
+    && darwinFictional5173.config.KeepAlive.SuccessfulExit == false
     && darwinFictional5173.config.ThrottleInterval == 30
     && darwinFictional5173.config.ProcessType == "Background"
     && (darwinFictional5173.config.StandardOutPath or null) == null
@@ -381,21 +385,33 @@ in
     != null
     && darwinPersonal5173 != null
     && builtins.attrNames darwinPersonalAgents == ["fleet-tunnel-3000" "fleet-tunnel-5173"]
-    && darwinPersonal3000.config.Label == legacy3000.config.Label
-    && darwinPersonal3000.config.RunAtLoad == legacy3000.config.RunAtLoad
-    && darwinPersonal3000.config.KeepAlive == legacy3000.config.KeepAlive
-    && darwinPersonal3000.config.ThrottleInterval == legacy3000.config.ThrottleInterval
-    && darwinPersonal3000.config.ProcessType == legacy3000.config.ProcessType
+    && darwinPersonal3000.config.Label == "org.nix-community.home.fleet-tunnel-3000"
+    && darwinPersonal5173.config.Label == "org.nix-community.home.fleet-tunnel-5173"
+    && darwinPersonal3000.config.RunAtLoad == true
+    && darwinPersonal5173.config.RunAtLoad == true
+    && darwinPersonal3000.config.KeepAlive.SuccessfulExit == false
+    && darwinPersonal5173.config.KeepAlive.SuccessfulExit == false
+    && darwinPersonal3000.config.ThrottleInterval == 30
+    && darwinPersonal5173.config.ThrottleInterval == 30
+    && darwinPersonal3000.config.ProcessType == "Background"
+    && darwinPersonal5173.config.ProcessType == "Background"
     && (darwinPersonal3000.config.StandardOutPath or null) == null
     && (darwinPersonal3000.config.StandardErrorPath or null) == null
+    && (darwinPersonal5173.config.StandardOutPath or null) == null
+    && (darwinPersonal5173.config.StandardErrorPath or null) == null
     && hasSuffix "/bin/fleet-tunnel-runner" (builtins.head darwinPersonal3000.config.ProgramArguments)
-    && dropRunner darwinPersonal3000.config.ProgramArguments
-    == dropRunner legacy3000.config.ProgramArguments
-    && dropRunner darwinPersonal5173.config.ProgramArguments
-    == dropRunner joyce.launchdAgents."fleet-tunnel-5173".config.ProgramArguments
+    && hasSuffix "/bin/fleet-tunnel-runner" (builtins.head darwinPersonal5173.config.ProgramArguments)
+    && hasArg darwinPersonal3000.config.ProgramArguments "127.0.0.1:3000:localhost:3000"
+    && hasArg darwinPersonal5173.config.ProgramArguments "127.0.0.1:5173:localhost:5173"
+    && hasArg darwinPersonal3000.config.ProgramArguments "fleet-forward-kim"
+    && hasArg darwinPersonal5173.config.ProgramArguments "fleet-forward-kim"
+    && hasArg darwinPersonal3000.config.ProgramArguments "ForwardAgent=no"
+    && hasArg darwinPersonal5173.config.ProgramArguments "ForwardAgent=no"
+    && hasArg darwinPersonal3000.config.ProgramArguments "ControlMaster=no"
+    && hasArg darwinPersonal5173.config.ProgramArguments "ControlMaster=no"
   )
-  "Darwin personal jobs must match baseline labels, keepalive, and runner arguments except argv0";
-    pkgs.runCommand "fleet-rust-integration" {
+  "Darwin personal jobs must keep labels, lifecycle fields, loopback forwards, and SSH policy";
+    pkgs.runCommand "fleet-rust-regression" {
       fleetBin = "${candidate.package}/bin/fleet";
       fictionalConfig = pkgs.writeText "fleet-fictional.toml" (configTomlText linuxFictional);
       personalConfig = pkgs.writeText "fleet-personal.toml" (configTomlText linuxPersonal);

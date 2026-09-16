@@ -74,11 +74,7 @@
       inherit lib;
       pkgs = nixpkgs.legacyPackages.x86_64-linux;
     };
-    fleet-ssh-regression = import ../tests/fleet-ssh-regression.nix {
-      inherit lib;
-      pkgs = nixpkgs.legacyPackages.x86_64-linux;
-    };
-    fleet-rust-integration = import ../tests/fleet-rust-integration.nix {
+    fleet-rust-regression = import ../tests/fleet-rust-regression.nix {
       inherit lib;
       pkgs = nixpkgs.legacyPackages.x86_64-linux;
       fleetSrc = inputs.fleet;
@@ -90,10 +86,6 @@
       fleetPackages = inputs.fleet.packages;
       kim = self.nixosConfigurations.kim.config.home-manager.users.maxpw;
       joyce = self.darwinConfigurations.joyce.config.home-manager.users.max-vev;
-    };
-    fleet-tunnel-regression = import ../tests/fleet-tunnel-regression.nix {
-      inherit lib;
-      pkgs = nixpkgs.legacyPackages.x86_64-linux;
     };
     fleet-ghostty-regression = import ../tests/fleet-ghostty-regression.nix {
       config = self.nixosConfigurations.kim.config;
@@ -117,14 +109,6 @@
   };
   aarch64-darwin = {
     eval-joyce = self.darwinConfigurations.joyce.system;
-    fleet-ssh-regression = import ../tests/fleet-ssh-regression.nix {
-      inherit lib;
-      pkgs = nixpkgs.legacyPackages.aarch64-darwin;
-    };
-    fleet-tunnel-regression = import ../tests/fleet-tunnel-regression.nix {
-      inherit lib;
-      pkgs = nixpkgs.legacyPackages.aarch64-darwin;
-    };
     pre-commit-check = mkPreCommitCheck "aarch64-darwin";
   };
 }

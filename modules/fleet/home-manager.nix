@@ -8,7 +8,7 @@
 }: let
   defaultTunnels = (import ./default-tunnels.nix).${hostname} or [];
   fleet = import ../../lib/fleet.nix {
-    inherit hostname lib pkgs;
+    inherit hostname lib;
     homeDirectory = config.home.homeDirectory;
     tunnels = config.fleet.tunnels.mappings;
   };

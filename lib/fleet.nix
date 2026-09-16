@@ -2,14 +2,9 @@
   hostname,
   homeDirectory,
   lib,
-  pkgs,
   tunnels ? [],
-  # Explicit candidate hook for isolated adapter tests. Production Home
-  # Manager installs the pinned Rust package directly; this library retains
-  # the Bash package as a regression oracle.
-  candidatePackage ? null,
 }: let
-  inherit (lib) concatStringsSep escapeShellArg filterAttrs listToAttrs mapAttrs mapAttrs' mapAttrsToList nameValuePair optionalAttrs optionalString unique;
+  inherit (lib) concatStringsSep filterAttrs listToAttrs mapAttrs mapAttrs' mapAttrsToList nameValuePair optionalAttrs optionalString unique;
 
   inventory = import ./inventory.nix {inherit lib;};
   # Every managed host is a Fleet member. Keep the generated contract focused
@@ -75,17 +70,10 @@
   '';
 
   remoteHosts = filterAttrs (name: _: name != hostname) hosts;
-  localHost = hosts.${hostname} or null;
-  localHostNames =
-    if localHost == null
-    then []
-    else [hostname] ++ localHost.aliases;
-  localHostPattern = concatStringsSep "|" localHostNames;
 
   hostPatterns = name: host: concatStringsSep " " ([name] ++ host.aliases);
   tmuxHostPatterns = name: host: concatStringsSep " " (map (alias: "tm-${alias}") ([name] ++ host.aliases));
   forwardHostPatterns = name: host: concatStringsSep " " (map (alias: "fleet-forward-${alias}") ([name] ++ host.aliases));
-  caseHostPatterns = name: host: concatStringsSep "|" ([name] ++ host.aliases);
 
   baseSshOptions = {
     AddKeysToAgent = "yes";
@@ -173,50 +161,6 @@
   remoteTunnelNames = lib.flatten (mapAttrsToList (name: host: [name] ++ host.aliases) remoteHosts);
   tunnelLabelPrefix = "org.nix-community.home.";
   tunnelLabel = t: "${tunnelLabelPrefix}fleet-tunnel-${toString t.localPort}";
-  tunnelAgentName = t: "fleet-tunnel-${toString t.localPort}";
-  tunnelForwardSpec = t: "127.0.0.1:${toString t.localPort}:${t.remoteHost}:${toString t.remotePort}";
-  tunnelRunner = pkgs.writeShellApplication {
-    name = "fleet-tunnel-runner";
-    runtimeInputs = [pkgs.openssh pkgs.coreutils pkgs.lsof];
-    text = builtins.readFile ../scripts/fleet-tunnel-runner.sh;
-  };
-  tunnelSshArgs = t: [
-    "${tunnelRunner}/bin/fleet-tunnel-runner"
-    (toString t.localPort)
-    "-o"
-    "BatchMode=yes"
-    "-o"
-    "ConnectTimeout=10"
-    "-o"
-    "ExitOnForwardFailure=yes"
-    "-o"
-    "ForwardAgent=no"
-    "-o"
-    "ControlMaster=no"
-    "-o"
-    "ControlPath=none"
-    "-o"
-    "ServerAliveInterval=30"
-    "-o"
-    "ServerAliveCountMax=3"
-    "-N"
-    "-L"
-    (tunnelForwardSpec t)
-    "fleet-forward-${t.host}"
-  ];
-  mkTunnelAgent = t: {
-    enable = true;
-    config = {
-      Label = tunnelLabel t;
-      ProgramArguments = tunnelSshArgs t;
-      RunAtLoad = true;
-      KeepAlive = true;
-      ThrottleInterval = 30;
-      ProcessType = "Background";
-    };
-  };
-  launchdAgents = listToAttrs (map (t: nameValuePair (tunnelAgentName t) (mkTunnelAgent t)) managedTunnels);
-  tunnelMappingRows = concatStringsSep "\n" (map (t: "${toString t.localPort}|${t.host}|${toString t.remotePort}|${t.remoteHost}|${tunnelLabel t}") managedTunnels);
   tunnelSupervisor =
     if localInventoryHost != null && localInventoryHost.darwin
     then "launchd"
@@ -225,111 +169,6 @@
       t: "- Managed tunnel: local ${toString t.localPort} -> ${t.host} ${t.remoteHost}:${toString t.remotePort}\n"
     )
     managedTunnels);
-
-  canonicalHostRows =
-    mapAttrsToList (name: host: ''
-      ${caseHostPatterns name host}) printf '%s\n' ${escapeShellArg name} ;;
-    '')
-    hosts;
-
-  remoteTmuxRows =
-    mapAttrsToList (
-      name: host: ''
-        ${caseHostPatterns name host}) printf '%s\n' ${escapeShellArg host.tmuxCommand} ;;
-      ''
-    )
-    hosts;
-
-  t3codePortRows =
-    mapAttrsToList (
-      name: host: ''
-        ${caseHostPatterns name host}) printf '%s\n' ${escapeShellArg (toString host.t3codePort)} ;;
-      ''
-    )
-    (filterAttrs (_: host: host ? t3codePort) hosts);
-
-  hostRows =
-    mapAttrsToList (
-      name: host: let
-        aliases = concatStringsSep "," host.aliases;
-        client =
-          if host.clientEnrolled
-          then "yes"
-          else "no";
-        inherit (host) role;
-      in ''
-        printf '%-18s %-12s %-24s %-16s %-8s %s\n' ${escapeShellArg name} ${escapeShellArg host.user} ${escapeShellArg host.hostName} ${escapeShellArg role} ${escapeShellArg client} ${escapeShellArg aliases}
-      ''
-    )
-    hosts;
-
-  fleetTemplateMarkers = [
-    "@LOCAL_HOST_CASE@"
-    "@REMOTE_TMUX_ROWS@"
-    "@T3CODE_PORT_ROWS@"
-    "@CURRENT_HOST@"
-    "@HOST_ROWS@"
-    "@TUNNEL_SUPERVISOR@"
-    "@TUNNEL_MAPPING_ROWS@"
-    "@TUNNEL_HELPERS@"
-    "@CANONICAL_HOST_ROWS@"
-  ];
-  fleetScript = let
-    rendered =
-      lib.replaceStrings
-      [
-        "  # @LOCAL_HOST_CASE@\n  return 1"
-        "    # @REMOTE_TMUX_ROWS@"
-        "    # @T3CODE_PORT_ROWS@"
-        "    # @CURRENT_HOST@"
-        "    # @HOST_ROWS@"
-        "  # @TUNNEL_SUPERVISOR@\n  printf '%s\\n' none"
-        "# @TUNNEL_MAPPING_ROWS@"
-        "# @TUNNEL_HELPERS@"
-        "    # @CANONICAL_HOST_ROWS@"
-      ]
-      [
-        (
-          if localHostNames == []
-          then "return 1"
-          else ''
-            case "$1" in
-              ${localHostPattern}) return 0 ;;
-              *) return 1 ;;
-            esac
-          ''
-        )
-        (concatStringsSep "\n        " remoteTmuxRows)
-        (concatStringsSep "\n        " t3codePortRows)
-        "printf 'Current machine: %s\\n\\n' ${escapeShellArg hostname}"
-        (concatStringsSep "\n        " hostRows)
-        "printf '%s\n' ${escapeShellArg tunnelSupervisor}"
-        tunnelMappingRows
-        (lib.removeSuffix "\n" (builtins.readFile ../scripts/fleet-tunnels.sh))
-        (concatStringsSep "\n" canonicalHostRows)
-      ]
-      (builtins.readFile ../scripts/fleet.sh);
-  in
-    assert lib.assertMsg
-    (lib.all (marker: !lib.hasInfix marker rendered) fleetTemplateMarkers)
-    "scripts/fleet.sh contains an unsubstituted template marker"; rendered;
-
-  legacyPackage = pkgs.writeShellApplication {
-    name = "fleet";
-    runtimeInputs = [
-      pkgs.openssh
-      pkgs.tmux
-      pkgs.bash
-      pkgs.coreutils
-      pkgs.gnugrep
-      pkgs.lsof
-    ];
-    text = fleetScript;
-  };
-  package =
-    if candidatePackage == null
-    then legacyPackage
-    else candidatePackage;
 
   # Closed v1 runtime projection for the standalone Rust CLI. Inventory keys
   # and alias tokens are ssh_target values; host.hostName is display_target
@@ -381,7 +220,7 @@ in
   "Fleet managed tunnels must use unique local ports";
   assert lib.assertMsg (lib.all (t: lib.elem t.host remoteTunnelNames) managedTunnels)
   "Fleet managed tunnel host must be a remote Fleet host or alias"; {
-    inherit hosts launchdAgents legacyPackage managedTunnels package settings tunnelRunner;
+    inherit settings;
 
     aliases = {
       fl = "fleet list";
