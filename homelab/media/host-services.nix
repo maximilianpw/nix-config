@@ -102,6 +102,10 @@ in {
     jellyfin = {
       enable = true;
       openFirewall = false;
+      # Keep the generated VA-API settings authoritative. Without this,
+      # Jellyfin preserves its mutable encoding.xml and silently ignores later
+      # Nix transcoding changes, which can send remote H.264 output to libx264.
+      forceEncodingConfig = true;
       hardwareAcceleration = {
         enable = true;
         type = "vaapi";

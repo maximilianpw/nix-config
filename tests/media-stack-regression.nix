@@ -213,9 +213,11 @@ in
     config.services.jellyfin.hardwareAcceleration.enable
     && config.services.jellyfin.hardwareAcceleration.type == "vaapi"
     && config.services.jellyfin.hardwareAcceleration.device == "/dev/dri/renderD128"
+    && config.services.jellyfin.forceEncodingConfig
+    && config.services.jellyfin.transcoding.enableHardwareEncoding
     && config.hardware.graphics.enable
   )
-  "Jellyfin must use Kim's declared AMD VA-API render path";
+  "Jellyfin must apply Kim's declarative AMD VA-API encoding configuration";
   assert lib.assertMsg (
     builtins.elem "media" config.users.users.jellyfin.extraGroups
     && !(builtins.elem "${mediaRoot}/library" (config.systemd.services.jellyfin.serviceConfig.ReadOnlyPaths or []))
