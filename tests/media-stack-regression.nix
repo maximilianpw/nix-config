@@ -65,6 +65,7 @@
     "/var/lib/private/prowlarr"
     "/var/lib/nixos-containers/qbt"
     "/var/lib/nixos-containers/sab"
+    "/var/lib/plex"
     "/var/lib/radarr/.config/Radarr"
     "/var/lib/sabnzbd"
     "/var/lib/private/jellyseerr"
@@ -100,6 +101,10 @@ in
     && pkgs.tunarr.ffmpeg == pkgs.ffmpeg
     && lib.versionAtLeast pkgs.tunarr.ffmpeg.version "7.1"
     && config.services.jellyfin.enable
+    && config.services.plex.enable
+    && config.services.plex.dataDir == "/var/lib/plex"
+    && !config.services.jellyfin.openFirewall
+    && !config.services.plex.openFirewall
     && config.services.lidarr.enable
     && config.services.sonarr.enable
     && config.services.radarr.enable
@@ -226,6 +231,20 @@ in
   )
   "Jellyfin must be able to manage the finished library without seeing downloads";
   assert lib.assertMsg (
+    config.services.plex.accelerationDevices
+    == ["/dev/dri/renderD128"]
+    && config.hardware.graphics.enable
+  )
+  "Plex must use Kim's declared AMD VA-API render path";
+  assert lib.assertMsg (
+    builtins.elem "media" config.users.users.plex.extraGroups
+    && builtins.elem "render" config.users.users.plex.extraGroups
+    && builtins.elem "video" config.users.users.plex.extraGroups
+    && builtins.elem "${mediaRoot}/torrents" config.systemd.services.plex.serviceConfig.InaccessiblePaths
+    && builtins.elem usenetRoot config.systemd.services.plex.serviceConfig.InaccessiblePaths
+  )
+  "Plex must be able to manage the finished library without seeing downloads";
+  assert lib.assertMsg (
     tunarrService.serviceConfig.UMask
     == "0077"
     && tunarrService.serviceConfig.StateDirectory == "tunarr"
@@ -235,6 +254,7 @@ in
     && builtins.elem "AF_NETLINK" tunarrService.serviceConfig.RestrictAddressFamilies
     && config.systemd.services.bazarr.serviceConfig.UMask == "0002"
     && config.systemd.services.jellyfin.serviceConfig.UMask == "0002"
+    && config.systemd.services.plex.serviceConfig.UMask == "0002"
     && config.systemd.services.lidarr.serviceConfig.UMask == "0002"
     && config.systemd.services.sonarr.serviceConfig.UMask == "0002"
     && config.systemd.services.radarr.serviceConfig.UMask == "0002"
@@ -353,14 +373,18 @@ in
   "downloader WebUIs must cross their namespaces only through loopback proxies";
   assert lib.assertMsg (
     config.networking.firewall.interfaces.enp194s0.allowedTCPPorts
-    == [endpoints.jellyfin.port]
-    && config.networking.firewall.interfaces.enp194s0.allowedUDPPorts == [7359]
+    == [endpoints.jellyfin.port endpoints.plex.port]
+    && config.networking.firewall.interfaces.enp194s0.allowedUDPPorts == [7359 32410 32412 32413 32414]
+    && !(builtins.elem endpoints.plex.port config.networking.firewall.allowedTCPPorts)
+    && !(builtins.elem 3005 config.networking.firewall.allowedTCPPorts)
+    && !(builtins.elem 32469 config.networking.firewall.allowedTCPPorts)
   )
-  "the physical LAN must expose Jellyfin playback and discovery only";
+  "the physical LAN must expose Jellyfin and Plex playback and discovery only";
   assert lib.assertMsg (lib.all requiresSrv [
     config.systemd.services.bazarr
     tunarrService
     config.systemd.services.jellyfin
+    config.systemd.services.plex
     config.systemd.services.lidarr
     config.systemd.services.sonarr
     config.systemd.services.radarr
@@ -374,6 +398,7 @@ in
       "bazarr"
       "jellyfin"
       "lidarr"
+      "plex"
       "prowlarr"
       "qbittorrent"
       "radarr"
@@ -391,6 +416,7 @@ in
       "bazarr.service"
       "jellyfin.service"
       "lidarr.service"
+      "plex.service"
       "prowlarr.service"
       "qbittorrent-proxy.socket"
       "container@qbt.service"

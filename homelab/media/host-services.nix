@@ -59,6 +59,7 @@ in {
     bazarr = config.services.bazarr.package.version;
     jellyfin = config.services.jellyfin.package.version;
     lidarr = config.services.lidarr.package.version;
+    plex = config.services.plex.package.version;
     prowlarr = config.services.prowlarr.package.version;
     radarr = config.services.radarr.package.version;
     seerr = config.services.seerr.package.version;
@@ -84,6 +85,11 @@ in {
         isSystemUser = true;
       };
       jellyfin.extraGroups = [
+        "media"
+        "render"
+        "video"
+      ];
+      plex.extraGroups = [
         "media"
         "render"
         "video"
@@ -129,6 +135,15 @@ in {
           av1 = true;
         };
       };
+    };
+
+    plex = {
+      enable = true;
+      openFirewall = false;
+      # Kim's Radeon render node, same as Jellyfin. Plex's own hardware
+      # transcoding toggle lives in its Settings UI (Plex Pass required) and
+      # is not exposed as a Nix option.
+      accelerationDevices = ["/dev/dri/renderD128"];
     };
 
     lidarr = {
@@ -213,6 +228,15 @@ in {
           ];
           UMask = lib.mkForce "0002";
         };
+        # Plex can manage the shared group-writable library but cannot see
+        # active downloads, same as Jellyfin.
+        plex.serviceConfig = {
+          InaccessiblePaths = [
+            "${mediaRoot}/torrents"
+            usenetRoot
+          ];
+          UMask = lib.mkForce "0002";
+        };
       }
       // lib.mapAttrs mkContainerProxyService downloadProxies;
 
@@ -222,10 +246,15 @@ in {
   };
 
   # Playback is available on the physical LAN and through Cloudflare. Other
-  # administrative services remain closed on every host interface.
+  # administrative services remain closed on every host interface. Plex Remote
+  # Access stays off in the UI so this LAN 32400 opening cannot become a WAN
+  # port-forward; claim the server from kim:32400/web before using the public
+  # hostname. See docs/media-stack.md#plex.
   networking.firewall.interfaces.enp194s0 = {
-    allowedTCPPorts = [endpoints.jellyfin.port];
-    allowedUDPPorts = [7359];
+    allowedTCPPorts = [endpoints.jellyfin.port endpoints.plex.port];
+    # 7359 is Jellyfin's UDP discovery protocol; 32410/32412-32414 are Plex's
+    # GDM local-discovery equivalent.
+    allowedUDPPorts = [7359 32410 32412 32413 32414];
   };
 
   # Only the downloader veths are NATed to the physical uplink. Mullvad runs

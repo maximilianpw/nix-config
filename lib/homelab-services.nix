@@ -283,6 +283,45 @@
     };
   };
 
+  plex = {
+    endpoint = {
+      authorizationOwner = "application";
+      # Plex also serves clients on Kim's physical LAN; the firewall limits
+      # this host-bound listener to the declared playback interface.
+      bindScope = "host";
+      exposure = "public";
+      hostname = "plex.maximilian.pw";
+      port = 32400;
+      monitorPath = "/identity";
+    };
+    state.paths = ["/var/lib/plex"];
+    backup.quiesce = [
+      {
+        unit = "plex.service";
+        until = "archive";
+      }
+    ];
+    storage.units = ["plex.service"];
+    operations.units = ["plex.service"];
+    recovery = {
+      order = 90;
+      versionPolicy = "restore-archived-version-first";
+      runbook = "docs/media-stack.md#recovery";
+      acceptance = [
+        "libraries-users-and-watch-state-load"
+        "representative-direct-play-and-transcode-pass"
+      ];
+      secretOwners = ["mutable-state:/var/lib/plex"];
+    };
+    presentation = {
+      group = "applications";
+      title = "Plex";
+      icon = "plex.png";
+      description = "Movies and television (Plex)";
+      order = 71;
+    };
+  };
+
   kuma = {
     endpoint = {
       authorizationOwner = "tailscale";

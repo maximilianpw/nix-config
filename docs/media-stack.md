@@ -1,15 +1,15 @@
 # Media stack on Kim
 
-Kim runs Jellyfin, Tunarr, Sonarr, Radarr, Lidarr, Bazarr, Prowlarr, Seerr,
-SABnzbd, and qBittorrent as one private media-automation stack. This
+Kim runs Jellyfin, Plex, Tunarr, Sonarr, Radarr, Lidarr, Bazarr, Prowlarr,
+Seerr, SABnzbd, and qBittorrent as one private media-automation stack. This
 configuration is intended for a personal library and sources the operator is
 authorized to use.
 Source and indexer accounts are deliberately not declared in this repository.
 
 ## Architecture
 
-Jellyfin, Tunarr, the Servarr managers, Prowlarr, Bazarr, and Seerr are native
-NixOS services. qBittorrent and SABnzbd run in separate declarative
+Jellyfin, Plex, Tunarr, the Servarr managers, Prowlarr, Bazarr, and Seerr are
+native NixOS services. qBittorrent and SABnzbd run in separate declarative
 systemd-nspawn containers. Each downloader has its own network namespace,
 Mullvad daemon, fail-closed startup gate, and host-loopback proxy:
 
@@ -18,6 +18,7 @@ HTTPS ingress                  Kim host                    VPN containers
 ---------------        -------------------------    ---------------------------
 Cloudflare:
   jellyfin.* --------> Jellyfin :8096
+  plex.* ------------> Plex     :32400
   seerr.* -----------> Seerr    :5055
 Tailnet:
   tunarr.* ----------> Tunarr   :8000
@@ -30,6 +31,7 @@ Tailnet:
   sabnzbd.* ---------> 127.0.0.1:18081 proxy ------> sab:8080 --Mullvad/NNTP/TLS--> provider
 
 LAN enp194s0 --------> Jellyfin :8096 and discovery UDP :7359
+                       Plex :32400 and discovery UDP :32410/32412-32414
 ```
 
 The host's Tailscale routing is untouched. Only the two downloader veths are
@@ -65,9 +67,9 @@ existing bind-mounted `/var/lib/sabnzbd` state. Both containers use the same
 stable `media` group identity as the host applications.
 Sonarr, Radarr, and Lidarr can read and write the whole tree to import completed
 downloads into `library/`. Bazarr can update subtitle files in
-the movie and television libraries. Jellyfin can manage `library/` but cannot
-see either active download tree. Tunarr has read-only access to `library/` and
-cannot see either download tree. All services that touch `/srv` require the
+the movie and television libraries. Jellyfin and Plex can manage `library/` but
+cannot see either active download tree. Tunarr has read-only access to
+`library/` and cannot see either download tree. All services that touch `/srv` require the
 mount and fail closed instead of writing into the root filesystem when it is
 missing.
 
@@ -284,6 +286,48 @@ add these libraries:
 LAN playback is available at `http://kim:8096`. Internet playback uses the
 Cloudflare tunnel; there is no direct router port-forwarded Jellyfin endpoint.
 
+### Plex
+
+Claim the server from the physical LAN (or Kim itself) immediately after
+activation. Cloudflare publishes `https://plex.maximilian.pw` as soon as the
+tunnel config is live, and the first plex.tv account to reach an unclaimed
+server owns it. Open `http://kim:32400/web` from a LAN browser, or
+`http://127.0.0.1:32400/web` on Kim, then sign in with the intended plex.tv
+account. A short-lived claim token from [plex.tv/claim](https://www.plex.tv/claim)
+also works if pasted into the same local wizard; do not complete claim through
+the public hostname.
+
+Add the same three libraries as Jellyfin:
+
+| Library type | Folder |
+| --- | --- |
+| Movies | `/srv/media/library/movies` |
+| Shows | `/srv/media/library/tv` |
+| Music | `/srv/media/library/music` |
+
+Then in **Settings → Network**:
+
+1. Turn **Enable Remote Access** off. Off-LAN playback uses the Cloudflare
+   tunnel only; Plex must not open a router port-forward via UPnP or NAT-PMP.
+   There is no direct WAN endpoint, matching Jellyfin.
+2. Set **Custom server access URLs** to
+   `https://plex.maximilian.pw,http://kim:32400` so LAN clients keep the local
+   URL while remote clients use the tunnel.
+3. Set **Secure connections** to **Preferred** rather than **Required**. TLS
+   terminates at Cloudflare and the loopback hop from the tunnel to Plex is
+   plain HTTP.
+4. Set **LAN Networks** to the IPv4 prefix on `enp194s0`
+   (`ip -4 addr show enp194s0`). Cloudflared originates on `127.0.0.1`, so
+   Plex's guessed LAN range would treat every tunneled client as local for
+   auth and quality.
+
+LAN playback stays at `http://kim:32400/web`. Confirm Remote Access remains off
+and that the router has no Plex port-forward before using the public hostname.
+
+Hardware transcoding is a Plex Pass-gated toggle in **Settings → Transcoder**
+("Use hardware acceleration when available"), not a Nix option; enable it
+there after confirming the account has Plex Pass.
+
 ### Tunarr
 
 Open `https://tunarr.liger-shilling.ts.net`. Tunarr is paired with Nixpkgs
@@ -326,7 +370,7 @@ enabled until the complete download-import-playback path has been proven.
 Check the host services and container boundary:
 
 ```nu
-systemctl status jellyfin tunarr sonarr radarr lidarr bazarr prowlarr seerr container@qbt container@sab qbittorrent-proxy.socket sabnzbd-proxy.socket
+systemctl status jellyfin plex tunarr sonarr radarr lidarr bazarr prowlarr seerr container@qbt container@sab qbittorrent-proxy.socket sabnzbd-proxy.socket
 sudo nixos-container run qbt -- mullvad status
 sudo nixos-container run qbt -- systemctl status qbittorrent --no-pager
 sudo nixos-container run sab -- mullvad status
@@ -337,6 +381,7 @@ Confirm VA-API access as the actual service identity:
 
 ```nu
 sudo -u jellyfin vainfo --display drm --device /dev/dri/renderD128
+sudo -u plex vainfo --display drm --device /dev/dri/renderD128
 ```
 
 Before relying on hardware transcoding, confirm the output reports the codecs
@@ -355,24 +400,31 @@ Then perform lawful movie, episode, and album tests:
    category and the manager hardlinks it into the library; compare device and
    inode numbers with `stat` and require a link count of at least two.
 4. Confirm Jellyfin direct-plays one item.
-5. Play a Tunarr channel from Jellyfin Live TV and confirm its guide data and
+5. Confirm Plex direct-plays the same item from `http://kim:32400/web` and from
+   `https://plex.maximilian.pw`. Remote Access must still be off; the public
+   play goes through Cloudflare, not a router port-forward.
+6. Play a Tunarr channel from Jellyfin Live TV and confirm its guide data and
    current program match the configured lineup.
-6. Force a lower playback bitrate, confirm the stream transcodes, and inspect
+7. Force a lower playback bitrate, confirm the stream transcodes, and inspect
    Jellyfin's FFmpeg log for VA-API rather than software encoding.
-7. Run `sudo nixos-container run qbt -- mullvad disconnect` and verify torrent
+8. Force a lower playback bitrate on the same item in Plex. Confirm it
+   transcodes, and inspect `journalctl -u plex` (or Now Playing) for a VA-API
+   hardware encoder rather than a software encoder.
+9. Run `sudo nixos-container run qbt -- mullvad disconnect` and verify torrent
    traffic stops while SABnzbd, host Tailscale, and Jellyfin remain reachable.
    Confirm qBittorrent does not fall back to its container veth, then run
    `sudo nixos-container run qbt -- mullvad connect`.
-8. Repeat with `sab`: use `mullvad disconnect` and verify Usenet traffic stops
-   while qBittorrent and the host remain reachable. Confirm SABnzbd does not
-   fall back to its container veth, then run `mullvad connect`. Do not stop the
-   `mullvad-daemon` unit for this test.
+10. Repeat with `sab`: use `mullvad disconnect` and verify Usenet traffic stops
+    while qBittorrent and the host remain reachable. Confirm SABnzbd does not
+    fall back to its container veth, then run `mullvad connect`. Do not stop the
+    `mullvad-daemon` unit for this test.
 
 ## Backups
 
 Borg preserves the control plane:
 
 - Jellyfin users, libraries, metadata, and watch state
+- Plex users, libraries, metadata, and watch state
 - Tunarr's Jellyfin connection, channels, lineups, transcode profiles, and guide
   state; its rebuildable sparse `data.ms` search index is excluded
 - Sonarr, Radarr, Lidarr, Bazarr, and Prowlarr configuration/databases
@@ -460,8 +512,8 @@ a database already migrated by 12.0.
 4. Start `container@qbt` and `container@sab`. Confirm Mullvad is connected in
    each namespace before confirming qBittorrent and SABnzbd are running or
    unmasking their host proxy sockets.
-5. Start Prowlarr, Sonarr, Radarr, Lidarr, Bazarr, Jellyfin, Tunarr, and Seerr.
-   Confirm the restored Usenet provider uses port 563, SSL, and strict
+5. Start Prowlarr, Sonarr, Radarr, Lidarr, Bazarr, Jellyfin, Plex, Tunarr, and
+   Seerr. Confirm the restored Usenet provider uses port 563, SSL, and strict
    certificate verification before resuming its queue.
 6. Run the acceptance checks above. If downloaded media was not separately
    protected, reconcile missing files in the library managers rather than

@@ -63,7 +63,7 @@ sudo systemctl mask --runtime \
   paperless-exporter.service paperless-scheduler.service \
   paperless-task-queue.service paperless-web.service miniflux.service \
   immich-machine-learning.service immich-server.service \
-  bazarr.service jellyfin.service lidarr.service prowlarr.service \
+  bazarr.service jellyfin.service lidarr.service plex.service prowlarr.service \
   radarr.service seerr.service sonarr.service \
   container@qbt.service container@sab.service \
   qbittorrent-proxy.service qbittorrent-proxy.socket \
@@ -91,7 +91,7 @@ sudo borg-restore-main <archive> /var/tmp/homelab-state \
   srv/immich srv/nextcloud srv/paperless/export srv/paperless/consume \
   srv/paperless/media var/lib/actual var/lib/bazarr var/lib/bitwarden_rs var/lib/jellyfin \
   var/lib/lidarr/.config/Lidarr var/lib/nixos-containers/qbt \
-  var/lib/nixos-containers/sab \
+  var/lib/nixos-containers/sab var/lib/plex \
   var/lib/private/jellyseerr var/lib/private/prowlarr \
   var/lib/private/uptime-kuma var/lib/radarr/.config/Radarr \
   var/lib/executor \
@@ -205,7 +205,7 @@ and determine who initialized it; do not merge blindly.
 
 ### Media stack
 
-1. Keep Jellyfin, Sonarr, Radarr, Lidarr, Bazarr, Prowlarr, Seerr, both
+1. Keep Jellyfin, Plex, Sonarr, Radarr, Lidarr, Bazarr, Prowlarr, Seerr, both
    downloader containers, and both host proxies stopped. Restore each staged
    control-state path into an explicitly created empty destination, preserving
    numeric ownership.
@@ -216,11 +216,11 @@ and determine who initialized it; do not merge blindly.
    Mullvad is connected and `wg0-mullvad` exists. Confirm qBittorrent is bound
    to that interface and SABnzbd passed its VPN connection gate before
    unmasking `qbittorrent-proxy.socket` and `sabnzbd-proxy.socket`.
-4. Start Prowlarr, Sonarr, Radarr, Lidarr, Bazarr, Jellyfin, and Seerr with the
-   package versions recorded in the manifest. Before resuming SABnzbd's queue,
-   confirm every restored provider uses port 563, SSL, and strict certificate
-   verification. Validate application connections, root folders, categories,
-   history, users, libraries, and watch state.
+4. Start Prowlarr, Sonarr, Radarr, Lidarr, Bazarr, Jellyfin, Plex, and Seerr
+   with the package versions recorded in the manifest. Before resuming
+   SABnzbd's queue, confirm every restored provider uses port 563, SSL, and
+   strict certificate verification. Validate application connections, root
+   folders, categories, history, users, libraries, and watch state.
 5. Run the end-to-end checks in [the media-stack runbook](media-stack.md#acceptance-checks),
    including a hardlink import when media is available and both direct-play and
    VA-API transcoding. Retain the staged trees until all checks pass.

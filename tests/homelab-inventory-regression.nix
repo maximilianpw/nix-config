@@ -99,6 +99,7 @@ in
   assert lib.assertMsg (
     homelab.services.jellyfin.endpoint.bindScope
     == "host"
+    && homelab.services.plex.endpoint.bindScope == "host"
     && homelab.services.bazarr.endpoint.bindScope == "loopback"
     && homelab.services.seerr.endpoint.bindScope == "loopback"
   )
