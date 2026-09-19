@@ -38,6 +38,8 @@ in {
       "colemak-dh"
       "bitwarden"
       "1password"
+      # Use 1Password's signed Homebrew CLI so desktop-app authentication works.
+      "1password-cli"
       "hyperkey"
       "rectangle"
       "vicinae"

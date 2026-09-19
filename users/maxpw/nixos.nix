@@ -107,9 +107,16 @@ in {
       };
     };
 
-    sessionVariables = lib.mkIf isLinuxDesktop {
-      NIXOS_OZONE_WL = "1";
-    };
+    sessionVariables = lib.mkMerge [
+      (lib.mkIf isLinuxDesktop {
+        NIXOS_OZONE_WL = "1";
+      })
+      (lib.mkIf (!isLinuxDesktop) {
+        # Headless hosts cannot use 1Password desktop-app authentication.
+        # Force `op signin` to use the manually configured account instead.
+        OP_BIOMETRIC_UNLOCK_ENABLED = "false";
+      })
+    ];
   };
 
   # Keep the stateVersion at the initial install release; don't bump later.

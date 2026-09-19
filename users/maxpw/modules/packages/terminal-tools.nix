@@ -52,8 +52,9 @@
       pkgs.python313Packages.pymdown-extensions
 
       # Security & secrets
-      pkgs._1password-cli
       pkgs.bitwarden-cli
       pkgs.ngrok
-    ];
+    ]
+    # Darwin uses 1Password's signed Homebrew CLI for desktop-app integration.
+    ++ lib.optional (!isDarwin) pkgs._1password-cli;
 }
