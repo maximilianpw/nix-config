@@ -244,8 +244,10 @@ Start with one conservative 1080p profile in Sonarr and Radarr:
 - Exclude remux and every 2160p/4K quality.
 - Set a cutoff that stops upgrades once the chosen 1080p target is reached.
 - Enable completed-download handling and hardlinks instead of copy/delete.
-- Choose an explicit seed ratio or seed-time policy before enabling automatic
-  torrent removal.
+- qBittorrent globally seeds to ratio 1.0 or 24 hours, whichever first, then
+  deletes the torrent and its files under `/srv/media/torrents`. Hardlinked
+  library copies remain. Do not raise this in the WebUI; Nix reconciles it on
+  every start.
 
 ### Prowlarr
 

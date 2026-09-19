@@ -350,8 +350,13 @@ in
     && qbtService.environment.QBIT_WEBUI_CSRF_PROTECTION == "true"
     && qbtService.environment.QBIT_WEBUI_HOST_HEADER_VALIDATION == "false"
     && qbtService.environment.QBIT_WEBUI_MAX_AUTHENTICATION_FAIL_COUNT == "0"
+    && qbtService.environment.QBIT_GLOBAL_MAX_RATIO == "1"
+    && qbtService.environment.QBIT_GLOBAL_MAX_SEEDING_MINUTES == "1440"
+    && qbtService.environment.QBIT_SHARE_LIMIT_ACTION == "RemoveWithContent"
+    && lib.hasInfix "Session\\GlobalMaxRatio=1" (builtins.readFile qbtService.environment.QBIT_BOOTSTRAP_CONFIG)
+    && lib.hasInfix "Session\\ShareLimitAction=RemoveWithContent" (builtins.readFile qbtService.environment.QBIT_BOOTSTRAP_CONFIG)
   )
-  "qBittorrent must bind to Mullvad and preserve CSRF protection while accepting the port-translating proxy without shared-IP bans";
+  "qBittorrent must bind to Mullvad, preserve CSRF protection, and delete finished torrents after a bounded seed window";
   assert lib.assertMsg (
     config.networking.nat.enable
     && config.networking.nat.externalInterface == "enp194s0"

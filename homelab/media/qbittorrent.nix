@@ -44,11 +44,20 @@ in {
       qbitWebUICSRFProtection = "true";
       qbitWebUIHostHeaderValidation = "false";
       qbitWebUIMaxAuthenticationFailCount = "0";
+      # Mullvad does not forward ports, so long seeding just fills /srv.
+      # Hit ratio 1.0 or 24h, then delete the torrent and its files. Hardlinked
+      # library copies stay; leftover remuxes in torrents/ do not.
+      qbitGlobalMaxRatio = "1";
+      qbitGlobalMaxSeedingMinutes = "1440";
+      qbitShareLimitAction = "RemoveWithContent";
       qbitBootstrapConfig = pkgs.writeText "qbittorrent-bootstrap.conf" ''
         [BitTorrent]
         Session\DefaultSavePath=${mediaRoot}/torrents/
         Session\TempPath=${mediaRoot}/torrents/incomplete/
         Session\TempPathEnabled=true
+        Session\GlobalMaxRatio=${qbitGlobalMaxRatio}
+        Session\GlobalMaxSeedingMinutes=${qbitGlobalMaxSeedingMinutes}
+        Session\ShareLimitAction=${qbitShareLimitAction}
 
         [LegalNotice]
         Accepted=true
@@ -139,6 +148,9 @@ in {
             QBIT_WEBUI_CSRF_PROTECTION = qbitWebUICSRFProtection;
             QBIT_WEBUI_HOST_HEADER_VALIDATION = qbitWebUIHostHeaderValidation;
             QBIT_WEBUI_MAX_AUTHENTICATION_FAIL_COUNT = qbitWebUIMaxAuthenticationFailCount;
+            QBIT_GLOBAL_MAX_RATIO = qbitGlobalMaxRatio;
+            QBIT_GLOBAL_MAX_SEEDING_MINUTES = qbitGlobalMaxSeedingMinutes;
+            QBIT_SHARE_LIMIT_ACTION = qbitShareLimitAction;
           };
           # The leading + runs the leak check with full privileges even though
           # the daemon remains the unprivileged qBittorrent user.
