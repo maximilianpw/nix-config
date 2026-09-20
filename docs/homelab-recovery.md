@@ -62,9 +62,9 @@ sudo systemctl mask --runtime \
   phpfpm-nextcloud.service paperless-consumer.service \
   paperless-exporter.service paperless-scheduler.service \
   paperless-task-queue.service paperless-web.service miniflux.service \
-  immich-machine-learning.service immich-server.service \
+  immich-machine-learning.service immich-server.service leerr.service \
   bazarr.service jellyfin.service lidarr.service plex.service prowlarr.service \
-  radarr.service seerr.service sonarr.service \
+  radarr.service seerr.service sonarr.service tunarr.service \
   container@qbt.service container@sab.service \
   qbittorrent-proxy.service qbittorrent-proxy.socket \
   sabnzbd-proxy.service sabnzbd-proxy.socket \
@@ -81,23 +81,27 @@ expose a drill instance through production ingress.
 ## 3. Stage the complete recovery point
 
 Create a second empty directory and extract the required members. Never point
-`borg-restore-main` at `/`, `/srv`, `/var/lib`, or any live service path.
+`borg-restore-main` at `/`, `/srv`, `/var/lib`, or any live service path. The
+example below reflects the maintained revision; before using it, reconcile the
+selection with the selected archive's manifest, transforms, application
+versions, and owning service runbooks. The source tree is already staged
+separately in section 2.
 
 ```sh
 sudo install -d -m 0700 /var/tmp/homelab-state
 sudo borg-restore-main <archive> /var/tmp/homelab-state \
   var/backup/homelab/manifest.json \
   var/backup/home-assistant/config.tar var/backup/postgresql \
+  var/backup/t3code/state.tar \
   srv/immich srv/nextcloud srv/paperless/export srv/paperless/consume \
-  srv/paperless/media var/lib/actual var/lib/bazarr var/lib/bitwarden_rs var/lib/jellyfin \
+  srv/paperless/media var/lib/actual var/lib/bazarr var/lib/bitwarden_rs \
+  var/lib/executor var/lib/jellyfin var/lib/leerr \
   var/lib/lidarr/.config/Lidarr var/lib/nixos-containers/qbt \
   var/lib/nixos-containers/sab var/lib/plex \
   var/lib/private/jellyseerr var/lib/private/prowlarr \
   var/lib/private/uptime-kuma var/lib/radarr/.config/Radarr \
-  var/lib/executor \
-  var/lib/sabnzbd var/lib/sonarr/.config/NzbDrone \
-  home/maxpw/.config/syncthing home/maxpw/.local/share/t3code \
-  home/maxpw/Sync
+  var/lib/sabnzbd var/lib/sonarr/.config/NzbDrone var/lib/tunarr \
+  home/maxpw/.config/syncthing home/maxpw/Sync
 sudo homelab-backup-inspect <archive>
 ```
 
@@ -205,25 +209,14 @@ and determine who initialized it; do not merge blindly.
 
 ### Media stack
 
-1. Keep Jellyfin, Plex, Sonarr, Radarr, Lidarr, Bazarr, Prowlarr, Seerr, both
-   downloader containers, and both host proxies stopped. Restore each staged
-   control-state path into an explicitly created empty destination, preserving
-   numeric ownership.
-2. Downloaded files under `/srv/media` are not in the Borg archive. Restore
-   them from their separate copy if one exists; otherwise leave the media tree
-   empty and reconcile missing entries after the control plane is healthy.
-3. Start `container@qbt` and `container@sab`. In both namespaces confirm
-   Mullvad is connected and `wg0-mullvad` exists. Confirm qBittorrent is bound
-   to that interface and SABnzbd passed its VPN connection gate before
-   unmasking `qbittorrent-proxy.socket` and `sabnzbd-proxy.socket`.
-4. Start Prowlarr, Sonarr, Radarr, Lidarr, Bazarr, Jellyfin, Plex, and Seerr
-   with the package versions recorded in the manifest. Before resuming
-   SABnzbd's queue, confirm every restored provider uses port 563, SSL, and
-   strict certificate verification. Validate application connections, root
-   folders, categories, history, users, libraries, and watch state.
-5. Run the end-to-end checks in [the media-stack runbook](media-stack.md#acceptance-checks),
-   including a hardlink import when media is available and both direct-play and
-   VA-API transcoding. Retain the staged trees until all checks pass.
+Keep every media reader and writer stopped, including Jellyfin, Plex, Tunarr,
+the Servarr services, both downloader containers, and both host proxies, while
+restoring their matching control state from the selected archive. Follow the
+maintained [media-stack recovery procedure](media-stack.md#recovery) for
+version-matched restoration, namespace and VPN checks, start order, and
+acceptance. `/srv/media` is excluded from Borg and is recoverable only from a
+separate copy; otherwise leave it empty and reconcile missing entries after the
+control plane is healthy.
 
 ### Paperless
 
@@ -349,6 +342,14 @@ open the UI through isolated tailnet ingress, verify existing workspaces and
 attachments, open an existing worktree, and create one new authenticated
 workspace. A rollback requires restoring the complete pre-migration tree with
 its matching package version.
+
+### Leerr
+
+Keep `leerr.service` stopped and restore the complete staged `/var/lib/leerr`
+tree with the archived package version and its matching encryption key. Follow
+the maintained [Leerr recovery procedure](leerr.md#recovery) for ownership,
+SQLite, login, and isolated acceptance checks; do not expose the service before
+they pass.
 
 ### Grafana and Prometheus
 
