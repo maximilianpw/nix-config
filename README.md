@@ -6,8 +6,10 @@ This flake manages three hosts for Maximilian:
 - `cuno`, an x86_64 NixOS-WSL environment;
 - `joyce`, an Apple Silicon nix-darwin workstation.
 
-It also keeps a parked, evaluable Hyprland profile for Kim. Revachol is the
-remote-development fleet name, while its command remains `fleet`.
+It also keeps a parked, evaluable Hyprland profile for Kim. Its desktop
+configuration and assets are intentionally retained for a future desktop host,
+even when currently unused. Revachol is the remote-development fleet name,
+while its command remains `fleet`.
 
 ## Ownership map
 

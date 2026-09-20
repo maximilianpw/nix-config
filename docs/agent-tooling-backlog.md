@@ -44,6 +44,16 @@ needs a separate threat model, low-privilege and short-lived credentials, and
 human approval for destructive operations. Define the credential and operation
 allowlist before scheduling any agent work.
 
+### CLIProxyAPI upstream protocol revalidation
+
+The maintained [CLIProxyAPI module documentation](../modules/cliproxyapi/README.md)
+records dated Zen protocol constraints. Before enabling anything beyond the
+current prefix-isolated Chat Completions upstream, revalidate Responses
+streaming/reasoning behavior, Anthropic Messages authentication without
+secret-duplicating header workarounds, and whether current Gemini URL
+construction can address Zen. Use runtime SOPS credentials and do not turn a
+historical unauthenticated probe into a current compatibility claim.
+
 ## Open decisions
 
 - Report destination: a local report directory, an Obsidian location, or both.

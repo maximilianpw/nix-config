@@ -31,4 +31,35 @@ Keep replacement public keys URL-safe, using letters, digits, underscores, and h
 
 Provider OAuth credentials remain mutable state in `~/.cli-proxy-api`. The OpenCode Zen key comes from `secrets/secrets.yaml`, and its Chat Completions models are exposed under the `zen/` prefix. The Linux package definition remains in `packages/cliproxyapi.nix`.
 
+### Zen upstream protocol constraints
+
+The configured Zen upstream is deliberately explicit, prefix-isolated, and
+Chat-Completions-only: `modules/cliproxyapi/config.nix` renders one
+`openai-compatibility` provider under `zen/`. CLIProxyAPI may translate several
+downstream client protocols, but that does not expand the protocol used for the
+upstream request.
+
+The following are historical findings from research against CLIProxyAPI commit
+[`4b5f1ea`](https://github.com/router-for-me/CLIProxyAPI/commit/4b5f1eab25fca4b3815369a826e958e7c070a69e)
+on 2026-08-27, not verified claims about current upstream behavior:
+
+- Responses integration was deferred and never validated end to end with a live
+  Zen key.
+- Anthropic Messages used an authentication-header rule that selected
+  `Authorization: Bearer` for a non-Anthropic base URL, while Zen expected
+  `x-api-key` at the researched revision.
+- Gemini URL construction inserted a fixed `v1beta` segment, which could not
+  address Zen's researched `/zen/v1/models/...` path.
+
+Revalidate these constraints before enabling another protocol family. The
+minimal primary sources are the upstream
+[`config.example.yaml`](https://github.com/router-for-me/CLIProxyAPI/blob/4b5f1eab25fca4b3815369a826e958e7c070a69e/config.example.yaml),
+[Claude request authentication](https://github.com/router-for-me/CLIProxyAPI/blob/4b5f1eab25fca4b3815369a826e958e7c070a69e/internal/runtime/executor/claude_executor_request.go#L701-L712),
+[Gemini URL construction](https://github.com/router-for-me/CLIProxyAPI/blob/4b5f1eab25fca4b3815369a826e958e7c070a69e/internal/runtime/executor/gemini_executor.go#L176),
+and [OpenCode Zen protocol documentation](https://opencode.ai/docs/zen).
+
+Billable provider credentials are runtime SOPS material. They must be rendered
+from encrypted secrets at runtime and must never be stored as Nix literals or
+written to the Nix store.
+
 Pi's dynamic model discovery and quota client are implemented in the separate `~/pi-config` repository and linked into `~/.pi/agent` by `users/maxpw/modules/agent-tools.nix`. The installed `cliproxyapi-util quota --json` command runs that shared client and reports deterministic availability for Codex, Claude, and Grok.

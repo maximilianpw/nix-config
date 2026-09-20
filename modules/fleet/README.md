@@ -133,11 +133,12 @@ fleet tunnel pause 3000   # Frees the port for a local app; survives login.
 fleet tunnel resume 3000  # Run after stopping the local app.
 ```
 
-The Joyce acceptance test verifies that terminating the runner-owned SSH child
-keeps the same runner alive, creates a new child and owned listener after the
-backoff, and returns the tunnel to a healthy state. It also verifies that an
-intentional pause prevents respawn. Physical sleep/wake and locked-agent
-disruption remain operational conditions rather than deterministic tests.
+The Rust migration and final Joyce reconnect/pause/resume acceptance are
+complete. The accepted test terminated the runner-owned SSH child, kept the
+same runner alive, observed a new child and owned listener after the backoff,
+and returned the tunnel to a healthy state; an intentional pause prevented
+respawn and resume restored it. Physical sleep/wake and locked-credential
+disruption were not forced for the final Rust candidate.
 
 On non-Darwin hosts the existing `fleet` commands stay available. Managed
 tunnel pause/resume explain that launchd supervision is macOS-only. `fleet

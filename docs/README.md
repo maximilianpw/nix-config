@@ -25,6 +25,7 @@ completed plans and superseded research.
 - [Media stack](media-stack.md)
 - [Nextcloud Calendar](nextcloud-calendar.md)
 - [Paperless](paperless.md)
+- [CLIProxyAPI gateway](../modules/cliproxyapi/README.md)
 
 ## Platform setup
 
@@ -38,6 +39,3 @@ completed plans and superseded research.
 
 - [Homelab backlog](homelab-backlog.md)
 - [Agent tooling backlog](agent-tooling-backlog.md)
-- [OpenCode Zen provider research](cliproxyapi-opencode-provider-research.md),
-  retained until the protected CLIProxyAPI documentation changes are committed
-  and can be reviewed as its authoritative replacement.
