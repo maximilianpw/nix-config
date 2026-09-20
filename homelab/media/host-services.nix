@@ -18,6 +18,14 @@
     sabnzbdUid
     usenetRoot
     ;
+  physicalLanIpv4Cidr = "192.168.1.0/24";
+  plexLanFirewallRules = ''
+    iptables -w -A nixos-fw -i enp194s0 -s ${physicalLanIpv4Cidr} -p tcp --dport ${toString endpoints.plex.port} -j nixos-fw-accept
+    iptables -w -A nixos-fw -i enp194s0 -s ${physicalLanIpv4Cidr} -p udp --dport 32410 -j nixos-fw-accept
+    iptables -w -A nixos-fw -i enp194s0 -s ${physicalLanIpv4Cidr} -p udp --dport 32412 -j nixos-fw-accept
+    iptables -w -A nixos-fw -i enp194s0 -s ${physicalLanIpv4Cidr} -p udp --dport 32413 -j nixos-fw-accept
+    iptables -w -A nixos-fw -i enp194s0 -s ${physicalLanIpv4Cidr} -p udp --dport 32414 -j nixos-fw-accept
+  '';
   prowlarrReconcile = pkgs.writeShellApplication {
     name = "prowlarr-reconcile";
     runtimeInputs = [pkgs.coreutils pkgs.curl pkgs.gnused pkgs.jq];
@@ -247,14 +255,17 @@ in {
 
   # Playback is available on the physical LAN and through Cloudflare. Other
   # administrative services remain closed on every host interface. Plex Remote
-  # Access stays off in the UI so this LAN 32400 opening cannot become a WAN
-  # port-forward; claim the server from kim:32400/web before using the public
-  # hostname. See docs/media-stack.md#plex.
-  networking.firewall.interfaces.enp194s0 = {
-    allowedTCPPorts = [endpoints.jellyfin.port endpoints.plex.port];
-    # 7359 is Jellyfin's UDP discovery protocol; 32410/32412-32414 are Plex's
-    # GDM local-discovery equivalent.
-    allowedUDPPorts = [7359 32410 32412 32413 32414];
+  # Access stays off in the UI, and Plex's TCP and discovery ports accept only
+  # Kim's IPv4 LAN. This source restriction is required because opening a port
+  # on the physical interface also exposes it through Kim's globally routable
+  # IPv6 addresses without a router port-forward. Claim the server from
+  # kim:32400/web before using the public hostname. See docs/media-stack.md#plex.
+  networking.firewall = {
+    interfaces.enp194s0 = {
+      allowedTCPPorts = [endpoints.jellyfin.port];
+      allowedUDPPorts = [7359];
+    };
+    extraCommands = plexLanFirewallRules;
   };
 
   # Only the downloader veths are NATed to the physical uplink. Mullvad runs

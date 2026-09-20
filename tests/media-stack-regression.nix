@@ -378,13 +378,22 @@ in
   "downloader WebUIs must cross their namespaces only through loopback proxies";
   assert lib.assertMsg (
     config.networking.firewall.interfaces.enp194s0.allowedTCPPorts
-    == [endpoints.jellyfin.port endpoints.plex.port]
-    && config.networking.firewall.interfaces.enp194s0.allowedUDPPorts == [7359 32410 32412 32413 32414]
+    == [endpoints.jellyfin.port]
+    && config.networking.firewall.interfaces.enp194s0.allowedUDPPorts == [7359]
+    && lib.hasInfix
+    "-i enp194s0 -s 192.168.1.0/24 -p tcp --dport ${toString endpoints.plex.port} -j nixos-fw-accept"
+    config.networking.firewall.extraCommands
+    && lib.all
+    (port:
+      lib.hasInfix
+      "-i enp194s0 -s 192.168.1.0/24 -p udp --dport ${toString port} -j nixos-fw-accept"
+      config.networking.firewall.extraCommands)
+    [32410 32412 32413 32414]
     && !(builtins.elem endpoints.plex.port config.networking.firewall.allowedTCPPorts)
     && !(builtins.elem 3005 config.networking.firewall.allowedTCPPorts)
     && !(builtins.elem 32469 config.networking.firewall.allowedTCPPorts)
   )
-  "the physical LAN must expose Jellyfin and Plex playback and discovery only";
+  "Plex playback and discovery must be IPv4-LAN-only while Jellyfin remains available on the physical interface";
   assert lib.assertMsg (lib.all requiresSrv [
     config.systemd.services.bazarr
     tunarrService

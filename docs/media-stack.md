@@ -323,8 +323,14 @@ Then in **Settings → Network**:
    Plex's guessed LAN range would treat every tunneled client as local for
    auth and quality.
 
-LAN playback stays at `http://kim:32400/web`. Confirm Remote Access remains off
-and that the router has no Plex port-forward before using the public hostname.
+LAN playback stays at `http://kim:32400/web`. The host firewall admits Plex TCP
+32400 and GDM UDP 32410/32412-32414 only from `192.168.1.0/24`; it deliberately
+does not admit these ports over IPv6. An interface-wide allowance is unsafe here
+because Kim has globally routable IPv6 addresses, which would create a direct WAN
+endpoint without any router port-forward. Update `physicalLanIpv4Cidr` in
+`homelab/media/host-services.nix` if the LAN prefix changes. Confirm Remote Access
+remains off and that the router has no Plex port-forward before using the public
+hostname.
 
 Hardware transcoding is a Plex Pass-gated toggle in **Settings → Transcoder**
 ("Use hardware acceleration when available"), not a Nix option; enable it
