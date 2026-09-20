@@ -129,7 +129,7 @@
 
     mkConfiguredSystem = name: host:
       mkSystem name {
-        inherit (host) darwin linuxDesktop profiles system user userDir wsl;
+        inherit (host) darwin linuxDesktop system user userDir wsl;
         hostRecord = host;
         hostInventory = hosts;
         extraModules = map (moduleName: inputs.nixos-hardware.nixosModules.${moduleName}) host.hardwareModules;
@@ -140,7 +140,6 @@
     desktopKim = mkConfiguredSystem "kim" (hosts.kim
       // {
         linuxDesktop = true;
-        profiles = hosts.kim.profiles ++ ["desktop"];
       });
 
     mkPreCommitCheck = system:

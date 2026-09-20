@@ -12,7 +12,6 @@
   darwin ? false,
   wsl ? false,
   linuxDesktop ? (!darwin && !wsl),
-  profiles ? [],
   hostRecord,
   hostInventory,
   extraModules ? [],
@@ -39,14 +38,12 @@
     else inputs.home-manager.nixosModules;
 
   systemArgs = {
-    currentSystem = system;
     currentSystemName = name;
     currentSystemUser = user;
     currentSystemUserDir = userDir;
     isDarwin = darwin;
     isWSL = wsl;
     isLinuxDesktop = linuxDesktop;
-    currentSystemProfiles = profiles;
     inherit hostInventory hostRecord inputs;
   };
 in
