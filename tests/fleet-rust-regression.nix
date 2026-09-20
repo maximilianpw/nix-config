@@ -122,61 +122,10 @@
     then import pkgs.path {system = "aarch64-darwin";}
     else pkgs;
 
-  loadCandidate = src: let
-    suppliedFlake = builtins.isAttrs src && src ? packages && src ? homeManagerModules;
-    sourcePath =
-      if builtins.isAttrs src
-      then src.outPath
-      else src;
-    srcPath = toString sourcePath;
-    moduleFile = sourcePath + "/nix/home-manager.nix";
-    packageFile = sourcePath + "/nix/package.nix";
-    flakeTry =
-      if suppliedFlake
-      then {
-        success = true;
-        value = src;
-      }
-      else if builtins.pathExists (sourcePath + "/flake.nix")
-      then builtins.tryEval (builtins.getFlake "path:${srcPath}")
-      else {
-        success = false;
-        value = null;
-      };
-    flake =
-      if flakeTry.success
-      then flakeTry.value
-      else null;
-    system = pkgs.stdenv.hostPlatform.system;
-    systemPackages =
-      if flake != null && flake ? packages && builtins.hasAttr system flake.packages
-      then flake.packages.${system}
-      else {};
-    # Prefer the live module file so concurrent checkout edits are visible
-    # without depending on a getFlake snapshot.
-    module =
-      if builtins.pathExists moduleFile
-      then import moduleFile
-      else if flake != null && flake ? homeManagerModules && flake.homeManagerModules ? default
-      then flake.homeManagerModules.default
-      else throw "fleetSrc has no nix/home-manager.nix and no homeManagerModules.default: ${srcPath}";
-    package =
-      systemPackages.fleet
-      or systemPackages.default
-      or (
-        if builtins.pathExists packageFile
-        then pkgs.callPackage packageFile {}
-        else throw "fleetSrc has no packages.${system}.fleet and no nix/package.nix: ${srcPath}"
-      );
-  in {
-    inherit module package;
-    modules =
-      if builtins.isList module
-      then module
-      else [module];
+  candidate = {
+    package = fleetSrc.packages.${pkgs.stdenv.hostPlatform.system}.fleet;
+    modules = [fleetSrc.homeManagerModules.default];
   };
-
-  candidate = loadCandidate fleetSrc;
 
   evalFleetHome = {
     darwin,
@@ -427,11 +376,7 @@ in
 
       fleet_validate() {
         config_path="$1"
-        if "$fleetBin" --help 2>/dev/null | grep -F -- '--config' >/dev/null; then
-          "$fleetBin" --config "$config_path" config validate
-        else
-          FLEET_CONFIG="$config_path" "$fleetBin" config validate
-        fi
+        "$fleetBin" --config "$config_path" config validate
       }
 
       fleet_validate "$fictionalConfig"

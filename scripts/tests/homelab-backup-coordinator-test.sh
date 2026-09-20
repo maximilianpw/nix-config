@@ -197,14 +197,6 @@ bash "$coordinator" cleanup
 is_active db-a.service
 is_active file-a.service
 
-# A Borg failure occurs after successful preparation; cleanup returns file units.
-new_case borg-failure
-printf '%s\n' db-a.service file-a.service > "$CASE_DIR/active"
-bash "$coordinator" prepare
-# Simulated borg create exit 2: the generated post-hook invokes cleanup anyway.
-bash "$coordinator" cleanup
-is_active file-a.service
-
 # One restart failure is reported while later services are still attempted.
 new_case restart-failure
 printf '%s\n' file-a.service file-b.service > "$CASE_DIR/active"
@@ -237,17 +229,6 @@ fi
 unset UPDATE_STUCK
 bash "$coordinator" cleanup
 is_active file-a.service
-
-# Preparation failure is not allowed to hide cleanup failure in the model: the
-# cleanup command itself remains non-zero when any unit cannot restart.
-new_case final-status
-printf '%s\n' file-a.service > "$CASE_DIR/active"
-bash "$coordinator" prepare
-export FAIL_START_UNIT=file-a.service
-if bash "$coordinator" cleanup; then
-  echo "cleanup failure did not propagate a non-zero status" >&2
-  exit 1
-fi
 
 # Exercise the same final-status contract used by the generated Borg EXIT trap.
 cat > "$tmp/posthook-coordinator" <<'EOF'

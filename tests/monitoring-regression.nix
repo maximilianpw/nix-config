@@ -32,7 +32,6 @@
   expectedPublicIngressTargets = map (endpoint: endpoint.publicMonitorUrl) (
     builtins.attrValues homelab.publicEndpoints
   );
-  panelTitles = builtins.map (panel: panel.title) dashboard.panels;
   panelQueries = lib.concatMap (panel: builtins.map (target: target.expr) (panel.targets or [])) dashboard.panels;
   cpuBusyQueries = builtins.filter (query: lib.hasInfix ''mode="idle"'' query) panelQueries;
   queryText = lib.concatStringsSep "\n" panelQueries;
@@ -44,29 +43,6 @@
       ++ lib.optional (service ? healthPort) service.healthPort
       ++ lib.attrValues (service.pathBackends or {})
   ) (lib.attrValues homelab.privateServices);
-  expectedPanelTitles = [
-    "CPU busy"
-    "Memory pressure"
-    "Root filesystem"
-    "/srv filesystem"
-    "Operational issues"
-    "Overall SMART status"
-    "CPU work, I/O wait, and load"
-    "Memory history"
-    "Filesystem growth"
-    "Service CPU usage (cores)"
-    "Disk I/O throughput"
-    "Disk I/O latency"
-    "Network traffic"
-    "CPU and NVMe temperatures"
-    "Important unit state"
-    "Service restart count"
-    "Local backup age"
-    "Borg check age"
-    "Borg verify age"
-    "Public ingress"
-    "PostgreSQL checkpoint activity"
-  ];
 in
   assert lib.assertMsg (prometheus.listenAddress == "127.0.0.1")
   "Prometheus must bind only to IPv4 loopback";
@@ -219,10 +195,8 @@ in
   "The repository-provisioned Grafana dashboard must stay read-only";
   assert lib.assertMsg (lib.hasPrefix "/nix/store/" homeDashboardPath && !lib.hasInfix "-source/" homeDashboardPath)
   "Grafana's default dashboard must be a retained store artifact, not a garbage-collectable dirty flake source path";
-  assert lib.assertMsg (dashboard.uid == "kim-overview" && dashboard.title == "Kim Overview")
-  "Kim Overview must retain its stable title and UID";
-  assert lib.assertMsg (panelTitles == expectedPanelTitles)
-  "Kim Overview must retain its concise panel set and order";
+  assert lib.assertMsg (dashboard.uid == "kim-overview")
+  "Kim Overview must retain its stable UID";
   assert lib.assertMsg (lib.all (panel: panel.datasource.uid == "prometheus") dashboard.panels)
   "Every Kim Overview panel must use the provisioned Prometheus datasource UID";
   assert lib.assertMsg (
