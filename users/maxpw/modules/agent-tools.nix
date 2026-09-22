@@ -24,6 +24,7 @@ in {
       pkgs.opencode
       pkgs.grok
       pkgs.herdr
+      pkgs.executor
       pkgs.amp-cli
       pkgs.pi
       pkgs.skills

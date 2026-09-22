@@ -87,6 +87,7 @@
         inherit (llm) opencode;
         inherit (llm) grok;
         inherit (llm) herdr;
+        inherit (llm) executor;
         amp-cli = llm.amp;
         inherit pi;
         inherit (llm) skills;
