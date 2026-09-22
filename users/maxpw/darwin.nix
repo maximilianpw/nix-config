@@ -67,6 +67,7 @@ in {
       "freelens"
       "nextcloud"
       "jellyfin-media-player"
+      "plex"
     ];
 
     onActivation = {
