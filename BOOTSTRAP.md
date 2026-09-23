@@ -227,22 +227,7 @@ image at `.artifacts/nixos.wsl`).
 
 ## Day-to-day commands
 
-After bootstrap (see `make help` for the full list):
-
-```bash
-make rebuild      # Format, switch via nh (generation diff), clean old generations
-make build        # Build without switching
-make update       # Update shared flake inputs (skips Hyprland & NixOS-only inputs)
-make update-all   # Update all flake inputs
-make generations  # List system generations
-make rollback     # Roll back to previous generation
-make lint         # statix, deadnix, format check
-make check-scripts # ShellCheck and safety regression tests
-make chezmoi-preview # Preview dotfile changes without applying
-make info         # Show system information
-```
-
-The `nr` shell alias runs `make -C ~/nix-config rebuild`. Rebuild does
+Run `make help` for the supported targets. The `nr` shell alias runs `make -C ~/nix-config rebuild`. Rebuild does
 **not** auto-commit — commit manually (pre-commit hook lints).
 
 ## Troubleshooting

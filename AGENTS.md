@@ -26,8 +26,12 @@ Choose checks for the affected behavior; these are not a checklist for every edi
 
 - Documentation or guidance only: `git diff --check`.
 - Changed Nix files: `alejandra --check <files>` and `make lint`.
-- Module, inventory, or flake behavior: `nix flake check --no-build`.
-- Shell scripts: `make check-scripts`.
+- Module, inventory, or flake behavior: `nix flake check --no-build`. On
+  Darwin this skips `x86_64-linux`, so also run `make check-linux` for homelab,
+  Fleet, or regression-test changes.
+- Shell scripts: `make check-scripts`. A binary or value the Nix wrapper
+  injects uses `: "${NAME:?NAME must be set}"` and tests set it; reserve
+  `:=` for real operator-tunable defaults.
 - One regression: discover its check in `flake.nix`, then run
   `nix build .#checks.x86_64-linux.<name> --no-link`.
 - Broad or release-level work: `nix flake check` (full build checks).

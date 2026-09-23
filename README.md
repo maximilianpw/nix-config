@@ -40,28 +40,8 @@ accepted decisions, and open work.
 ## Common workflow
 
 Bootstrap a new machine with [BOOTSTRAP.md](BOOTSTRAP.md). For an existing
-checkout, choose checks that match the change:
-
-```sh
-# Documentation or guidance
-git diff --check
-
-# Changed Nix files
-alejandra --check <files>
-make lint
-
-# Module, inventory, or flake behavior
-nix flake check --no-build
-
-# Shell scripts
-make check-scripts
-
-# One x86_64-linux regression
-nix build .#checks.x86_64-linux.<name> --no-link
-
-# Build the detected host without switching it
-make build
-```
+checkout, choose checks that match the change as listed in
+[AGENTS.md](AGENTS.md#local-workflow-and-checks).
 
 `make help` lists the other supported targets. `make chezmoi-bootstrap` clones
 the dotfiles source without applying it. Review changes with
