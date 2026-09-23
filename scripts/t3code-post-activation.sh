@@ -4,13 +4,15 @@
 : "${T3CODE_CASK_TOKEN:?T3CODE_CASK_TOKEN must be set}"
 : "${T3CODE_RELEASE_VERSION:?T3CODE_RELEASE_VERSION must be set}"
 : "${T3CODE_TAP_NAME:?T3CODE_TAP_NAME must be set}"
+: "${T3CODE_BREW_BIN:=/opt/homebrew/bin/brew}"
+: "${T3CODE_PLISTBUDDY_BIN:=/usr/libexec/PlistBuddy}"
 
-if [ -x /opt/homebrew/bin/brew ]; then
+if [ -x "$T3CODE_BREW_BIN" ]; then
   run_t3code_brew() {
     sudo \
       --user="$T3CODE_SYSTEM_USER" \
       --set-home \
-      -- /opt/homebrew/bin/brew "$@"
+      -- "$T3CODE_BREW_BIN" "$@"
   }
 
   # Homebrew Bundle's `trusted: true` permits installation but does not keep a
@@ -24,7 +26,7 @@ if [ -x /opt/homebrew/bin/brew ]; then
   )"
   installed_t3code_version="${installed_t3code#* }"
   installed_t3code_app_version="$(
-    /usr/libexec/PlistBuddy \
+    "$T3CODE_PLISTBUDDY_BIN" \
       -c "Print :CFBundleShortVersionString" \
       "/Applications/T3 Code (Nightly).app/Contents/Info.plist" \
       2>/dev/null || true
