@@ -18,6 +18,11 @@ printf '%s\n' "$package" >>"$TEST_ATTEMPTS"
 [[ $package != ${TEST_FAIL_PACKAGE:-} ]]
 EOF
 chmod +x "$tmp/nix"
+cat >"$tmp/uname" <<'EOF'
+#!/usr/bin/env bash
+printf '%s\n' "${TEST_UNAME:-Linux}"
+EOF
+chmod +x "$tmp/uname"
 export PATH="$tmp:$PATH"
 export TEST_ATTEMPTS="$tmp/attempts"
 
@@ -33,9 +38,16 @@ EOF
 diff -u "$tmp/expected-defaults" "$tmp/defaults"
 
 : >"$TEST_ATTEMPTS"
-TEST_FAIL_PACKAGE=obsidian "$update_script" --local >"$tmp/local-default.out"
+TEST_UNAME=Darwin TEST_FAIL_PACKAGE=cua-driver "$update_script" --local >"$tmp/local-default.out"
+printf '%s\n' cua-driver nextcloud-calendar >"$tmp/expected-local"
+diff -u "$tmp/expected-local" "$TEST_ATTEMPTS"
+grep -Fq '(skipped: cliproxyapi is Linux-only; CI updates it)' "$tmp/local-default.out"
+grep -Fq '(skipped: cua-driver)' "$tmp/local-default.out"
+
+: >"$TEST_ATTEMPTS"
+TEST_UNAME=Linux TEST_FAIL_PACKAGE=obsidian "$update_script" --local >"$tmp/linux-default.out"
 diff -u "$tmp/expected-defaults" "$TEST_ATTEMPTS"
-grep -Fq '(skipped: obsidian)' "$tmp/local-default.out"
+grep -Fq '(skipped: obsidian)' "$tmp/linux-default.out"
 
 : >"$TEST_ATTEMPTS"
 export GITHUB_OUTPUT="$tmp/github-output"

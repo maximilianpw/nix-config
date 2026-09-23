@@ -36,6 +36,15 @@ fi
 failed=()
 
 for package in "${packages[@]}"; do
+  if [[ $mode == local && $(uname -s) == Darwin ]]; then
+    case $package in
+      helium|obsidian|cliproxyapi|tunarr)
+        echo "(skipped: $package is Linux-only; CI updates it)"
+        continue
+        ;;
+    esac
+  fi
+
   if [[ $mode == ci ]]; then
     echo "::group::nix-update $package"
   else
