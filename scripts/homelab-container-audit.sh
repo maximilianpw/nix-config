@@ -2,9 +2,9 @@
 
 set -euo pipefail
 
-: "${DOCKER_BIN:=docker}"
-: "${DATE_BIN:=date}"
-: "${JQ_BIN:=jq}"
+: "${DOCKER_BIN:?DOCKER_BIN must be set}"
+: "${DATE_BIN:?DATE_BIN must be set}"
+: "${JQ_BIN:?JQ_BIN must be set}"
 : "${HOMELAB_METRICS_DIR:=/var/lib/prometheus-node-exporter-text-files}"
 : "${HOMELAB_CONTAINER_STALE_AFTER_SECONDS:=259200}"
 : "${HOMELAB_CONTAINER_SNAPSHOT_ATTEMPTS:=3}"

@@ -5,9 +5,9 @@ set -euo pipefail
 
 : "${T3CODE_SOURCE_DIR:=/home/maxpw/.local/share/t3code}"
 : "${T3CODE_BACKUP_DIR:=/var/backup/t3code}"
-: "${SQLITE_BIN:=sqlite3}"
-: "${RSYNC_BIN:=rsync}"
-: "${TAR_BIN:=tar}"
+: "${SQLITE_BIN:?SQLITE_BIN must be set}"
+: "${RSYNC_BIN:?RSYNC_BIN must be set}"
+: "${TAR_BIN:?TAR_BIN must be set}"
 
 source_database="$T3CODE_SOURCE_DIR/userdata/state.sqlite"
 archive="$T3CODE_BACKUP_DIR/state.tar"

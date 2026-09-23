@@ -2,8 +2,8 @@
 
 set -euo pipefail
 
-: "${SYSTEMCTL_BIN:=systemctl}"
-: "${AWK_BIN:=awk}"
+: "${SYSTEMCTL_BIN:?SYSTEMCTL_BIN must be set}"
+: "${AWK_BIN:?AWK_BIN must be set}"
 : "${HOMELAB_METRICS_DIR:=/var/lib/prometheus-node-exporter-text-files}"
 
 if (( $# == 0 )); then

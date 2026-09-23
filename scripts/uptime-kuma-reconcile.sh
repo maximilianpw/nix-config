@@ -3,7 +3,7 @@
 # connect to Syncthing's TLS transport succeeds but emits a warning every minute.
 set -euo pipefail
 
-: "${SQLITE_BIN:=sqlite3}"
+: "${SQLITE_BIN:?SQLITE_BIN must be set}"
 : "${UPTIME_KUMA_DB:=/var/lib/uptime-kuma/kuma.db}"
 : "${SYNCTHING_HEALTH_URL:=http://127.0.0.1:19384/rest/noauth/health}"
 

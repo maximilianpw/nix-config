@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-: "${CURL_BIN:=curl}"
+: "${CURL_BIN:?CURL_BIN must be set}"
 : "${HOMELAB_HEALTHCHECK_URL_FILE:=}"
 
 if (( $# != 1 )); then

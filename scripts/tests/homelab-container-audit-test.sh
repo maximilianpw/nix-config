@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
 set -euo pipefail
+export JQ_BIN
+JQ_BIN=$(command -v jq)
 
 script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 # shellcheck source=scripts/tests/portable-gnu-fixtures.sh
