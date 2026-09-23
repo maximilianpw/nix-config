@@ -73,18 +73,9 @@ of the Borg archive. These portable exports supplement the server-level backup;
 they do not include attachments or Sends, which remain covered by the
 PostgreSQL dump and complete `/var/lib/bitwarden_rs` archive.
 
-The host-key SOPS recipient is not disaster recovery for loss of Kim.
-These external pieces still require a provider/location choice and credentials;
-they cannot safely be invented in this public configuration:
-
-1. Generate an independent offline Age identity, store it outside both
-   Kim and 1Password, add only its recipient to `.sops.yaml`, and run
-   `sops updatekeys secrets/secrets.yaml`.
-2. Configure an encrypted off-site Borg repository and test a restore from a
-   separate machine. Keep its passphrase and recovery instructions outside the
-   backed-up host.
-3. Configure an external dead-man/backup-failure notification destination. A
-   check running only on Kim cannot report total host or network loss.
+The host-key SOPS recipient is not disaster recovery for loss of Kim. The
+offline Age identity, off-site Borg copy, and external failure alerts are
+tracked in the [homelab backlog](homelab-backlog.md).
 
 Test recovery quarterly using `docs/homelab-recovery.md`: list archives, run
 Borg consistency checks, extract only to empty staging directories, restore the

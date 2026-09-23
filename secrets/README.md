@@ -12,7 +12,7 @@ The age private key for decrypting secrets is stored in **1Password** for secure
 
 ```bash
 # Install 1Password CLI and age
-nix-shell -p _1password age
+nix-shell -p _1password-cli age
 
 # Authenticate with 1Password
 eval $(op signin)
@@ -33,51 +33,23 @@ Confirm the key printed in step 1 matches the `admin_max` recipient in
 `../.sops.yaml`. If intentionally rotating it, update the public recipient and
 run `sops updatekeys secrets/secrets.yaml` while the old key is still available.
 
-### 3. Create your secrets file
-
-```bash
-# Create/edit the secrets file with sops (encrypts on save using .sops.yaml rules)
-nix-shell -p sops --run "sops secrets.yaml"
-```
-
-### 4. Add your password hash
-
-In the sops editor, replace `YOUR_HASHED_PASSWORD_HERE` with your actual password hash.
-
-To generate a new password hash:
-
-```bash
-mkpasswd -m sha-512
-```
-
-### 5. Commit the encrypted file
-
-```bash
-git add secrets.yaml .sops.yaml
-git commit -m "Add encrypted secrets"
-```
-
 ## Usage
 
 NixOS secrets are decrypted by system sops-nix under `/run/secrets`. Darwin
-and WSL use the user age identity for both the system CLIProxyAPI template and
-Home Manager user secrets. `github-ssh-private-key` is the GitHub authentication key used by
+and WSL use the user age identity for the CLIProxyAPI client token and Home
+Manager user secrets. `github-ssh-private-key` is the GitHub authentication key used by
 non-desktop NixOS hosts; desktop hosts use the 1Password SSH agent instead.
 
-### Linear API key
+### Adding or rotating a single value
 
-Run the interactive setup when adding or rotating the personal Linear API key:
+Write one value without opening an editor or echoing it:
 
 ```bash
-./scripts/setup-linear-key.sh
+nix-shell -p sops --run 'sops set --value-stdin secrets/secrets.yaml "[\"linear-api-key\"]"'
 ```
 
-The wizard captures the key with hidden input, writes only encrypted
-`linear-api-key` ciphertext through `sops set --value-stdin`, offers to stage
-the encrypted file for the commit that syncs it to other machines, rebuilds on
-confirmation, and verifies the decrypted file without printing its contents.
-Commit and push `secrets/secrets.yaml` together with the Linear/SOPS
-configuration before rebuilding another machine.
+Paste the value as JSON (a quoted string), then commit `secrets/secrets.yaml`
+before rebuilding another machine.
 
 ## Important Security Notes
 
@@ -102,25 +74,17 @@ recovery: the host key is on the same root disk as the system. Loss of both the
 machine and 1Password would still make the secrets, including the Borg
 passphrase, unrecoverable.
 
-The remaining manual recovery task is to create an offline age key, store its
-private half outside both Kim and 1Password (for example on encrypted
-removable media held separately), add only its public recipient to `.sops.yaml`,
-and rewrap the data key:
-
-```bash
-# After adding the offline public recipient to .sops.yaml:
-nix-shell -p sops --run 'sops updatekeys secrets/secrets.yaml'
-```
-
-Keep an independently secured offline copy of the Borg passphrase as part of
-the same recovery kit; the backups are needed in exactly this failure mode.
+The offline recovery identity is tracked in the
+[homelab backlog](../docs/homelab-backlog.md#disaster-recovery). Once its public
+recipient is in `.sops.yaml`, rewrap the data key with
+`nix-shell -p sops --run 'sops updatekeys secrets/secrets.yaml'`.
 
 ## Rotating Secrets
 
 To change the password:
 
 ```bash
-nix-shell -p sops --run "sops secrets.yaml"
+nix-shell -p sops --run "sops secrets/secrets.yaml"
 # Edit the password, save and exit
 # Rebuild your system
 ```
@@ -132,7 +96,7 @@ When installing NixOS on a new system, you need to place the age key before rebu
 ```bash
 # 1. Retrieve the key from 1Password
 mkdir -p ~/.config/sops/age
-nix-shell -p _1password age --run 'echo "# created: $(date -Iseconds)" > ~/.config/sops/age/keys.txt && eval $(op signin) && op item get "sops nixos" --fields password --reveal >> ~/.config/sops/age/keys.txt'
+nix-shell -p _1password-cli age --run 'echo "# created: $(date -Iseconds)" > ~/.config/sops/age/keys.txt && eval $(op signin) && op item get "sops nixos" --fields password --reveal >> ~/.config/sops/age/keys.txt'
 chmod 600 ~/.config/sops/age/keys.txt
 
 # 2. Place it in the system location for sops-nix
@@ -153,11 +117,11 @@ ls -la /run/secrets/maxpw-password
 ```
 
 On Darwin and WSL, only the user key is needed. System sops-nix uses it for the
-CLIProxyAPI template, and Home Manager uses it for user secrets:
+CLIProxyAPI client token, and Home Manager uses it for user secrets:
 
 ```bash
 mkdir -p ~/.config/sops/age
-nix-shell -p _1password age --run 'echo "# created: $(date -Iseconds)" > ~/.config/sops/age/keys.txt && eval $(op signin) && op item get "sops nixos" --fields password --reveal >> ~/.config/sops/age/keys.txt'
+nix-shell -p _1password-cli age --run 'echo "# created: $(date -Iseconds)" > ~/.config/sops/age/keys.txt && eval $(op signin) && op item get "sops nixos" --fields password --reveal >> ~/.config/sops/age/keys.txt'
 chmod 600 ~/.config/sops/age/keys.txt
 ```
 
@@ -174,4 +138,4 @@ If you get decryption errors:
    # Should match the key in .sops.yaml
    ```
 3. Ensure the secrets file was encrypted with the correct key
-4. If key is missing, retrieve it from 1Password (see "Setting up a New NixOS Machine" above)
+4. If key is missing, retrieve it from 1Password (see "Setting up a New Machine" above)
