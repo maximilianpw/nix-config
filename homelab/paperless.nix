@@ -5,9 +5,20 @@
   ...
 }: let
   homelab = import ../lib/homelab.nix {inherit lib;};
-  inherit ((homelab.endpoints config.homelab.tailnet.domain)) paperless;
+  inherit (homelab.endpoints) paperless;
 in {
-  custom.backup.applicationVersions.paperless = config.services.paperless.package.version;
+  custom.backup = {
+    applicationVersions.paperless = config.services.paperless.package.version;
+    # Export while ingestion is quiesced; the exporter is a oneshot, so start
+    # returns only after the export completes.
+    prepareSteps.paperless-export = {
+      stage = "quiesced";
+      order = 20;
+      command = toString (pkgs.writeShellScript "homelab-backup-paperless-export" ''
+        exec ${lib.getExe' pkgs.systemd "systemctl"} start paperless-exporter.service
+      '');
+    };
+  };
 
   sops.secrets.paperless-admin-password = {
     restartUnits = ["paperless-scheduler.service"];

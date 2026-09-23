@@ -4,7 +4,7 @@
   ...
 }: let
   homelab = import ../lib/homelab.nix {inherit lib;};
-  inherit ((homelab.endpoints config.homelab.tailnet.domain)) miniflux;
+  inherit (homelab.endpoints) miniflux;
 in {
   custom.backup.applicationVersions.miniflux = config.services.miniflux.package.version;
 

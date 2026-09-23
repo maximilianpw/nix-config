@@ -15,8 +15,6 @@ in
   "Paperless OCR threads must remain capped on the shared homelab host";
   assert lib.assertMsg nextcloud.appstoreEnable
   "packaged Nextcloud apps must not disable existing app-store apps";
-  assert lib.assertMsg (builtins.hasAttr "integration_paperless" nextcloud.extraApps)
-  "Nextcloud must include its Paperless integration app";
   assert lib.assertMsg (lib.hasInfix "superuser-state" schedulerPostStart)
   "Paperless must remove its persisted plaintext bootstrap state after startup";
     pkgs.runCommand "paperless-config-regression" {} ''

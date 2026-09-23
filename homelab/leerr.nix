@@ -5,7 +5,7 @@
   ...
 }: let
   homelab = import ../lib/homelab.nix {inherit lib;};
-  inherit ((homelab.endpoints config.homelab.tailnet.domain)) leerr;
+  inherit (homelab.endpoints) leerr;
   package = pkgs.callPackage ../packages/leerr.nix {};
 in {
   custom.backup.applicationVersions.leerr = package.version;

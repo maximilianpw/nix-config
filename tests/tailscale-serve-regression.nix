@@ -12,11 +12,7 @@
     };
   module = import ../homelab/tailscale-serve.nix {
     config = {
-      homelab.tailnet.domain = homelab.defaultTailnetDomain;
-      services.tailscale = {
-        enable = true;
-        package = pkgs.tailscale;
-      };
+      services.tailscale.package = pkgs.tailscale;
     };
     inherit lib;
     pkgs = testPkgs;
@@ -55,7 +51,7 @@
       name: lib.hasInfix (expectedAdvertiseCommand name) scriptAfterDrain
     ) (builtins.attrNames homelab.privateServices);
   validatesTailnetDomain =
-    lib.hasInfix "expected_domain=${lib.escapeShellArg homelab.defaultTailnetDomain}" applyScript
+    lib.hasInfix "expected_domain=${lib.escapeShellArg homelab.tailnetDomain}" applyScript
     && lib.hasInfix "stale_services=" applyScript
     && lib.hasInfix "expected *.$expected_domain:443" applyScript;
   hasValidAndLayout = !lib.hasInfix "\n &&" applyScript;

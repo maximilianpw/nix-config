@@ -4,7 +4,7 @@
   ...
 }: let
   homelab = import ../lib/homelab.nix {inherit lib;};
-  inherit ((homelab.endpoints config.homelab.tailnet.domain)) vaultwarden;
+  inherit (homelab.endpoints) vaultwarden;
 in {
   custom.backup.applicationVersions.vaultwarden = config.services.vaultwarden.package.version;
 

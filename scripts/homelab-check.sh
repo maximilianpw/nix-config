@@ -2,13 +2,13 @@
 # Read-only homelab runtime smoke check. It never restarts, mounts, clears, or restores.
 set -uo pipefail
 
-: "${FINDMNT_BIN:=findmnt}"
-: "${SYSTEMCTL_BIN:=systemctl}"
-: "${SS_BIN:=ss}"
-: "${TAILSCALE_BIN:=tailscale}"
-: "${JQ_BIN:=jq}"
-: "${CURL_BIN:=curl}"
-: "${ID_BIN:=id}"
+: "${FINDMNT_BIN:?FINDMNT_BIN must be set}"
+: "${SYSTEMCTL_BIN:?SYSTEMCTL_BIN must be set}"
+: "${SS_BIN:?SS_BIN must be set}"
+: "${TAILSCALE_BIN:?TAILSCALE_BIN must be set}"
+: "${JQ_BIN:?JQ_BIN must be set}"
+: "${CURL_BIN:?CURL_BIN must be set}"
+: "${ID_BIN:?ID_BIN must be set}"
 
 failures=0
 fail() {

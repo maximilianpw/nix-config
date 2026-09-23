@@ -4,7 +4,7 @@
   ...
 }: let
   homelab = import ../../../../lib/homelab.nix {inherit lib;};
-  vaultwardenUrl = homelab.privateUrl homelab.defaultTailnetDomain "vaultwarden";
+  vaultwardenUrl = homelab.privateUrl "vaultwarden";
   ynabMcpServerSource = pkgs.runCommand "ynab-mcp-server-source" {} ''
     mkdir --parents "$out"
     cp ${../../../../scripts/ynab-mcp-server.mjs} "$out/ynab-mcp-server.mjs"

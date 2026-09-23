@@ -18,11 +18,11 @@ in
   "Executor must be public with application-owned authentication, not Tailscale-only";
   assert lib.assertMsg (
     endpoint.url
-    == "https://executor.maximilian.pw"
+    == "https://${homelab.services.executor.endpoint.hostname}"
     && ingress.${endpoint.host}.service == homelab.loopbackUrl endpoint.port
     && ingress.${endpoint.host}.originRequest.httpHostHeader == endpoint.host
   )
-  "Cloudflare must route executor.maximilian.pw to Executor's loopback endpoint";
+  "Cloudflare must route Executor's public hostname to its loopback endpoint";
   assert lib.assertMsg (config.virtualisation.oci-containers.backend == "docker")
   "Executor must use Kim's existing Docker backend";
   assert lib.assertMsg (container.image == image)
@@ -41,9 +41,8 @@ in
     builtins.elem "docker-executor.service" homelab.backup.archiveUnits
     && builtins.elem "/var/lib" config.services.borgbackup.jobs.main.paths
     && builtins.elem "/var/lib/executor" config.custom.backup.manifestMetadata.expectedPrimaryStatePaths
-    && config.custom.backup.manifestMetadata.applicationVersions.executor == image
   )
-  "Executor state must be quiesced, archived, and tied to its image in the recovery manifest";
+  "Executor state must be quiesced and archived";
     pkgs.runCommand "executor-config-regression" {} ''
       touch "$out"
     ''

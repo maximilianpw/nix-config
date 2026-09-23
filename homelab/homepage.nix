@@ -5,8 +5,7 @@
   ...
 }: let
   homelab = import ../lib/homelab.nix {inherit lib;};
-  tailnetDomain = config.homelab.tailnet.domain;
-  endpoints = homelab.endpoints tailnetDomain;
+  inherit (homelab) endpoints;
 
   bookmark = name: icon: href: {
     ${name} = [
@@ -87,7 +86,7 @@ in {
 
     # Availability checks stay on loopback; public and tailnet URLs are launch
     # targets only. Uptime Kuma remains responsible for external availability.
-    services = homelab.homepageServiceGroups tailnetDomain;
+    services = homelab.homepageServiceGroups;
 
     widgets = [
       {

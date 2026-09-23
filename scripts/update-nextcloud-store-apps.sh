@@ -2,9 +2,9 @@
 set -euo pipefail
 
 store_apps_dir=${NEXTCLOUD_STORE_APPS_DIR:-/srv/nextcloud/store-apps}
-ownership_check=${NEXTCLOUD_OWNERSHIP_CHECK_BIN:-$(dirname "${BASH_SOURCE[0]}")/check-nextcloud-app-ownership.sh}
-occ_bin=${NEXTCLOUD_OCC_BIN:-nextcloud-occ}
-find_bin=${NEXTCLOUD_FIND_BIN:-find}
+ownership_check=${NEXTCLOUD_OWNERSHIP_CHECK_BIN:?NEXTCLOUD_OWNERSHIP_CHECK_BIN must be set}
+occ_bin=${NEXTCLOUD_OCC_BIN:?NEXTCLOUD_OCC_BIN must be set}
+find_bin=${NEXTCLOUD_FIND_BIN:?NEXTCLOUD_FIND_BIN must be set}
 
 "$ownership_check" "$@"
 

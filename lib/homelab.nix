@@ -1,21 +1,51 @@
 {lib}: let
   services = import ./homelab-inventory.nix {inherit lib;};
   loopbackUrl = port: "http://127.0.0.1:${toString port}";
-  infrastructure = rec {
+  # Shared infrastructure outside the service inventory. Every record's
+  # `units` are important for monitoring and post-switch checks.
+  infrastructure = {
     cloudflare = rec {
       tunnelId = "5b712ae4-3ce4-4499-9cb7-a57cde1c571f";
       unit = "cloudflared-tunnel-${tunnelId}.service";
+      units = [unit];
     };
-    postgresqlBackup = {
+    postgresql.units = ["postgresql.service"];
+    postgresqlBackup = rec {
       archivePath = "/var/backup/postgresql";
       unit = "postgresqlBackup.service";
+      units = [unit];
     };
+    monitoring.units = [
+      "prometheus-node-exporter.service"
+      "prometheus-blackbox-exporter.service"
+      "prometheus-systemd-exporter.service"
+      "prometheus-smartctl-exporter.service"
+      "prometheus-postgres-exporter.service"
+      "alertmanager.service"
+      "homelab-systemd-metrics.service"
+      "homelab-systemd-metrics.timer"
+      "homelab-container-audit.service"
+      "homelab-container-audit.timer"
+    ];
+    tailscale.units = [
+      "tailscaled.service"
+      "tailscaled-set.service"
+      "tailscale-serve.service"
+    ];
+    borg.units = [
+      "borgbackup-job-main.service"
+      "borgbackup-job-main.timer"
+      "borgbackup-check-main.service"
+      "borgbackup-check-main.timer"
+      "borgbackup-verify-main.service"
+      "borgbackup-verify-main.timer"
+    ];
   };
   byExposure = exposure:
     lib.filterAttrs (_: service: service.endpoint.exposure == exposure) services;
   endpointView = _: service:
     {
-      inherit (service.endpoint) monitorPath pathBackends port publicMonitorPath;
+      inherit (service.endpoint) monitorPath port publicMonitorPath;
     }
     // lib.optionalAttrs (service.endpoint.hostname != null) {
       host = service.endpoint.hostname;
@@ -23,14 +53,15 @@
   privateServices = lib.mapAttrs endpointView (byExposure "tailnet");
   publicServices = lib.mapAttrs endpointView (byExposure "public");
 
-  privateHost = tailnetDomain: service: "${service}.${tailnetDomain}";
-  privateUrl = tailnetDomain: service: "https://${privateHost tailnetDomain service}";
-  privateEndpoint = tailnetDomain: service: let
+  tailnetDomain = "liger-shilling.ts.net";
+  privateHost = service: "${service}.${tailnetDomain}";
+  privateUrl = service: "https://${privateHost service}";
+  privateEndpoint = service: let
     serviceConfig = privateServices.${service};
   in {
     inherit (serviceConfig) port;
-    host = privateHost tailnetDomain service;
-    url = privateUrl tailnetDomain service;
+    host = privateHost service;
+    url = privateUrl service;
     monitorUrl = "${loopbackUrl serviceConfig.port}${serviceConfig.monitorPath}";
   };
   publicEndpoint = service: let
@@ -105,8 +136,8 @@
   };
   presented = lib.filterAttrs (_: service: service.presentation != null) services;
   presentationEntries = lib.mapAttrsToList (name: service: {inherit name service;}) presented;
-  cardsFor = tailnetDomain: group: let
-    endpoints = privateEndpoints tailnetDomain // publicEndpoints;
+  cardsFor = group: let
+    endpoints = privateEndpoints // publicEndpoints;
     selected = builtins.filter (entry: entry.service.presentation.group == group) presentationEntries;
     ordered = lib.sort (left: right: left.service.presentation.order < right.service.presentation.order) selected;
     cardFor = entry: let
@@ -120,46 +151,16 @@
       homepageCard presentation.title endpoints.${name} presentation.icon presentation.description extra;
   in
     map cardFor ordered;
-  privateEndpoints = tailnetDomain:
-    lib.mapAttrs (service: _: privateEndpoint tailnetDomain service) privateServices;
-  quiesceEntries = phase: scope:
+  privateEndpoints = lib.mapAttrs (service: _: privateEndpoint service) privateServices;
+  quiesceUnits = phase:
     lib.concatMap (
       service:
-        builtins.filter (
-          entry: entry.until == phase && entry.scope == scope
-        )
-        service.backup.quiesce
+        map (entry: entry.unit) (builtins.filter (entry: entry.until == phase) service.backup.quiesce)
     ) (builtins.attrValues services);
-  quiesceUnits = phase: map (entry: entry.unit) (quiesceEntries phase "system");
-  userQuiesceUnits = phase: map (entry: "${entry.user}:${entry.unit}") (quiesceEntries phase "user");
   expectedDatabases = lib.unique (lib.filter (database: database != null) (map (service: service.state.database) (builtins.attrValues services)));
-  infrastructureUnits = [
-    "prometheus-node-exporter.service"
-    "prometheus-blackbox-exporter.service"
-    "prometheus-systemd-exporter.service"
-    "prometheus-smartctl-exporter.service"
-    "prometheus-postgres-exporter.service"
-    "alertmanager.service"
-    "homelab-systemd-metrics.service"
-    "homelab-systemd-metrics.timer"
-    "homelab-container-audit.service"
-    "homelab-container-audit.timer"
-    "tailscaled.service"
-    "tailscaled-set.service"
-    "tailscale-serve.service"
-    "postgresql.service"
-    infrastructure.postgresqlBackup.unit
-    infrastructure.cloudflare.unit
-    "borgbackup-job-main.service"
-    "borgbackup-job-main.timer"
-    "borgbackup-check-main.service"
-    "borgbackup-check-main.timer"
-    "borgbackup-verify-main.service"
-    "borgbackup-verify-main.timer"
-  ];
+  infrastructureUnits = lib.concatMap (record: record.units) (builtins.attrValues infrastructure);
 in {
-  defaultTailnetDomain = "liger-shilling.ts.net";
-  inherit infrastructure loopbackUrl monitoredOrigins privateHost privateServices privateUrl publicEndpoints publicServices services;
+  inherit infrastructure loopbackUrl monitoredOrigins privateHost privateServices privateUrl publicEndpoints publicServices services tailnetDomain;
 
   allowedHosts = host: "${host},localhost,127.0.0.1";
   endpoints = privateEndpoints;
@@ -171,8 +172,6 @@ in {
     );
     dumpUnits = quiesceUnits "dump";
     archiveUnits = quiesceUnits "archive";
-    userDumpUnits = userQuiesceUnits "dump";
-    userArchiveUnits = userQuiesceUnits "archive";
     inherit expectedDatabases;
     primaryStatePaths = lib.unique (lib.concatMap (service: service.state.paths) (builtins.attrValues services));
     disposableServices = builtins.attrNames (lib.filterAttrs (_: service: service.state.disposable) services);
@@ -184,8 +183,8 @@ in {
   srvConsumers = lib.unique (map (lib.removeSuffix ".service") (lib.concatMap (service: service.storage.units) (builtins.attrValues services)));
   importantSystemdUnits = lib.unique (infrastructureUnits ++ lib.concatMap (service: service.operations.units) (builtins.attrValues services));
 
-  homepageServiceGroups = tailnetDomain: [
-    {Applications = cardsFor tailnetDomain "applications";}
-    {Operations = cardsFor tailnetDomain "operations";}
+  homepageServiceGroups = [
+    {Applications = cardsFor "applications";}
+    {Operations = cardsFor "operations";}
   ];
 }

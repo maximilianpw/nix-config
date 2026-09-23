@@ -6,7 +6,7 @@
 }: let
   monitoringCfg = config.homelab.monitoring;
   homelab = import ../lib/homelab.nix {inherit lib;};
-  endpoints = homelab.endpoints config.homelab.tailnet.domain;
+  inherit (homelab) endpoints;
   prometheus = config.services.prometheus;
   inherit (prometheus) alertmanager exporters;
   alertReceiverName =
@@ -125,59 +125,58 @@
     ];
     inherit (publicIngressScrape) relabel_configs;
   };
-  homelabRules = (pkgs.formats.yaml {}).generate "homelab-prometheus-rules.yaml" {
-    groups = [
-      {
-        name = "homelab-adaptive-baselines";
-        interval = "1m";
-        rules = [
-          {
-            record = "homelab:node_cpu_busy:ratio5m";
-            expr = ''1 - avg(rate(node_cpu_seconds_total{mode="idle"}[5m])) - avg(rate(node_cpu_seconds_total{mode="iowait"}[5m]))'';
-          }
-          {
-            record = "homelab:node_cpu_busy:mean24h";
-            expr = ''avg_over_time(homelab:node_cpu_busy:ratio5m[24h])'';
-          }
-          {
-            record = "homelab:node_cpu_busy:stddev24h";
-            expr = ''stddev_over_time(homelab:node_cpu_busy:ratio5m[24h])'';
-          }
-          {
-            record = "homelab:node_cpu_busy:upper24h";
-            expr = ''homelab:node_cpu_busy:mean24h + 3 * homelab:node_cpu_busy:stddev24h'';
-          }
-        ];
-      }
-      {
-        name = "homelab-operations";
-        rules = [
-          (alert "HomelabNodeExporterDown" ''absent(up{job="node"}) or up{job="node"} == 0'' "5m" "critical" "The node exporter is absent or unreachable")
-          (alert "HomelabSystemdExporterDown" ''absent(up{job="systemd"}) or up{job="systemd"} == 0'' "5m" "critical" "The systemd exporter is absent or unreachable")
-          (alert "HomelabAlertmanagerDown" ''absent(up{job="alertmanager"}) or up{job="alertmanager"} == 0'' "5m" "critical" "Alertmanager is absent or unreachable")
-          (alert "HomelabSmartctlExporterDown" ''absent(up{job="smartctl"}) or up{job="smartctl"} == 0'' "5m" "critical" "The SMART exporter is absent or unreachable")
-          (alert "HomelabLocalBackendDown" ''absent(probe_success{job="local-backends"}) or probe_success{job="local-backends"} == 0 or up{job="local-backends"} == 0'' "10m" "critical" "A declared homelab backend is unhealthy")
-          (alert "HomelabPublicIngressDown" ''absent(probe_success{job="public-ingress"}) or probe_success{job="public-ingress"} == 0 or up{job="public-ingress"} == 0'' "10m" "critical" "A declared public ingress endpoint is unreachable")
-          (alert "HomelabBackupStale" ''absent(homelab_backup_last_success_timestamp_seconds) or (time() - homelab_backup_last_success_timestamp_seconds > 129600)'' "15m" "critical" "No successful local backup has been recorded in 36 hours")
-          (alert "HomelabBorgCheckStale" ''absent(homelab_borg_check_last_success_timestamp_seconds) or (time() - homelab_borg_check_last_success_timestamp_seconds > 777600)'' "30m" "critical" "No successful Borg consistency check has been recorded in 9 days")
-          (alert "HomelabBorgVerifyStale" ''absent(homelab_borg_verify_last_success_timestamp_seconds) or (time() - homelab_borg_verify_last_success_timestamp_seconds > 3456000)'' "1h" "warning" "No successful cryptographic Borg verification has been recorded in 40 days")
-          (alert "HomelabSrvAbsent" ''absent(node_filesystem_size_bytes{mountpoint="/srv",fstype!="rootfs"})'' "5m" "critical" "/srv is absent from node-exporter filesystem metrics")
-          (alert "HomelabFilesystemWarning" ''100 * (1 - node_filesystem_avail_bytes{mountpoint=~"/|/srv"} / node_filesystem_size_bytes{mountpoint=~"/|/srv"}) > 80'' "30m" "warning" "A primary filesystem is more than 80% full")
-          (alert "HomelabFilesystemCritical" ''100 * (1 - node_filesystem_avail_bytes{mountpoint=~"/|/srv"} / node_filesystem_size_bytes{mountpoint=~"/|/srv"}) > 90'' "15m" "critical" "A primary filesystem is more than 90% full")
-          (alert "HomelabSmartFailure" ''smartctl_device_smart_status != 1'' "5m" "critical" "SMART reports an unhealthy storage device")
-          (alert "HomelabNvmeTemperatureHigh" ''smartctl_device_temperature{temperature_type="current"} > 80'' "15m" "warning" "An NVMe device has remained above 80°C")
-          (alert "HomelabPostgresExporterDown" ''absent(pg_up) or pg_up == 0'' "5m" "critical" "The PostgreSQL exporter cannot query PostgreSQL")
-          (alert "HomelabImportantUnitFailed" ''systemd_unit_state{state="failed"} == 1'' "10m" "critical" "An important homelab systemd unit is failed")
-          (alert "HomelabRepeatedServiceRestarts" ''increase(systemd_service_restart_total[30m]) > 3'' "10m" "warning" "An important homelab service is repeatedly restarting")
-          (alert "HomelabCpuAnomaly" ''count_over_time(homelab:node_cpu_busy:ratio5m[24h]) >= 1380 and homelab:node_cpu_busy:ratio5m > clamp_min(homelab:node_cpu_busy:upper24h, 0.4)'' "15m" "warning" "CPU use is above both 40% and Kim's adaptive 24-hour baseline")
-          (alert "HomelabStaleDockerContainers" ''homelab_docker_stale_containers > 0'' "1h" "warning" "One or more running Docker containers are older than three days without a keep label")
-          (alert "HomelabDockerContainerUnhealthy" ''homelab_docker_unhealthy_containers > 0'' "10m" "warning" "One or more Docker containers report an unhealthy state")
-          (alert "HomelabContainerAuditStale" ''absent(node_textfile_mtime_seconds{file="${nodeExporterTextfileDirectory}/homelab-docker-containers.prom"}) or time() - node_textfile_mtime_seconds{file="${nodeExporterTextfileDirectory}/homelab-docker-containers.prom"} > 900'' "10m" "warning" "The Docker container audit has not refreshed for more than 15 minutes")
-          (alert "HomelabSystemdMetricsStale" ''absent(node_textfile_mtime_seconds{file="${nodeExporterTextfileDirectory}/homelab-systemd-resources.prom"}) or time() - node_textfile_mtime_seconds{file="${nodeExporterTextfileDirectory}/homelab-systemd-resources.prom"} > 180'' "3m" "warning" "Systemd resource metrics have not refreshed for more than three minutes")
-        ];
-      }
-    ];
-  };
+  homelabRuleGroups = [
+    {
+      name = "homelab-adaptive-baselines";
+      interval = "1m";
+      rules = [
+        {
+          record = "homelab:node_cpu_busy:ratio5m";
+          expr = ''1 - avg(rate(node_cpu_seconds_total{mode="idle"}[5m])) - avg(rate(node_cpu_seconds_total{mode="iowait"}[5m]))'';
+        }
+        {
+          record = "homelab:node_cpu_busy:mean24h";
+          expr = ''avg_over_time(homelab:node_cpu_busy:ratio5m[24h])'';
+        }
+        {
+          record = "homelab:node_cpu_busy:stddev24h";
+          expr = ''stddev_over_time(homelab:node_cpu_busy:ratio5m[24h])'';
+        }
+        {
+          record = "homelab:node_cpu_busy:upper24h";
+          expr = ''homelab:node_cpu_busy:mean24h + 3 * homelab:node_cpu_busy:stddev24h'';
+        }
+      ];
+    }
+    {
+      name = "homelab-operations";
+      rules = [
+        (alert "HomelabNodeExporterDown" ''absent(up{job="node"}) or up{job="node"} == 0'' "5m" "critical" "The node exporter is absent or unreachable")
+        (alert "HomelabSystemdExporterDown" ''absent(up{job="systemd"}) or up{job="systemd"} == 0'' "5m" "critical" "The systemd exporter is absent or unreachable")
+        (alert "HomelabAlertmanagerDown" ''absent(up{job="alertmanager"}) or up{job="alertmanager"} == 0'' "5m" "critical" "Alertmanager is absent or unreachable")
+        (alert "HomelabSmartctlExporterDown" ''absent(up{job="smartctl"}) or up{job="smartctl"} == 0'' "5m" "critical" "The SMART exporter is absent or unreachable")
+        (alert "HomelabLocalBackendDown" ''absent(probe_success{job="local-backends"}) or probe_success{job="local-backends"} == 0 or up{job="local-backends"} == 0'' "10m" "critical" "A declared homelab backend is unhealthy")
+        (alert "HomelabPublicIngressDown" ''absent(probe_success{job="public-ingress"}) or probe_success{job="public-ingress"} == 0 or up{job="public-ingress"} == 0'' "10m" "critical" "A declared public ingress endpoint is unreachable")
+        (alert "HomelabBackupStale" ''absent(homelab_backup_last_success_timestamp_seconds) or (time() - homelab_backup_last_success_timestamp_seconds > 129600)'' "15m" "critical" "No successful local backup has been recorded in 36 hours")
+        (alert "HomelabBorgCheckStale" ''absent(homelab_borg_check_last_success_timestamp_seconds) or (time() - homelab_borg_check_last_success_timestamp_seconds > 777600)'' "30m" "critical" "No successful Borg consistency check has been recorded in 9 days")
+        (alert "HomelabBorgVerifyStale" ''absent(homelab_borg_verify_last_success_timestamp_seconds) or (time() - homelab_borg_verify_last_success_timestamp_seconds > 3456000)'' "1h" "warning" "No successful cryptographic Borg verification has been recorded in 40 days")
+        (alert "HomelabSrvAbsent" ''absent(node_filesystem_size_bytes{mountpoint="/srv",fstype!="rootfs"})'' "5m" "critical" "/srv is absent from node-exporter filesystem metrics")
+        (alert "HomelabFilesystemWarning" ''100 * (1 - node_filesystem_avail_bytes{mountpoint=~"/|/srv"} / node_filesystem_size_bytes{mountpoint=~"/|/srv"}) > 80'' "30m" "warning" "A primary filesystem is more than 80% full")
+        (alert "HomelabFilesystemCritical" ''100 * (1 - node_filesystem_avail_bytes{mountpoint=~"/|/srv"} / node_filesystem_size_bytes{mountpoint=~"/|/srv"}) > 90'' "15m" "critical" "A primary filesystem is more than 90% full")
+        (alert "HomelabSmartFailure" ''smartctl_device_smart_status != 1'' "5m" "critical" "SMART reports an unhealthy storage device")
+        (alert "HomelabNvmeTemperatureHigh" ''smartctl_device_temperature{temperature_type="current"} > 80'' "15m" "warning" "An NVMe device has remained above 80°C")
+        (alert "HomelabPostgresExporterDown" ''absent(pg_up) or pg_up == 0'' "5m" "critical" "The PostgreSQL exporter cannot query PostgreSQL")
+        (alert "HomelabImportantUnitFailed" ''systemd_unit_state{state="failed"} == 1'' "10m" "critical" "An important homelab systemd unit is failed")
+        (alert "HomelabRepeatedServiceRestarts" ''increase(systemd_service_restart_total[30m]) > 3'' "10m" "warning" "An important homelab service is repeatedly restarting")
+        (alert "HomelabCpuAnomaly" ''count_over_time(homelab:node_cpu_busy:ratio5m[24h]) >= 1380 and homelab:node_cpu_busy:ratio5m > clamp_min(homelab:node_cpu_busy:upper24h, 0.4)'' "15m" "warning" "CPU use is above both 40% and Kim's adaptive 24-hour baseline")
+        (alert "HomelabStaleDockerContainers" ''homelab_docker_stale_containers > 0'' "1h" "warning" "One or more running Docker containers are older than three days without a keep label")
+        (alert "HomelabDockerContainerUnhealthy" ''homelab_docker_unhealthy_containers > 0'' "10m" "warning" "One or more Docker containers report an unhealthy state")
+        (alert "HomelabContainerAuditStale" ''absent(node_textfile_mtime_seconds{file="${nodeExporterTextfileDirectory}/homelab-docker-containers.prom"}) or time() - node_textfile_mtime_seconds{file="${nodeExporterTextfileDirectory}/homelab-docker-containers.prom"} > 900'' "10m" "warning" "The Docker container audit has not refreshed for more than 15 minutes")
+        (alert "HomelabSystemdMetricsStale" ''absent(node_textfile_mtime_seconds{file="${nodeExporterTextfileDirectory}/homelab-systemd-resources.prom"}) or time() - node_textfile_mtime_seconds{file="${nodeExporterTextfileDirectory}/homelab-systemd-resources.prom"} > 180'' "3m" "warning" "Systemd resource metrics have not refreshed for more than three minutes")
+      ];
+    }
+  ];
+  homelabRules = (pkgs.formats.yaml {}).generate "homelab-prometheus-rules.yaml" {groups = homelabRuleGroups;};
   monitoredEndpoints = lib.filter (
     service: service.endpoint.exposure != "none" && service.endpoint.port != null
   ) (builtins.attrValues homelab.services);
@@ -203,6 +202,13 @@
       pkgs.util-linux
     ];
     text = ''
+      export FINDMNT_BIN=${lib.getExe' pkgs.util-linux "findmnt"}
+      export SYSTEMCTL_BIN=${lib.getExe' pkgs.systemd "systemctl"}
+      export SS_BIN=${lib.getExe' pkgs.iproute2 "ss"}
+      export TAILSCALE_BIN=${lib.getExe config.services.tailscale.package}
+      export JQ_BIN=${lib.getExe pkgs.jq}
+      export CURL_BIN=${lib.getExe pkgs.curl}
+      export ID_BIN=${lib.getExe' pkgs.coreutils "id"}
       export HOMELAB_REQUIRED_MOUNTS=${lib.escapeShellArg "/ /srv /mnt/backups"}
       export HOMELAB_OPTIONAL_AUTOMOUNTS=${lib.escapeShellArg "/mnt/backups"}
       export HOMELAB_IMPORTANT_UNITS=${lib.escapeShellArg (lib.concatStringsSep " " importantSystemdUnits)}
@@ -217,6 +223,13 @@
   };
 in {
   options.homelab.monitoring = {
+    ruleGroups = lib.mkOption {
+      type = lib.types.listOf lib.types.attrs;
+      readOnly = true;
+      internal = true;
+      default = homelabRuleGroups;
+      description = "Prometheus rule groups rendered into the homelab rule file, exposed for regression tests.";
+    };
     alertWebhookUrlFile = lib.mkOption {
       type = lib.types.nullOr lib.types.str;
       default = null;

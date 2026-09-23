@@ -9,9 +9,6 @@
     ../modules/services/backup.nix
   ];
 
-  custom.backup.enable = true;
-
-  # Core system identity
   networking.hostName = "kim";
 
   # Wake-on-LAN on the Realtek RTL8125, so the box can be powered back up
@@ -79,7 +76,6 @@
     smartd.enable = true;
   };
 
-  # System-scoped packages
   environment.systemPackages = [
     pkgs.cachix
     pkgs.ethtool

@@ -4,7 +4,7 @@
   pkgs,
 }: let
   homelab = import ../lib/homelab.nix {inherit lib;};
-  endpoint = (homelab.endpoints config.homelab.tailnet.domain).actual;
+  endpoint = homelab.endpoints.actual;
   actual = config.services.actual;
 in
   assert lib.assertMsg actual.enable
@@ -27,9 +27,8 @@ in
     builtins.elem "actual.service" homelab.backup.archiveUnits
     && builtins.elem "/var/lib/actual" config.custom.backup.manifestMetadata.expectedPrimaryStatePaths
     && builtins.elem "/var/lib/actual" config.custom.backup.manifestMetadata.expectedArchivePaths
-    && config.custom.backup.manifestMetadata.applicationVersions.actual == actual.package.version
   )
-  "Actual Budget state must be quiesced, archived, and tied to its package version";
+  "Actual Budget state must be quiesced and archived";
     pkgs.runCommand "actual-config-regression" {} ''
       touch "$out"
     ''

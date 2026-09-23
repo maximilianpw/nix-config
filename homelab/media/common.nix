@@ -5,7 +5,7 @@
 }: let
   homelab = import ../../lib/homelab.nix {inherit lib;};
   endpoints =
-    homelab.endpoints config.homelab.tailnet.domain
+    homelab.endpoints
     // homelab.publicEndpoints;
   hostTimeZone = config.time.timeZone;
   mediaRoot = "/srv/media";

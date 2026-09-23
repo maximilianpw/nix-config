@@ -8,12 +8,7 @@
   ...
 }: let
   homelab = import ../../../lib/homelab.nix {inherit lib;};
-  renderTemplate = path: markers: values: let
-    rendered = lib.replaceStrings markers values (builtins.readFile path);
-  in
-    assert lib.assertMsg
-    (lib.all (marker: !lib.hasInfix marker rendered) markers)
-    "${toString path} contains an unsubstituted template marker"; rendered;
+  template = import ../../../lib/template.nix {inherit lib;};
 
   agentAliases = {
     c = "codex --yolo";
@@ -89,7 +84,7 @@ in {
       enableNushellIntegration = true;
       flags = ["--disable-up-arrow" "--disable-ai"];
       settings = {
-        sync_address = (homelab.endpoints homelab.defaultTailnetDomain).atuin.url;
+        sync_address = homelab.endpoints.atuin.url;
         auto_sync = true;
         sync_frequency = "5m";
         filter_mode = "global";
@@ -116,11 +111,9 @@ in {
         // (builtins.removeAttrs agentAliases ["ccc" "claudex"]);
       configFile.source = ../config.nu;
       extraConfig = builtins.readFile ../extra-config.nu;
-      extraEnv =
-        renderTemplate
-        ../extra-env.nu
-        ["@BASH_INTERACTIVE@"]
-        ["${pkgs.bashInteractive}/bin/bash"];
+      extraEnv = template.render ../extra-env.nu {
+        BASH_INTERACTIVE = "${pkgs.bashInteractive}/bin/bash";
+      };
       plugins = with pkgs.nushellPlugins;
       # Plugins pinned to nushell 0.111.0 in nixpkgs-unstable (skim, hcl,
       # semver, desktop_notifications) are ABI-incompatible with nushell

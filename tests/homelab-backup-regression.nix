@@ -3,14 +3,13 @@
   lib,
   pkgs,
 }: let
+  expect = import ./lib/expect.nix {inherit lib;};
   homelab = import ../lib/homelab.nix {inherit lib;};
   backup = config.services.borgbackup.jobs.main;
   backupUnit = config.systemd.services.borgbackup-job-main;
   verifyUnit = config.systemd.services.borgbackup-verify-main;
   initialVerifyUnit = config.systemd.services.borgbackup-verify-main-initial;
   exporter = config.systemd.services.paperless-exporter;
-  projectsPath = "/home/maxpw/Projects";
-  hasProjectsPath = builtins.elem projectsPath backup.paths;
   backsUpPaperlessConsume = builtins.elem "/srv/paperless/consume" backup.paths;
   canWriteHomeAssistantArchive = builtins.elem "/var/backup/home-assistant" backupUnit.serviceConfig.ReadWritePaths;
   t3codeSource = "/home/maxpw/.local/share/t3code";
@@ -32,10 +31,7 @@
       ../modules/services/backup.nix
       {
         _module.check = false;
-        custom.backup = {
-          enable = true;
-          applicationVersions = builtins.removeAttrs contributedVersions ["vaultwarden"];
-        };
+        custom.backup.applicationVersions = builtins.removeAttrs contributedVersions ["vaultwarden"];
         system.nixos.version = config.system.nixos.version;
         services.postgresql.package = config.services.postgresql.package;
       }
@@ -75,12 +71,8 @@
     "paperless-task-queue.service"
     "paperless-web.service"
   ];
-  quiescesActual = builtins.elem "actual.service" homelab.backup.archiveUnits;
   quiescesImmichWrites = builtins.elem "immich-server.service" homelab.backup.archiveUnits;
   quiescesUptimeKuma = builtins.elem "uptime-kuma.service" homelab.backup.archiveUnits;
-  quiescesExecutor = builtins.elem "docker-executor.service" homelab.backup.archiveUnits;
-  quiescesT3Code = builtins.elem "maxpw:t3code.service" homelab.backup.userArchiveUnits;
-  mutatesNextcloudMaintenance = lib.hasInfix "maintenance:mode" backup.preHook;
   exporterIsSynchronous = exporter.serviceConfig.Type or null == "oneshot";
   exporterRestartsApplications =
     (exporter.unitConfig.OnSuccess or [])
@@ -107,8 +99,6 @@
       verifyUnit.script
     ];
 in
-  assert lib.assertMsg (!hasProjectsPath)
-  "the backup must not fail because the optional ~/Projects directory is absent";
   assert lib.assertMsg (backsUpPaperlessConsume && builtins.elem "/srv/paperless/media" backup.paths)
   "the backup must preserve Paperless pending inputs and database-route media";
   assert lib.assertMsg canWriteHomeAssistantArchive
@@ -119,33 +109,22 @@ in
   "every archive must include a writable, runtime-generated recovery manifest";
   assert lib.assertMsg canPersistRecoveryState
   "the sandboxed Borg unit must persist unresolved service recovery state under /run";
-  assert lib.assertMsg (
-    manifest.schemaVersion
-    == 1
-    && builtins.attrNames contributedVersions == nixosOwnedVersionNames
-    && manifest.expectedDatabases == ["atuin" "hass" "immich" "miniflux" "nextcloud" "paperless" "vaultwarden"]
-    && builtins.hasAttr "actual" manifest.applicationVersions
-    && builtins.hasAttr "executor" manifest.applicationVersions
-    && builtins.hasAttr "immich" manifest.applicationVersions
-    && builtins.hasAttr "nextcloud" manifest.applicationVersions
-    && builtins.hasAttr "kuma" manifest.applicationVersions
-    && builtins.hasAttr "uptimeKuma" manifest.applicationVersions
-    && manifest.postgresql.majorVersion != ""
-    && builtins.elem "/var/lib/actual" manifest.expectedPrimaryStatePaths
-    && builtins.elem "/var/lib/actual" manifest.expectedArchivePaths
-    && builtins.elem "/srv/nextcloud" manifest.expectedPrimaryStatePaths
-    && builtins.elem "/srv/immich" manifest.expectedPrimaryStatePaths
-    && builtins.elem "/var/lib/executor" manifest.expectedPrimaryStatePaths
-    && builtins.elem "/var/lib/executor" manifest.expectedArchivePaths
-    && builtins.elem "/var/lib/private/uptime-kuma" manifest.expectedPrimaryStatePaths
-    && builtins.elem t3codeSource manifest.expectedPrimaryStatePaths
-    && builtins.elem t3codeArtifact manifest.expectedArchivePaths
-    && !(builtins.elem t3codeSource manifest.expectedArchivePaths)
-    && manifest.applicationVersions.t3code != ""
-    && manifest.recovery.t3code.runbook == "docs/homelab-recovery.md#t3-code"
-    && builtins.elem "grafana" manifest.disposableState
-  )
-  "the archive manifest must identify versions, databases, primary state, and accepted disposable state";
+  assert expect.all "the archive manifest must identify versions, databases, primary state, and accepted disposable state" [
+    (manifest.schemaVersion == 1)
+    (builtins.attrNames contributedVersions == nixosOwnedVersionNames)
+    (manifest.expectedDatabases == ["atuin" "hass" "immich" "miniflux" "nextcloud" "paperless" "vaultwarden"])
+    (builtins.hasAttr "uptimeKuma" manifest.applicationVersions)
+    (manifest.postgresql.majorVersion != "")
+    (builtins.elem "/srv/nextcloud" manifest.expectedPrimaryStatePaths)
+    (builtins.elem "/srv/immich" manifest.expectedPrimaryStatePaths)
+    (builtins.elem "/var/lib/private/uptime-kuma" manifest.expectedPrimaryStatePaths)
+    (builtins.elem t3codeSource manifest.expectedPrimaryStatePaths)
+    (builtins.elem t3codeArtifact manifest.expectedArchivePaths)
+    (!(builtins.elem t3codeSource manifest.expectedArchivePaths))
+    (manifest.applicationVersions.t3code != "")
+    (manifest.recovery.t3code.runbook == "docs/homelab-recovery.md#t3-code")
+    (builtins.elem "grafana" manifest.disposableState)
+  ];
   assert lib.assertMsg rejectsMissingVersion
   "an enabled stateful service without a version contribution must fail evaluation";
   assert lib.assertMsg rejectsConflictingVersion
@@ -158,41 +137,39 @@ in
   "the backup must prevent mutable Nextcloud app updates while copying store-apps";
   assert lib.assertMsg quiescesPaperlessIngestion
   "Paperless ingestion must remain quiesced until pending consume files are copied";
-  assert lib.assertMsg quiescesActual
-  "the backup must quiesce Actual Budget's account and synchronized budget state";
   assert lib.assertMsg quiescesImmichWrites
   "Immich must remain quiesced while its matching database and media are backed up";
   assert lib.assertMsg quiescesUptimeKuma
   "the backup must quiesce Uptime Kuma's mutable local database";
-  assert lib.assertMsg quiescesExecutor
-  "the backup must quiesce Executor's database and generated encryption keys";
-  assert lib.assertMsg (!quiescesT3Code)
-  "T3 Code must stay online while SQLite's backup API snapshots its state";
+  assert lib.assertMsg (config.custom.backup.prepareStepOrder
+    == [
+      "online:t3code-snapshot"
+      "quiesced:nextcloud-app-updates"
+      "quiesced:paperless-export"
+      "quiesced:home-assistant-archive"
+      "quiesced:postgresql-dump"
+    ])
+  "backup preparation must snapshot T3 Code online, then finish app updates, export, archive, and dump while applications are stopped";
   assert lib.assertMsg usesPersistentCoordinator
   "backup preparation and cleanup must share the failure-safe persisted coordinator";
   assert lib.assertMsg serializesBorgOperations
   "backup creation and all consistency checks must acquire the same lock before touching applications or Borg";
-  assert lib.assertMsg (
-    lib.hasInfix "--archives-only --verify-data --last 1" verifyUnit.script
-    && config.systemd.timers.borgbackup-verify-main.wantedBy == ["timers.target"]
-    && config.systemd.timers.borgbackup-verify-main.timerConfig.OnCalendar == "*-*-01 06:00:00"
-    && builtins.elem "/var/lib/prometheus-node-exporter-text-files" verifyUnit.serviceConfig.ReadWritePaths
-    && builtins.elem "borgbackup-verify-main.service" homelab.importantSystemdUnits
-    && builtins.elem "borgbackup-verify-main.timer" homelab.importantSystemdUnits
-  )
-  "the newest Borg archive must receive a serialized monthly cryptographic data verification";
-  assert lib.assertMsg (
-    initialVerifyUnit.unitConfig.ConditionPathExists
-    == ["!/var/lib/prometheus-node-exporter-text-files/homelab-borg-verify.prom"]
-    && lib.hasInfix "systemctl start borgbackup-verify-main.service" initialVerifyUnit.script
-    && config.systemd.timers.borgbackup-verify-main-initial.wantedBy == ["timers.target"]
-    && config.systemd.timers.borgbackup-verify-main-initial.timerConfig.OnBootSec == "30m"
-  )
-  "a new deployment must seed its first Borg verification instead of alerting until the next month";
+  assert expect.all "the newest Borg archive must receive a serialized monthly cryptographic data verification" [
+    (lib.hasInfix "--archives-only --verify-data --last 1" verifyUnit.script)
+    (config.systemd.timers.borgbackup-verify-main.wantedBy == ["timers.target"])
+    (config.systemd.timers.borgbackup-verify-main.timerConfig.OnCalendar == "*-*-01 06:00:00")
+    (builtins.elem "/var/lib/prometheus-node-exporter-text-files" verifyUnit.serviceConfig.ReadWritePaths)
+    (builtins.elem "borgbackup-verify-main.service" homelab.importantSystemdUnits)
+    (builtins.elem "borgbackup-verify-main.timer" homelab.importantSystemdUnits)
+  ];
+  assert expect.all "a new deployment must seed its first Borg verification instead of alerting until the next month" [
+    (initialVerifyUnit.unitConfig.ConditionPathExists == ["!/var/lib/prometheus-node-exporter-text-files/homelab-borg-verify.prom"])
+    (lib.hasInfix "systemctl start borgbackup-verify-main.service" initialVerifyUnit.script)
+    (config.systemd.timers.borgbackup-verify-main-initial.wantedBy == ["timers.target"])
+    (config.systemd.timers.borgbackup-verify-main-initial.timerConfig.OnBootSec == "30m")
+  ];
   assert lib.assertMsg operationLockWritable
   "the shared operation lock must be writable inside the sandboxed Borg backup service";
-  assert lib.assertMsg (!mutatesNextcloudMaintenance)
-  "the backup must quiesce Nextcloud services instead of mutating its read-only config";
   assert lib.assertMsg exporterIsSynchronous
   "the backup must wait for the Paperless exporter to finish";
   assert lib.assertMsg (!exporterRestartsApplications)

@@ -3,9 +3,10 @@
   lib,
   pkgs,
 }: let
+  expect = import ./lib/expect.nix {inherit lib;};
   homelab = import ../lib/homelab.nix {inherit lib;};
   endpoints =
-    homelab.endpoints config.homelab.tailnet.domain
+    homelab.endpoints
     // homelab.publicEndpoints;
   mediaRoot = "/srv/media";
   usenetRoot = "${mediaRoot}/usenet";
@@ -82,243 +83,216 @@ in
     && qbtConfig.users.users.qbittorrent.uid == 970
   )
   "the bind-mounted torrent tree must retain stable qBittorrent and media identities";
-  assert lib.assertMsg (
-    config.users.groups.media.gid
-    == sabConfig.users.groups.media.gid
-    && config.users.users.sabnzbd.uid == 973
-    && config.users.users.sabnzbd.group == "media"
-    && sabConfig.users.users.sabnzbd.uid == 973
-  )
-  "the bind-mounted Usenet tree and SABnzbd state must retain stable media identities";
-  assert lib.assertMsg (
+  assert expect.all "the bind-mounted Usenet tree and SABnzbd state must retain stable media identities" [
+    (config.users.groups.media.gid == sabConfig.users.groups.media.gid)
+    (config.users.users.sabnzbd.uid == 973)
+    (config.users.users.sabnzbd.group == "media")
+    (sabConfig.users.users.sabnzbd.uid == 973)
+  ];
+  assert expect.all "media applications must run in their declared isolation domains" [
     config.services.bazarr.enable
-    && !config.services.ersatztv.enable
-    && !(builtins.hasAttr "ersatztv" homelab.services)
-    && tunarrService.environment.TUNARR_SERVER_PORT == toString endpoints.tunarr.port
-    && tunarrService.environment.TUNARR_BIND_ADDR == "127.0.0.1"
-    && !(builtins.hasAttr "TUNARR_DATABASE_PATH" tunarrService.environment)
-    && !(builtins.hasAttr "TUNARR_DATABASE_NAME" tunarrService.environment)
-    && pkgs.tunarr.ffmpeg == pkgs.ffmpeg
-    && lib.versionAtLeast pkgs.tunarr.ffmpeg.version "7.1"
-    && config.services.jellyfin.enable
-    && config.services.plex.enable
-    && config.services.plex.dataDir == "/var/lib/plex"
-    && !config.services.jellyfin.openFirewall
-    && !config.services.plex.openFirewall
-    && config.services.lidarr.enable
-    && config.services.sonarr.enable
-    && config.services.radarr.enable
-    && !config.services.readarr.enable
-    && !(builtins.hasAttr "readarr" homelab.services)
-    && !(builtins.hasAttr "lazylibrarian" homelab.services)
-    && !(builtins.hasAttr "lazylibrarian" config.virtualisation.oci-containers.containers)
-    && !(builtins.hasAttr "lazylibrarian" config.users.users)
-    && builtins.elem "/var/lib/lazylibrarian" config.custom.backup.exclude
-    && config.services.prowlarr.enable
-    && !config.services.sabnzbd.enable
-    && sabConfig.services.sabnzbd.enable
-    && config.services.seerr.enable
-    && !config.services.qbittorrent.enable
-  )
-  "unsupported book managers must be absent and supported media applications must run in their declared isolation domains";
-  assert lib.assertMsg (
-    sabConfig.services.sabnzbd.configFile
-    == null
-    && sabConfig.services.sabnzbd.allowConfigWrite
-    && sabConfig.services.sabnzbd.group == "media"
-    && !sabConfig.services.sabnzbd.openFirewall
-    && sabConfig.services.sabnzbd.settings.misc.host == "10.89.1.2"
-    && sabConfig.services.sabnzbd.settings.misc.port == 8080
-    && sabConfig.services.sabnzbd.settings.misc.download_dir == "${usenetRoot}/incomplete"
-    && sabConfig.services.sabnzbd.settings.misc.complete_dir == "${usenetRoot}/complete"
-    && sabConfig.services.sabnzbd.settings.misc.backup_dir == "/var/lib/sabnzbd/backups"
-    && sabConfig.services.sabnzbd.settings.misc.permissions == "2775"
-    && sabConfig.services.sabnzbd.settings.misc.host_whitelist
-    == "${endpoints.sabnzbd.host}, localhost, 127.0.0.1, 10.89.1.2"
-    && sabConfig.services.sabnzbd.settings.misc.local_ranges
-    == "10.89.1.3, 100.64.0.0/10, fd7a:115c:a1e0::/48"
-    && sabConfig.services.sabnzbd.settings.misc.verify_xff_header
-    && sabConfig.services.sabnzbd.settings.servers.eweka.host == "news.eweka.nl"
-    && sabConfig.services.sabnzbd.settings.servers.eweka.port == 563
-    && sabConfig.services.sabnzbd.settings.servers.eweka.connections == 20
-    && sabConfig.services.sabnzbd.settings.servers.eweka.ssl
-    && sabConfig.services.sabnzbd.settings.servers.eweka.ssl_verify == 3
-    && sabConfig.services.sabnzbd.settings.servers.eweka.required
-    && !(builtins.hasAttr "username" sabConfig.services.sabnzbd.settings.servers.eweka)
-    && !(builtins.hasAttr "password" sabConfig.services.sabnzbd.settings.servers.eweka)
-    && sabConfig.services.sabnzbd.settings.categories."sonarr-usenet".dir == "tv"
-    && sabConfig.services.sabnzbd.settings.categories."radarr-usenet".dir == "movies"
-    && sabConfig.services.sabnzbd.settings.categories."lidarr-usenet".dir == "music"
-    && !(builtins.hasAttr "sonarr" sabConfig.services.sabnzbd.settings.categories)
-    && !(builtins.hasAttr "radarr" sabConfig.services.sabnzbd.settings.categories)
-    && !(builtins.hasAttr "lidarr" sabConfig.services.sabnzbd.settings.categories)
-  )
-  "SABnzbd must keep credentials mutable while enforcing proxied access, strict TLS, paths, and media categories";
-  assert lib.assertMsg (
-    sabService.serviceConfig.StateDirectoryMode
-    == "0700"
-    && config.systemd.tmpfiles.settings."10-sabnzbd"."/var/lib/sabnzbd".d.mode == "0700"
-    && config.systemd.tmpfiles.settings."10-sabnzbd"."/var/lib/sabnzbd".d.user == "sabnzbd"
-    && builtins.attrNames sab.bindMounts
-    == [
-      "/srv/media/usenet"
-      "/var/lib/sabnzbd"
-    ]
-    && !sab.bindMounts.${usenetRoot}.isReadOnly
-    && !sab.bindMounts."/var/lib/sabnzbd".isReadOnly
-  )
-  "SABnzbd state must stay private and the container must see only its state and download tree";
-  assert lib.assertMsg (
-    config.services.bazarr.listenPort
-    == endpoints.bazarr.port
-    && config.services.lidarr.settings.server.bindaddress == "127.0.0.1"
-    && config.services.lidarr.settings.server.port == endpoints.lidarr.port
-    && config.services.sonarr.settings.server.bindaddress == "127.0.0.1"
-    && config.services.sonarr.settings.server.port == endpoints.sonarr.port
-    && config.services.radarr.settings.server.bindaddress == "127.0.0.1"
-    && config.services.radarr.settings.server.port == endpoints.radarr.port
-    && config.services.prowlarr.settings.server.bindaddress == "127.0.0.1"
-    && config.services.prowlarr.settings.server.port == endpoints.prowlarr.port
-    && config.systemd.services.bazarr.environment.DYNACONF_GENERAL__IP == "127.0.0.1"
-    && config.systemd.services.seerr.environment.HOST == "127.0.0.1"
-    && !config.services.bazarr.openFirewall
-    && !config.services.lidarr.openFirewall
-    && !config.services.sonarr.openFirewall
-    && !config.services.radarr.openFirewall
-    && !config.services.prowlarr.openFirewall
-    && !config.services.seerr.openFirewall
-  )
-  "administrative media services must bind loopback and keep their firewall ports closed";
-  assert lib.assertMsg (
+    config.services.jellyfin.enable
+    config.services.plex.enable
+    (config.services.plex.dataDir == "/var/lib/plex")
+    config.services.lidarr.enable
+    config.services.sonarr.enable
+    config.services.radarr.enable
+    config.services.prowlarr.enable
+    config.services.seerr.enable
+    (!config.services.sabnzbd.enable)
+    sabConfig.services.sabnzbd.enable
+    (!config.services.qbittorrent.enable)
+  ];
+  assert expect.all "Tunarr must bind its declared loopback endpoint and use a current ffmpeg" [
+    (tunarrService.environment.TUNARR_SERVER_PORT == toString endpoints.tunarr.port)
+    (tunarrService.environment.TUNARR_BIND_ADDR == "127.0.0.1")
+    (pkgs.tunarr.ffmpeg == pkgs.ffmpeg)
+    (lib.versionAtLeast pkgs.tunarr.ffmpeg.version "7.1")
+  ];
+  assert expect.all "Jellyfin and Plex must not open their module-managed firewall ports" [
+    (!config.services.jellyfin.openFirewall)
+    (!config.services.plex.openFirewall)
+  ];
+  assert lib.assertMsg (builtins.elem "/var/lib/lazylibrarian" config.custom.backup.exclude)
+  "orphaned LazyLibrarian state must stay excluded from Borg";
+  assert expect.all "SABnzbd must keep credentials mutable while enforcing proxied access, strict TLS, paths, and media categories" [
+    (sabConfig.services.sabnzbd.configFile == null)
+    sabConfig.services.sabnzbd.allowConfigWrite
+    (sabConfig.services.sabnzbd.group == "media")
+    (!sabConfig.services.sabnzbd.openFirewall)
+    (sabConfig.services.sabnzbd.settings.misc.host == "10.89.1.2")
+    (sabConfig.services.sabnzbd.settings.misc.port == 8080)
+    (sabConfig.services.sabnzbd.settings.misc.download_dir == "${usenetRoot}/incomplete")
+    (sabConfig.services.sabnzbd.settings.misc.complete_dir == "${usenetRoot}/complete")
+    (sabConfig.services.sabnzbd.settings.misc.backup_dir == "/var/lib/sabnzbd/backups")
+    (sabConfig.services.sabnzbd.settings.misc.permissions == "2775")
+    (sabConfig.services.sabnzbd.settings.misc.host_whitelist == "${endpoints.sabnzbd.host}, localhost, 127.0.0.1, 10.89.1.2")
+    (sabConfig.services.sabnzbd.settings.misc.local_ranges == "10.89.1.3, 100.64.0.0/10, fd7a:115c:a1e0::/48")
+    sabConfig.services.sabnzbd.settings.misc.verify_xff_header
+    (sabConfig.services.sabnzbd.settings.servers.eweka.host == "news.eweka.nl")
+    (sabConfig.services.sabnzbd.settings.servers.eweka.port == 563)
+    (sabConfig.services.sabnzbd.settings.servers.eweka.connections == 20)
+    sabConfig.services.sabnzbd.settings.servers.eweka.ssl
+    (sabConfig.services.sabnzbd.settings.servers.eweka.ssl_verify == 3)
+    sabConfig.services.sabnzbd.settings.servers.eweka.required
+    (!(builtins.hasAttr "username" sabConfig.services.sabnzbd.settings.servers.eweka))
+    (!(builtins.hasAttr "password" sabConfig.services.sabnzbd.settings.servers.eweka))
+    (sabConfig.services.sabnzbd.settings.categories."sonarr-usenet".dir == "tv")
+    (sabConfig.services.sabnzbd.settings.categories."radarr-usenet".dir == "movies")
+    (sabConfig.services.sabnzbd.settings.categories."lidarr-usenet".dir == "music")
+    (!(builtins.hasAttr "sonarr" sabConfig.services.sabnzbd.settings.categories))
+    (!(builtins.hasAttr "radarr" sabConfig.services.sabnzbd.settings.categories))
+    (!(builtins.hasAttr "lidarr" sabConfig.services.sabnzbd.settings.categories))
+  ];
+  assert expect.all "SABnzbd state must stay private and the container must see only its state and download tree" [
+    (sabService.serviceConfig.StateDirectoryMode == "0700")
+    (config.systemd.tmpfiles.settings."10-sabnzbd"."/var/lib/sabnzbd".d.mode == "0700")
+    (config.systemd.tmpfiles.settings."10-sabnzbd"."/var/lib/sabnzbd".d.user == "sabnzbd")
+    (builtins.attrNames sab.bindMounts
+      == [
+        "/srv/media/usenet"
+        "/var/lib/sabnzbd"
+      ])
+    (!sab.bindMounts.${usenetRoot}.isReadOnly)
+    (!sab.bindMounts."/var/lib/sabnzbd".isReadOnly)
+  ];
+  assert expect.all "administrative media services must bind loopback and keep their firewall ports closed" [
+    (config.services.bazarr.listenPort == endpoints.bazarr.port)
+    (config.services.lidarr.settings.server.bindaddress == "127.0.0.1")
+    (config.services.lidarr.settings.server.port == endpoints.lidarr.port)
+    (config.services.sonarr.settings.server.bindaddress == "127.0.0.1")
+    (config.services.sonarr.settings.server.port == endpoints.sonarr.port)
+    (config.services.radarr.settings.server.bindaddress == "127.0.0.1")
+    (config.services.radarr.settings.server.port == endpoints.radarr.port)
+    (config.services.prowlarr.settings.server.bindaddress == "127.0.0.1")
+    (config.services.prowlarr.settings.server.port == endpoints.prowlarr.port)
+    (config.systemd.services.bazarr.environment.DYNACONF_GENERAL__IP == "127.0.0.1")
+    (config.systemd.services.seerr.environment.HOST == "127.0.0.1")
+    (!config.services.bazarr.openFirewall)
+    (!config.services.lidarr.openFirewall)
+    (!config.services.sonarr.openFirewall)
+    (!config.services.radarr.openFirewall)
+    (!config.services.prowlarr.openFirewall)
+    (!config.services.seerr.openFirewall)
+  ];
+  assert expect.all "Tunarr must read the library and render node without modifying media or seeing downloads" [
     config.users.users.tunarr.isSystemUser
-    && config.users.users.tunarr.group == "tunarr"
-    && builtins.elem "media" config.users.users.tunarr.extraGroups
-    && builtins.elem "render" config.users.users.tunarr.extraGroups
-    && builtins.elem "video" config.users.users.tunarr.extraGroups
-    && tunarrService.serviceConfig.ExecStart == "${lib.getExe pkgs.tunarr} --database /var/lib/tunarr"
-    && lib.hasInfix "tunarr-reconcile-settings" tunarrService.serviceConfig.ExecStartPre
-    && builtins.elem pkgs.libva-utils tunarrService.path
-    && builtins.elem "${mediaRoot}/library" tunarrService.serviceConfig.ReadOnlyPaths
-    && builtins.elem "${mediaRoot}/torrents" tunarrService.serviceConfig.InaccessiblePaths
-    && builtins.elem usenetRoot tunarrService.serviceConfig.InaccessiblePaths
-  )
-  "Tunarr must read the library and render node without modifying media or seeing downloads";
-  assert lib.assertMsg (
-    config.services.jellyfin.package
-    == pkgs.jellyfin
-    && lib.versions.major pkgs.jellyfin.version == "12"
-    && pkgs.jellyfin-web.version == pkgs.jellyfin.version
-    && lib.versions.major pkgs.jellyfin-ffmpeg.version == "8"
-    && lib.versionAtLeast pkgs.jellyfin-ffmpeg.version "8.1"
-    && config.services.jellyfin.dataDir == "/var/lib/jellyfin"
-    && config.services.jellyfin.configDir == "/var/lib/jellyfin/config"
-  )
-  "Jellyfin 12 must use a matching web client, Jellyfin FFmpeg 8.1+, and the backed-up state paths";
-  assert lib.assertMsg (
+    (config.users.users.tunarr.group == "tunarr")
+    (builtins.elem "media" config.users.users.tunarr.extraGroups)
+    (builtins.elem "render" config.users.users.tunarr.extraGroups)
+    (builtins.elem "video" config.users.users.tunarr.extraGroups)
+    (tunarrService.serviceConfig.ExecStart == "${lib.getExe pkgs.tunarr} --database /var/lib/tunarr")
+    (lib.hasInfix "tunarr-reconcile-settings" tunarrService.serviceConfig.ExecStartPre)
+    (builtins.elem pkgs.libva-utils tunarrService.path)
+    (builtins.elem "${mediaRoot}/library" tunarrService.serviceConfig.ReadOnlyPaths)
+    (builtins.elem "${mediaRoot}/torrents" tunarrService.serviceConfig.InaccessiblePaths)
+    (builtins.elem usenetRoot tunarrService.serviceConfig.InaccessiblePaths)
+  ];
+  assert expect.all "Jellyfin 12 must use a matching web client, Jellyfin FFmpeg 8.1+, and the backed-up state paths" [
+    (config.services.jellyfin.package == pkgs.jellyfin)
+    (lib.versions.major pkgs.jellyfin.version == "12")
+    (pkgs.jellyfin-web.version == pkgs.jellyfin.version)
+    (lib.versions.major pkgs.jellyfin-ffmpeg.version == "8")
+    (lib.versionAtLeast pkgs.jellyfin-ffmpeg.version "8.1")
+    (config.services.jellyfin.dataDir == "/var/lib/jellyfin")
+    (config.services.jellyfin.configDir == "/var/lib/jellyfin/config")
+  ];
+  assert expect.all "Jellyfin must apply Kim's declarative AMD VA-API encoding configuration" [
     config.services.jellyfin.hardwareAcceleration.enable
-    && config.services.jellyfin.hardwareAcceleration.type == "vaapi"
-    && config.services.jellyfin.hardwareAcceleration.device == "/dev/dri/renderD128"
-    && config.services.jellyfin.forceEncodingConfig
-    && config.services.jellyfin.transcoding.enableHardwareEncoding
-    && config.hardware.graphics.enable
-  )
-  "Jellyfin must apply Kim's declarative AMD VA-API encoding configuration";
-  assert lib.assertMsg (
-    builtins.elem "media" config.users.users.jellyfin.extraGroups
-    && !(builtins.elem "${mediaRoot}/library" (config.systemd.services.jellyfin.serviceConfig.ReadOnlyPaths or []))
-    && builtins.elem "${mediaRoot}/torrents" config.systemd.services.jellyfin.serviceConfig.InaccessiblePaths
-    && builtins.elem usenetRoot config.systemd.services.jellyfin.serviceConfig.InaccessiblePaths
-  )
-  "Jellyfin must be able to manage the finished library without seeing downloads";
+    (config.services.jellyfin.hardwareAcceleration.type == "vaapi")
+    (config.services.jellyfin.hardwareAcceleration.device == "/dev/dri/renderD128")
+    config.services.jellyfin.forceEncodingConfig
+    config.services.jellyfin.transcoding.enableHardwareEncoding
+    config.hardware.graphics.enable
+  ];
+  assert expect.all "Jellyfin must be able to manage the finished library without seeing downloads" [
+    (builtins.elem "media" config.users.users.jellyfin.extraGroups)
+    (!(builtins.elem "${mediaRoot}/library" (config.systemd.services.jellyfin.serviceConfig.ReadOnlyPaths or [])))
+    (builtins.elem "${mediaRoot}/torrents" config.systemd.services.jellyfin.serviceConfig.InaccessiblePaths)
+    (builtins.elem usenetRoot config.systemd.services.jellyfin.serviceConfig.InaccessiblePaths)
+  ];
   assert lib.assertMsg (
     config.services.plex.accelerationDevices
     == ["/dev/dri/renderD128"]
     && config.hardware.graphics.enable
   )
   "Plex must use Kim's declared AMD VA-API render path";
-  assert lib.assertMsg (
-    builtins.elem "media" config.users.users.plex.extraGroups
-    && builtins.elem "render" config.users.users.plex.extraGroups
-    && builtins.elem "video" config.users.users.plex.extraGroups
-    && builtins.elem "${mediaRoot}/torrents" config.systemd.services.plex.serviceConfig.InaccessiblePaths
-    && builtins.elem usenetRoot config.systemd.services.plex.serviceConfig.InaccessiblePaths
-  )
-  "Plex must be able to manage the finished library without seeing downloads";
-  assert lib.assertMsg (
-    tunarrService.serviceConfig.UMask
-    == "0077"
-    && tunarrService.serviceConfig.StateDirectory == "tunarr"
-    && tunarrService.serviceConfig.StateDirectoryMode == "0700"
-    && tunarrService.serviceConfig.NoNewPrivileges
-    && tunarrService.serviceConfig.ProtectSystem == "strict"
-    && builtins.elem "AF_NETLINK" tunarrService.serviceConfig.RestrictAddressFamilies
-    && config.systemd.services.bazarr.serviceConfig.UMask == "0002"
-    && config.systemd.services.jellyfin.serviceConfig.UMask == "0002"
-    && config.systemd.services.plex.serviceConfig.UMask == "0002"
-    && config.systemd.services.lidarr.serviceConfig.UMask == "0002"
-    && config.systemd.services.sonarr.serviceConfig.UMask == "0002"
-    && config.systemd.services.radarr.serviceConfig.UMask == "0002"
-    && sabService.serviceConfig.UMask == "0002"
-    && qbtService.serviceConfig.UMask == "0002"
-  )
-  "Tunarr must keep private state while all media writers preserve shared-group access";
-  assert lib.assertMsg (
+  assert expect.all "Plex must be able to manage the finished library without seeing downloads" [
+    (builtins.elem "media" config.users.users.plex.extraGroups)
+    (builtins.elem "render" config.users.users.plex.extraGroups)
+    (builtins.elem "video" config.users.users.plex.extraGroups)
+    (builtins.elem "${mediaRoot}/torrents" config.systemd.services.plex.serviceConfig.InaccessiblePaths)
+    (builtins.elem usenetRoot config.systemd.services.plex.serviceConfig.InaccessiblePaths)
+  ];
+  assert expect.all "Tunarr must keep private state while all media writers preserve shared-group access" [
+    (tunarrService.serviceConfig.UMask == "0077")
+    (tunarrService.serviceConfig.StateDirectory == "tunarr")
+    (tunarrService.serviceConfig.StateDirectoryMode == "0700")
+    tunarrService.serviceConfig.NoNewPrivileges
+    (tunarrService.serviceConfig.ProtectSystem == "strict")
+    (builtins.elem "AF_NETLINK" tunarrService.serviceConfig.RestrictAddressFamilies)
+    (config.systemd.services.bazarr.serviceConfig.UMask == "0002")
+    (config.systemd.services.jellyfin.serviceConfig.UMask == "0002")
+    (config.systemd.services.plex.serviceConfig.UMask == "0002")
+    (config.systemd.services.lidarr.serviceConfig.UMask == "0002")
+    (config.systemd.services.sonarr.serviceConfig.UMask == "0002")
+    (config.systemd.services.radarr.serviceConfig.UMask == "0002")
+    (sabService.serviceConfig.UMask == "0002")
+    (qbtService.serviceConfig.UMask == "0002")
+  ];
+  assert expect.all "qBittorrent must keep its host endpoint in Mullvad's connected LAN subnet and expose only the torrent bind mount" [
     qbt.autoStart
-    && qbt.privateNetwork
-    && qbt.enableTun
-    && qbt.hostAddress == "10.89.0.3"
-    && qbt.localAddress == "10.89.0.2/31"
-    && qbtConfig.time.timeZone == config.time.timeZone
-    && builtins.attrNames qbt.bindMounts == ["${mediaRoot}/torrents"]
-    && qbt.bindMounts."${mediaRoot}/torrents".hostPath == "${mediaRoot}/torrents"
-    && !qbt.bindMounts."${mediaRoot}/torrents".isReadOnly
-  )
-  "qBittorrent must keep its host endpoint in Mullvad's connected LAN subnet and expose only the torrent bind mount";
-  assert lib.assertMsg (
+    qbt.privateNetwork
+    qbt.enableTun
+    (qbt.hostAddress == "10.89.0.3")
+    (qbt.localAddress == "10.89.0.2/31")
+    (qbtConfig.time.timeZone == config.time.timeZone)
+    (builtins.attrNames qbt.bindMounts == ["${mediaRoot}/torrents"])
+    (qbt.bindMounts."${mediaRoot}/torrents".hostPath == "${mediaRoot}/torrents")
+    (!qbt.bindMounts."${mediaRoot}/torrents".isReadOnly)
+  ];
+  assert expect.all "SABnzbd must keep its host endpoint in a separate Mullvad LAN subnet and preserve only its state and Usenet bind mounts" [
     sab.autoStart
-    && sab.privateNetwork
-    && sab.enableTun
-    && sab.hostAddress == "10.89.1.3"
-    && sab.localAddress == "10.89.1.2/31"
-    && sabConfig.time.timeZone == config.time.timeZone
-    && sab.bindMounts.${usenetRoot}.hostPath == usenetRoot
-    && sab.bindMounts."/var/lib/sabnzbd".hostPath == "/var/lib/sabnzbd"
-  )
-  "SABnzbd must keep its host endpoint in a separate Mullvad LAN subnet and preserve only its state and Usenet bind mounts";
-  assert lib.assertMsg (
+    sab.privateNetwork
+    sab.enableTun
+    (sab.hostAddress == "10.89.1.3")
+    (sab.localAddress == "10.89.1.2/31")
+    (sabConfig.time.timeZone == config.time.timeZone)
+    (sab.bindMounts.${usenetRoot}.hostPath == usenetRoot)
+    (sab.bindMounts."/var/lib/sabnzbd".hostPath == "/var/lib/sabnzbd")
+  ];
+  assert expect.all "Mullvad's early blocker and pre-start connection gate must fail both downloaders closed without affecting Kim" [
     qbtConfig.services.mullvad-vpn.enable
-    && qbtConfig.services.mullvad-vpn.enableEarlyBootBlocking
-    && !qbtConfig.services.mullvad-vpn.enableExcludeWrapper
-    && sabConfig.services.mullvad-vpn.enable
-    && sabConfig.services.mullvad-vpn.enableEarlyBootBlocking
-    && !sabConfig.services.mullvad-vpn.enableExcludeWrapper
-    && !config.services.mullvad-vpn.enable
-    && qbtConfig.services.qbittorrent.enable
-    && !qbtConfig.services.qbittorrent.openFirewall
-    && lib.hasPrefix "+/nix/store/" qbtService.serviceConfig.ExecStartPre
-    && lib.hasPrefix "+/nix/store/" (builtins.head sabService.serviceConfig.ExecStartPre)
-    && builtins.elem "mullvad-daemon.service" qbtService.requires
-    && builtins.elem "mullvad-daemon.service" sabService.requires
-    && qbtService.serviceConfig.Restart == "on-failure"
-    && sabService.serviceConfig.Restart == "on-failure"
-  )
-  "Mullvad's early blocker and pre-start connection gate must fail both downloaders closed without affecting Kim";
-  assert lib.assertMsg (
+    qbtConfig.services.mullvad-vpn.enableEarlyBootBlocking
+    (!qbtConfig.services.mullvad-vpn.enableExcludeWrapper)
+    sabConfig.services.mullvad-vpn.enable
+    sabConfig.services.mullvad-vpn.enableEarlyBootBlocking
+    (!sabConfig.services.mullvad-vpn.enableExcludeWrapper)
+    (!config.services.mullvad-vpn.enable)
+    qbtConfig.services.qbittorrent.enable
+    (!qbtConfig.services.qbittorrent.openFirewall)
+    (lib.hasPrefix "+/nix/store/" qbtService.serviceConfig.ExecStartPre)
+    (lib.hasPrefix "+/nix/store/" (builtins.head sabService.serviceConfig.ExecStartPre))
+    (builtins.elem "mullvad-daemon.service" qbtService.requires)
+    (builtins.elem "mullvad-daemon.service" sabService.requires)
+    (qbtService.serviceConfig.Restart == "on-failure")
+    (sabService.serviceConfig.Restart == "on-failure")
+  ];
+  assert expect.all "indexer proxies must stay inside Mullvad, restrict HTTP clients and destinations, and avoid public listeners" [
     qbtConfig.services.tinyproxy.enable
-    && qbtConfig.services.tinyproxy.settings.Listen == "10.89.0.2"
-    && qbtConfig.services.tinyproxy.settings.Port == 8888
-    && qbtConfig.services.tinyproxy.settings.Allow == ["10.89.0.3"]
-    && qbtConfig.services.tinyproxy.settings.ConnectPort == [443]
-    && qbtConfig.services.tinyproxy.settings.FilterDefaultDeny == [true]
-    && qbtConfig.services.tinyproxy.settings.FilterType == ["ere"]
-    && qbtConfig.services.flaresolverr.enable
-    && !qbtConfig.services.flaresolverr.openFirewall
-    && qbtConfig.systemd.services.flaresolverr.environment.HOST == "10.89.0.2"
-    && lib.sort builtins.lessThan qbtConfig.networking.firewall.interfaces.eth0.allowedTCPPorts == [8191 8888]
-    && !config.services.tinyproxy.enable
-    && !config.services.flaresolverr.enable
-  )
-  "indexer proxies must stay inside Mullvad, restrict HTTP clients and destinations, and avoid public listeners";
+    (qbtConfig.services.tinyproxy.settings.Listen == "10.89.0.2")
+    (qbtConfig.services.tinyproxy.settings.Port == 8888)
+    (qbtConfig.services.tinyproxy.settings.Allow == ["10.89.0.3"])
+    (qbtConfig.services.tinyproxy.settings.ConnectPort == [443])
+    (qbtConfig.services.tinyproxy.settings.FilterDefaultDeny == [true])
+    (qbtConfig.services.tinyproxy.settings.FilterType == ["ere"])
+    qbtConfig.services.flaresolverr.enable
+    (!qbtConfig.services.flaresolverr.openFirewall)
+    (qbtConfig.systemd.services.flaresolverr.environment.HOST == "10.89.0.2")
+    (lib.sort builtins.lessThan qbtConfig.networking.firewall.interfaces.eth0.allowedTCPPorts == [8191 8888])
+    (!config.services.tinyproxy.enable)
+    (!config.services.flaresolverr.enable)
+  ];
   assert lib.assertMsg (lib.all (name: let
     service = qbtConfig.systemd.services.${name};
     timer = qbtConfig.systemd.timers."${name}-deferred-start";
@@ -332,31 +306,27 @@ in
     && timer.wantedBy == ["timers.target"]
     && timer.timerConfig.OnUnitInactiveSec == "30s") ["tinyproxy" "flaresolverr"])
   "indexer proxies must wait for Mullvad without blocking boot or accessing downloaded files";
-  assert lib.assertMsg (
-    qbtService.wantedBy
-    == []
-    && qbtDeferredTimer.wantedBy == ["timers.target"]
-    && qbtDeferredTimer.timerConfig.OnUnitInactiveSec == "30s"
-    && qbtDeferredTimer.timerConfig.Unit == "qbittorrent.service"
-    && sabService.wantedBy == []
-    && sabDeferredTimer.wantedBy == ["timers.target"]
-    && sabDeferredTimer.timerConfig.OnUnitInactiveSec == "30s"
-    && sabDeferredTimer.timerConfig.Unit == "sabnzbd.service"
-  )
-  "downloaders must not block their container boot targets while Mullvad awaits first login";
-  assert lib.assertMsg (
-    qbtService.environment.QBIT_NETWORK_INTERFACE
-    == "wg0-mullvad"
-    && qbtService.environment.QBIT_WEBUI_CSRF_PROTECTION == "true"
-    && qbtService.environment.QBIT_WEBUI_HOST_HEADER_VALIDATION == "false"
-    && qbtService.environment.QBIT_WEBUI_MAX_AUTHENTICATION_FAIL_COUNT == "0"
-    && qbtService.environment.QBIT_GLOBAL_MAX_RATIO == "1"
-    && qbtService.environment.QBIT_GLOBAL_MAX_SEEDING_MINUTES == "1440"
-    && qbtService.environment.QBIT_SHARE_LIMIT_ACTION == "RemoveWithContent"
-    && lib.hasInfix "Session\\GlobalMaxRatio=1" (builtins.readFile qbtService.environment.QBIT_BOOTSTRAP_CONFIG)
-    && lib.hasInfix "Session\\ShareLimitAction=RemoveWithContent" (builtins.readFile qbtService.environment.QBIT_BOOTSTRAP_CONFIG)
-  )
-  "qBittorrent must bind to Mullvad, preserve CSRF protection, and delete finished torrents after a bounded seed window";
+  assert expect.all "downloaders must not block their container boot targets while Mullvad awaits first login" [
+    (qbtService.wantedBy == [])
+    (qbtDeferredTimer.wantedBy == ["timers.target"])
+    (qbtDeferredTimer.timerConfig.OnUnitInactiveSec == "30s")
+    (qbtDeferredTimer.timerConfig.Unit == "qbittorrent.service")
+    (sabService.wantedBy == [])
+    (sabDeferredTimer.wantedBy == ["timers.target"])
+    (sabDeferredTimer.timerConfig.OnUnitInactiveSec == "30s")
+    (sabDeferredTimer.timerConfig.Unit == "sabnzbd.service")
+  ];
+  assert expect.all "qBittorrent must bind to Mullvad, preserve CSRF protection, and delete finished torrents after a bounded seed window" [
+    (qbtService.environment.QBIT_NETWORK_INTERFACE == "wg0-mullvad")
+    (qbtService.environment.QBIT_WEBUI_CSRF_PROTECTION == "true")
+    (qbtService.environment.QBIT_WEBUI_HOST_HEADER_VALIDATION == "false")
+    (qbtService.environment.QBIT_WEBUI_MAX_AUTHENTICATION_FAIL_COUNT == "0")
+    (qbtService.environment.QBIT_GLOBAL_MAX_RATIO == "1")
+    (qbtService.environment.QBIT_GLOBAL_MAX_SEEDING_MINUTES == "1440")
+    (qbtService.environment.QBIT_SHARE_LIMIT_ACTION == "RemoveWithContent")
+    (lib.hasInfix "Session\\GlobalMaxRatio=1" (builtins.readFile qbtService.environment.QBIT_BOOTSTRAP_CONFIG))
+    (lib.hasInfix "Session\\ShareLimitAction=RemoveWithContent" (builtins.readFile qbtService.environment.QBIT_BOOTSTRAP_CONFIG))
+  ];
   assert lib.assertMsg (
     config.networking.nat.enable
     && config.networking.nat.externalInterface == "enp194s0"
@@ -367,33 +337,28 @@ in
     ]
   )
   "only the isolated downloader veths must use Kim's physical uplink for NAT";
-  assert lib.assertMsg (
-    config.systemd.sockets.qbittorrent-proxy.socketConfig.ListenStream
-    == "127.0.0.1:${toString endpoints.qbittorrent.port}"
-    && lib.hasSuffix "systemd-socket-proxyd 10.89.0.2:8080" config.systemd.services.qbittorrent-proxy.serviceConfig.ExecStart
-    && config.systemd.sockets.sabnzbd-proxy.socketConfig.ListenStream
-    == "127.0.0.1:${toString endpoints.sabnzbd.port}"
-    && lib.hasSuffix "systemd-socket-proxyd 10.89.1.2:8080" config.systemd.services.sabnzbd-proxy.serviceConfig.ExecStart
-  )
-  "downloader WebUIs must cross their namespaces only through loopback proxies";
-  assert lib.assertMsg (
-    config.networking.firewall.interfaces.enp194s0.allowedTCPPorts
-    == [endpoints.jellyfin.port]
-    && config.networking.firewall.interfaces.enp194s0.allowedUDPPorts == [7359]
-    && lib.hasInfix
-    "-i enp194s0 -s 192.168.1.0/24 -p tcp --dport ${toString endpoints.plex.port} -j nixos-fw-accept"
-    config.networking.firewall.extraCommands
-    && lib.all
-    (port:
-      lib.hasInfix
-      "-i enp194s0 -s 192.168.1.0/24 -p udp --dport ${toString port} -j nixos-fw-accept"
+  assert expect.all "downloader WebUIs must cross their namespaces only through loopback proxies" [
+    (config.systemd.sockets.qbittorrent-proxy.socketConfig.ListenStream == "127.0.0.1:${toString endpoints.qbittorrent.port}")
+    (lib.hasSuffix "systemd-socket-proxyd 10.89.0.2:8080" config.systemd.services.qbittorrent-proxy.serviceConfig.ExecStart)
+    (config.systemd.sockets.sabnzbd-proxy.socketConfig.ListenStream == "127.0.0.1:${toString endpoints.sabnzbd.port}")
+    (lib.hasSuffix "systemd-socket-proxyd 10.89.1.2:8080" config.systemd.services.sabnzbd-proxy.serviceConfig.ExecStart)
+  ];
+  assert expect.all "Plex playback and discovery must be IPv4-LAN-only while Jellyfin remains available on the physical interface" [
+    (config.networking.firewall.interfaces.enp194s0.allowedTCPPorts == [endpoints.jellyfin.port])
+    (config.networking.firewall.interfaces.enp194s0.allowedUDPPorts == [7359])
+    (lib.hasInfix
+      "-i enp194s0 -s 192.168.1.0/24 -p tcp --dport ${toString endpoints.plex.port} -j nixos-fw-accept"
       config.networking.firewall.extraCommands)
-    [32410 32412 32413 32414]
-    && !(builtins.elem endpoints.plex.port config.networking.firewall.allowedTCPPorts)
-    && !(builtins.elem 3005 config.networking.firewall.allowedTCPPorts)
-    && !(builtins.elem 32469 config.networking.firewall.allowedTCPPorts)
-  )
-  "Plex playback and discovery must be IPv4-LAN-only while Jellyfin remains available on the physical interface";
+    (lib.all
+      (port:
+        lib.hasInfix
+        "-i enp194s0 -s 192.168.1.0/24 -p udp --dport ${toString port} -j nixos-fw-accept"
+        config.networking.firewall.extraCommands)
+      [32410 32412 32413 32414])
+    (!(builtins.elem endpoints.plex.port config.networking.firewall.allowedTCPPorts))
+    (!(builtins.elem 3005 config.networking.firewall.allowedTCPPorts))
+    (!(builtins.elem 32469 config.networking.firewall.allowedTCPPorts))
+  ];
   assert lib.assertMsg (lib.all requiresSrv [
     config.systemd.services.bazarr
     tunarrService
@@ -406,9 +371,9 @@ in
     hostSabContainerService
   ])
   "every media writer or reader must fail closed when /srv is absent";
-  assert lib.assertMsg (
-    lib.all (path: builtins.elem path manifest.expectedPrimaryStatePaths) mediaStatePaths
-    && lib.all (name: builtins.hasAttr name manifest.applicationVersions) [
+  assert expect.all "Borg must preserve media control state while excluding replaceable downloaded media" [
+    (lib.all (path: builtins.elem path manifest.expectedPrimaryStatePaths) mediaStatePaths)
+    (lib.all (name: builtins.hasAttr name manifest.applicationVersions) [
       "bazarr"
       "jellyfin"
       "lidarr"
@@ -420,12 +385,11 @@ in
       "seerr"
       "sonarr"
       "tunarr"
-    ]
-    && !lib.any (lib.hasPrefix mediaRoot) manifest.expectedPrimaryStatePaths
-    && !builtins.elem mediaRoot config.services.borgbackup.jobs.main.paths
-    && builtins.elem "/var/lib/tunarr/data.ms" config.custom.backup.exclude
-  )
-  "Borg must preserve media control state while excluding replaceable downloaded media";
+    ])
+    (!lib.any (lib.hasPrefix mediaRoot) manifest.expectedPrimaryStatePaths)
+    (!builtins.elem mediaRoot config.services.borgbackup.jobs.main.paths)
+    (builtins.elem "/var/lib/tunarr/data.ms" config.custom.backup.exclude)
+  ];
   assert lib.assertMsg (lib.all (unit: builtins.elem unit homelab.backup.archiveUnits) [
       "bazarr.service"
       "jellyfin.service"

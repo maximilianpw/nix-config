@@ -5,7 +5,7 @@
   ...
 }: let
   homelab = import ../lib/homelab.nix {inherit lib;};
-  inherit ((homelab.endpoints config.homelab.tailnet.domain)) immich;
+  inherit (homelab.endpoints) immich;
 in {
   custom.backup.applicationVersions.immich = config.services.immich.package.version;
 

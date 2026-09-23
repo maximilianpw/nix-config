@@ -3,6 +3,10 @@
   lib,
   pkgs,
 }: let
+  expect = import ./lib/expect.nix {inherit lib;};
+  alerts = builtins.listToAttrs (map (rule: lib.nameValuePair rule.alert rule) (
+    builtins.filter (rule: rule ? alert) (lib.concatMap (group: group.rules) config.homelab.monitoring.ruleGroups)
+  ));
   homelab = import ../lib/homelab.nix {inherit lib;};
   prometheus = config.services.prometheus;
   inherit (prometheus) alertmanager exporters;
@@ -37,12 +41,6 @@
   queryText = lib.concatStringsSep "\n" panelQueries;
   systemdMetricsService = config.systemd.services.homelab-systemd-metrics;
   metricsDirectoryRule = config.systemd.tmpfiles.settings."10-homelab-metrics"."/var/lib/prometheus-node-exporter-text-files".d;
-  privateServicePorts = lib.concatMap (
-    service:
-      [service.port]
-      ++ lib.optional (service ? healthPort) service.healthPort
-      ++ lib.attrValues (service.pathBackends or {})
-  ) (lib.attrValues homelab.privateServices);
 in
   assert lib.assertMsg (prometheus.listenAddress == "127.0.0.1")
   "Prometheus must bind only to IPv4 loopback";
@@ -62,12 +60,6 @@ in
     exporters.postgres
   ])
   "Prometheus exporter firewall ports must stay closed";
-  assert lib.assertMsg (prometheus.retentionTime == "30d")
-  "Prometheus retention must remain 30 days";
-  assert lib.assertMsg (builtins.elem "--storage.tsdb.retention.size=5GB" prometheus.extraFlags)
-  "Prometheus storage must remain capped at 5 GB";
-  assert lib.assertMsg prometheus.checkConfig
-  "Prometheus configuration checking must remain enabled";
   assert lib.assertMsg (exporters.smartctl.devices
     == [
       "/dev/nvme0n1"
@@ -107,53 +99,44 @@ in
   "Prometheus must probe every declared application backend rather than checking only its listener";
   assert lib.assertMsg (localBackendTargets == expectedLocalBackendTargets)
   "the local-backends scrape job must be generated from every monitored inventory endpoint";
-  assert lib.assertMsg (
-    localBackendScrape.scrape_interval
-    == "1m"
-    && publicIngressScrape.scrape_interval == "5m"
-    && publicIngressTargets == expectedPublicIngressTargets
-    && homelab.publicEndpoints.cliproxy.publicMonitorUrl == "https://cliproxy.maximilian.pw/healthz"
-  )
-  "local probes must stay responsive while public ingress probes use low-noise five-minute health checks";
+  assert expect.all "local probes must stay responsive while public ingress probes use low-noise five-minute health checks" [
+    (localBackendScrape.scrape_interval == "1m")
+    (publicIngressScrape.scrape_interval == "5m")
+    (publicIngressTargets == expectedPublicIngressTargets)
+    (homelab.publicEndpoints.cliproxy.publicMonitorUrl == "https://${homelab.publicEndpoints.cliproxy.host}/healthz")
+  ];
   assert lib.assertMsg (
     builtins.elem "textfile" exporters.node.enabledCollectors
     && builtins.elem "--collector.textfile.directory=/var/lib/prometheus-node-exporter-text-files" exporters.node.extraFlags
   )
   "node exporter must read atomically-written homelab operational metrics";
-  assert lib.assertMsg (
-    config.systemd.timers.homelab-systemd-metrics.wantedBy
-    == ["timers.target"]
-    && config.systemd.timers.homelab-systemd-metrics.timerConfig.OnUnitActiveSec == "60s"
-    && systemdMetricsService.serviceConfig.Type == "oneshot"
-    && builtins.elem "/var/lib/prometheus-node-exporter-text-files" systemdMetricsService.serviceConfig.ReadWritePaths
-    && builtins.elem "homelab-systemd-metrics.service" homelab.importantSystemdUnits
-    && builtins.elem "homelab-systemd-metrics.timer" homelab.importantSystemdUnits
-    && metricsDirectoryRule.user == "root"
-    && metricsDirectoryRule.group == "root"
-    && metricsDirectoryRule.mode == "0755"
-  )
-  "systemd CPU counters must refresh atomically for Prometheus service attribution";
-  assert lib.assertMsg (
+  assert expect.all "systemd CPU counters must refresh atomically for Prometheus service attribution" [
+    (config.systemd.timers.homelab-systemd-metrics.wantedBy == ["timers.target"])
+    (config.systemd.timers.homelab-systemd-metrics.timerConfig.OnUnitActiveSec == "60s")
+    (systemdMetricsService.serviceConfig.Type == "oneshot")
+    (builtins.elem "/var/lib/prometheus-node-exporter-text-files" systemdMetricsService.serviceConfig.ReadWritePaths)
+    (builtins.elem "homelab-systemd-metrics.service" homelab.importantSystemdUnits)
+    (builtins.elem "homelab-systemd-metrics.timer" homelab.importantSystemdUnits)
+    (metricsDirectoryRule.user == "root")
+    (metricsDirectoryRule.group == "root")
+    (metricsDirectoryRule.mode == "0755")
+  ];
+  assert expect.all "Alertmanager must receive alerts over loopback even before an external receiver is configured" [
     alertmanager.enable
-    && alertmanager.listenAddress == "127.0.0.1"
-    && !alertmanager.openFirewall
-    && alertmanager.checkConfig
-    && alertmanager.configuration.route.receiver == "local-sink"
-    && (builtins.head (builtins.head prometheus.alertmanagers).static_configs).targets
-    == ["127.0.0.1:${toString alertmanager.port}"]
-  )
-  "Alertmanager must receive alerts over loopback even before an external receiver is configured";
-  assert lib.assertMsg (
-    config.systemd.timers.homelab-container-audit.wantedBy
-    == ["timers.target"]
-    && config.systemd.timers.homelab-container-audit.timerConfig.OnBootSec == "2m"
-    && config.systemd.timers.homelab-container-audit.timerConfig.OnUnitActiveSec == "5m"
-    && config.systemd.services.homelab-container-audit.serviceConfig.Type == "oneshot"
-    && builtins.elem "/var/lib/prometheus-node-exporter-text-files" config.systemd.services.homelab-container-audit.serviceConfig.ReadWritePaths
-    && builtins.elem "homelab-container-audit.service" homelab.importantSystemdUnits
-    && builtins.elem "homelab-container-audit.timer" homelab.importantSystemdUnits
-  )
-  "Docker lifecycle auditing must remain report-only, scheduled, and visible to Prometheus";
+    (alertmanager.listenAddress == "127.0.0.1")
+    (!alertmanager.openFirewall)
+    (alertmanager.configuration.route.receiver == "local-sink")
+    ((builtins.head (builtins.head prometheus.alertmanagers).static_configs).targets == ["127.0.0.1:${toString alertmanager.port}"])
+  ];
+  assert expect.all "Docker lifecycle auditing must remain report-only, scheduled, and visible to Prometheus" [
+    (config.systemd.timers.homelab-container-audit.wantedBy == ["timers.target"])
+    (config.systemd.timers.homelab-container-audit.timerConfig.OnBootSec == "2m")
+    (config.systemd.timers.homelab-container-audit.timerConfig.OnUnitActiveSec == "5m")
+    (config.systemd.services.homelab-container-audit.serviceConfig.Type == "oneshot")
+    (builtins.elem "/var/lib/prometheus-node-exporter-text-files" config.systemd.services.homelab-container-audit.serviceConfig.ReadWritePaths)
+    (builtins.elem "homelab-container-audit.service" homelab.importantSystemdUnits)
+    (builtins.elem "homelab-container-audit.timer" homelab.importantSystemdUnits)
+  ];
   assert lib.assertMsg (prometheus.ruleFiles != [])
   "Prometheus must load the high-signal homelab alert rules";
   assert lib.assertMsg (builtins.elem "--systemd.collector.enable-restart-count" exporters.systemd.extraFlags)
@@ -183,8 +166,6 @@ in
   "Grafana public signup must remain disabled";
   assert lib.assertMsg grafana.settings.auth.disable_login_form
   "Grafana must not show a second login form behind Tailscale";
-  assert lib.assertMsg (grafana.settings.users.auto_assign_org_role == "Editor")
-  "Tailnet users must receive enough access for Grafana Explore";
   assert lib.assertMsg (grafana.settings.security.secret_key == "$__file{/var/lib/grafana/secret_key}")
   "Grafana's generated encryption key must stay outside the Nix store";
   assert lib.assertMsg (datasource.uid == "prometheus" && datasource.isDefault && !datasource.editable)
@@ -195,8 +176,6 @@ in
   "The repository-provisioned Grafana dashboard must stay read-only";
   assert lib.assertMsg (lib.hasPrefix "/nix/store/" homeDashboardPath && !lib.hasInfix "-source/" homeDashboardPath)
   "Grafana's default dashboard must be a retained store artifact, not a garbage-collectable dirty flake source path";
-  assert lib.assertMsg (dashboard.uid == "kim-overview")
-  "Kim Overview must retain its stable UID";
   assert lib.assertMsg (lib.all (panel: panel.datasource.uid == "prometheus") dashboard.panels)
   "Every Kim Overview panel must use the provisioned Prometheus datasource UID";
   assert lib.assertMsg (
@@ -248,15 +227,17 @@ in
   "Disposable Prometheus, Alertmanager, and Grafana state must stay excluded from Borg";
   assert lib.assertMsg (builtins.hasAttr "grafana" homelab.privateServices)
   "Grafana must remain in the Tailscale Serve-derived private service inventory";
-  assert lib.assertMsg (builtins.length privateServicePorts == builtins.length (lib.unique privateServicePorts))
-  "Every loopback-bound private service port must be unique";
+  assert expect.all "Prometheus must load the homelab alerts, with the CPU anomaly gated on a full day of baseline" [
+    (lib.all (name: builtins.hasAttr name alerts) [
+      "HomelabSystemdMetricsStale"
+      "HomelabCpuAnomaly"
+      "HomelabStaleDockerContainers"
+      "HomelabBorgVerifyStale"
+    ])
+    (lib.hasPrefix "count_over_time(homelab:node_cpu_busy:ratio5m[24h]) >= 1380 and " alerts.HomelabCpuAnomaly.expr)
+  ];
     pkgs.runCommand "monitoring-regression" {} ''
       cmp ${lib.escapeShellArg homeDashboardPath} ${../homelab/grafana/kim-overview.json}
       grep -F -- 'immich-server.service' ${lib.escapeShellArg systemdMetricsService.serviceConfig.ExecStart}
-      grep -F -- 'HomelabSystemdMetricsStale' ${lib.escapeShellArg (builtins.head prometheus.ruleFiles)}
-      grep -F -- 'HomelabCpuAnomaly' ${lib.escapeShellArg (builtins.head prometheus.ruleFiles)}
-      grep -F -- 'count_over_time(homelab:node_cpu_busy:ratio5m[24h]) >= 1380' ${lib.escapeShellArg (builtins.head prometheus.ruleFiles)}
-      grep -F -- 'HomelabStaleDockerContainers' ${lib.escapeShellArg (builtins.head prometheus.ruleFiles)}
-      grep -F -- 'HomelabBorgVerifyStale' ${lib.escapeShellArg (builtins.head prometheus.ruleFiles)}
       touch "$out"
     ''

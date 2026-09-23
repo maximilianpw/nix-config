@@ -3,9 +3,9 @@
 # is the status that the upstream Borg EXIT trap should propagate.
 set -euo pipefail
 
-: "${HOMELAB_COORDINATOR_BIN:=homelab-backup-coordinator}"
+: "${HOMELAB_COORDINATOR_BIN:?HOMELAB_COORDINATOR_BIN must be set}"
 : "${HOMELAB_BACKUP_METRICS_DIR:=/var/lib/prometheus-node-exporter-text-files}"
-: "${DATE_BIN:=date}"
+: "${DATE_BIN:?DATE_BIN must be set}"
 : "${HOMELAB_HEARTBEAT_BIN:=}"
 
 if (( $# != 2 )); then

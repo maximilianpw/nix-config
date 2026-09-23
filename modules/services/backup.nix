@@ -15,19 +15,16 @@
   flock = lib.getExe' pkgs.util-linux "flock";
   systemctl = lib.getExe' pkgs.systemd "systemctl";
   borgOperationLockFile = "/run/homelab-backup/borg-operation.lock";
-  homeAssistantBackupDir = "/var/backup/home-assistant";
   homelabBackupDir = "/var/backup/homelab";
   backupMetricsDir = "/var/lib/prometheus-node-exporter-text-files";
   homelab = import ../../lib/homelab.nix {inherit lib;};
   t3codeSourceDir = builtins.head homelab.services.t3code.state.paths;
   t3codeBackupArtifact = builtins.head homelab.services.t3code.backup.artifacts;
   t3codeBackupDir = builtins.dirOf t3codeBackupArtifact;
-  # Lifecycle ownership is declarative; service-specific export and archive
-  # commands remain in this coordinator.
+  # Quiesce units come from the inventory; service-specific preparation comes
+  # from each owning module's `custom.backup.prepareSteps` entry.
   databaseApplicationUnits = homelab.backup.dumpUnits;
   fileApplicationUnits = homelab.backup.archiveUnits;
-  userDatabaseApplicationUnits = homelab.backup.userDumpUnits;
-  userFileApplicationUnits = homelab.backup.userArchiveUnits;
   t3codeVersion = (import ../../users/${currentSystemUserDir}/settings.nix {inherit pkgs;}).t3codeRelease.version;
   baseBackupPaths = [
     "${homeDir}/nix-config"
@@ -86,6 +83,23 @@
     recovery = homelab.backup.recovery;
   };
   manifestStatic = builtins.toJSON manifestMetadata;
+  stageRank = stage:
+    if stage == "online"
+    then 0
+    else 1;
+  orderedPrepareSteps = lib.sort (
+    left: right:
+      if left.stage != right.stage
+      then stageRank left.stage < stageRank right.stage
+      else if left.order != right.order
+      then left.order < right.order
+      else left.name < right.name
+  ) (lib.mapAttrsToList (name: step: step // {inherit name;}) cfg.prepareSteps);
+  prepareStepsFile = pkgs.writeText "homelab-backup-prepare-steps" (
+    lib.concatMapStrings (step: "${step.stage}\t${step.name}\t${step.command}\n") orderedPrepareSteps
+  );
+  startUnitStep = name: unit:
+    toString (pkgs.writeShellScript "homelab-backup-${name}" "exec ${systemctl} start ${lib.escapeShellArg unit}");
   t3codeBackup = pkgs.writeShellApplication {
     name = "t3code-backup";
     runtimeInputs = [
@@ -108,20 +122,13 @@
     runtimeInputs = [
       pkgs.coreutils
       pkgs.gawk
-      pkgs.gnutar
       pkgs.systemd
     ];
     text = ''
-      export SYSTEMCTL_BIN=${lib.getExe' pkgs.systemd "systemctl"}
-      export TAR_BIN=${tar}
-      export SLEEP_BIN=${lib.getExe' pkgs.coreutils "sleep"}
+      export SYSTEMCTL_BIN=${systemctl}
       export HOMELAB_DUMP_UNITS=${lib.escapeShellArg (lib.concatStringsSep " " databaseApplicationUnits)}
       export HOMELAB_ARCHIVE_UNITS=${lib.escapeShellArg (lib.concatStringsSep " " fileApplicationUnits)}
-      export HOMELAB_USER_DUMP_UNITS=${lib.escapeShellArg (lib.concatStringsSep " " userDatabaseApplicationUnits)}
-      export HOMELAB_USER_ARCHIVE_UNITS=${lib.escapeShellArg (lib.concatStringsSep " " userFileApplicationUnits)}
-      export HOMELAB_POSTGRESQL_BACKUP_UNIT=${lib.escapeShellArg homelab.infrastructure.postgresqlBackup.unit}
-      export HOME_ASSISTANT_ARCHIVE_DIR=${lib.escapeShellArg homeAssistantBackupDir}
-      export T3CODE_BACKUP_BIN=${lib.getExe t3codeBackup}
+      export HOMELAB_PREPARE_STEPS_FILE=${prepareStepsFile}
       exec ${lib.getExe pkgs.bash} ${../../scripts/homelab-backup-coordinator.sh} "$@"
     '';
   };
@@ -181,8 +188,6 @@
   };
 in {
   options.custom.backup = {
-    enable = lib.mkEnableOption "borgbackup to external drive";
-
     applicationVersions = lib.mkOption {
       type = lib.types.attrsOf lib.types.str;
       default = {};
@@ -253,6 +258,34 @@ in {
       description = "Runtime file containing an external dead-man ping URL for backup start, success, and failure signals.";
     };
 
+    prepareSteps = lib.mkOption {
+      type = lib.types.attrsOf (lib.types.submodule {
+        options = {
+          stage = lib.mkOption {
+            type = lib.types.enum ["online" "quiesced"];
+            description = "`online` runs before any quiesce unit stops; `quiesced` runs while they are all stopped, before dump-phase units restart.";
+          };
+          order = lib.mkOption {
+            type = lib.types.int;
+            description = "Position within the stage; lower runs first.";
+          };
+          command = lib.mkOption {
+            type = lib.types.str;
+            description = "Executable run with no arguments; a non-zero exit aborts the backup.";
+          };
+        };
+      });
+      default = {};
+      description = "Service-owned backup preparation steps run by the coordinator.";
+    };
+
+    prepareStepOrder = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      readOnly = true;
+      internal = true;
+      description = "`stage:name` of every preparation step in execution order.";
+    };
+
     manifestMetadata = lib.mkOption {
       type = lib.types.attrs;
       readOnly = true;
@@ -282,8 +315,26 @@ in {
     };
   };
 
-  config = lib.mkIf cfg.enable {
-    custom.backup.manifestMetadata = manifestMetadata;
+  config = {
+    custom.backup = {
+      inherit manifestMetadata;
+      prepareStepOrder = map (step: "${step.stage}:${step.name}") orderedPrepareSteps;
+      prepareSteps = {
+        # T3 Code's SQLite online backup runs while the service stays available,
+        # before quiescing anything else so it cannot extend their outage.
+        t3code-snapshot = {
+          stage = "online";
+          order = 10;
+          command = lib.getExe t3codeBackup;
+        };
+        # The shared dump runs last, once every application writer is stopped.
+        postgresql-dump = {
+          stage = "quiesced";
+          order = 90;
+          command = startUnitStep "postgresql-dump" homelab.infrastructure.postgresqlBackup.unit;
+        };
+      };
+    };
 
     fileSystems."/mnt/backups" = {
       device = "/dev/disk/by-uuid/${cfg.driveUUID}";
@@ -348,7 +399,6 @@ in {
 
       extraArgs = "--lock-wait 60";
       readWritePaths = [
-        homeAssistantBackupDir
         homelabBackupDir
         t3codeBackupDir
         backupMetricsDir
@@ -366,11 +416,9 @@ in {
     };
 
     systemd = {
-      # The upstream Borg unit uses ProtectSystem=strict. Declare both the
-      # directory and its write exception so the pre-hook can atomically replace
-      # Home Assistant's quiesced config archive.
+      # The upstream Borg unit uses ProtectSystem=strict; each directory the
+      # hooks write also needs a readWritePaths exception.
       tmpfiles.rules = [
-        "d ${homeAssistantBackupDir} 0700 root root -"
         "d ${homelabBackupDir} 0700 root root -"
         "d ${t3codeBackupDir} 0700 root root -"
         "d /run/homelab-backup 0700 root root -"

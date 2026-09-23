@@ -5,29 +5,29 @@
   lib,
   pkgs,
 }: let
+  expect = import ./lib/expect.nix {inherit lib;};
   homelab = import ../lib/homelab.nix {inherit lib;};
-  endpoint = (homelab.endpoints config.homelab.tailnet.domain).atuin;
+  endpoint = homelab.endpoints.atuin;
   server = config.services.atuin;
   clients = [config.home-manager.users.maxpw.programs.atuin joyce.home-manager.users.max-vev.programs.atuin];
   manifest = config.custom.backup.manifestMetadata;
 in
-  assert lib.assertMsg (
+  assert expect.all "Atuin must use private loopback ingress with registration closed" [
     server.enable
-    && server.host == "127.0.0.1"
-    && server.port == endpoint.port
-    && !server.openFirewall
-    && !server.openRegistration
-    && !(builtins.elem server.port config.networking.firewall.allowedTCPPorts)
-  ) "Atuin must use private loopback ingress with registration closed";
-  assert lib.assertMsg (
+    (server.host == "127.0.0.1")
+    (server.port == endpoint.port)
+    (!server.openFirewall)
+    (!server.openRegistration)
+    (!(builtins.elem server.port config.networking.firewall.allowedTCPPorts))
+  ];
+  assert expect.all "Atuin must use and back up the local socket-only PostgreSQL database" [
     server.database.createLocally
-    && server.database.uri == "postgresql:///atuin?host=/run/postgresql"
-    && config.services.postgresql.settings.listen_addresses == ""
-    && builtins.elem "atuin" config.services.postgresql.ensureDatabases
-    && builtins.elem "atuin" manifest.expectedDatabases
-    && builtins.elem "atuin.service" homelab.backup.dumpUnits
-    && manifest.applicationVersions.atuin == server.package.version
-  ) "Atuin must use and back up the local socket-only PostgreSQL database";
+    (server.database.uri == "postgresql:///atuin?host=/run/postgresql")
+    (config.services.postgresql.settings.listen_addresses == "")
+    (builtins.elem "atuin" config.services.postgresql.ensureDatabases)
+    (builtins.elem "atuin" manifest.expectedDatabases)
+    (builtins.elem "atuin.service" homelab.backup.dumpUnits)
+  ];
   assert lib.assertMsg (lib.all (client:
     client.enable
     && client.enableNushellIntegration

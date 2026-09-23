@@ -12,14 +12,6 @@
       until = mkOption {
         type = types.enum ["dump" "archive"];
       };
-      scope = mkOption {
-        type = types.enum ["system" "user"];
-        default = "system";
-      };
-      user = mkOption {
-        type = types.nullOr (types.strMatching "[A-Za-z0-9_.-]+");
-        default = null;
-      };
     };
   };
 
@@ -48,10 +40,6 @@
       publicMonitorPath = mkOption {
         type = types.nullOr types.str;
         default = null;
-      };
-      pathBackends = mkOption {
-        type = types.attrsOf types.port;
-        default = {};
       };
       port = mkOption {
         type = types.nullOr types.port;
@@ -250,11 +238,6 @@
   validate = name: service: let
     inherit (service) backup endpoint operations recovery state storage;
   in
-    assert lib.assertMsg (lib.all (entry:
-      (entry.scope == "system" -> entry.user == null)
-      && (entry.scope == "user" -> entry.user != null && entry.user != ""))
-    backup.quiesce)
-    "homelab service ${name} has invalid quiesce scope or user metadata";
     assert lib.assertMsg (endpoint.exposure == "none" || endpoint.port != null)
     "homelab service ${name} must declare a port when it has an endpoint";
     assert lib.assertMsg (endpoint.exposure != "public" || (endpoint.hostname != null && endpoint.hostname != ""))
@@ -286,11 +269,9 @@
     "homelab service ${name} must map every primary state path to an archive path or explicit transformation";
     assert lib.assertMsg (!state.disposable
       || (
-        state.kind
-        == "disposable"
-        && state.paths == []
+        state.paths
+        == []
         && state.database == null
-        && backup.archivePaths == []
         && backup.artifacts == []
         && backup.transformedPaths == []
         && backup.strategy == null
@@ -318,18 +299,14 @@
 
   validated = lib.mapAttrs validate normalized;
   endpointPorts = lib.concatMap (
-    service:
-      lib.optional (service.endpoint.port != null) service.endpoint.port
-      ++ builtins.attrValues service.endpoint.pathBackends
+    service: lib.optional (service.endpoint.port != null) service.endpoint.port
   ) (builtins.attrValues validated);
-  publicHostnames = lib.filter (hostname: hostname != null) (
-    map (service: service.endpoint.hostname) (
-      lib.filter (service: service.endpoint.exposure == "public") (builtins.attrValues validated)
-    )
+  publicHostnames = map (service: service.endpoint.hostname) (
+    lib.filter (service: service.endpoint.exposure == "public") (builtins.attrValues validated)
   );
   duplicate = values: builtins.length values != builtins.length (lib.unique values);
 in
   assert lib.assertMsg (!duplicate endpointPorts)
-  "homelab endpoint ports, including path backends, must be globally unique";
+  "homelab endpoint ports must be globally unique";
   assert lib.assertMsg (!duplicate publicHostnames)
   "public homelab hostnames must be globally unique"; validated

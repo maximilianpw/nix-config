@@ -2,10 +2,10 @@
 # Read-only Borg archive inspection. This command never extracts into live paths.
 set -euo pipefail
 
-: "${BORG_BIN:=borg}"
-: "${JQ_BIN:=jq}"
-: "${SQLITE_BIN:=sqlite3}"
-: "${TAR_BIN:=tar}"
+: "${BORG_BIN:?BORG_BIN must be set}"
+: "${JQ_BIN:?JQ_BIN must be set}"
+: "${SQLITE_BIN:?SQLITE_BIN must be set}"
+: "${TAR_BIN:?TAR_BIN must be set}"
 
 usage() {
   cat >&2 <<'EOF'

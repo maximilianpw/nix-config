@@ -7,8 +7,28 @@
   homelab = import ../lib/homelab.nix {inherit lib;};
   inherit (homelab.publicEndpoints) homeassistant;
   database = homelab.services.homeassistant.state.database;
+  archive = builtins.head homelab.services.homeassistant.backup.artifacts;
+  archiveDir = builtins.dirOf archive;
+  archiveStep = pkgs.writeShellScript "homelab-backup-home-assistant-archive" ''
+    export TAR_BIN=${lib.getExe pkgs.gnutar}
+    export HOME_ASSISTANT_SOURCE_DIR=${lib.escapeShellArg (builtins.head homelab.services.homeassistant.backup.transformedPaths)}
+    export HOME_ASSISTANT_ARCHIVE=${lib.escapeShellArg archive}
+    exec ${lib.getExe pkgs.bash} ${../scripts/home-assistant-archive.sh}
+  '';
 in {
-  custom.backup.applicationVersions.homeassistant = config.services.home-assistant.package.version;
+  custom.backup = {
+    applicationVersions.homeassistant = config.services.home-assistant.package.version;
+    prepareSteps.home-assistant-archive = {
+      stage = "quiesced";
+      order = 30;
+      command = toString archiveStep;
+    };
+  };
+  # The Borg unit is sandboxed; the pre-hook needs to write the archive.
+  systemd = {
+    tmpfiles.rules = ["d ${archiveDir} 0700 root root -"];
+    services.borgbackup-job-main.serviceConfig.ReadWritePaths = [archiveDir];
+  };
 
   services.postgresql = {
     enable = true;

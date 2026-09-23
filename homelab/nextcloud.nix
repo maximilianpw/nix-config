@@ -22,11 +22,26 @@
     text = ''
       export NEXTCLOUD_OWNERSHIP_CHECK_BIN=${lib.getExe ownershipCheck}
       export NEXTCLOUD_OCC_BIN=${lib.getExe config.services.nextcloud.occ}
+      export NEXTCLOUD_FIND_BIN=${lib.getExe pkgs.findutils}
       exec ${lib.getExe pkgs.bash} ${../scripts/update-nextcloud-store-apps.sh} ${lib.escapeShellArgs declarativeAppIds}
     '';
   };
 in {
-  custom.backup.applicationVersions.nextcloud = config.services.nextcloud.package.version;
+  custom.backup = {
+    applicationVersions.nextcloud = config.services.nextcloud.package.version;
+    # Its timer is quiesced, but a run already in progress must finish rather
+    # than be killed while replacing app directories.
+    prepareSteps.nextcloud-app-updates = {
+      stage = "quiesced";
+      order = 10;
+      command = toString (pkgs.writeShellScript "homelab-backup-nextcloud-app-updates" ''
+        export SYSTEMCTL_BIN=${lib.getExe' pkgs.systemd "systemctl"}
+        export SLEEP_BIN=${lib.getExe' pkgs.coreutils "sleep"}
+        export WAIT_UNIT=nextcloud-update-store-apps.service
+        exec ${lib.getExe pkgs.bash} ${../scripts/wait-unit-inactive.sh}
+      '');
+    };
+  };
 
   sops.secrets.nextcloud-admin-password = {};
 

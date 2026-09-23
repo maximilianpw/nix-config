@@ -20,7 +20,8 @@ EOF
 chmod +x "$tmpdir/occ"
 
 run_updater() {
-    NEXTCLOUD_STORE_APPS_DIR="$store_apps" \
+    NEXTCLOUD_FIND_BIN="${NEXTCLOUD_FIND_BIN:-$(command -v find)}" \
+        NEXTCLOUD_STORE_APPS_DIR="$store_apps" \
         NEXTCLOUD_OWNERSHIP_CHECK_BIN="$CHECK_SCRIPT" \
         NEXTCLOUD_OCC_BIN="$tmpdir/occ" \
         NEXTCLOUD_OCC_LOG="$tmpdir/occ.log" \

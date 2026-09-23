@@ -64,8 +64,17 @@
       inherit lib;
       pkgs = nixpkgs.legacyPackages.x86_64-linux;
     };
-    homepage-calendar-regression = import ../tests/homepage-calendar-regression.nix {
+    homepage-regression = import ../tests/homepage-regression.nix {
       config = self.nixosConfigurations.kim.config;
+      inherit lib;
+      pkgs = nixpkgs.legacyPackages.x86_64-linux;
+    };
+    nextcloud-apps-regression = import ../tests/nextcloud-apps-regression.nix {
+      config = self.nixosConfigurations.kim.config;
+      inherit lib;
+      pkgs = nixpkgs.legacyPackages.x86_64-linux;
+    };
+    template-regression = import ../tests/template-regression.nix {
       inherit lib;
       pkgs = nixpkgs.legacyPackages.x86_64-linux;
     };
