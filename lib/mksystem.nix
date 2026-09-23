@@ -5,16 +5,15 @@
 }: name: {
   system,
   user,
-  # Optionally specify a different directory name that holds the user configs.
-  # This allows the on-system login/user name (e.g. "max-vev") to differ from
-  # the repository directory (e.g. "maxpw"). Defaults to the user name.
-  userDir ? user,
-  darwin ? false,
-  wsl ? false,
-  linuxDesktop ? (!darwin && !wsl),
+  # The directory holding the user configs, which may differ from the
+  # on-system login name (e.g. "max-vev" uses "maxpw").
+  userDir,
+  darwin,
+  wsl,
+  linuxDesktop,
   hostRecord,
   hostInventory,
-  extraModules ? [],
+  extraModules,
 }: let
   inherit (nixpkgs) lib;
   machineConfig = ../machines/${name}.nix;

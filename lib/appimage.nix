@@ -3,12 +3,7 @@
     pname,
     version,
     src,
-    desktopPath ? "${pname}.desktop",
-    desktopFileName ? "${pname}.desktop",
-    desktopExec ? "AppRun",
-    iconName ? pname,
     iconPath,
-    pixmapName ? "${pname}.png",
     extraInstallCommands ? (_: ""),
     meta ? {},
   }: let
@@ -20,12 +15,12 @@
       inherit pname version src meta;
 
       extraInstallCommands = ''
-        install -m 444 -D ${appimageContents}/${desktopPath} $out/share/applications/${desktopFileName}
-        substituteInPlace $out/share/applications/${desktopFileName} \
-          --replace-warn 'Exec=${desktopExec}' "Exec=${pname}" \
-          --replace-warn 'Icon=${iconName}' "Icon=$out/share/pixmaps/${pixmapName}"
+        install -m 444 -D ${appimageContents}/${pname}.desktop $out/share/applications/${pname}.desktop
+        substituteInPlace $out/share/applications/${pname}.desktop \
+          --replace-warn 'Exec=AppRun' "Exec=${pname}" \
+          --replace-warn 'Icon=${pname}' "Icon=$out/share/pixmaps/${pname}.png"
 
-        install -m 444 -D ${appimageContents}/${iconPath} $out/share/pixmaps/${pixmapName}
+        install -m 444 -D ${appimageContents}/${iconPath} $out/share/pixmaps/${pname}.png
         ${extraInstallCommands appimageContents}
       '';
     };

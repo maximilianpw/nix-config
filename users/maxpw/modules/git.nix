@@ -1,4 +1,3 @@
-# Git configuration
 {
   pkgs,
   isDarwin,

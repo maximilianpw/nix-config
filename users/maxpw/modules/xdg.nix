@@ -1,4 +1,3 @@
-# XDG config file management
 {
   config,
   isDarwin,

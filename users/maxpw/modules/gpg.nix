@@ -1,4 +1,3 @@
-# GPG and gpg-agent configuration
 {
   isDarwin,
   isLinuxDesktop,

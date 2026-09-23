@@ -2,7 +2,6 @@
 # Bootstrap script for setting up nix-config on a new system
 set -euo pipefail
 
-# Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -10,7 +9,6 @@ BLUE='\033[0;34m'
 CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
-# Helper functions
 info() { echo -e "${BLUE}[INFO]${NC} $1"; }
 warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
 error() { echo -e "${RED}[ERROR]${NC} $1"; }
@@ -53,7 +51,6 @@ setup), see BOOTSTRAP.md.
 EOF
 }
 
-# Parse arguments
 SKIP_CLONE=false
 DRY_RUN=false
 UPDATE_INPUTS=false
@@ -104,7 +101,6 @@ if [[ "$DRY_RUN" == "true" ]]; then
     warn "Running in DRY-RUN mode - no changes will be made"
 fi
 
-# Step 1: Check for Nix installation
 step "1/8: Checking Nix installation..."
 if ! command -v nix &> /dev/null; then
     error "Nix is not installed!"
@@ -123,7 +119,6 @@ else
     success "Nix is installed: $NIX_VERSION"
 fi
 
-# Step 2: Platform prerequisites
 if [[ "$PLATFORM" == "darwin" ]]; then
     step "2/8: Checking macOS prerequisites (Xcode CLT, Homebrew)..."
     PREREQS_OK=true
@@ -161,7 +156,6 @@ else
     step "2/8: No extra prerequisites on NixOS"
 fi
 
-# Step 3: Enable flakes if not already enabled
 step "3/8: Ensuring flakes are enabled..."
 NIX_CONF_DIR="$HOME/.config/nix"
 NIX_CONF="$NIX_CONF_DIR/nix.conf"
@@ -191,7 +185,6 @@ else
     fi
 fi
 
-# Step 4: Clone or verify repository
 step "4/8: Setting up nix-config repository..."
 CONFIG_DIR="$HOME/nix-config"
 
@@ -250,7 +243,6 @@ else
     fi
 fi
 
-# Step 6: Set up /etc/nixos symlink (NixOS only)
 if [[ "$PLATFORM" == "nixos" ]]; then
     step "6/8: Setting up /etc/nixos symlink..."
     TARGET_REAL=$(readlink -f /etc/nixos 2>/dev/null || echo "")

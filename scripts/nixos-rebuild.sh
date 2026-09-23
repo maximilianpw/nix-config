@@ -12,14 +12,12 @@ CONFIG_DIR="$HOME/nix-config"
 LOG_FILE="$CONFIG_DIR/nixos-switch.log"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Helper functions
 info() { echo -e "${BLUE}[INFO]${NC} $1"; }
 warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
 error() { echo -e "${RED}[ERROR]${NC} $1"; }
@@ -112,7 +110,6 @@ if [[ "$PLATFORM" == "nixos" && "${SKIP_ETC_NIXOS_LINK:-0}" != "1" ]]; then
     fi
 fi
 
-# Format Nix files
 info "Formatting Nix files..."
 if command -v alejandra >/dev/null 2>&1; then
     alejandra . 2>&1 || warn "Formatting failed"
@@ -120,7 +117,6 @@ else
     warn "alejandra not found, skipping formatting"
 fi
 
-# Show changes
 info "Showing changes in Nix files..."
 if git diff --quiet HEAD -- '*.nix'; then
     info "No changes detected in Nix files"

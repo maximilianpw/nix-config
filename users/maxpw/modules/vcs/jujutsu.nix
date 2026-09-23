@@ -1,4 +1,3 @@
-# Jujutsu configuration
 {config, ...}: {
   programs.jujutsu = {
     enable = true;

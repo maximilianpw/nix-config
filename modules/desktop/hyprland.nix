@@ -9,12 +9,6 @@
 in {
   options.custom.hyprland = {
     enable = lib.mkEnableOption "Hyprland with greetd";
-
-    greeterCommand = lib.mkOption {
-      type = lib.types.str;
-      default = "${pkgs.tuigreet}/bin/tuigreet --time --remember --cmd 'start-hyprland'";
-      description = "Greeter command for greetd";
-    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -30,7 +24,7 @@ in {
       enable = true;
       settings = {
         default_session = {
-          command = cfg.greeterCommand;
+          command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --cmd 'start-hyprland'";
           user = "greeter";
         };
       };

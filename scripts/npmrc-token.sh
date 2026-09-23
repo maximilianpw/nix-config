@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-set -euo pipefail
-
 if [[ $# -eq 0 ]]; then
   echo "usage: npmrc-token <command> [args...]" >&2
   echo "runs a command with NODE_AUTH_TOKEN loaded from a local dotenv file" >&2
