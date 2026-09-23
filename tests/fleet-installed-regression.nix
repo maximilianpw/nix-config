@@ -5,6 +5,7 @@
   lib,
   pkgs,
 }: let
+  expect = import ./lib/expect.nix {inherit lib;};
   kimPackage = fleetPackages.x86_64-linux.fleet;
   joycePackage = fleetPackages.aarch64-darwin.fleet;
   kimFleet = kim.programs.fleet;
@@ -36,25 +37,21 @@ in
     && fleetPackageCount joyce == 1
   )
   "Joyce must install exactly one Fleet package from the pinned Fleet input";
-  assert lib.assertMsg (
-    kimFleet.settings.current_host
-    == "kim"
-    && joyceFleet.settings.current_host == "joyce"
-    && kim.xdg.configFile ? "fleet/config.toml"
-    && joyce.xdg.configFile ? "fleet/config.toml"
-  )
-  "Installed Fleet settings must generate the runtime config for each current host";
+  assert expect.all "Installed Fleet settings must generate the runtime config for each current host" [
+    (kimFleet.settings.current_host == "kim")
+    (joyceFleet.settings.current_host == "joyce")
+    (kim.xdg.configFile ? "fleet/config.toml")
+    (joyce.xdg.configFile ? "fleet/config.toml")
+  ];
   assert lib.assertMsg (kimFleetAgents == {})
   "Kim must not install launchd Fleet agents";
-  assert lib.assertMsg (
-    builtins.attrNames fleetAgents
-    == ["fleet-tunnel-3000" "fleet-tunnel-5173"]
-    && agent3000.config.Label == "org.nix-community.home.fleet-tunnel-3000"
-    && agent5173.config.Label == "org.nix-community.home.fleet-tunnel-5173"
-    && lib.hasPrefix "${joycePackage}/bin/fleet-tunnel-runner" (builtins.head agent3000.config.ProgramArguments)
-    && lib.hasPrefix "${joycePackage}/bin/fleet-tunnel-runner" (builtins.head agent5173.config.ProgramArguments)
-  )
-  "Joyce must use the Rust runner while preserving the managed launchd labels";
+  assert expect.all "Joyce must use the Rust runner while preserving the managed launchd labels" [
+    (builtins.attrNames fleetAgents == ["fleet-tunnel-3000" "fleet-tunnel-5173"])
+    (agent3000.config.Label == "org.nix-community.home.fleet-tunnel-3000")
+    (agent5173.config.Label == "org.nix-community.home.fleet-tunnel-5173")
+    (lib.hasPrefix "${joycePackage}/bin/fleet-tunnel-runner" (builtins.head agent3000.config.ProgramArguments))
+    (lib.hasPrefix "${joycePackage}/bin/fleet-tunnel-runner" (builtins.head agent5173.config.ProgramArguments))
+  ];
     pkgs.runCommand "fleet-installed-regression" {
       nativeBuildInputs = [kimPackage];
       inherit joyceConfig kimConfig;

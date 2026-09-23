@@ -96,11 +96,8 @@
   pinnedHosts = filterAttrs (_: host: host ? hostKey) hosts;
   knownHostsFile = "${homeDirectory}/.ssh/fleet_known_hosts";
 
-  localInventoryHost = inventory.${hostname} or null;
-  localClient =
-    if localInventoryHost == null
-    then null
-    else localInventoryHost.client;
+  localInventoryHost = inventory.${hostname};
+  localClient = localInventoryHost.client;
   clientSshOptions = optionalAttrs (localClient != null) (
     {
       AddKeysToAgent = "no";
@@ -162,7 +159,7 @@
   tunnelLabelPrefix = "org.nix-community.home.";
   tunnelLabel = t: "${tunnelLabelPrefix}fleet-tunnel-${toString t.localPort}";
   tunnelSupervisor =
-    if localInventoryHost != null && localInventoryHost.darwin
+    if localInventoryHost.darwin
     then "launchd"
     else "none";
   tunnelContractRows = concatStringsSep "" (map (

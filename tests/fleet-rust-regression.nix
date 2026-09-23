@@ -22,9 +22,11 @@
   fleetSrc,
   homeManager,
 }: let
+  expect = import ./lib/expect.nix {inherit lib;};
   inherit (lib) concatStringsSep filterAttrs hasSuffix;
 
   defaultTunnels = import ../modules/fleet/default-tunnels.nix;
+  inventory = import ../lib/inventory.nix {inherit lib;};
   mkFleet = args:
     import ../lib/fleet.nix ({
         inherit lib;
@@ -213,15 +215,13 @@
   ordinarySshBlocks = builtins.attrValues joyce.sshSettings;
   hasArg = args: needle: lib.elem needle args;
 in
-  assert lib.assertMsg (
-    joyce.aliases.fl
-    == "fleet list"
-    && joyce.aliases.fs == "fleet ssh"
-    && joyce.files ? contract
-    && joyce.files ? hostsJson
-    && joyce.files ? knownHosts
-  )
-  "projection must keep the generated contract, host data, known hosts, and aliases";
+  assert expect.all "projection must keep the generated contract, host data, known hosts, and aliases" [
+    (joyce.aliases.fl == "fleet list")
+    (joyce.aliases.fs == "fleet ssh")
+    (joyce.files ? contract)
+    (joyce.files ? hostsJson)
+    (joyce.files ? knownHosts)
+  ];
   assert lib.assertMsg (
     ordinarySshBlocks
     != []
@@ -229,62 +229,53 @@ in
     && lib.all (block: !(block ? LocalForward)) ordinarySshBlocks
   )
   "ordinary SSH blocks must be nonempty, disable agent forwarding, and omit LocalForward";
-  assert lib.assertMsg (
-    joyce.settings.schema_version
-    == 1
-    && joyce.settings.current_host == "joyce"
-    && kim.settings.current_host == "kim"
-    && joyce.settings.tunnels.supervisor == "launchd"
-    && kim.settings.tunnels.supervisor == "none"
-    && kim.settings.tunnels.mappings == []
-  )
-  "v1 settings must set schema_version, current_host, and Darwin-only launchd supervision";
-  assert lib.assertMsg (
-    joyceLocal.ssh_target
-    == "joyce"
-    && joyceLocal.display_target == "maximilians-macbook-pro-1"
-    && joyceLocal.ssh_target != joyceLocal.display_target
-    && !(joyceLocal ? tmux_target)
-    && !(joyceLocal ? forward_target)
-    && !(joyceLocal ? alias_targets)
-    && joyceLocal.os == "darwin"
-    && joyceLocal.gui
-    && joyceLocal.client_enrolled
-    && joyceLocal.user == "max-vev"
-    && !joyceLocal.long_running_agents
-  )
-  "Joyce local host must keep display_target as hostName and omit remote target triples";
-  assert lib.assertMsg (
-    joyceKim.ssh_target
-    == "kim"
-    && joyceKim.display_target == "kim"
-    && joyceKim.os == "nixos"
-    && joyceKim.tmux_target == "tm-kim"
-    && joyceKim.forward_target == "fleet-forward-kim"
-    && joyceKim.alias_targets."main-pc" == expectedTriple "main-pc"
-    && joyceKim.alias_targets.main == expectedTriple "main"
-    && joyceKim.alias_targets.desktop == expectedTriple "desktop"
-    && joyceKim.t3code_port == 51000
-    && joyceKim.long_running_agents
-    && joyceKim.client_enrolled
-    && !joyceKim.gui
-  )
-  "Kim remote projection must use inventory-key ssh_target, NixOS os, and alias target triples";
-  assert lib.assertMsg (
-    joyceCuno.os
-    == "nixos-wsl"
-    && !joyceCuno.client_enrolled
-    && joyceCuno.alias_targets.wsl == expectedTriple "wsl"
-    && kimJoyce.ssh_target == "joyce"
-    && kimJoyce.display_target == "maximilians-macbook-pro-1"
-    && kimJoyce.tmux_target == "tm-joyce"
-    && kimJoyce.forward_target == "fleet-forward-joyce"
-    && kimJoyce.alias_targets.macbook == expectedTriple "macbook"
-    && kimJoyce.alias_targets.mac == expectedTriple "mac"
-    && !(kimLocal ? tmux_target)
-    && !(kimLocal ? alias_targets)
-  )
-  "Remote Joyce/Cuno projections must keep display_target vs ssh_target and alias triples";
+  assert expect.all "v1 settings must set schema_version, current_host, and Darwin-only launchd supervision" [
+    (joyce.settings.schema_version == 1)
+    (joyce.settings.current_host == "joyce")
+    (kim.settings.current_host == "kim")
+    (joyce.settings.tunnels.supervisor == "launchd")
+    (kim.settings.tunnels.supervisor == "none")
+    (kim.settings.tunnels.mappings == [])
+  ];
+  assert expect.all "Joyce local host must keep display_target as hostName and omit remote target triples" [
+    (joyceLocal.ssh_target == "joyce")
+    (joyceLocal.display_target == inventory.joyce.hostName)
+    (!(joyceLocal ? tmux_target))
+    (!(joyceLocal ? forward_target))
+    (!(joyceLocal ? alias_targets))
+    (joyceLocal.os == "darwin")
+    joyceLocal.gui
+    joyceLocal.client_enrolled
+    (joyceLocal.user == "max-vev")
+    (!joyceLocal.long_running_agents)
+  ];
+  assert expect.all "Kim remote projection must use inventory-key ssh_target, NixOS os, and alias target triples" [
+    (joyceKim.ssh_target == "kim")
+    (joyceKim.display_target == "kim")
+    (joyceKim.os == "nixos")
+    (joyceKim.tmux_target == "tm-kim")
+    (joyceKim.forward_target == "fleet-forward-kim")
+    (joyceKim.alias_targets."main-pc" == expectedTriple "main-pc")
+    (joyceKim.alias_targets.main == expectedTriple "main")
+    (joyceKim.alias_targets.desktop == expectedTriple "desktop")
+    (joyceKim.t3code_port == 51000)
+    joyceKim.long_running_agents
+    joyceKim.client_enrolled
+    (!joyceKim.gui)
+  ];
+  assert expect.all "Remote Joyce/Cuno projections must keep display_target vs ssh_target and alias triples" [
+    (joyceCuno.os == "nixos-wsl")
+    (!joyceCuno.client_enrolled)
+    (joyceCuno.alias_targets.wsl == expectedTriple "wsl")
+    (kimJoyce.ssh_target == "joyce")
+    (kimJoyce.display_target == inventory.joyce.hostName)
+    (kimJoyce.tmux_target == "tm-joyce")
+    (kimJoyce.forward_target == "fleet-forward-joyce")
+    (kimJoyce.alias_targets.macbook == expectedTriple "macbook")
+    (kimJoyce.alias_targets.mac == expectedTriple "mac")
+    (!(kimLocal ? tmux_target))
+    (!(kimLocal ? alias_targets))
+  ];
   assert lib.assertMsg (
     lib.all (host: !identityFields host) (builtins.attrValues joyce.settings.hosts)
     && lib.all (host: !identityFields host) (builtins.attrValues kim.settings.hosts)
@@ -299,67 +290,62 @@ in
     && lib.all (m: m.host == "kim" && m.remote_host == "localhost") joyce.settings.tunnels.mappings
   )
   "Joyce mappings must keep baseline labels, kim as host, and localhost remotes";
-  assert lib.assertMsg (
-    linuxFictional.xdg.configFile ? "fleet/config.toml"
-    && linuxPersonal.xdg.configFile ? "fleet/config.toml"
-    && darwinFictional.xdg.configFile ? "fleet/config.toml"
-    && darwinPersonal.xdg.configFile ? "fleet/config.toml"
-    && lib.elem placeholderPackage linuxFictional.home.packages
-    && lib.elem placeholderPackage linuxPersonal.home.packages
-  )
-  "candidate module must generate xdg.configFile.\"fleet/config.toml\" and install the selected package";
+  assert expect.all "candidate module must generate xdg.configFile.\"fleet/config.toml\" and install the selected package" [
+    (linuxFictional.xdg.configFile ? "fleet/config.toml")
+    (linuxPersonal.xdg.configFile ? "fleet/config.toml")
+    (darwinFictional.xdg.configFile ? "fleet/config.toml")
+    (darwinPersonal.xdg.configFile ? "fleet/config.toml")
+    (lib.elem placeholderPackage linuxFictional.home.packages)
+    (lib.elem placeholderPackage linuxPersonal.home.packages)
+  ];
   assert lib.assertMsg (linuxFictionalAgents == {} && linuxPersonalAgents == {})
   "Linux Home Manager evaluation must not enable launchd tunnel jobs";
-  assert lib.assertMsg (
-    darwinFictional5173
-    != null
-    && darwinFictional5173.enable
-    && darwinFictional5173.config.Label == "org.nix-community.home.fleet-tunnel-5173"
-    && darwinFictional5173.config.RunAtLoad == true
-    && darwinFictional5173.config.KeepAlive.SuccessfulExit == false
-    && darwinFictional5173.config.ThrottleInterval == 30
-    && darwinFictional5173.config.ProcessType == "Background"
-    && (darwinFictional5173.config.StandardOutPath or null) == null
-    && (darwinFictional5173.config.StandardErrorPath or null) == null
-    && hasSuffix "/bin/fleet-tunnel-runner" (builtins.head darwinFictional5173.config.ProgramArguments)
-    && builtins.elemAt darwinFictional5173.config.ProgramArguments 1 == "5173"
-    && hasArg darwinFictional5173.config.ProgramArguments "127.0.0.1:5173:localhost:5173"
-    && hasArg darwinFictional5173.config.ProgramArguments "fleet-forward-workbox"
-    && hasArg darwinFictional5173.config.ProgramArguments "ForwardAgent=no"
-    && hasArg darwinFictional5173.config.ProgramArguments "ControlMaster=no"
-  )
-  "Darwin fictional jobs must keep baseline labels, keepalive, runner argv, and forwarding policy";
-  assert lib.assertMsg (
-    darwinPersonal3000
-    != null
-    && darwinPersonal5173 != null
-    && builtins.attrNames darwinPersonalAgents == ["fleet-tunnel-3000" "fleet-tunnel-5173"]
-    && darwinPersonal3000.config.Label == "org.nix-community.home.fleet-tunnel-3000"
-    && darwinPersonal5173.config.Label == "org.nix-community.home.fleet-tunnel-5173"
-    && darwinPersonal3000.config.RunAtLoad == true
-    && darwinPersonal5173.config.RunAtLoad == true
-    && darwinPersonal3000.config.KeepAlive.SuccessfulExit == false
-    && darwinPersonal5173.config.KeepAlive.SuccessfulExit == false
-    && darwinPersonal3000.config.ThrottleInterval == 30
-    && darwinPersonal5173.config.ThrottleInterval == 30
-    && darwinPersonal3000.config.ProcessType == "Background"
-    && darwinPersonal5173.config.ProcessType == "Background"
-    && (darwinPersonal3000.config.StandardOutPath or null) == null
-    && (darwinPersonal3000.config.StandardErrorPath or null) == null
-    && (darwinPersonal5173.config.StandardOutPath or null) == null
-    && (darwinPersonal5173.config.StandardErrorPath or null) == null
-    && hasSuffix "/bin/fleet-tunnel-runner" (builtins.head darwinPersonal3000.config.ProgramArguments)
-    && hasSuffix "/bin/fleet-tunnel-runner" (builtins.head darwinPersonal5173.config.ProgramArguments)
-    && hasArg darwinPersonal3000.config.ProgramArguments "127.0.0.1:3000:localhost:3000"
-    && hasArg darwinPersonal5173.config.ProgramArguments "127.0.0.1:5173:localhost:5173"
-    && hasArg darwinPersonal3000.config.ProgramArguments "fleet-forward-kim"
-    && hasArg darwinPersonal5173.config.ProgramArguments "fleet-forward-kim"
-    && hasArg darwinPersonal3000.config.ProgramArguments "ForwardAgent=no"
-    && hasArg darwinPersonal5173.config.ProgramArguments "ForwardAgent=no"
-    && hasArg darwinPersonal3000.config.ProgramArguments "ControlMaster=no"
-    && hasArg darwinPersonal5173.config.ProgramArguments "ControlMaster=no"
-  )
-  "Darwin personal jobs must keep labels, lifecycle fields, loopback forwards, and SSH policy";
+  assert expect.all "Darwin fictional jobs must keep baseline labels, keepalive, runner argv, and forwarding policy" [
+    (darwinFictional5173 != null)
+    darwinFictional5173.enable
+    (darwinFictional5173.config.Label == "org.nix-community.home.fleet-tunnel-5173")
+    (darwinFictional5173.config.RunAtLoad == true)
+    (darwinFictional5173.config.KeepAlive.SuccessfulExit == false)
+    (darwinFictional5173.config.ThrottleInterval == 30)
+    (darwinFictional5173.config.ProcessType == "Background")
+    ((darwinFictional5173.config.StandardOutPath or null) == null)
+    ((darwinFictional5173.config.StandardErrorPath or null) == null)
+    (hasSuffix "/bin/fleet-tunnel-runner" (builtins.head darwinFictional5173.config.ProgramArguments))
+    (builtins.elemAt darwinFictional5173.config.ProgramArguments 1 == "5173")
+    (hasArg darwinFictional5173.config.ProgramArguments "127.0.0.1:5173:localhost:5173")
+    (hasArg darwinFictional5173.config.ProgramArguments "fleet-forward-workbox")
+    (hasArg darwinFictional5173.config.ProgramArguments "ForwardAgent=no")
+    (hasArg darwinFictional5173.config.ProgramArguments "ControlMaster=no")
+  ];
+  assert expect.all "Darwin personal jobs must keep labels, lifecycle fields, loopback forwards, and SSH policy" [
+    (darwinPersonal3000 != null)
+    (darwinPersonal5173 != null)
+    (builtins.attrNames darwinPersonalAgents == ["fleet-tunnel-3000" "fleet-tunnel-5173"])
+    (darwinPersonal3000.config.Label == "org.nix-community.home.fleet-tunnel-3000")
+    (darwinPersonal5173.config.Label == "org.nix-community.home.fleet-tunnel-5173")
+    (darwinPersonal3000.config.RunAtLoad == true)
+    (darwinPersonal5173.config.RunAtLoad == true)
+    (darwinPersonal3000.config.KeepAlive.SuccessfulExit == false)
+    (darwinPersonal5173.config.KeepAlive.SuccessfulExit == false)
+    (darwinPersonal3000.config.ThrottleInterval == 30)
+    (darwinPersonal5173.config.ThrottleInterval == 30)
+    (darwinPersonal3000.config.ProcessType == "Background")
+    (darwinPersonal5173.config.ProcessType == "Background")
+    ((darwinPersonal3000.config.StandardOutPath or null) == null)
+    ((darwinPersonal3000.config.StandardErrorPath or null) == null)
+    ((darwinPersonal5173.config.StandardOutPath or null) == null)
+    ((darwinPersonal5173.config.StandardErrorPath or null) == null)
+    (hasSuffix "/bin/fleet-tunnel-runner" (builtins.head darwinPersonal3000.config.ProgramArguments))
+    (hasSuffix "/bin/fleet-tunnel-runner" (builtins.head darwinPersonal5173.config.ProgramArguments))
+    (hasArg darwinPersonal3000.config.ProgramArguments "127.0.0.1:3000:localhost:3000")
+    (hasArg darwinPersonal5173.config.ProgramArguments "127.0.0.1:5173:localhost:5173")
+    (hasArg darwinPersonal3000.config.ProgramArguments "fleet-forward-kim")
+    (hasArg darwinPersonal5173.config.ProgramArguments "fleet-forward-kim")
+    (hasArg darwinPersonal3000.config.ProgramArguments "ForwardAgent=no")
+    (hasArg darwinPersonal5173.config.ProgramArguments "ForwardAgent=no")
+    (hasArg darwinPersonal3000.config.ProgramArguments "ControlMaster=no")
+    (hasArg darwinPersonal5173.config.ProgramArguments "ControlMaster=no")
+  ];
     pkgs.runCommand "fleet-rust-regression" {
       fleetBin = "${candidate.package}/bin/fleet";
       fictionalConfig = pkgs.writeText "fleet-fictional.toml" (configTomlText linuxFictional);

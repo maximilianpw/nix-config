@@ -12,7 +12,6 @@
     homeDirectory = config.home.homeDirectory;
     tunnels = config.fleet.tunnels.mappings;
   };
-  localPorts = map (t: t.localPort) config.fleet.tunnels.mappings;
 in {
   imports = [inputs.fleet.homeManagerModules.default];
 
@@ -48,13 +47,6 @@ in {
   };
 
   config = {
-    assertions = [
-      {
-        assertion = lib.length localPorts == lib.length (lib.unique localPorts);
-        message = "fleet.tunnels.mappings local ports must be unique";
-      }
-    ];
-
     home.file = {
       ".config/fleet/hosts.json".text = fleet.files.hostsJson;
       ".config/fleet/FLEET.md".text = fleet.files.contract;

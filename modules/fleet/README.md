@@ -10,7 +10,6 @@ contract. The pinned Fleet input owns and tests the installed runtime CLI and
 tunnel supervision. This repository owns the personal inventory, SSH policy,
 trust, aliases, generated contract, and consumer compatibility checks.
 
-There is no Bash runtime or regression oracle in this repository.
 `tests/fleet-rust-regression.nix` checks the Nix projection against the pinned
 Fleet package and Home Manager module. `tests/fleet-installed-regression.nix`
 checks the installed Kim and Joyce configurations. Runtime behavior and its
@@ -133,12 +132,8 @@ fleet tunnel pause 3000   # Frees the port for a local app; survives login.
 fleet tunnel resume 3000  # Run after stopping the local app.
 ```
 
-The Rust migration and final Joyce reconnect/pause/resume acceptance are
-complete. The accepted test terminated the runner-owned SSH child, kept the
-same runner alive, observed a new child and owned listener after the backoff,
-and returned the tunnel to a healthy state; an intentional pause prevented
-respawn and resume restored it. Physical sleep/wake and locked-credential
-disruption were not forced for the final Rust candidate.
+Reconnect, pause, and resume are verified on Joyce; physical sleep/wake and
+locked-credential disruption have not been tested.
 
 On non-Darwin hosts the existing `fleet` commands stay available. Managed
 tunnel pause/resume explain that launchd supervision is macOS-only. `fleet
@@ -154,7 +149,7 @@ without a directional allow-list.
 
 ## Herdr machines
 
-Herdr 0.9.0 is the native session UI: Local plus saved SSH machines in one
+Herdr is the native session UI: Local plus saved SSH machines in one
 window. Run `h` (or `herdr`) and pick a machine in the sidebar. Home Manager
 installs the `herdr` package through `users/maxpw/modules/agent-tools.nix`. It
 does not generate a machine catalog from the fleet inventory. Saved machines,
@@ -184,13 +179,11 @@ the generated file directly.
 
 Capability fields:
 
-- `os`: the target platform family agents should expect.
-- `gui`: whether the host has a GUI/screenshot surface.
+- `os`: the target platform family agents should expect (derived).
+- `gui`: whether the host has a GUI/screenshot surface (derived).
 - `longRunningAgents`: whether unattended or multi-hour agent work should run
-  there.
+  there. Every new host must set it explicitly.
 - `t3codePort`: optional T3 Code port exposed through `fleet t3`.
-
-Every new host must set `os`, `gui`, and `longRunningAgents` explicitly.
 
 ## T3 Code
 

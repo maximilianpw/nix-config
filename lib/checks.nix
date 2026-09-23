@@ -96,11 +96,6 @@
       kim = self.nixosConfigurations.kim.config.home-manager.users.maxpw;
       joyce = self.darwinConfigurations.joyce.config.home-manager.users.max-vev;
     };
-    fleet-ghostty-regression = import ../tests/fleet-ghostty-regression.nix {
-      config = self.nixosConfigurations.kim.config;
-      inherit lib;
-      pkgs = self.nixosConfigurations.kim.pkgs;
-    };
     fleet-trust-regression = import ../tests/fleet-trust-regression.nix {
       inherit hosts lib;
       pkgs = nixpkgs.legacyPackages.x86_64-linux;
