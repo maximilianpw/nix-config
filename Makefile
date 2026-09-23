@@ -1,4 +1,4 @@
-.PHONY: help bootstrap chezmoi-bootstrap chezmoi-check chezmoi-preview chezmoi-apply rebuild rebuild-processes cleanup-rebuild check-nvim check-scripts lint update update-all update-packages update-nextcloud-apps build generations rollback wsl info
+.PHONY: help bootstrap chezmoi-bootstrap chezmoi-check chezmoi-preview chezmoi-apply rebuild rebuild-processes cleanup-rebuild check-nvim check-scripts check-linux lint update update-all update-packages update-nextcloud-apps build generations rollback wsl info
 
 # Default target
 .DEFAULT_GOAL := help
@@ -41,8 +41,8 @@ rebuild-processes: ## Show the identity-checked active rebuild process tree
 cleanup-rebuild: ## Stop only the tracked active rebuild process tree
 	@$(SCRIPT_DIR)/lib/rebuild-state.sh cleanup
 
-update: ## Update flake inputs (skips Hyprland & NixOS-only inputs)
-	@echo "Updating shared flake inputs (skipping hyprland, sops-nix, nixos-wsl, disko)..."
+update: ## Update core flake inputs (nixpkgs, home-manager, nix-darwin, fenix, llm-agents)
+	@echo "Updating core flake inputs..."
 	@nix flake update nixpkgs nixpkgs-unstable home-manager nix-darwin fenix llm-agents
 	@echo "Done! Run 'make rebuild' to apply updates."
 
@@ -70,6 +70,9 @@ check-scripts: ## Run shell syntax, ShellCheck, and safety regression tests
 	@set -e; for script in $(SCRIPT_DIR)/*.sh $(SCRIPT_DIR)/ci/*.sh $(SCRIPT_DIR)/lib/*.sh $(SCRIPT_DIR)/tests/*.sh packages/scripts/*.sh; do bash -n "$$script"; done
 	@shellcheck --severity=warning $(SCRIPT_DIR)/*.sh $(SCRIPT_DIR)/ci/*.sh $(SCRIPT_DIR)/lib/*.sh $(SCRIPT_DIR)/tests/*.sh packages/scripts/*.sh
 	@set -e; for test in $(SCRIPT_DIR)/tests/*-test.sh; do bash "$$test"; done
+
+check-linux: ## Evaluate every x86_64-linux check (forces regression assertions on any host)
+	@$(SCRIPT_DIR)/check-linux-eval.sh
 
 lint: ## Run Nix linters (statix, deadnix) and format check
 	nix build .#checks.$$(nix eval --impure --raw --expr builtins.currentSystem).pre-commit-check --no-link
