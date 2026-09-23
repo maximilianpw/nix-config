@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Reconcile retired integrations and category mappings that otherwise make every
-# Prowlarr full-sync generate connection and validation errors.
+# Reconcile category mappings that otherwise make every Prowlarr full-sync
+# generate validation errors.
 set -euo pipefail
 
-: "${CURL_BIN:=curl}"
-: "${JQ_BIN:=jq}"
-: "${SED_BIN:=sed}"
-: "${SLEEP_BIN:=sleep}"
+: "${CURL_BIN:?CURL_BIN must be set}"
+: "${JQ_BIN:?JQ_BIN must be set}"
+: "${SED_BIN:?SED_BIN must be set}"
+: "${SLEEP_BIN:?SLEEP_BIN must be set}"
 : "${PROWLARR_CONFIG_FILE:=/var/lib/prowlarr/config.xml}"
 : "${PROWLARR_URL:=http://127.0.0.1:9696}"
 
@@ -51,22 +51,6 @@ if ((ready == 0)); then
   echo "Prowlarr API did not become ready" >&2
   exit 1
 fi
-
-applications=$(api GET /api/v1/applications)
-mapfile -t retired_ids < <(
-  printf '%s' "$applications" | "$JQ_BIN" -r '
-    .[]
-    | select(
-        .implementation == "Readarr"
-        or any(.fields[]?; .name == "baseUrl" and (.value | tostring | test("^https?://(localhost|127[.]0[.]0[.]1):8787/?$")))
-      )
-    | .id
-  '
-)
-for id in "${retired_ids[@]}"; do
-  api DELETE "/api/v1/applications/$id" >/dev/null
-  echo "Removed retired Readarr application $id from Prowlarr"
-done
 
 applications=$(api GET /api/v1/applications)
 mapfile -t category_apps < <(
