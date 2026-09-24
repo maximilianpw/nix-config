@@ -343,12 +343,15 @@ in
     (config.systemd.sockets.sabnzbd-proxy.socketConfig.ListenStream == "127.0.0.1:${toString endpoints.sabnzbd.port}")
     (lib.hasSuffix "systemd-socket-proxyd 10.89.1.2:8080" config.systemd.services.sabnzbd-proxy.serviceConfig.ExecStart)
   ];
-  assert expect.all "Plex playback and discovery must be IPv4-LAN-only while Jellyfin remains available on the physical interface" [
+  assert expect.all "Plex TCP must be open over IPv4 while discovery stays LAN-only and Jellyfin remains available on the physical interface" [
     (config.networking.firewall.interfaces.enp194s0.allowedTCPPorts == [endpoints.jellyfin.port])
     (config.networking.firewall.interfaces.enp194s0.allowedUDPPorts == [7359])
     (lib.hasInfix
-      "-i enp194s0 -s 192.168.1.0/24 -p tcp --dport ${toString endpoints.plex.port} -j nixos-fw-accept"
+      "-i enp194s0 -p tcp --dport ${toString endpoints.plex.port} -j nixos-fw-accept"
       config.networking.firewall.extraCommands)
+    (!(lib.hasInfix
+      "-s 192.168.1.0/24 -p tcp --dport ${toString endpoints.plex.port}"
+      config.networking.firewall.extraCommands))
     (lib.all
       (port:
         lib.hasInfix
