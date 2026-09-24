@@ -36,6 +36,19 @@ in {
     };
   };
 
+  systemd.services.cliproxyapi-quota = lib.mkIf runServer {
+    description = "CLIProxyAPI quota-only loopback endpoint";
+    wantedBy = ["multi-user.target"];
+    serviceConfig = {
+      User = currentSystemUser;
+      ExecStart = "${lib.getExe pkgs.bun} ${homeDirectory}/pi-config/cli/cliproxyapi-quota-server.ts";
+      Restart = "always";
+      RestartSec = 5;
+      WorkingDirectory = homeDirectory;
+      NoNewPrivileges = true;
+    };
+  };
+
   systemd.services.cliproxyapi = lib.mkIf runServer {
     description = "CLIProxyAPI local AI provider proxy";
     environment.MANAGEMENT_STATIC_PATH = "${homeDirectory}/.local/share/cliproxyapi/static";

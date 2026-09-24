@@ -29,7 +29,9 @@ Keep replacement public keys URL-safe, using letters, digits, underscores, and h
 
 ## Provider state
 
-Provider OAuth credentials remain mutable state in `~/.cli-proxy-api`. The OpenCode Zen key comes from `secrets/secrets.yaml`, and its Chat Completions models are exposed under the `zen/` prefix. The Linux package definition remains in `packages/cliproxyapi.nix`.
+Provider OAuth credentials remain mutable state in `~/.cli-proxy-api` on Kim. The OpenCode Zen key comes from `secrets/secrets.yaml`, and its Chat Completions models are exposed under the `zen/` prefix. The Linux package definition remains in `packages/cliproxyapi.nix`.
+
+The `cliproxyapi-quota` systemd service runs `~/pi-config/cli/cliproxyapi-quota-server.ts` as the same user as CLIProxyAPI. It binds only `127.0.0.1:8318`, reads Kim's current provider credentials, and returns only the parsed quota summary. Nginx exposes `/quota/v1/{codex,claude,xai}` to clients using the existing public API key; it strips that key before forwarding and never gives clients the management key. The Pi extension uses this endpoint on remote hosts and reads the local provider state directly on Kim. Keep the Pi checkout on Kim updated before activating a configuration that starts this service. The dashboard remains at `https://cliproxy.maximilian.pw/management.html#/login`; Pi does not use its privileged login.
 
 ### Zen upstream protocol constraints
 

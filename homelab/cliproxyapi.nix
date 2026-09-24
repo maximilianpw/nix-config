@@ -70,6 +70,14 @@ in {
             add_header Cache-Control "no-store" always;
           '';
         };
+        "/quota/v1/" = {
+          proxyPass = "http://127.0.0.1:8318";
+          extraConfig = ''
+            if ($cliproxyapi_public_authorized = 0) { return 401; }
+            proxy_set_header Authorization "";
+            add_header Cache-Control "no-store" always;
+          '';
+        };
         "/v1/" = {
           proxyPass = cliProxy.baseUrl;
           proxyWebsockets = true;
