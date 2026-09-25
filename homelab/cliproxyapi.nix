@@ -34,6 +34,9 @@ in {
 
   services.nginx = {
     enable = true;
+    # The build-time gixy validator cannot resolve SOPS templates rendered under
+    # /run. nginx still validates the complete configuration in ExecStartPre.
+    validateConfigFile = false;
     appendHttpConfig = ''
       include ${config.sops.templates."cliproxyapi-public-auth.conf".path};
     '';

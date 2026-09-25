@@ -63,6 +63,7 @@ in
     (lib.hasInfix "if ($cliproxyapi_public_authorized = 0) { return 401; }" cliproxy.locations."/v1/".extraConfig)
     (lib.hasInfix config.sops.templates."cliproxyapi-upstream-auth.conf".path cliproxy.locations."/v1/".extraConfig)
     (lib.hasInfix "allow-remote: true" config.sops.templates."cliproxyapi.conf".content)
+    (!config.services.nginx.validateConfigFile)
     (config.sops.templates."cliproxyapi-public-auth.conf".owner == config.services.nginx.user)
     (config.sops.templates."cliproxyapi-public-auth.conf".mode == "0400")
     (config.sops.templates."cliproxyapi-upstream-auth.conf".owner == config.services.nginx.user)
