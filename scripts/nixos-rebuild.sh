@@ -1,15 +1,17 @@
 #!/usr/bin/env bash
 # NixOS/Darwin rebuild script, auto-detecting host and platform.
-# Build, switch, and generation cleanup are delegated to nh (nix helper),
-# which prints a package-level generation diff after every switch and keeps
-# a rollback floor when cleaning. This script keeps the repo-specific parts:
-# user->host mapping, /etc/nixos symlink upkeep, formatting, and the log.
+# Build and switch are delegated to nh (nix helper), which prints a
+# package-level generation diff after every switch. This script keeps the
+# repo-specific parts: host mapping, preflight guards, /etc/nixos symlink
+# upkeep, the change summary, post-switch checks, and the log.
+#
+# Usage: nixos-rebuild.sh [config-dir]   (default: ~/nix-config)
 set -euo pipefail
 
 # Configuration
 auto_username=$(whoami)
-CONFIG_DIR="$HOME/nix-config"
-LOG_FILE="$CONFIG_DIR/nixos-switch.log"
+CANONICAL_CONFIG_DIR="$HOME/nix-config"
+CONFIG_DIR="${1:-$CANONICAL_CONFIG_DIR}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 RED='\033[0;31m'
@@ -22,6 +24,15 @@ info() { echo -e "${BLUE}[INFO]${NC} $1"; }
 warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
 error() { echo -e "${RED}[ERROR]${NC} $1"; }
 success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
+
+if [[ ! -d "$CONFIG_DIR" ]]; then
+    error "Config directory not found: $CONFIG_DIR"
+    exit 1
+fi
+CONFIG_DIR=$(cd "$CONFIG_DIR" && pwd -P)
+if [[ -d "$CANONICAL_CONFIG_DIR" ]]; then
+    CANONICAL_CONFIG_DIR=$(cd "$CANONICAL_CONFIG_DIR" && pwd -P)
+fi
 
 # nh is installed by this very config, so the first rebuild on a fresh
 # machine won't have it on PATH yet - fall back to running it from nixpkgs.
@@ -38,24 +49,30 @@ fi
 source "$SCRIPT_DIR/lib/host-detect.sh"
 detect_host
 
-if [[ ! -d "$CONFIG_DIR" ]]; then
-    error "Config directory not found: $CONFIG_DIR"
-    exit 1
-fi
-if ! validate_host_configuration "$CONFIG_DIR"; then
-    error "Refusing to rebuild an unknown or platform-incompatible host"
-    exit 1
-fi
-FLAKE_REF=$(config_flake_ref "$CONFIG_DIR")
-
 # Track only this rebuild root and its descendants. Make targets inspect or
 # stop this state instead of regex-matching unrelated Nix processes.
 # shellcheck source=lib/rebuild-state.sh
 source "$SCRIPT_DIR/lib/rebuild-state.sh"
 register_rebuild_process
-trap remove_rebuild_state EXIT
+CONFIG_SNAPSHOT_DIR=""
+cleanup() {
+    remove_rebuild_state
+    [[ -z "$CONFIG_SNAPSHOT_DIR" ]] || rm -rf "$CONFIG_SNAPSHOT_DIR"
+}
+trap cleanup EXIT
 trap 'exit 130' INT
 trap 'exit 143' TERM
+
+# Evaluate a .gitignore-aware snapshot of the checkout (see host-detect.sh).
+prepare_config_source "$CONFIG_DIR"
+FLAKE_REF=$(config_flake_ref "$CONFIG_SOURCE_DIR")
+if ! validate_host_configuration "$CONFIG_DIR" "$FLAKE_REF"; then
+    error "Refusing to rebuild an unknown or platform-incompatible host"
+    exit 1
+fi
+
+# Outside the checkout, so it neither enters the flake source nor Git.
+LOG_FILE="$REBUILD_STATE_DIR/rebuild.log"
 
 if [[ "$PLATFORM" == "darwin" ]]; then
     # Determinate Nix writes `lazy-trees = true` into /etc/nix/nix.conf.
@@ -72,6 +89,10 @@ fi
 info "Detected user: $auto_username"
 info "Selected host: $HOSTNAME"
 info "Platform: $PLATFORM"
+info "Config: $CONFIG_DIR"
+if [[ "$CONFIG_DIR" != "$CANONICAL_CONFIG_DIR" ]]; then
+    warn "Switching from a checkout other than $CANONICAL_CONFIG_DIR; /etc/nixos is left alone."
+fi
 
 # Lockout guard: on full NixOS the user password comes from a sops secret
 # (users/maxpw/nixos.nix, neededForUsers), so switching without the age key
@@ -98,8 +119,9 @@ pushd "$CONFIG_DIR" >/dev/null
 # Keep failure summaries scoped to the current rebuild attempt.
 : > "$LOG_FILE"
 
-# Only NixOS uses /etc/nixos (optional override: set SKIP_ETC_NIXOS_LINK=1).
-if [[ "$PLATFORM" == "nixos" && "${SKIP_ETC_NIXOS_LINK:-0}" != "1" ]]; then
+# Only NixOS uses /etc/nixos, and only the canonical checkout owns it
+# (optional override: set SKIP_ETC_NIXOS_LINK=1).
+if [[ "$PLATFORM" == "nixos" && "$CONFIG_DIR" == "$CANONICAL_CONFIG_DIR" && "${SKIP_ETC_NIXOS_LINK:-0}" != "1" ]]; then
     TARGET_REAL=$(readlink -f /etc/nixos 2>/dev/null || echo "")
     if [[ -L /etc/nixos && "$TARGET_REAL" != "$CONFIG_DIR" ]]; then
         warn "/etc/nixos symlink points elsewhere ($TARGET_REAL). Updating to $CONFIG_DIR" && sudo ln -sfn "$CONFIG_DIR" /etc/nixos || warn "Failed to update symlink"
@@ -110,18 +132,30 @@ if [[ "$PLATFORM" == "nixos" && "${SKIP_ETC_NIXOS_LINK:-0}" != "1" ]]; then
     fi
 fi
 
-info "Formatting Nix files..."
+# Report formatting drift without rewriting the checkout mid-rebuild; the
+# pre-commit check (make lint) is what enforces it.
 if command -v alejandra >/dev/null 2>&1; then
-    alejandra . 2>&1 || warn "Formatting failed"
+    if ! alejandra --check --quiet . >/dev/null 2>&1; then
+        warn "Some Nix files are not formatted; run 'alejandra .' before committing"
+    fi
 else
-    warn "alejandra not found, skipping formatting"
+    warn "alejandra not found, skipping format check"
 fi
 
-info "Showing changes in Nix files..."
-if git diff --quiet HEAD -- '*.nix'; then
-    info "No changes detected in Nix files"
-else
-    git diff --color=always -U2 '*.nix' || true
+# Summarize everything the snapshot deploys beyond HEAD: staged and unstaged
+# edits, plus untracked files that are not ignored.
+if [[ -n "$CONFIG_SNAPSHOT_DIR" ]]; then
+    untracked=$(git ls-files --others --exclude-standard)
+    if git diff --quiet HEAD && [[ -z "$untracked" ]]; then
+        info "Deploying HEAD ($(git rev-parse --short HEAD)) with no local changes"
+    else
+        info "Deploying HEAD ($(git rev-parse --short HEAD)) plus local changes:"
+        git --no-pager diff --color=always --stat HEAD || true
+        if [[ -n "$untracked" ]]; then
+            echo "Untracked files included:"
+            sed 's/^/  + /' <<< "$untracked"
+        fi
+    fi
 fi
 
 # Fail before nh stops any units if the candidate configuration would make
@@ -148,8 +182,11 @@ fi
 previous_system_generation=$(readlink -f /run/current-system 2>/dev/null || printf unknown)
 info "Switching configuration via nh: $HOSTNAME ($PLATFORM)"
 if ! "${NH_SWITCH[@]}" -H "$HOSTNAME" "$FLAKE_REF" 2>&1 | tee -a "$LOG_FILE"; then
-    error "Rebuild failed! Check the log:"
-    grep --color=always -E "(error|Error|ERROR|warning|Warning|WARN)" "$LOG_FILE" || true
+    # The first error is usually the cause; the tail shows where it stopped.
+    error "Rebuild failed! First error, then the end of $LOG_FILE:"
+    grep -m 1 -A 8 'error:' "$LOG_FILE" || true
+    echo "..."
+    tail -n 20 "$LOG_FILE"
     exit 1
 fi
 
@@ -165,12 +202,14 @@ if [[ "$PLATFORM" == "nixos" && "$HOSTNAME" == "kim" ]]; then
     fi
 fi
 
-# Clean up old generations: always keep the last 5 as a rollback floor,
-# plus anything newer than 30 days (the old age-only GC could delete
-# every rollback target after an idle month).
-info "Cleaning up old generations (keep 5, keep 30d)..."
-if ! "${NH[@]}" clean all --keep 5 --keep-since 30d 2>&1 | tee -a "$LOG_FILE"; then
-    warn "Generation cleanup failed"
+# NixOS hosts clean on a timer (programs.nh.clean in
+# modules/core/nix-settings.nix). Joyce's Determinate-owned daemon has no
+# scheduled cleanup, so keep the same rollback floor after each switch there.
+if [[ "$PLATFORM" == "darwin" ]]; then
+    info "Cleaning up old generations (keep 5, keep 30d)..."
+    if ! "${NH[@]}" clean all --keep 5 --keep-since 30d 2>&1 | tee -a "$LOG_FILE"; then
+        warn "Generation cleanup failed"
+    fi
 fi
 
 success "All done! System is ready."

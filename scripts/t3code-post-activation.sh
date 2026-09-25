@@ -6,6 +6,7 @@
 : "${T3CODE_TAP_NAME:?T3CODE_TAP_NAME must be set}"
 : "${T3CODE_BREW_BIN:=/opt/homebrew/bin/brew}"
 : "${T3CODE_PLISTBUDDY_BIN:=/usr/libexec/PlistBuddy}"
+: "${T3CODE_GREP_BIN:=/usr/bin/grep}"
 
 if [ -x "$T3CODE_BREW_BIN" ]; then
   run_t3code_brew() {
@@ -39,7 +40,7 @@ if [ -x "$T3CODE_BREW_BIN" ]; then
   fi
 
   if ! run_t3code_brew list --cask --pinned |
-    /usr/bin/grep -Fxq "$T3CODE_CASK_TOKEN"; then
+    "$T3CODE_GREP_BIN" -Fxq "$T3CODE_CASK_TOKEN"; then
     run_t3code_brew pin --cask "$T3CODE_CASK_TOKEN"
   fi
 fi

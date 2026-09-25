@@ -72,6 +72,10 @@
     "paperless-web.service"
   ];
   quiescesImmichWrites = builtins.elem "immich-server.service" homelab.backup.archiveUnits;
+  quiescesForgejo = lib.all (unit: builtins.elem unit homelab.backup.archiveUnits) [
+    "forgejo-runner.service"
+    "forgejo.service"
+  ];
   quiescesUptimeKuma = builtins.elem "uptime-kuma.service" homelab.backup.archiveUnits;
   exporterIsSynchronous = exporter.serviceConfig.Type or null == "oneshot";
   exporterRestartsApplications =
@@ -112,11 +116,13 @@ in
   assert expect.all "the archive manifest must identify versions, databases, primary state, and accepted disposable state" [
     (manifest.schemaVersion == 1)
     (builtins.attrNames contributedVersions == nixosOwnedVersionNames)
-    (manifest.expectedDatabases == ["atuin" "hass" "immich" "miniflux" "nextcloud" "paperless" "vaultwarden"])
+    (manifest.expectedDatabases == ["atuin" "forgejo" "hass" "immich" "miniflux" "nextcloud" "paperless" "vaultwarden"])
     (builtins.hasAttr "uptimeKuma" manifest.applicationVersions)
     (manifest.postgresql.majorVersion != "")
     (builtins.elem "/srv/nextcloud" manifest.expectedPrimaryStatePaths)
     (builtins.elem "/srv/immich" manifest.expectedPrimaryStatePaths)
+    (builtins.elem "/srv/forgejo" manifest.expectedPrimaryStatePaths)
+    (builtins.elem "/var/lib/forgejo-runner-registration" manifest.expectedPrimaryStatePaths)
     (builtins.elem "/var/lib/private/uptime-kuma" manifest.expectedPrimaryStatePaths)
     (builtins.elem t3codeSource manifest.expectedPrimaryStatePaths)
     (builtins.elem t3codeArtifact manifest.expectedArchivePaths)
@@ -139,6 +145,8 @@ in
   "Paperless ingestion must remain quiesced until pending consume files are copied";
   assert lib.assertMsg quiescesImmichWrites
   "Immich must remain quiesced while its matching database and media are backed up";
+  assert lib.assertMsg quiescesForgejo
+  "Forgejo and its Actions runner must stay stopped through the database dump and repository archive";
   assert lib.assertMsg quiescesUptimeKuma
   "the backup must quiesce Uptime Kuma's mutable local database";
   assert lib.assertMsg (config.custom.backup.prepareStepOrder

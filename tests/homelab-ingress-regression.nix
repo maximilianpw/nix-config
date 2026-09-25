@@ -97,6 +97,20 @@ in
     (!(lib.hasPrefix "/var/lib/leerr/" config.systemd.services.leerr.environment.LEERR_KEY_FILE))
     (!(builtins.elem homelab.privateServices.leerr.port config.networking.firewall.allowedTCPPorts))
   ];
+  assert expect.all "Forgejo and its Actions runner must stay on Kim's tailnet with a rootless container runtime" [
+    (homelab.services.forgejo.endpoint.exposure == "tailnet")
+    (homelab.endpoints.forgejo.host == "git.${homelab.tailnetDomain}")
+    (config.services.forgejo.settings.server.HTTP_ADDR == "127.0.0.1")
+    (config.services.forgejo.settings.server.ROOT_URL == "${homelab.privateUrl "forgejo"}/")
+    (config.services.forgejo.settings.server.SSH_DOMAIN == "kim.${homelab.tailnetDomain}")
+    config.services.forgejo.settings.service.DISABLE_REGISTRATION
+    config.services.forgejo.settings.actions.ENABLED
+    (config.services.forgejo.database.type == "postgres")
+    config.virtualisation.podman.enable
+    (config.systemd.services.forgejo-runner.serviceConfig.User == "forgejo-runner")
+    (!(builtins.elem "docker" config.users.users.forgejo-runner.extraGroups))
+    (!(builtins.elem homelab.privateServices.forgejo.port config.networking.firewall.allowedTCPPorts))
+  ];
     pkgs.runCommand "homelab-ingress-regression" {} ''
       touch "$out"
     ''

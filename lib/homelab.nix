@@ -46,6 +46,7 @@
   endpointView = _: service:
     {
       inherit (service.endpoint) monitorPath port publicMonitorPath;
+      inherit (service) tailscaleServiceName;
     }
     // lib.optionalAttrs (service.endpoint.hostname != null) {
       host = service.endpoint.hostname;
@@ -54,7 +55,7 @@
   publicServices = lib.mapAttrs endpointView (byExposure "public");
 
   tailnetDomain = "liger-shilling.ts.net";
-  privateHost = service: "${service}.${tailnetDomain}";
+  privateHost = service: "${services.${service}.tailnetName}.${tailnetDomain}";
   privateUrl = service: "https://${privateHost service}";
   privateEndpoint = service: let
     serviceConfig = privateServices.${service};

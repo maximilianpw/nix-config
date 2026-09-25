@@ -8,11 +8,17 @@ CONFIG_DIR=${1:-$PWD}
 # shellcheck source=lib/host-detect.sh
 source "$SCRIPT_DIR/lib/host-detect.sh"
 detect_host
-validate_host_configuration "$CONFIG_DIR"
-FLAKE_REF=$(config_flake_ref "$CONFIG_DIR")
+prepare_config_source "$CONFIG_DIR"
+trap '[[ -z $CONFIG_SNAPSHOT_DIR ]] || rm -rf "$CONFIG_SNAPSHOT_DIR"' EXIT
+FLAKE_REF=$(config_flake_ref "$CONFIG_SOURCE_DIR")
+validate_host_configuration "$CONFIG_DIR" "$FLAKE_REF"
 
 if [[ $PLATFORM == darwin ]]; then
-    exec nix build "$FLAKE_REF#darwinConfigurations.$HOSTNAME.system"
+    attr="darwinConfigurations.$HOSTNAME.system"
 else
-    exec nix build "$FLAKE_REF#nixosConfigurations.$HOSTNAME.config.system.build.toplevel"
+    attr="nixosConfigurations.$HOSTNAME.config.system.build.toplevel"
 fi
+# No exec: the EXIT trap must remove the snapshot. Preserve nix's status.
+status=0
+nix build "$FLAKE_REF#$attr" || status=$?
+exit "$status"

@@ -70,6 +70,38 @@ if ! validate_host_configuration "/tmp/nix config" 2>/dev/null; then
 fi
 unset -f nix
 
+# The evaluated source is what Git would offer to commit: tracked files that
+# still exist and untracked, non-ignored files. Ignored scratch never enters
+# the store, and a directory that is not a worktree root is used as-is.
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
+repo="$tmp/config repo"
+mkdir -p "$repo/sub"
+git -C "$repo" init -q
+printf 'scratch/\n*.log\n' > "$repo/.gitignore"
+printf 'tracked\n' > "$repo/tracked.nix"
+printf 'deleted\n' > "$repo/deleted.nix"
+git -C "$repo" add .gitignore tracked.nix deleted.nix
+rm "$repo/deleted.nix"
+printf 'new\n' > "$repo/sub/new module.nix"
+mkdir -p "$repo/scratch"
+printf 'secret\n' > "$repo/scratch/key.txt"
+printf 'log\n' > "$repo/switch.log"
+prepare_config_source "$repo"
+snapshot_files=$(cd "$CONFIG_SOURCE_DIR" && find . -type f | sort | tr '\n' ' ')
+if [[ -z "$CONFIG_SNAPSHOT_DIR" || "$CONFIG_SOURCE_DIR" != "$CONFIG_SNAPSHOT_DIR" ||
+    "$snapshot_files" != "./.gitignore ./sub/new module.nix ./tracked.nix " ]]; then
+    echo "FAIL: config snapshot contained '$snapshot_files'" >&2
+    failures=$((failures + 1))
+fi
+[[ -z "$CONFIG_SNAPSHOT_DIR" ]] || rm -rf "$CONFIG_SNAPSHOT_DIR"
+
+prepare_config_source "$repo/sub"
+if [[ -n "$CONFIG_SNAPSHOT_DIR" || "$CONFIG_SOURCE_DIR" != "$repo/sub" ]]; then
+    echo "FAIL: a subdirectory of a worktree was snapshotted" >&2
+    failures=$((failures + 1))
+fi
+
 if ((failures > 0)); then
     exit 1
 fi

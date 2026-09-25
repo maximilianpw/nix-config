@@ -1,4 +1,4 @@
-.PHONY: help bootstrap chezmoi-bootstrap chezmoi-check chezmoi-preview chezmoi-apply rebuild rebuild-processes cleanup-rebuild check-nvim check-scripts check-linux lint update update-all update-packages update-nextcloud-apps build generations rollback wsl info
+.PHONY: help bootstrap chezmoi-bootstrap chezmoi-check chezmoi-preview chezmoi-apply rebuild rebuild-processes cleanup-rebuild check-nvim check-scripts check-linux lint update update-all update-packages update-nextcloud-apps build generations rollback gc wsl info
 
 # Default target
 .DEFAULT_GOAL := help
@@ -6,6 +6,9 @@
 # Configuration
 SCRIPT_DIR := scripts
 CONFIG_DIR := $(shell pwd)
+# Inputs bumped by `make update`; the rest move only with `make update-all`.
+CORE_INPUTS := nixpkgs nixpkgs-unstable home-manager nix-darwin fenix llm-agents
+SHELL_SCRIPTS = $(SCRIPT_DIR)/*.sh $(SCRIPT_DIR)/ci/*.sh $(SCRIPT_DIR)/lib/*.sh $(SCRIPT_DIR)/tests/*.sh packages/scripts/*.sh
 
 help: ## Show this help message
 	@echo "Nix-Config Management Commands"
@@ -31,9 +34,8 @@ chezmoi-preview: ## Show changes chezmoi would apply
 chezmoi-apply: ## Review and interactively apply chezmoi dotfiles
 	@$(SCRIPT_DIR)/chezmoi.sh apply
 
-rebuild: ## Rebuild system configuration (NixOS/Darwin)
-	@echo "Starting system rebuild..."
-	@$(SCRIPT_DIR)/nixos-rebuild.sh
+rebuild: ## Build and switch this checkout's configuration (NixOS/Darwin)
+	@$(SCRIPT_DIR)/nixos-rebuild.sh "$(CONFIG_DIR)"
 
 rebuild-processes: ## Show the identity-checked active rebuild process tree
 	@$(SCRIPT_DIR)/lib/rebuild-state.sh list
@@ -41,9 +43,9 @@ rebuild-processes: ## Show the identity-checked active rebuild process tree
 cleanup-rebuild: ## Stop only the tracked active rebuild process tree
 	@$(SCRIPT_DIR)/lib/rebuild-state.sh cleanup
 
-update: ## Update core flake inputs (nixpkgs, home-manager, nix-darwin, fenix, llm-agents)
-	@echo "Updating core flake inputs..."
-	@nix flake update nixpkgs nixpkgs-unstable home-manager nix-darwin fenix llm-agents
+update: ## Update core flake inputs (CORE_INPUTS in this Makefile)
+	@echo "Updating core flake inputs: $(CORE_INPUTS)"
+	@nix flake update $(CORE_INPUTS)
 	@echo "Done! Run 'make rebuild' to apply updates."
 
 update-all: ## Update all flake inputs and repo-local custom packages
@@ -67,9 +69,10 @@ check-nvim: ## Verify every tool the Neovim config uses is on PATH
 	@$(SCRIPT_DIR)/check-nvim-tooling.sh
 
 check-scripts: ## Run shell syntax, ShellCheck, and safety regression tests
-	@set -e; for script in $(SCRIPT_DIR)/*.sh $(SCRIPT_DIR)/ci/*.sh $(SCRIPT_DIR)/lib/*.sh $(SCRIPT_DIR)/tests/*.sh packages/scripts/*.sh; do bash -n "$$script"; done
-	@shellcheck --severity=warning $(SCRIPT_DIR)/*.sh $(SCRIPT_DIR)/ci/*.sh $(SCRIPT_DIR)/lib/*.sh $(SCRIPT_DIR)/tests/*.sh packages/scripts/*.sh
-	@set -e; for test in $(SCRIPT_DIR)/tests/*-test.sh; do bash "$$test"; done
+	@command -v shellcheck >/dev/null || { echo "shellcheck not on PATH; run inside 'nix develop'" >&2; exit 1; }
+	@set -e; for script in $(SHELL_SCRIPTS); do bash -n "$$script"; done
+	@shellcheck --severity=warning $(SHELL_SCRIPTS)
+	@set -e; for test in $(SCRIPT_DIR)/tests/*-test.sh; do bash "$$test" || { echo "FAILED: $$test" >&2; exit 1; }; done
 
 check-linux: ## Evaluate every x86_64-linux check (forces regression assertions on any host)
 	@$(SCRIPT_DIR)/check-linux-eval.sh
@@ -86,14 +89,11 @@ generations: ## List system generations
 	@echo "System generations:"
 	@sudo nix-env --list-generations --profile /nix/var/nix/profiles/system
 
-rollback: ## Rollback to previous generation
-	@echo "Rolling back to previous generation..."
-	@if [ "$$(uname -s)" = "Darwin" ]; then \
-		sudo darwin-rebuild --rollback; \
-	else \
-		sudo nixos-rebuild --rollback; \
-	fi
-	@echo "Rollback complete!"
+rollback: ## Rollback to previous generation (Kim re-runs its homelab checks)
+	@$(SCRIPT_DIR)/nixos-rollback.sh
+
+gc: ## Delete old generations now (keeps the last 5 and anything from 30 days)
+	@nh clean all --keep 5 --keep-since 30d
 
 wsl: ## Build the WSL import image
 	@echo "Building WSL import image..."

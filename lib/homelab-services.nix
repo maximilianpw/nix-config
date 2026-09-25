@@ -126,6 +126,61 @@
     };
   };
 
+  forgejo = {
+    endpoint = {
+      authorizationOwner = "tailscale";
+      exposure = "tailnet";
+      port = 19010;
+      monitorPath = "/api/healthz";
+      tailnetName = "git";
+    };
+    state = {
+      paths = [
+        "/srv/forgejo"
+        "/var/lib/forgejo-runner-registration"
+      ];
+      database = "forgejo";
+    };
+    backup.quiesce = [
+      {
+        unit = "forgejo-runner.service";
+        until = "archive";
+      }
+      {
+        unit = "forgejo.service";
+        until = "archive";
+      }
+    ];
+    storage.units = [
+      "forgejo.service"
+      "forgejo-runner.service"
+    ];
+    operations.units = [
+      "forgejo.service"
+      "forgejo-runner.service"
+    ];
+    recovery = {
+      order = 60;
+      versionPolicy = "restore-archived-version-first";
+      runbook = "docs/forgejo.md#recovery";
+      acceptance = [
+        "owner-login-and-private-repository-clone-pass"
+        "actions-runner-completes-a-container-job"
+      ];
+      secretOwners = [
+        "mutable-state:/srv/forgejo"
+        "mutable-state:/var/lib/forgejo-runner-registration"
+      ];
+    };
+    presentation = {
+      group = "applications";
+      title = "Forgejo";
+      icon = "forgejo.png";
+      description = "Private Git and CI";
+      order = 55;
+    };
+  };
+
   grafana = {
     endpoint = {
       authorizationOwner = "tailscale";

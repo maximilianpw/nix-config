@@ -20,6 +20,7 @@ completed plans and superseded research.
 ## Service runbooks
 
 - [Atuin](atuin.md)
+- [Forgejo](forgejo.md)
 - [Immich](immich.md)
 - [Leerr](leerr.md)
 - [Media stack](media-stack.md)

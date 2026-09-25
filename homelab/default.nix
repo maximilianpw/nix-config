@@ -6,6 +6,7 @@
     ./cliproxyapi.nix
     ./container-hygiene.nix
     ./executor.nix
+    ./forgejo.nix
     ./home-assistant.nix
     ./homepage.nix
     ./immich.nix

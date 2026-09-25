@@ -12,7 +12,10 @@ Run the system rebuild after making Nix configuration changes.
 
 1. Run `alejandra .` in the repo root (`~/nix-config`) to format all Nix files
 2. Run `nix flake check --no-build` to validate the flake
-3. Show the user the `git diff` of changed `.nix` files for review
+3. Show the user what the rebuild deploys beyond HEAD for review: `git diff HEAD`
+   (staged and unstaged) plus `git ls-files --others --exclude-standard`
+   (untracked, non-ignored files are included too)
 4. Ask the user if they want to proceed with the full rebuild (`make -C ~/nix-config rebuild`)
 5. If yes, run `make -C ~/nix-config rebuild` and report the result
-6. If the rebuild fails, show the relevant error output and suggest fixes
+6. If the rebuild fails, show the relevant error output and suggest fixes; the
+   full log is `~/.local/state/nix-config/rebuild.log`

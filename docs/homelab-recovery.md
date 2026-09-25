@@ -57,6 +57,7 @@ sudo systemctl mask --runtime \
   cloudflared-tunnel-5b712ae4-3ce4-4499-9cb7-a57cde1c571f.service \
   tailscale-serve.service borgbackup-job-main.service \
   actual.service atuin.service home-assistant.service nextcloud-cron.service nextcloud-cron.timer \
+  forgejo-runner.service forgejo-runner-register.service forgejo.service \
   nextcloud-setup.service nextcloud-update-db.service \
   nextcloud-update-store-apps.service nextcloud-update-store-apps.timer \
   phpfpm-nextcloud.service paperless-consumer.service \
@@ -93,9 +94,9 @@ sudo borg-restore-main <archive> /var/tmp/homelab-state \
   var/backup/homelab/manifest.json \
   var/backup/home-assistant/config.tar var/backup/postgresql \
   var/backup/t3code/state.tar \
-  srv/immich srv/nextcloud srv/paperless/export srv/paperless/consume \
+  srv/forgejo srv/immich srv/nextcloud srv/paperless/export srv/paperless/consume \
   srv/paperless/media var/lib/actual var/lib/bazarr var/lib/bitwarden_rs \
-  var/lib/executor var/lib/jellyfin var/lib/leerr \
+  var/lib/executor var/lib/forgejo-runner-registration var/lib/jellyfin var/lib/leerr \
   var/lib/lidarr/.config/Lidarr var/lib/nixos-containers/qbt \
   var/lib/nixos-containers/sab var/lib/plex \
   var/lib/private/jellyseerr var/lib/private/prowlarr \
@@ -124,8 +125,8 @@ sudo -u postgres zstdcat \
 
 If the archive contains per-database custom dumps instead, create the recorded
 roles/databases and use `pg_restore --exit-on-error`. Do not guess the format.
-Confirm that `atuin`, `hass`, `immich`, `miniflux`, `nextcloud`, `paperless`, and
-`vaultwarden` exist with their expected owners. Restore files before starting
+Confirm that `atuin`, `forgejo`, `hass`, `immich`, `miniflux`, `nextcloud`,
+`paperless`, and `vaultwarden` exist with their expected owners. Restore files before starting
 applications.
 
 Choose the Paperless route immediately after this restore:
@@ -274,6 +275,14 @@ upgrade. Sign in as the existing owner, verify the integration catalog and
 policies, then make one harmless read-only tool call through the MCP endpoint.
 Do not expose an empty replacement instance: its first account would become the
 new owner and newly generated keys could not decrypt the archived credentials.
+
+### Forgejo
+
+Restore the `forgejo` PostgreSQL database together with `/srv/forgejo` and
+`/var/lib/forgejo-runner-registration` from the same archive. Keep the runner
+stopped until Forgejo and its tailnet ingress are healthy. Follow the
+[Forgejo recovery procedure](forgejo.md#recovery) to verify a private clone
+and a container job before accepting the service.
 
 ### Miniflux
 

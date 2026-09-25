@@ -38,6 +38,10 @@ in
   "the canonical homelab service inventory must validate";
   assert lib.assertMsg (rejects (withService "vaultwarden" {endpoint.port = raw.kuma.endpoint.port;}))
   "endpoint port collisions must fail evaluation";
+  assert lib.assertMsg (rejects (withService "forgejo" {endpoint.tailnetName = "kuma";}))
+  "tailnet service name collisions must fail evaluation";
+  assert lib.assertMsg (rejects (withService "nextcloud" {endpoint.tailnetName = "git";}))
+  "only tailnet endpoints may declare a tailnet service name";
   assert lib.assertMsg (rejects (withService "vaultwarden" {
     backup = {
       strategy = "archive-transform";

@@ -56,6 +56,9 @@ export T3CODE_TAP_NAME=maxpw/t3code-nightly
 export T3CODE_TAP_URL=file:///nix/store/new-tap
 export T3CODE_BREW_BIN=$tmp/brew
 export T3CODE_PLISTBUDDY_BIN=$tmp/plistbuddy
+# The activation scripts default to macOS /usr/bin/grep; tests run on Linux too.
+export T3CODE_GREP_BIN
+T3CODE_GREP_BIN=$(command -v grep)
 
 # Arguments: case name, then installed casks. The tap is present, current, and
 # unpinned unless a case overrides the fixture.

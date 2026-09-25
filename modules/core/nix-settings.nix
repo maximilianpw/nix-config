@@ -25,10 +25,14 @@
     ];
   };
 
-  nix.gc = lib.mkIf config.nix.enable {
-    automatic = true;
-    options = "--delete-older-than 30d";
-    dates = "weekly";
-    persistent = true;
+  # nh keeps a rollback floor; age-only nix.gc could delete every rollback
+  # target after an idle month. scripts/nixos-rebuild.sh no longer cleans.
+  programs.nh = lib.mkIf config.nix.enable {
+    enable = true;
+    clean = {
+      enable = true;
+      dates = "weekly";
+      extraArgs = "--keep 5 --keep-since 30d";
+    };
   };
 }

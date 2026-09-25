@@ -259,7 +259,7 @@ sudo ln -sfn ~/nix-config /etc/nixos
 
 ```bash
 # View the last rebuild's output (created on first rebuild)
-cat ~/nix-config/nixos-switch.log
+cat ~/.local/state/nix-config/rebuild.log
 
 # Validate the flake without building
 nix flake check --no-build

@@ -45,6 +45,10 @@
         type = types.nullOr types.port;
         default = null;
       };
+      tailnetName = mkOption {
+        type = types.nullOr (types.strMatching "[a-z0-9]([-a-z0-9]*[a-z0-9])?");
+        default = null;
+      };
     };
   };
 
@@ -208,10 +212,18 @@
     else if state.paths != []
     then "files"
     else "none";
-  normalize = name: service:
+  normalize = name: service: let
+    tailnetName =
+      if service.endpoint.exposure == "tailnet"
+      then
+        if service.endpoint.tailnetName != null
+        then service.endpoint.tailnetName
+        else name
+      else null;
+  in
     service
     // {
-      inherit name;
+      inherit name tailnetName;
       state = service.state // {kind = stateKind service.state;};
       storage =
         service.storage
@@ -227,8 +239,8 @@
           );
         };
       tailscaleServiceName =
-        if service.endpoint.exposure == "tailnet"
-        then "svc:${name}"
+        if tailnetName != null
+        then "svc:${tailnetName}"
         else null;
     };
   normalized = lib.mapAttrs normalize typed;
@@ -242,6 +254,8 @@
     "homelab service ${name} must declare a port when it has an endpoint";
     assert lib.assertMsg (endpoint.exposure != "public" || (endpoint.hostname != null && endpoint.hostname != ""))
     "public homelab service ${name} must declare a hostname";
+    assert lib.assertMsg (endpoint.tailnetName == null || endpoint.exposure == "tailnet")
+    "only tailnet homelab service ${name} may declare a tailnet name";
     assert lib.assertMsg (!(builtins.elem endpoint.exposure ["public" "tailnet"])
       || (endpoint.authorizationOwner != null && endpoint.authorizationOwner != ""))
     "externally exposed homelab service ${name} must declare its authorization owner";
@@ -304,9 +318,14 @@
   publicHostnames = map (service: service.endpoint.hostname) (
     lib.filter (service: service.endpoint.exposure == "public") (builtins.attrValues validated)
   );
+  tailnetNames = map (service: service.tailnetName) (
+    lib.filter (service: service.tailnetName != null) (builtins.attrValues validated)
+  );
   duplicate = values: builtins.length values != builtins.length (lib.unique values);
 in
   assert lib.assertMsg (!duplicate endpointPorts)
   "homelab endpoint ports must be globally unique";
   assert lib.assertMsg (!duplicate publicHostnames)
-  "public homelab hostnames must be globally unique"; validated
+  "public homelab hostnames must be globally unique";
+  assert lib.assertMsg (!duplicate tailnetNames)
+  "tailnet homelab names must be globally unique"; validated
