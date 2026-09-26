@@ -54,6 +54,9 @@ prepare_config_source() {
     fi
 
     CONFIG_SNAPSHOT_DIR=$(mktemp -d "${TMPDIR:-/tmp}/nix-config-source.XXXXXX")
+    # Nix's path flake fetcher rejects symlinked ancestors (macOS /var and
+    # /tmp included), so use the physical path for both evaluation and cleanup.
+    CONFIG_SNAPSHOT_DIR=$(cd "$CONFIG_SNAPSHOT_DIR" && pwd -P)
     git -C "$config_dir" ls-files -z --cached --others --exclude-standard |
         while IFS= read -r -d '' file; do
             # Deleted-but-tracked paths are still listed by --cached.
