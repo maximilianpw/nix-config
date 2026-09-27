@@ -9,26 +9,26 @@
   stdenvNoCC,
 }: let
   pname = "cua-driver";
-  version = "0.28.2";
+  version = "0.30.2";
   system = stdenv.hostPlatform.system;
   isDarwin = stdenv.hostPlatform.isDarwin;
 
   artifacts = {
     aarch64-darwin = {
       name = "darwin-universal";
-      hash = "sha256-4nMYGyZwnIix2AlHTes8WStO+uNTCxHXYxjxiH/D+7E=";
+      hash = "sha256-js1/Wq4/O7spNZ+iBG1iNI78BnzYJPAHVjnIMxgseiU=";
     };
     x86_64-darwin = {
       name = "darwin-universal";
-      hash = "sha256-4nMYGyZwnIix2AlHTes8WStO+uNTCxHXYxjxiH/D+7E=";
+      hash = "sha256-js1/Wq4/O7spNZ+iBG1iNI78BnzYJPAHVjnIMxgseiU=";
     };
     aarch64-linux = {
       name = "linux-arm64-binary";
-      hash = "sha256-VeijKDmkrDaadz302sh7NFvUVnd5IhreSl45IjpFoug=";
+      hash = "sha256-EVc+7Y584WytlyEuvtrMG5EaniAZKwlVHP+HlUgs7oo=";
     };
     x86_64-linux = {
       name = "linux-x86_64-binary";
-      hash = "sha256-odmf0Eu0kn71/9vmDrke2LUaK6tg4Q/GBKdb1ZzmnD4=";
+      hash = "sha256-OwWSDkEnF74VC5YpuWwYF0mQiOx3nK3BNwDQcISr5QQ=";
     };
   };
 
