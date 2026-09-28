@@ -16,6 +16,8 @@
     mkContainerProxySocket
     qbitUid
     sabnzbdUid
+    secondaryMediaRoot
+    secondaryUsenetRoot
     usenetRoot
     ;
   physicalLanIpv4Cidr = "192.168.1.0/24";
@@ -62,6 +64,32 @@
     user = "root";
     group = "media";
   };
+  # Incomplete downloads stay on the NVMe; only finished files land here.
+  secondaryMediaDirectories = [
+    secondaryMediaRoot
+    "${secondaryMediaRoot}/torrents"
+    "${secondaryMediaRoot}/torrents/movies"
+    "${secondaryMediaRoot}/torrents/music"
+    "${secondaryMediaRoot}/torrents/tv"
+    secondaryUsenetRoot
+    "${secondaryUsenetRoot}/complete"
+    "${secondaryUsenetRoot}/complete/movies"
+    "${secondaryUsenetRoot}/complete/music"
+    "${secondaryUsenetRoot}/complete/tv"
+    "${secondaryMediaRoot}/library"
+    "${secondaryMediaRoot}/library/movies"
+    "${secondaryMediaRoot}/library/music"
+    "${secondaryMediaRoot}/library/tv"
+  ];
+  secondaryDownloadDirectories = [
+    "-${secondaryMediaRoot}/torrents"
+    "-${secondaryUsenetRoot}"
+  ];
+  requiresSecondaryMedia = {
+    requires = ["media-secondary-directories.service"];
+    after = ["media-secondary-directories.service"];
+    unitConfig.RequiresMountsFor = [secondaryMediaRoot];
+  };
 in {
   custom.backup.applicationVersions = {
     bazarr = config.services.bazarr.package.version;
@@ -74,8 +102,9 @@ in {
     sonarr = config.services.sonarr.package.version;
   };
 
-  # Download and library paths share one ext4 filesystem so the Servarr apps
-  # can import by hardlink while qBittorrent keeps seeding originals.
+  # Each disk keeps its downloads and library on one ext4 filesystem so the
+  # Servarr apps can import by hardlink. New finished downloads land on the
+  # LaCie; importing across disks copies instead.
   users = {
     groups.media.gid = mediaGid;
     users = {
@@ -216,6 +245,28 @@ in {
 
     services =
       {
+        # Never create the LaCie tree under the hidden /srv mountpoint when the
+        # USB disk is missing. Its root stays root-owned and unwritable to media
+        # services until this mount-bound setup has succeeded.
+        media-secondary-directories = {
+          description = "Prepare the mounted secondary media disk";
+          wantedBy = ["multi-user.target" "srv-media\\x2dsecondary.mount"];
+          unitConfig = {
+            ConditionPathIsMountPoint = secondaryMediaRoot;
+            RequiresMountsFor = [secondaryMediaRoot];
+          };
+          serviceConfig = {
+            Type = "oneshot";
+            RemainAfterExit = true;
+            ExecStart = pkgs.writeShellScript "prepare-media-secondary" ''
+              ${lib.getExe' pkgs.coreutils "install"} -d -m 2775 -o root -g media ${lib.concatStringsSep " " (map lib.escapeShellArg secondaryMediaDirectories)}
+            '';
+          };
+        };
+        # Downloaders stop instead of starting without the LaCie, and stop if it
+        # is unmounted. Playback and library management stay available.
+        "container@qbt" = requiresSecondaryMedia;
+        "container@sab" = requiresSecondaryMedia;
         bazarr = {
           environment.DYNACONF_GENERAL__IP = "127.0.0.1";
           serviceConfig.UMask = lib.mkForce "0002";
@@ -230,19 +281,23 @@ in {
         # Jellyfin can manage the shared group-writable library but cannot see
         # active downloads.
         jellyfin.serviceConfig = {
-          InaccessiblePaths = [
-            "${mediaRoot}/torrents"
-            usenetRoot
-          ];
+          InaccessiblePaths =
+            [
+              "${mediaRoot}/torrents"
+              usenetRoot
+            ]
+            ++ secondaryDownloadDirectories;
           UMask = lib.mkForce "0002";
         };
         # Plex can manage the shared group-writable library but cannot see
         # active downloads, same as Jellyfin.
         plex.serviceConfig = {
-          InaccessiblePaths = [
-            "${mediaRoot}/torrents"
-            usenetRoot
-          ];
+          InaccessiblePaths =
+            [
+              "${mediaRoot}/torrents"
+              usenetRoot
+            ]
+            ++ secondaryDownloadDirectories;
           UMask = lib.mkForce "0002";
         };
       }

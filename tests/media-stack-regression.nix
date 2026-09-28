@@ -10,6 +10,13 @@
     // homelab.publicEndpoints;
   mediaRoot = "/srv/media";
   usenetRoot = "${mediaRoot}/usenet";
+  secondaryMediaRoot = "/srv/media-secondary";
+  secondaryUsenetRoot = "${secondaryMediaRoot}/usenet";
+  secondaryDirectoriesService = config.systemd.services.media-secondary-directories;
+  requiresSecondaryMedia = service:
+    builtins.elem "media-secondary-directories.service" service.requires
+    && builtins.elem "media-secondary-directories.service" service.after
+    && builtins.elem secondaryMediaRoot service.unitConfig.RequiresMountsFor;
   qbt = config.containers.qbt;
   qbtConfig = qbt.config;
   qbtService = qbtConfig.systemd.services.qbittorrent;
@@ -76,6 +83,27 @@
 in
   assert lib.assertMsg (lib.all mediaDirectoryIsShared mediaDirectories)
   "media directories must be setgid and group-writable for reliable hardlink imports";
+  assert expect.all "new finished downloads must land on the pinned LaCie without creating hidden directories" [
+    (config.fileSystems.${secondaryMediaRoot}.device == "/dev/disk/by-id/ata-ST5000LM000-2AN170_WCJ23AWJ-part2")
+    (config.fileSystems.${secondaryMediaRoot}.fsType == "ext4")
+    (builtins.elem "nofail" config.fileSystems.${secondaryMediaRoot}.options)
+    (secondaryDirectoriesService.unitConfig.ConditionPathIsMountPoint == secondaryMediaRoot)
+    (builtins.elem secondaryMediaRoot secondaryDirectoriesService.unitConfig.RequiresMountsFor)
+    (!(builtins.hasAttr secondaryMediaRoot config.systemd.tmpfiles.settings."10-media"))
+    (qbt.bindMounts."${secondaryMediaRoot}/torrents".hostPath == "${secondaryMediaRoot}/torrents")
+    (!qbt.bindMounts."${secondaryMediaRoot}/torrents".isReadOnly)
+    (sab.bindMounts.${secondaryUsenetRoot}.hostPath == secondaryUsenetRoot)
+    (sabConfig.services.sabnzbd.settings.misc.complete_dir == "${secondaryUsenetRoot}/complete")
+    # Piece and article writes stay off the SMR disk.
+    (sabConfig.services.sabnzbd.settings.misc.download_dir == "${usenetRoot}/incomplete")
+    (lib.hasInfix "Session\\TempPath=${mediaRoot}/torrents/incomplete/" (builtins.readFile qbtService.environment.QBIT_BOOTSTRAP_CONFIG))
+    (requiresSecondaryMedia hostQbtContainerService)
+    (requiresSecondaryMedia hostSabContainerService)
+    (builtins.elem "-${secondaryMediaRoot}/library" tunarrService.serviceConfig.ReadOnlyPaths)
+    (builtins.elem "-${secondaryMediaRoot}/torrents" tunarrService.serviceConfig.InaccessiblePaths)
+    (builtins.elem "-${secondaryUsenetRoot}" config.systemd.services.jellyfin.serviceConfig.InaccessiblePaths)
+    (builtins.elem "-${secondaryMediaRoot}/torrents" config.systemd.services.plex.serviceConfig.InaccessiblePaths)
+  ];
   assert lib.assertMsg (
     config.users.groups.media.gid
     == qbtConfig.users.groups.media.gid
@@ -123,7 +151,7 @@ in
     (sabConfig.services.sabnzbd.settings.misc.host == "10.89.1.2")
     (sabConfig.services.sabnzbd.settings.misc.port == 8080)
     (sabConfig.services.sabnzbd.settings.misc.download_dir == "${usenetRoot}/incomplete")
-    (sabConfig.services.sabnzbd.settings.misc.complete_dir == "${usenetRoot}/complete")
+    (sabConfig.services.sabnzbd.settings.misc.complete_dir == "${secondaryUsenetRoot}/complete")
     (sabConfig.services.sabnzbd.settings.misc.backup_dir == "/var/lib/sabnzbd/backups")
     (sabConfig.services.sabnzbd.settings.misc.permissions == "2775")
     (sabConfig.services.sabnzbd.settings.misc.host_whitelist == "${endpoints.sabnzbd.host}, localhost, 127.0.0.1, 10.89.1.2")
@@ -144,12 +172,13 @@ in
     (!(builtins.hasAttr "radarr" sabConfig.services.sabnzbd.settings.categories))
     (!(builtins.hasAttr "lidarr" sabConfig.services.sabnzbd.settings.categories))
   ];
-  assert expect.all "SABnzbd state must stay private and the container must see only its state and download tree" [
+  assert expect.all "SABnzbd state must stay private and the container must see only its state and download trees" [
     (sabService.serviceConfig.StateDirectoryMode == "0700")
     (config.systemd.tmpfiles.settings."10-sabnzbd"."/var/lib/sabnzbd".d.mode == "0700")
     (config.systemd.tmpfiles.settings."10-sabnzbd"."/var/lib/sabnzbd".d.user == "sabnzbd")
     (builtins.attrNames sab.bindMounts
       == [
+        "/srv/media-secondary/usenet"
         "/srv/media/usenet"
         "/var/lib/sabnzbd"
       ])
@@ -240,14 +269,14 @@ in
     (sabService.serviceConfig.UMask == "0002")
     (qbtService.serviceConfig.UMask == "0002")
   ];
-  assert expect.all "qBittorrent must keep its host endpoint in Mullvad's connected LAN subnet and expose only the torrent bind mount" [
+  assert expect.all "qBittorrent must keep its host endpoint in Mullvad's connected LAN subnet and expose only the torrent bind mounts" [
     qbt.autoStart
     qbt.privateNetwork
     qbt.enableTun
     (qbt.hostAddress == "10.89.0.3")
     (qbt.localAddress == "10.89.0.2/31")
     (qbtConfig.time.timeZone == config.time.timeZone)
-    (builtins.attrNames qbt.bindMounts == ["${mediaRoot}/torrents"])
+    (builtins.attrNames qbt.bindMounts == ["${secondaryMediaRoot}/torrents" "${mediaRoot}/torrents"])
     (qbt.bindMounts."${mediaRoot}/torrents".hostPath == "${mediaRoot}/torrents")
     (!qbt.bindMounts."${mediaRoot}/torrents".isReadOnly)
   ];
@@ -323,9 +352,9 @@ in
     (qbtService.environment.QBIT_WEBUI_MAX_AUTHENTICATION_FAIL_COUNT == "0")
     (qbtService.environment.QBIT_GLOBAL_MAX_RATIO == "1")
     (qbtService.environment.QBIT_GLOBAL_MAX_SEEDING_MINUTES == "1440")
-    (qbtService.environment.QBIT_SHARE_LIMIT_ACTION == "RemoveWithContent")
+    (qbtService.environment.QBIT_SHARE_LIMIT_ACTION == "Stop")
     (lib.hasInfix "Session\\GlobalMaxRatio=1" (builtins.readFile qbtService.environment.QBIT_BOOTSTRAP_CONFIG))
-    (lib.hasInfix "Session\\ShareLimitAction=RemoveWithContent" (builtins.readFile qbtService.environment.QBIT_BOOTSTRAP_CONFIG))
+    (lib.hasInfix "Session\\ShareLimitAction=Stop" (builtins.readFile qbtService.environment.QBIT_BOOTSTRAP_CONFIG))
   ];
   assert lib.assertMsg (
     config.networking.nat.enable

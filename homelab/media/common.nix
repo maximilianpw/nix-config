@@ -9,7 +9,9 @@
     // homelab.publicEndpoints;
   hostTimeZone = config.time.timeZone;
   mediaRoot = "/srv/media";
+  secondaryMediaRoot = "/srv/media-secondary";
   usenetRoot = "${mediaRoot}/usenet";
+  secondaryUsenetRoot = "${secondaryMediaRoot}/usenet";
   mediaGid = 971;
   qbitUid = 970;
   sabnzbdUid = 973;
@@ -171,6 +173,8 @@ in {
     sabContainerLocalAddress
     sabContainerPort
     sabnzbdUid
+    secondaryMediaRoot
+    secondaryUsenetRoot
     usenetRoot
     ;
 }

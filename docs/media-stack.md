@@ -41,7 +41,7 @@ unprotected route. qBittorrent is additionally bound to Mullvad's
 `wg0-mullvad` interface. Mullvad does not offer port forwarding, so this accepts
 reduced inbound peer connectivity.
 
-Downloads and the finished library share Kim's `/srv` ext4 filesystem:
+Primary downloads and the primary finished library share Kim's `/srv` ext4 filesystem:
 
 ```text
 /srv/media/
@@ -72,6 +72,35 @@ cannot see either active download tree. Tunarr has read-only access to
 `library/` and cannot see either download tree. All services that touch `/srv` require the
 mount and fail closed instead of writing into the root filesystem when it is
 missing.
+
+New finished downloads go to the LaCie ext4 disk, which mirrors the primary
+layout without an `incomplete/` folder:
+
+```text
+/srv/media-secondary/
+├── torrents/{movies,music,tv}/
+├── usenet/complete/{movies,music,tv}/
+└── library/{movies,music,tv}/
+```
+
+The disks are **not** pooled. Partial torrent pieces and Usenet articles still
+go to the NVMe (`/srv/media/torrents/incomplete`, `/srv/media/usenet/incomplete`)
+because the LaCie is an SMR drive that stalls under random writes. On
+completion, qBittorrent moves the torrent to the LaCie category folder and
+SABnzbd unpacks onto the LaCie, both as sequential writes. A title whose root
+folder is on the LaCie is then hardlinked (torrents) or moved (Usenet) on the
+same disk. A new episode of a series whose root folder is still on the NVMe is
+copied across disks instead; move that series in its manager to stop this.
+Because incomplete data stays on the NVMe, keep at least the size of the
+largest active download free there.
+
+Existing downloads and library titles stay on the NVMe at their current paths.
+Nothing relocates them. qBittorrent and SABnzbd require the LaCie: if it is
+absent at boot or unmounted, both downloader containers stay stopped while
+Jellyfin, Plex, Tunarr, and the library managers keep serving the NVMe library.
+The mountpoint below `/srv` stays root-owned, so no service can write a
+substitute tree onto the NVMe. `HomelabMediaSecondaryAbsent` alerts when the
+disk is missing.
 
 ## First deployment
 
@@ -174,9 +203,9 @@ Confirm the declared folders and categories:
 
 | Category | Complete folder |
 | --- | --- |
-| `sonarr-usenet` | `/srv/media/usenet/complete/tv` |
-| `radarr-usenet` | `/srv/media/usenet/complete/movies` |
-| `lidarr-usenet` | `/srv/media/usenet/complete/music` |
+| `sonarr-usenet` | `/srv/media-secondary/usenet/complete/tv` |
+| `radarr-usenet` | `/srv/media-secondary/usenet/complete/movies` |
+| `lidarr-usenet` | `/srv/media-secondary/usenet/complete/music` |
 
 The incomplete folder is `/srv/media/usenet/incomplete`. Copy SABnzbd's API key
 from **Config → General** into the download-client settings below; do not put it
@@ -192,13 +221,19 @@ In **Tools → Options → Downloads**:
 - Confirm incomplete torrents use `/srv/media/torrents/incomplete/`.
 - Set the default torrent management mode to **Automatic**.
 
-Create these categories:
+Create these categories with absolute save paths on the LaCie:
 
 | Category | Save path |
 | --- | --- |
-| `sonarr` | `/srv/media/torrents/tv` |
-| `radarr` | `/srv/media/torrents/movies` |
-| `lidarr` | `/srv/media/torrents/music` |
+| `sonarr-lacie` | `/srv/media-secondary/torrents/tv` |
+| `radarr-lacie` | `/srv/media-secondary/torrents/movies` |
+| `lidarr-lacie` | `/srv/media-secondary/torrents/music` |
+
+Leave each category's incomplete path unset so it uses the NVMe temp path.
+Do not edit the older `sonarr`, `radarr`, or `lidarr` categories or the default
+save path: automatic-mode torrents follow those values, so changing them would
+move existing downloads. Delete the old categories only once they hold no
+torrents.
 
 Keep the WebUI on port 8080 inside the container, leave WebUI UPnP disabled,
 keep the advanced **Network interface** setting on `wg0-mullvad`, and do not
@@ -214,8 +249,15 @@ qBittorrent as the download client using:
 | --- | --- | --- | --- |
 | Host | `127.0.0.1` | `127.0.0.1` | `127.0.0.1` |
 | Port | `18080` | `18080` | `18080` |
-| Category | `sonarr` | `radarr` | `lidarr` |
-| Root folder | `/srv/media/library/tv` | `/srv/media/library/movies` | `/srv/media/library/music` |
+| Category | `sonarr-lacie` | `radarr-lacie` | `lidarr-lacie` |
+| Default root folder | `/srv/media-secondary/library/tv` | `/srv/media-secondary/library/movies` | `/srv/media-secondary/library/music` |
+
+Keep the NVMe roots (`/srv/media/library/{tv,movies,music}`) as additional root
+folders for existing titles. Make the LaCie root the default when adding titles,
+including in Seerr's per-server settings. Add both roots to the matching
+Jellyfin and Plex libraries so playback shows one library per type. To move an
+existing title, edit it in its manager and change its root folder; the manager
+copies and then removes the files.
 
 Use the permanent qBittorrent WebUI credentials. The paths are identical on
 both sides of the container boundary, so remote-path mappings are neither
@@ -245,9 +287,12 @@ Start with one conservative 1080p profile in Sonarr and Radarr:
 - Set a cutoff that stops upgrades once the chosen 1080p target is reached.
 - Enable completed-download handling and hardlinks instead of copy/delete.
 - qBittorrent globally seeds to ratio 1.0 or 24 hours, whichever first, then
-  deletes the torrent and its files under `/srv/media/torrents`. Hardlinked
-  library copies remain. Do not raise this in the WebUI; Nix reconciles it on
-  every start.
+  stops the torrent. Enable **Remove Completed** on every qBittorrent download
+  client so the manager deletes the stopped torrent and its files after
+  importing it. Hardlinked library copies remain. The managers reject a
+  client whose qBittorrent share-limit action removes torrents, because that
+  can delete a download before import. Do not change this in the WebUI; Nix
+  reconciles it on every start.
 
 ### Prowlarr
 

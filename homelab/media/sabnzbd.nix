@@ -16,6 +16,7 @@
     sabContainerLocalAddress
     sabContainerPort
     sabnzbdUid
+    secondaryUsenetRoot
     usenetRoot
     ;
 in {
@@ -30,6 +31,10 @@ in {
     bindMounts = {
       ${usenetRoot} = {
         hostPath = usenetRoot;
+        isReadOnly = false;
+      };
+      ${secondaryUsenetRoot} = {
+        hostPath = secondaryUsenetRoot;
         isReadOnly = false;
       };
       "/var/lib/sabnzbd" = {
@@ -68,8 +73,10 @@ in {
           misc = {
             host = sabContainerAddress;
             port = sabContainerPort;
+            # Articles download to the NVMe; unpacking writes finished files
+            # sequentially to the LaCie, which avoids random writes on SMR.
             download_dir = "${usenetRoot}/incomplete";
-            complete_dir = "${usenetRoot}/complete";
+            complete_dir = "${secondaryUsenetRoot}/complete";
             backup_dir = "/var/lib/sabnzbd/backups";
             permissions = "2775";
             host_whitelist = "${endpoints.sabnzbd.host}, localhost, 127.0.0.1, ${sabContainerAddress}";

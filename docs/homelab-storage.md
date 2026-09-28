@@ -18,11 +18,69 @@ ls -l /dev/disk/by-id /dev/disk/by-uuid
 | Role | Live identifier | Stable hardware identity | Filesystem | Notes |
 | --- | --- | --- | --- | --- |
 | root | UUID `b7617fb1-d251-481a-9395-d17bbc9d0c1f` | Disko currently records `nvme-CT1000P3PSSD8_25144F70A197`; verify live | ext4 | Never run the Disko layout until this by-id is reverified |
-| `/srv` | label `storage` | **Record from live audit before changing the mount** | ext4 | Label is retained for compatibility; migrate to the verified unique UUID separately |
-| local backup | UUID `73afcc5c-6148-4dc2-ae0e-61649ce71120` | **Record model/serial from live audit** | ext4 | Removable Borg repository at `/mnt/backups` |
+| `/srv` | label `storage` | `nvme-CT1000P3PSSD8_25164F85F83A` (verify live) | ext4 | Primary media and service state; retained for compatibility |
+| local backup | UUID `73afcc5c-6148-4dc2-ae0e-61649ce71120` | `ata-TOSHIBA_MQ04UBF100_35PPP14JT` (verify live) | ext4 | Removable Borg repository at `/mnt/backups` |
+| LaCie media | `ata-ST5000LM000-2AN170_WCJ23AWJ-part2` | LaCie enclosure, SMR disk serial `WCJ23AWJ` (verify live) | ext4 after provisioning | `/srv/media-secondary`; new finished downloads and library; nofail, downloaders require it; not part of Borg |
 
 Do not infer a role from an NVMe namespace number. Update the table only from
 live output, and review monitoring device arguments in the same change.
+
+## LaCie media disk
+
+`homelab/storage.nix` pins partition 2 by hardware identity and expects
+**ext4**. When this declaration was prepared, that partition was unmounted
+exFAT (UUID `9A66-BF3F`). **Do not activate the configuration until ext4 has
+been provisioned**: the downloader containers require the mount and would stay
+stopped. Provisioning permanently erases the partition. Partition 1 is left
+untouched. Reconfirm the physical disk and every identifier, not just
+`/dev/sdb`:
+
+```sh
+target=/dev/disk/by-id/ata-ST5000LM000-2AN170_WCJ23AWJ-part2
+lsblk -o NAME,PATH,MODEL,SERIAL,SIZE,FSTYPE,UUID,LABEL,MOUNTPOINTS
+readlink -f "$target"
+lsblk -dn -o MODEL,SERIAL /dev/disk/by-id/ata-ST5000LM000-2AN170_WCJ23AWJ
+findmnt -S "$target"    # must have no mount
+# After physically verifying WCJ23AWJ, confirming no mount, and accepting data loss:
+sudo wipefs -a "$target"
+sudo mkfs.ext4 -L media-secondary "$target"
+sudo blkid "$target"
+```
+
+### Cut over new downloads
+
+Existing torrents, Usenet history, and library files are not moved by any step
+below.
+
+1. Build and activate the configuration. Check `findmnt /srv/media-secondary`
+   resolves to the intended partition, `systemctl status
+   media-secondary-directories.service` succeeded, and `container@qbt` and
+   `container@sab` are running. SABnzbd now unpacks finished jobs to
+   `/srv/media-secondary/usenet/complete`; jobs already in its history keep
+   their old paths.
+2. In qBittorrent, create the `*-lacie` categories from
+   [media stack](media-stack.md#qbittorrent). Do not edit the existing
+   categories or the default save path.
+3. In each of Sonarr, Radarr, and Lidarr, **add** a second qBittorrent download
+   client with the `*-lacie` category and a better (lower) priority than the
+   existing qBittorrent client. Keep the existing client enabled so torrents
+   already in flight still import; new grabs use the LaCie client.
+4. Add the LaCie library roots, make them the default, and add them to
+   Jellyfin and Plex as described in
+   [media stack](media-stack.md#sonarr-radarr-and-lidarr).
+5. Test one torrent and one NZB. Confirm the torrent's temporary pieces appear
+   under `/srv/media/torrents/incomplete`, the finished file lands under
+   `/srv/media-secondary/torrents`, and the library copy shares its inode:
+   `stat -c '%d %i %h %n' <download> <library file>`.
+6. After the 24-hour seeding limit has removed every torrent in the old
+   categories, delete the old qBittorrent download client from each manager and
+   the empty old categories from qBittorrent.
+
+If the LaCie is absent, the downloaders stay stopped and
+`HomelabMediaSecondaryAbsent` alerts. Existing NVMe media keeps playing; titles
+on the LaCie are unavailable until it is reattached. Media on either disk is
+excluded from the Borg application-state backup; keep a separate copy of the
+library if it matters.
 
 ## Attach an existing data disk without formatting
 

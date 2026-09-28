@@ -20,7 +20,11 @@
     qbitContainerPort
     qbitNetworkInterface
     qbitUid
+    secondaryMediaRoot
     ;
+  # Finished torrents for the LaCie categories. Incomplete data stays in the
+  # NVMe temp path so the SMR disk receives sequential moves, not piece writes.
+  secondaryTorrentRoot = secondaryMediaRoot + "/torrents";
 in {
   custom.backup.applicationVersions.qbittorrent = config.containers.qbt.config.services.qbittorrent.package.version;
 
@@ -31,9 +35,15 @@ in {
     # keeps the container module's generated host route valid.
     localAddress = qbitContainerLocalAddress;
     port = qbitContainerPort;
-    bindMounts.${mediaRoot + "/torrents"} = {
-      hostPath = mediaRoot + "/torrents";
-      isReadOnly = false;
+    bindMounts = {
+      ${mediaRoot + "/torrents"} = {
+        hostPath = mediaRoot + "/torrents";
+        isReadOnly = false;
+      };
+      ${secondaryTorrentRoot} = {
+        hostPath = secondaryTorrentRoot;
+        isReadOnly = false;
+      };
     };
 
     applicationModule = {
@@ -45,11 +55,13 @@ in {
       qbitWebUIHostHeaderValidation = "false";
       qbitWebUIMaxAuthenticationFailCount = "0";
       # Mullvad does not forward ports, so long seeding just fills /srv.
-      # Hit ratio 1.0 or 24h, then delete the torrent and its files. Hardlinked
-      # library copies stay; leftover remuxes in torrents/ do not.
+      # Stop at ratio 1.0 or 24h. The library managers' "Remove Completed"
+      # then deletes the torrent and its files, but only after importing it;
+      # the Servarr apps refuse a client that removes torrents itself because
+      # that can delete a download before it is imported.
       qbitGlobalMaxRatio = "1";
       qbitGlobalMaxSeedingMinutes = "1440";
-      qbitShareLimitAction = "RemoveWithContent";
+      qbitShareLimitAction = "Stop";
       qbitBootstrapConfig = pkgs.writeText "qbittorrent-bootstrap.conf" ''
         [BitTorrent]
         Session\DefaultSavePath=${mediaRoot}/torrents/
@@ -166,7 +178,7 @@ in {
             ProtectSystem = "strict";
             ProtectHome = true;
             PrivateTmp = true;
-            InaccessiblePaths = ["${mediaRoot}/torrents"];
+            InaccessiblePaths = ["${mediaRoot}/torrents" secondaryTorrentRoot];
           };
         })
         (mkDeferredVpnService {
@@ -181,7 +193,7 @@ in {
             UMask = lib.mkForce "0077";
             Restart = lib.mkForce "on-failure";
             RestartSec = lib.mkForce "30s";
-            InaccessiblePaths = ["${mediaRoot}/torrents"];
+            InaccessiblePaths = ["${mediaRoot}/torrents" secondaryTorrentRoot];
           };
         })
       ];

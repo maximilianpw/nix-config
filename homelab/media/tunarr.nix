@@ -5,7 +5,7 @@
   ...
 }: let
   common = import ./common.nix {inherit config lib pkgs;};
-  inherit (common) endpoints mediaRoot usenetRoot;
+  inherit (common) endpoints mediaRoot secondaryMediaRoot secondaryUsenetRoot usenetRoot;
   tunarrReconcileSettings = let
     ffmpeg = lib.getExe pkgs.ffmpeg;
     ffprobe = lib.getExe' pkgs.ffmpeg "ffprobe";
@@ -57,13 +57,18 @@ in {
       InaccessiblePaths = [
         "${mediaRoot}/torrents"
         usenetRoot
+        "-${secondaryMediaRoot}/torrents"
+        "-${secondaryUsenetRoot}"
       ];
       LockPersonality = true;
       NoNewPrivileges = true;
       PrivateTmp = true;
       ProtectHome = true;
       ProtectSystem = "strict";
-      ReadOnlyPaths = ["${mediaRoot}/library"];
+      ReadOnlyPaths = [
+        "${mediaRoot}/library"
+        "-${secondaryMediaRoot}/library"
+      ];
       ReadWritePaths = ["/var/lib/tunarr"];
       Restart = "on-failure";
       RestartSec = "5s";
