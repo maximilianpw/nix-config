@@ -16,6 +16,19 @@ in {
     ];
   };
 
+  # LaCie USB disk for new finished downloads and library titles. Keep its
+  # hardware identity pinned; the partition must be ext4 before activation.
+  # nofail keeps boot and existing /srv media playback working without it; the
+  # downloaders require it and stay stopped instead.
+  fileSystems."/srv/media-secondary" = {
+    device = "/dev/disk/by-id/ata-ST5000LM000-2AN170_WCJ23AWJ-part2";
+    fsType = "ext4";
+    options = [
+      "nofail"
+      "x-systemd.device-timeout=10s"
+    ];
+  };
+
   # Do not let stateful services silently use the root filesystem when the
   # storage SSD is absent or failed. RequiresMountsFor also follows the path if
   # the mount layout changes later.

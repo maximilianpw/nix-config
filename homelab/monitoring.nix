@@ -161,8 +161,9 @@
         (alert "HomelabBorgCheckStale" ''absent(homelab_borg_check_last_success_timestamp_seconds) or (time() - homelab_borg_check_last_success_timestamp_seconds > 777600)'' "30m" "critical" "No successful Borg consistency check has been recorded in 9 days")
         (alert "HomelabBorgVerifyStale" ''absent(homelab_borg_verify_last_success_timestamp_seconds) or (time() - homelab_borg_verify_last_success_timestamp_seconds > 3456000)'' "1h" "warning" "No successful cryptographic Borg verification has been recorded in 40 days")
         (alert "HomelabSrvAbsent" ''absent(node_filesystem_size_bytes{mountpoint="/srv",fstype!="rootfs"})'' "5m" "critical" "/srv is absent from node-exporter filesystem metrics")
-        (alert "HomelabFilesystemWarning" ''100 * (1 - node_filesystem_avail_bytes{mountpoint=~"/|/srv"} / node_filesystem_size_bytes{mountpoint=~"/|/srv"}) > 80'' "30m" "warning" "A primary filesystem is more than 80% full")
-        (alert "HomelabFilesystemCritical" ''100 * (1 - node_filesystem_avail_bytes{mountpoint=~"/|/srv"} / node_filesystem_size_bytes{mountpoint=~"/|/srv"}) > 90'' "15m" "critical" "A primary filesystem is more than 90% full")
+        (alert "HomelabMediaSecondaryAbsent" ''absent(node_filesystem_size_bytes{mountpoint="/srv/media-secondary",fstype!="rootfs"})'' "15m" "warning" "The LaCie media disk is not mounted, so downloaders are stopped")
+        (alert "HomelabFilesystemWarning" ''100 * (1 - node_filesystem_avail_bytes{mountpoint=~"/|/srv|/srv/media-secondary"} / node_filesystem_size_bytes{mountpoint=~"/|/srv|/srv/media-secondary"}) > 80'' "30m" "warning" "A primary filesystem is more than 80% full")
+        (alert "HomelabFilesystemCritical" ''100 * (1 - node_filesystem_avail_bytes{mountpoint=~"/|/srv|/srv/media-secondary"} / node_filesystem_size_bytes{mountpoint=~"/|/srv|/srv/media-secondary"}) > 90'' "15m" "critical" "A primary filesystem is more than 90% full")
         (alert "HomelabSmartFailure" ''smartctl_device_smart_status != 1'' "5m" "critical" "SMART reports an unhealthy storage device")
         (alert "HomelabNvmeTemperatureHigh" ''smartctl_device_temperature{temperature_type="current"} > 80'' "15m" "warning" "An NVMe device has remained above 80°C")
         (alert "HomelabPostgresExporterDown" ''absent(pg_up) or pg_up == 0'' "5m" "critical" "The PostgreSQL exporter cannot query PostgreSQL")
@@ -321,11 +322,11 @@ in {
             enable = true;
             listenAddress = "127.0.0.1";
             openFirewall = false;
-            # Keep filesystem series focused on the two operational filesystems;
+            # Keep filesystem series focused on the operational filesystems;
             # CPU, memory, diskstats, netdev, uptime, and hwmon are default collectors.
             enabledCollectors = ["textfile"];
             extraFlags = [
-              "--collector.filesystem.mount-points-include=^/(|srv)$"
+              "--collector.filesystem.mount-points-include=^/(|srv|srv/media-secondary)$"
               "--collector.textfile.directory=${nodeExporterTextfileDirectory}"
             ];
           };
