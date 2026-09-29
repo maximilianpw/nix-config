@@ -87,11 +87,17 @@ printf 'new\n' > "$repo/sub/new module.nix"
 mkdir -p "$repo/scratch"
 printf 'secret\n' > "$repo/scratch/key.txt"
 printf 'log\n' > "$repo/switch.log"
-prepare_config_source "$repo"
+mkdir -p "$tmp/real-temp"
+ln -s "$tmp/real-temp" "$tmp/linked-temp"
+TMPDIR="$tmp/linked-temp" prepare_config_source "$repo"
 snapshot_files=$(cd "$CONFIG_SOURCE_DIR" && find . -type f | sort | tr '\n' ' ')
 if [[ -z "$CONFIG_SNAPSHOT_DIR" || "$CONFIG_SOURCE_DIR" != "$CONFIG_SNAPSHOT_DIR" ||
     "$snapshot_files" != "./.gitignore ./sub/new module.nix ./tracked.nix " ]]; then
     echo "FAIL: config snapshot contained '$snapshot_files'" >&2
+    failures=$((failures + 1))
+fi
+if [[ "$CONFIG_SOURCE_DIR" != "$(cd "$CONFIG_SOURCE_DIR" && pwd -P)" ]]; then
+    echo "FAIL: config snapshot path has a symlinked ancestor" >&2
     failures=$((failures + 1))
 fi
 [[ -z "$CONFIG_SNAPSHOT_DIR" ]] || rm -rf "$CONFIG_SNAPSHOT_DIR"
