@@ -66,8 +66,8 @@ in {
       "granola"
       "freelens"
       "nextcloud"
-      "jellyfin-media-player"
       "plex"
+      "tldraw"
     ];
 
     onActivation = {

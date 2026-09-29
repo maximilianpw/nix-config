@@ -22,6 +22,9 @@ Home Manager configuration, and Kim's homelab services.
 
 Local edits, formatting, evaluation, builds, and tests are safe without asking.
 Use `nix develop` when the required repository tools are not already available.
+For public third-party MCP servers, discover and call their tools through Executor
+rather than connecting to the servers directly. Locally configured, host-specific
+MCP tools are unaffected.
 Choose checks for the affected behavior; these are not a checklist for every edit:
 
 - Documentation or guidance only: `git diff --check`.
