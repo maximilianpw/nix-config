@@ -87,6 +87,8 @@ in
     (config.fileSystems.${secondaryMediaRoot}.device == "/dev/disk/by-id/ata-ST5000LM000-2AN170_WCJ23AWJ-part2")
     (config.fileSystems.${secondaryMediaRoot}.fsType == "ext4")
     (builtins.elem "nofail" config.fileSystems.${secondaryMediaRoot}.options)
+    # The LaCie bridge reset under sustained UAS writes.
+    (builtins.elem "usb-storage.quirks=059f:1093:u" config.boot.kernelParams)
     (secondaryDirectoriesService.unitConfig.ConditionPathIsMountPoint == secondaryMediaRoot)
     (builtins.elem secondaryMediaRoot secondaryDirectoriesService.unitConfig.RequiresMountsFor)
     (!(builtins.hasAttr secondaryMediaRoot config.systemd.tmpfiles.settings."10-media"))

@@ -29,6 +29,11 @@ in {
     ];
   };
 
+  # The LaCie Rugged USB-C bridge stalled and needed UAS resets during
+  # sustained writes. Plain usb-storage is slower than UAS but the SMR disk
+  # is the bottleneck anyway. Takes effect after a reboot or re-plug.
+  boot.kernelParams = ["usb-storage.quirks=059f:1093:u"];
+
   # Do not let stateful services silently use the root filesystem when the
   # storage SSD is absent or failed. RequiresMountsFor also follows the path if
   # the mount layout changes later.
