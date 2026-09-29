@@ -76,6 +76,20 @@ below.
    categories, delete the old qBittorrent download client from each manager and
    the empty old categories from qBittorrent.
 
+To unplug the LaCie, stop everything that reads it, confirm the mount is gone,
+then power it down before pulling the cable:
+
+```sh
+sudo systemctl stop jellyfin plex tunarr 'srv-media\x2dsecondary.mount'
+findmnt /srv/media-secondary    # must print nothing
+echo 1 | sudo tee /sys/block/"$(basename "$(readlink -f /dev/disk/by-id/ata-ST5000LM000-2AN170_WCJ23AWJ)")"/device/delete
+sudo systemctl start jellyfin plex tunarr
+```
+
+After reconnecting, start it with
+`sudo systemctl start 'srv-media\x2dsecondary.mount' container@qbt container@sab`.
+The mount is `noauto`, so it does not remount itself when the device reappears.
+
 If the LaCie is absent, the downloaders stay stopped and
 `HomelabMediaSecondaryAbsent` alerts. Existing NVMe media keeps playing; titles
 on the LaCie are unavailable until it is reattached. Media on either disk is

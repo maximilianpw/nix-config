@@ -23,7 +23,12 @@ in {
   fileSystems."/srv/media-secondary" = {
     device = "/dev/disk/by-id/ata-ST5000LM000-2AN170_WCJ23AWJ-part2";
     fsType = "ext4";
+    # noauto: without it, systemd remounts the disk whenever its device
+    # re-announces itself, including right after an unmount, so it could not be
+    # unplugged safely. The downloaders and media-secondary-directories pull it
+    # in through RequiresMountsFor instead.
     options = [
+      "noauto"
       "nofail"
       "x-systemd.device-timeout=10s"
     ];
@@ -33,6 +38,13 @@ in {
   # sustained writes. Plain usb-storage is slower than UAS but the SMR disk
   # is the bottleneck anyway. Takes effect after a reboot or re-plug.
   boot.kernelParams = ["usb-storage.quirks=059f:1093:u"];
+
+  # With 60 GB of RAM the default writeback limit let ~9 GB of "moved" media
+  # sit in memory after Sonarr had deleted the originals. Cap it so copies run
+  # at disk speed and a USB drop loses at most 256 MiB.
+  services.udev.extraRules = ''
+    ACTION=="add|change", SUBSYSTEM=="block", ENV{DEVTYPE}=="disk", ENV{ID_SERIAL}=="ST5000LM000-2AN170_WCJ23AWJ", ATTR{bdi/strict_limit}="1", ATTR{bdi/max_bytes}="268435456"
+  '';
 
   # Do not let stateful services silently use the root filesystem when the
   # storage SSD is absent or failed. RequiresMountsFor also follows the path if

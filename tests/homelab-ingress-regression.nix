@@ -54,6 +54,8 @@ in
     (cliproxy.locations."= /healthz".return == "204")
     (cliproxy.locations."= /management.html".proxyPass == cliproxyBackend)
     (cliproxy.locations."/v0/management/".proxyPass == cliproxyBackend)
+    (cliproxy.locations."/v8/management/".proxyPass == cliproxyBackend)
+    (lib.hasInfix "Cache-Control \"no-store\"" cliproxy.locations."/v8/management/".extraConfig)
     (cliproxy.locations."/v1/".proxyPass == cliproxyBackend)
     (cliproxy.locations."/quota/v1/".proxyPass == "http://127.0.0.1:8318")
     (lib.hasInfix "if ($cliproxyapi_public_authorized = 0) { return 401; }" cliproxy.locations."/quota/v1/".extraConfig)

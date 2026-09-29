@@ -6,6 +6,18 @@
   homelab = import ../lib/homelab.nix {inherit lib;};
   endpoint = homelab.publicEndpoints.cliproxy;
   cliProxy = import ../modules/cliproxyapi/config.nix;
+  managementLocation = {
+    proxyPass = cliProxy.baseUrl;
+    proxyWebsockets = true;
+    extraConfig = ''
+      proxy_buffering off;
+      proxy_request_buffering off;
+      proxy_read_timeout 600s;
+      proxy_send_timeout 600s;
+      client_max_body_size 100m;
+      add_header Cache-Control "no-store" always;
+    '';
+  };
 in {
   sops = {
     secrets.cliproxyapi-public-api-key = {};
@@ -61,18 +73,8 @@ in {
             add_header Cache-Control "no-store" always;
           '';
         };
-        "/v0/management/" = {
-          proxyPass = cliProxy.baseUrl;
-          proxyWebsockets = true;
-          extraConfig = ''
-            proxy_buffering off;
-            proxy_request_buffering off;
-            proxy_read_timeout 600s;
-            proxy_send_timeout 600s;
-            client_max_body_size 100m;
-            add_header Cache-Control "no-store" always;
-          '';
-        };
+        "/v0/management/" = managementLocation;
+        "/v8/management/" = managementLocation;
         "/quota/v1/" = {
           proxyPass = "http://127.0.0.1:8318";
           extraConfig = ''
