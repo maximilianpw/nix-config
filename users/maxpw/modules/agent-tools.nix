@@ -71,7 +71,12 @@ in {
               had_previous=1
             fi
             if mv "$staged_app" "$target_app"; then
-              rm -rf "$backup_app"
+              # ditto preserves the store bundle's read-only directory modes.
+              # Make the retired copy removable without touching the signed live app.
+              if [ "$had_previous" = 1 ]; then
+                chmod -R u+w "$backup_app"
+                rm -rf "$backup_app"
+              fi
             else
               if [ "$had_previous" = 1 ]; then
                 mv "$backup_app" "$target_app"
