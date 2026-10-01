@@ -11,6 +11,7 @@
     ./homepage.nix
     ./immich.nix
     ./leerr.nix
+    ./media-mcp.nix
     ./media.nix
     ./miniflux.nix
     ./monitoring.nix

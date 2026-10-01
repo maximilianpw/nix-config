@@ -11,14 +11,15 @@ in {
       # v1.6.8, pinned to the reviewed multi-platform image index.
       # UsefulSoftwareCo is the canonical upstream namespace after the org move.
       inherit image;
-      ports = ["127.0.0.1:${toString executor.port}:4788"];
+      # Host networking gives the container access to the loopback-only homelab MCP.
+      extraOptions = ["--network=host"];
       volumes = ["/var/lib/executor:/data"];
       environment = {
-        PORT = "4788";
-        EXECUTOR_HOST = "0.0.0.0";
+        PORT = toString executor.port;
+        EXECUTOR_HOST = "127.0.0.1";
         EXECUTOR_DATA_DIR = "/data";
         EXECUTOR_WEB_BASE_URL = executor.url;
-        EXECUTOR_ALLOW_LOCAL_NETWORK = "false";
+        EXECUTOR_ALLOW_LOCAL_NETWORK = "true";
       };
     };
   };

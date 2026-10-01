@@ -27,22 +27,38 @@ in
   "Executor must use Kim's existing Docker backend";
   assert lib.assertMsg (container.image == image)
   "Executor must use the reviewed immutable image digest";
-  assert lib.assertMsg (container.ports == ["127.0.0.1:${toString endpoint.port}:4788"])
+  assert lib.assertMsg (
+    container.ports
+    == []
+    && builtins.elem "--network=host" container.extraOptions
+    && container.environment.EXECUTOR_HOST == "127.0.0.1"
+    && container.environment.PORT == toString endpoint.port
+  )
   "Executor must only publish its HTTP endpoint on loopback";
   assert lib.assertMsg (container.volumes == ["/var/lib/executor:/data"])
   "Executor must persist its database and generated encryption keys outside Docker";
   assert lib.assertMsg (
     container.environment.EXECUTOR_WEB_BASE_URL
     == endpoint.url
-    && container.environment.EXECUTOR_ALLOW_LOCAL_NETWORK == "false"
+    && container.environment.EXECUTOR_ALLOW_LOCAL_NETWORK == "true"
   )
-  "Executor must use its exact public URL and deny sandbox access to private networks";
+  "Executor must use its exact public URL and allow the local homelab MCP";
   assert lib.assertMsg (
     builtins.elem "docker-executor.service" homelab.backup.archiveUnits
     && builtins.elem "/var/lib" config.services.borgbackup.jobs.main.paths
     && builtins.elem "/var/lib/executor" config.custom.backup.manifestMetadata.expectedPrimaryStatePaths
   )
   "Executor state must be quiesced and archived";
+  assert lib.assertMsg (
+    config.systemd.services.homelab-mcp.environment.HOMELAB_MCP_HOST
+    == "127.0.0.1"
+    && config.systemd.services.homelab-mcp.environment.HOMELAB_MCP_PORT == "19200"
+    && homelab.services.homelab-mcp.endpoint.exposure == "none"
+    && builtins.elem "mcp-access-token:${config.sops.secrets.homelab-mcp-access-token.path}" config.systemd.services.homelab-mcp.serviceConfig.LoadCredential
+    && builtins.elem "homelab-mcp.service" homelab.backup.archiveUnits
+    && builtins.elem "/var/lib/private/homelab-mcp" config.custom.backup.manifestMetadata.expectedPrimaryStatePaths
+  )
+  "Homelab MCP must require a private credential, stay on loopback, and preserve its state in backups";
     pkgs.runCommand "executor-config-regression" {} ''
       touch "$out"
     ''

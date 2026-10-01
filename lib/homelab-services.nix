@@ -301,6 +301,25 @@
     operations.units = ["cliproxyapi.service" "nginx.service"];
   };
 
+  homelab-mcp = {
+    endpoint.port = 19200;
+    state.paths = ["/var/lib/private/homelab-mcp"];
+    backup.quiesce = [
+      {
+        unit = "homelab-mcp.service";
+        until = "archive";
+      }
+    ];
+    operations.units = ["homelab-mcp.service"];
+    recovery = {
+      order = 76;
+      versionPolicy = "restore-archived-version-first";
+      runbook = "docs/media-mcp.md#recovery";
+      acceptance = ["authenticated-stack-health-through-executor-succeeds"];
+      secretOwners = ["sops:homelab-mcp-access-token" "mutable-state:/var/lib/private/homelab-mcp"];
+    };
+  };
+
   executor = {
     endpoint = {
       authorizationOwner = "executor";
