@@ -3,6 +3,7 @@
   # concern owns its host services, Tunarr, or downloader container settings.
   imports = [
     ./media/host-services.nix
+    ./media/companions.nix
     ./media/tunarr.nix
     ./media/qbittorrent.nix
     ./media/sabnzbd.nix

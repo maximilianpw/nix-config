@@ -1,6 +1,208 @@
 # Data only. Validation, defaults, and all derived views live in
 # lib/homelab-inventory.nix and lib/homelab.nix.
 {
+  autobrr = {
+    endpoint = {
+      authorizationOwner = "tailscale";
+      exposure = "tailnet";
+      port = 7474;
+    };
+    state.paths = ["/var/lib/private/autobrr" "/var/lib/autobrr-session"];
+    backup.quiesce = [
+      {
+        unit = "autobrr.service";
+        until = "archive";
+      }
+    ];
+    operations.units = ["autobrr.service"];
+    recovery = {
+      order = 96;
+      versionPolicy = "restore-archived-version-first";
+      runbook = "docs/media-companions.md#recovery";
+      acceptance = ["account-filters-and-download-client-connections-load"];
+      secretOwners = ["mutable-state:/var/lib/private/autobrr" "generated:/var/lib/autobrr-session/secret"];
+    };
+    presentation = {
+      group = "operations";
+      title = "autobrr";
+      icon = "autobrr.png";
+      description = "Tracker release announcements";
+      order = 74;
+    };
+  };
+
+  cross-seed = {
+    # v6 has a local API, not a dashboard. No probe until integrations exist.
+    endpoint.port = 2468;
+    state.paths = ["/var/lib/cross-seed"];
+    backup.quiesce = [
+      {
+        unit = "cross-seed.service";
+        until = "archive";
+      }
+    ];
+    storage.units = ["cross-seed.service"];
+    operations.units = ["cross-seed.service"];
+    recovery = {
+      order = 96;
+      versionPolicy = "restore-archived-version-first";
+      runbook = "docs/media-companions.md#recovery";
+      acceptance = ["private-integrations-load-and-saved-matches-are-preserved"];
+      secretOwners = ["mutable-state:/var/lib/cross-seed/integrations.json"];
+    };
+  };
+
+  kometa = {
+    state.paths = ["/var/lib/kometa"];
+    backup.quiesce = [
+      {
+        unit = "docker-kometa.service";
+        until = "archive";
+      }
+    ];
+    operations.units = ["docker-kometa.service"];
+    recovery = {
+      order = 96;
+      versionPolicy = "restore-pinned-image-first";
+      runbook = "docs/media-companions.md#recovery";
+      acceptance = ["private-config-and-collection-state-load"];
+      secretOwners = ["mutable-state:/var/lib/kometa/config.yml"];
+    };
+  };
+
+  maintainerr = {
+    endpoint = {
+      authorizationOwner = "tailscale";
+      exposure = "tailnet";
+      port = 6246;
+      monitorPath = "/api/health/ready";
+    };
+    state.paths = ["/var/lib/maintainerr"];
+    backup.quiesce = [
+      {
+        unit = "docker-maintainerr.service";
+        until = "archive";
+      }
+    ];
+    operations.units = ["docker-maintainerr.service"];
+    recovery = {
+      order = 96;
+      versionPolicy = "restore-pinned-image-first";
+      runbook = "docs/media-companions.md#recovery";
+      acceptance = ["connections-and-rules-load-before-enabling-actions"];
+      secretOwners = ["mutable-state:/var/lib/maintainerr"];
+    };
+    presentation = {
+      group = "operations";
+      title = "Maintainerr";
+      icon = "maintainerr.png";
+      description = "Media retention rules";
+      order = 76;
+    };
+  };
+
+  recyclarr = {
+    state.paths = ["/var/lib/recyclarr"];
+    backup.quiesce = [
+      {
+        unit = "recyclarr.timer";
+        until = "archive";
+      }
+      {
+        unit = "recyclarr.service";
+        until = "archive";
+      }
+    ];
+    operations.units = ["recyclarr.timer" "recyclarr.service"];
+    recovery = {
+      order = 96;
+      versionPolicy = "restore-archived-version-first";
+      runbook = "docs/media-companions.md#recovery";
+      acceptance = ["sync-state-and-dedicated-trash-profiles-load"];
+      secretOwners = ["mutable-state:sonarr-and-radarr-config.xml"];
+    };
+  };
+
+  tautulli = {
+    endpoint = {
+      authorizationOwner = "tailscale";
+      exposure = "tailnet";
+      port = 8181;
+    };
+    state.paths = ["/var/lib/tautulli"];
+    backup.quiesce = [
+      {
+        unit = "tautulli.service";
+        until = "archive";
+      }
+    ];
+    operations.units = ["tautulli.service"];
+    recovery = {
+      order = 96;
+      versionPolicy = "restore-archived-version-first";
+      runbook = "docs/media-companions.md#recovery";
+      acceptance = ["plex-connection-and-watch-history-load"];
+      secretOwners = ["mutable-state:/var/lib/tautulli"];
+    };
+    presentation = {
+      group = "operations";
+      title = "Tautulli";
+      icon = "tautulli.png";
+      description = "Plex playback statistics";
+      order = 77;
+    };
+  };
+
+  tdarr = {
+    endpoint = {
+      authorizationOwner = "tailscale";
+      exposure = "tailnet";
+      port = 8265;
+    };
+    state.paths = ["/var/lib/tdarr"];
+    backup.quiesce = [
+      {
+        unit = "docker-tdarr.service";
+        until = "archive";
+      }
+    ];
+    storage.units = ["docker-tdarr.service"];
+    operations.units = ["docker-tdarr.service"];
+    recovery = {
+      order = 96;
+      versionPolicy = "restore-pinned-image-first";
+      runbook = "docs/media-companions.md#recovery";
+      acceptance = ["libraries-and-plugins-load-with-worker-paused"];
+      secretOwners = ["mutable-state:/var/lib/tdarr/configs"];
+    };
+    presentation = {
+      group = "operations";
+      title = "Tdarr";
+      icon = "tdarr.png";
+      description = "Media health and transcoding";
+      order = 78;
+    };
+  };
+
+  unpackerr = {
+    state.paths = ["/var/lib/unpackerr"];
+    backup.quiesce = [
+      {
+        unit = "unpackerr.service";
+        until = "archive";
+      }
+    ];
+    storage.units = ["unpackerr.service"];
+    operations.units = ["unpackerr.service"];
+    recovery = {
+      order = 96;
+      versionPolicy = "restore-archived-version-first";
+      runbook = "docs/media-companions.md#recovery";
+      acceptance = ["manager-connections-load-and-original-archives-remain"];
+      secretOwners = ["mutable-state:sonarr-radarr-and-lidarr-config.xml"];
+    };
+  };
+
   actual = {
     endpoint = {
       authorizationOwner = "tailscale";

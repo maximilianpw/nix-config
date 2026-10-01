@@ -1,7 +1,7 @@
 {pkgs}: {
   t3codeRelease = {
-    version = "0.0.43-nightly.20260925.2237";
-    darwinArm64Sha256 = "482205415f993cac771c653cfb3b7ea743843652eb22a50c4db142a60c48b7a8";
+    version = "0.0.45-nightly.20260930.2481";
+    darwinArm64Sha256 = "57beeb20878b09c9d61c11b9a45e74a506840d4189254f39755ceb94ea37f14e";
   };
 
   # SSH remote commands are parsed by the account login shell before any

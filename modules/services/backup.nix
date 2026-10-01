@@ -219,6 +219,11 @@ in {
         # Tunarr can rebuild its sparse Meilisearch index from the preserved
         # database and snapshots; archiving the sparse file wastes space.
         "/var/lib/tunarr/data.ms"
+        # Media companions keep their databases/configs; logs and generated
+        # transcode samples can be recreated.
+        "/var/lib/tdarr/logs"
+        "/var/lib/tdarr/server/Tdarr/Samples"
+        "/var/lib/kometa/logs"
         # Home Assistant is archived while quiesced before Borg starts. Avoid
         # also capturing its live config tree after the service restarts.
         "/var/lib/hass"

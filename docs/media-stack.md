@@ -1,8 +1,10 @@
 # Media stack on Kim
 
 Kim runs Jellyfin, Plex, Tunarr, Sonarr, Radarr, Lidarr, Bazarr, Prowlarr,
-Seerr, SABnzbd, and qBittorrent as one private media-automation stack. This
-configuration is intended for a personal library and sources the operator is
+Seerr, SABnzbd, and qBittorrent as one private media-automation stack. The
+stack also has [media companions](media-companions.md) for profile sync,
+torrent extraction, retention, transcoding, Plex metadata, and tracker automation.
+This configuration is intended for a personal library and sources the operator is
 authorized to use.
 Source and indexer accounts are deliberately not declared in this repository.
 

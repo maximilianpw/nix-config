@@ -50,6 +50,11 @@
       inherit lib;
       pkgs = self.nixosConfigurations.kim.pkgs;
     };
+    media-companions-regression = import ../tests/media-companions-regression.nix {
+      config = self.nixosConfigurations.kim.config;
+      inherit lib;
+      pkgs = self.nixosConfigurations.kim.pkgs;
+    };
     tailscale-serve-regression = import ../tests/tailscale-serve-regression.nix {
       inherit lib;
       pkgs = nixpkgs.legacyPackages.x86_64-linux;
