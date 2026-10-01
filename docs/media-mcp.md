@@ -43,6 +43,9 @@ startup. The service runs as a dynamic user and cannot read the original files.
 Restart `homelab-mcp` after rotating an upstream key. Plex currently uses a copy
 of `Preferences.xml`, which includes account and certificate details; keep that
 credential private. A future deployment can supply only `plex-token` instead.
+Systemd 260.4 fails before launching the process when a `LoadCredential` source
+path contains spaces. A root-only symlink under `/run/homelab-mcp-credentials`
+provides a space-free alias for Plex's `Plex Media Server/Preferences.xml`.
 
 The access token is encrypted in `secrets/homelab-mcp.yaml` for the existing
 admin and Kim SOPS recipients. SQLite state and its encryption key live together

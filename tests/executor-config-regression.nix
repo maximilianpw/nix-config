@@ -59,6 +59,12 @@ in
     && builtins.elem "/var/lib/private/homelab-mcp" config.custom.backup.manifestMetadata.expectedPrimaryStatePaths
   )
   "Homelab MCP must require a private credential, stay on loopback, and preserve its state in backups";
+  assert lib.assertMsg (
+    lib.all (credential: !(lib.hasInfix " " credential)) config.systemd.services.homelab-mcp.serviceConfig.LoadCredential
+    && config.systemd.tmpfiles.settings."10-homelab-mcp-credentials"."/run/homelab-mcp-credentials".d.mode == "0700"
+    && config.systemd.tmpfiles.settings."10-homelab-mcp-credentials"."/run/homelab-mcp-credentials/plex-preferences.xml"."L+".argument == "/var/lib/plex/Plex Media Server/Preferences.xml"
+  )
+  "Plex credentials must use a root-only path alias to avoid systemd 260's whitespace deserialization failure";
     pkgs.runCommand "executor-config-regression" {} ''
       touch "$out"
     ''

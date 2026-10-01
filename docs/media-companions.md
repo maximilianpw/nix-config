@@ -17,11 +17,11 @@ configuration does not activate it.
 | --- | --- | --- |
 | Recyclarr | `recyclarr.timer`, `recyclarr.service` | Daily quality-profile sync |
 | Unpackerr | `unpackerr.service` | Torrent extraction for Sonarr, Radarr, and Lidarr |
-| autobrr | `https://autobrr.liger-shilling.ts.net` | Create an account, then configure filters and clients |
+| autobrr | `https://autobrr.liger-shilling.ts.net` | Manager clients and HD acquisition filters configured |
 | Maintainerr | `https://maintainerr.liger-shilling.ts.net` | Configure a media server and rules |
 | Tautulli | `https://tautulli.liger-shilling.ts.net` | Connect the intended Plex account |
 | Tdarr | `https://tdarr.liger-shilling.ts.net` | Worker paused; no jobs run automatically |
-| Kometa | `docker-kometa.service` | Waits for `/var/lib/kometa/config.yml` |
+| Kometa | `docker-kometa.service` | Genre/decade collections; daily at 03:15 |
 | cross-seed | `cross-seed.service`, local API port 2468 | Waits for `/var/lib/cross-seed/integrations.json` |
 
 Dashboard listeners are private. Maintainerr and Kometa use host networking to
@@ -132,6 +132,28 @@ Start `docker-kometa.service` only after reviewing that configuration. It then
 runs its configured collections daily at 03:15 in Kim's timezone. It has no
 library filesystem mount, so all library updates use Plex's API.
 
+On 2026-10-01, the user ran the privileged setup helper after the supplied
+TMDb key passed its authentication check. The private configuration is
+installed with mode 0600 and owner `kometa:media`. It connects to Movies,
+Anime, and TV Shows using only Plex/TMDb, with genre and decade collection
+defaults. There are no overlays or manager acquisition connections. The
+collection minimum is two items; collection deletion and Plex trash/bundle
+cleanup are disabled.
+
+The initial run completed with exit code zero and no error/critical log
+entries. Plex now reports seven collections in Movies and 20 in TV Shows.
+Anime has zero library items, so its dynamic collections were skipped.
+The daily service and container are running with `KOMETA_TIMES=03:15` in
+Europe/Paris. Live checks confirmed the collection counts, private config
+permissions, and disabled acquisition/cleanup settings. The temporary TMDb
+key file and one-time helper were removed after verification; credentials
+remain in the backed-up private Kometa configuration.
+
+The configuration renderer passed the installed Kometa 2.5.1 JSON Schema
+and YAML parser checks. The wizard passed Bash syntax validation. A sanitized
+setup report and initial-run log are retained with mode 0600 under
+`/home/maxpw/.local/state/media-companions/`.
+
 ### cross-seed
 
 Install a private JSON file at `/var/lib/cross-seed/integrations.json`, mode
@@ -172,6 +194,33 @@ tracker feeds and acquisition filters still need operator choices.
 Tdarr has five health-check libraries prepared. Automatic scans and
 transcoding are disabled, and the node remains paused. Kometa is waiting
 for the user's own TMDb API key and private collection configuration.
+
+### autobrr filters configured on 2026-10-01
+
+The application now has two enabled Generic Torznab feeds through local
+Prowlarr, polling every 15 minutes. The Pirate Bay feed requests movie and TV
+categories; the Nyaa.si feed requests English-translated anime. Disabled
+Prowlarr indexers were not added.
+
+| Filter | Feed | Action | Accepted releases |
+| --- | --- | --- | --- |
+| HD TV → Sonarr | The Pirate Bay | Kim Sonarr | 720p/1080p TV; HDTV, WEB, WEB-DL, WEBRip, BluRay |
+| HD Movies → Radarr | The Pirate Bay | Kim Radarr | 720p/1080p movies; WEB, WEB-DL, WEBRip, BluRay |
+| Anime HD → Sonarr | Nyaa.si | Kim Sonarr | 720p/1080p English-translated anime |
+| Anime Movies HD → Radarr | Nyaa.si | Kim Radarr | 720p/1080p English-translated anime |
+
+All four filters are enabled. Anime has no source or audio-language constraint;
+English-translated Nyaa entries can contain Japanese audio with English
+subtitles. The anime TV action runs first; a manager rejection allows autobrr
+to try the anime movie action. Sonarr and Radarr retain their monitoring,
+quality, and upgrade rules. No action sends releases directly to qBittorrent.
+
+Both feed tests and the Sonarr/Radarr client tests passed. Before enabling the
+filters, a feed refresh cached 150 Nyaa entries and 32 Pirate Bay entries with
+no active acquisition filters, so the initial feed backlog did not trigger
+downloads. Feed scheduling and saved filter/indexer/action connections were
+verified after enabling. A new matching release is still needed to observe
+the complete download and import path.
 
 ## Verification
 

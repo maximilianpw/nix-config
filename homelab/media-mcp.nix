@@ -14,6 +14,17 @@ in {
     restartUnits = ["homelab-mcp.service"];
   };
 
+  # systemd 260.4 fails to deserialize LoadCredential paths containing spaces.
+  # A root-only alias avoids that bug without copying Plex's mutable credentials.
+  systemd.tmpfiles.settings."10-homelab-mcp-credentials" = {
+    "/run/homelab-mcp-credentials".d = {
+      user = "root";
+      group = "root";
+      mode = "0700";
+    };
+    "/run/homelab-mcp-credentials/plex-preferences.xml"."L+".argument = "/var/lib/plex/Plex Media Server/Preferences.xml";
+  };
+
   systemd.services.homelab-mcp = {
     description = "Homelab media MCP for Executor";
     wantedBy = ["multi-user.target"];
@@ -35,7 +46,7 @@ in {
         "lidarr-config.xml:/var/lib/lidarr/.config/Lidarr/config.xml"
         "prowlarr-config.xml:/var/lib/prowlarr/config.xml"
         "seerr-settings.json:/var/lib/jellyseerr/config/settings.json"
-        "plex-preferences.xml:/var/lib/plex/Plex Media Server/Preferences.xml"
+        "plex-preferences.xml:/run/homelab-mcp-credentials/plex-preferences.xml"
       ];
       Restart = "on-failure";
       RestartSec = "5s";
