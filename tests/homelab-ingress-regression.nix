@@ -38,7 +38,7 @@ in
     nextcloudListen
   )
   "Nextcloud nginx must bind only its declared loopback origin";
-  assert expect.all "CLIProxyAPI must expose its management UI behind the management key and protect its public API with a separate token" [
+  assert expect.all "CLIProxyAPI must serve its pinned UI and preserve separate management and public API authentication" [
     (cliproxy.listen
       == [
         {
@@ -52,7 +52,9 @@ in
     (cliproxy.locations."/".return == "302 /management.html")
     (lib.hasInfix "absolute_redirect off;" cliproxy.locations."/".extraConfig)
     (cliproxy.locations."= /healthz".return == "204")
-    (cliproxy.locations."= /management.html".proxyPass == cliproxyBackend)
+    (cliproxy.locations."= /management.html".alias == "${../assets/cliproxy-ui/management.html}")
+    (cliproxy.locations."= /management.html".proxyPass == null)
+    (lib.hasInfix "Cache-Control \"no-store\"" cliproxy.locations."= /management.html".extraConfig)
     (cliproxy.locations."/v0/management/".proxyPass == cliproxyBackend)
     (cliproxy.locations."/v8/management/".proxyPass == cliproxyBackend)
     (lib.hasInfix "Cache-Control \"no-store\"" cliproxy.locations."/v8/management/".extraConfig)

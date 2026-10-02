@@ -68,7 +68,7 @@ in {
         };
         "= /healthz".return = "204";
         "= /management.html" = {
-          proxyPass = cliProxy.baseUrl;
+          alias = "${../assets/cliproxy-ui/management.html}";
           extraConfig = ''
             add_header Cache-Control "no-store" always;
           '';
