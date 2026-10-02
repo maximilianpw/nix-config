@@ -1,5 +1,7 @@
-# Daily read-only morning report. Writes one Markdown file under the user's
-# home and changes nothing else; see docs/agent-tooling-backlog.md.
+# Daily read-only morning report. Each run writes ~/reports/morning/<date>.md
+# (through a temporary file beside it, mode 0600) and a scratch directory it
+# removes; everything else is only read, and git runs with optional locks
+# disabled. See docs/agent-tooling-backlog.md.
 {
   config,
   hostRecord,
@@ -8,8 +10,10 @@
   ...
 }: let
   homelab = import ../../../lib/homelab.nix {inherit lib;};
-  # Unattended, homelab-aware work is scoped to hosts the inventory marks for
-  # long-running agents with the homelab profile; today that is only Kim.
+  # Unattended, homelab-aware work runs on every inventory host that has
+  # longRunningAgents = true and the homelab profile. Kim is currently the only
+  # such host, but the predicate is not Kim-specific: a future host matching
+  # both will also schedule the report.
   runReport = hostRecord.longRunningAgents && lib.elem "homelab" hostRecord.profiles;
   reportDirectory = "${config.home.homeDirectory}/reports/morning";
   # Mirrors nodeExporterTextfileDirectory in homelab/monitoring.nix and the

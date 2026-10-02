@@ -16,17 +16,24 @@ prompt.
 
 ## Scheduled read-only reports
 
-### Implemented: morning report on Kim
+### Implemented: morning report on long-running-agent homelab hosts
 
 `users/maxpw/modules/morning-report.nix` runs `scripts/morning-report.sh` as
 the `morning-report` user service and timer (07:00 local, up to five minutes
-of randomized delay, `Persistent=true`). It is enabled only on inventory hosts
-with `longRunningAgents = true` and the `homelab` profile, which today means
-Kim. The run is deterministic shell with no agent or LLM step. It writes
-`~/reports/morning/YYYY-MM-DD.md` atomically and covers:
+of randomized delay, `Persistent=true`). It is enabled on every inventory host
+with `longRunningAgents = true` and the `homelab` profile. Kim is currently
+the only such host, but the gate is a predicate, not a host name: any future
+host that matches both will also schedule the report. The run is deterministic
+shell with no agent or LLM step. Its only writes are
+`~/reports/morning/YYYY-MM-DD.md` (replaced atomically through a temporary file
+in the same directory, mode 0600) and a scratch directory it removes; systemd,
+local files, `gh`, and `git` are only read, and `git` runs with
+`--no-optional-locks` so `status` does not refresh the index. It covers:
 
 - failed system and user units, plus homelab important units from
-  `lib/homelab.nix` that are not active;
+  `lib/homelab.nix` that are not active (units systemd cannot load are
+  reported as `not loaded`, and only an `inactive` oneshot is labelled as
+  between runs; a `failed` oneshot reads as failed);
 - agent services: `t3code.service` (user), `cliproxyapi.service`,
   `cliproxyapi-quota.service`, `cliproxyapi-readiness-probe.timer`, and the
   latest `cliproxyapi_backend_ready` sample when the readiness textfile exists;
@@ -38,11 +45,15 @@ Kim. The run is deterministic shell with no agent or LLM step. It writes
   branch, and the latest commit on `main`.
 
 Every section prints an explicit `unknown` marker instead of omitting a source
-that did not answer, and the script exits non-zero only when the report itself
-cannot be written. Subprocesses run from an empty scratch directory and the
-script never reads dotenv files; `scripts/tests/morning-report-test.sh` covers
-the healthy, all-sources-failing, atomic-write, and dotenv cases, and
-`tests/morning-report-regression.nix` asserts the Kim-only gating. Run
+that did not answer (a `gh` timeout is worded as such rather than as missing
+authentication), and the script exits non-zero only for setup failures or a
+report that cannot be written. Subprocesses run under `timeout -k 5` from an
+empty scratch directory and the script never reads dotenv files.
+`scripts/tests/morning-report-test.sh` (run by `make check-scripts` and the CI
+`shell-safety` job) covers the healthy, same-day re-run, all-sources-failing,
+timeout and malformed-payload, atomic-write, scratch-allocation-failure, and
+dotenv cases; `tests/morning-report-regression.nix` asserts the gating and the
+oneshot timer wiring. Run
 `systemctl --user start morning-report.service` on Kim for an on-demand report
 and `journalctl --user -u morning-report` for its log.
 

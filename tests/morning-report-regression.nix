@@ -1,5 +1,6 @@
-# The morning report is a trial of unattended, read-only work: it must exist
-# only on the inventory host marked for it (Kim) and stay a oneshot timer.
+# The morning report is a trial of unattended, read-only work: it is gated on
+# `longRunningAgents && homelab profile`, which today selects only Kim, and it
+# must stay a oneshot timer. Cuno proves hosts outside the predicate get nothing.
 {
   cuno,
   kim,
