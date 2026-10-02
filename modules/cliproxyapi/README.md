@@ -35,7 +35,7 @@ The `cliproxyapi-quota` systemd service runs `~/pi-config/cli/cliproxyapi-quota-
 
 ### Compatibility contract with pi-config
 
-`cliproxyapi-quota.service` depends on `~/pi-config/cli/cliproxyapi-quota-server.ts` from the separate `pi-config` repository; that repository owns the implementation, and it must not be copied into nix-config. The unit restarts on transient failures but is start-limited to five attempts per 300 seconds, so a missing or broken checkout reaches the `failed` state instead of restart-looping. The unit is listed in `lib/homelab-services.nix`, so `HomelabImportantUnitFailed` and `HomelabRepeatedServiceRestarts` alert on it. Recover by repairing the checkout and running `systemctl reset-failed cliproxyapi-quota.service` followed by `systemctl start cliproxyapi-quota.service`.
+`cliproxyapi-quota.service` depends on `~/pi-config/cli/cliproxyapi-quota-server.ts` from the separate `pi-config` repository; that repository owns the implementation, and it must not be copied into nix-config. The unit restarts on transient failures but is start-limited to five attempts per 300 seconds, so a missing or immediately failing entry point reaches the `failed` state after startup instead of restart-looping. The unit is listed in `lib/homelab-services.nix`, so `HomelabImportantUnitFailed` and `HomelabRepeatedServiceRestarts` alert on it. A server that stays running while serving incompatible responses is not detected by this mechanism; protocol-compatibility validation between the Pi extension and the quota server remains separate. Recover by repairing the checkout and running `systemctl reset-failed cliproxyapi-quota.service` followed by `systemctl start cliproxyapi-quota.service`.
 
 ### Zen upstream protocol constraints
 

@@ -146,6 +146,8 @@ in
     (quotaService.serviceConfig.Restart == "always")
     (!(quotaService.unitConfig ? ConditionPathExists))
   ];
+  assert lib.assertMsg (quotaService.serviceConfig.RestartSec == 5)
+  "the quota service restart delay must stay short enough that an immediately failing entry point exhausts the start limit within its interval and reaches the failed state";
   assert lib.assertMsg (prometheus.ruleFiles != [])
   "Prometheus must load the high-signal homelab alert rules";
   assert lib.assertMsg (builtins.elem "--systemd.collector.enable-restart-count" exporters.systemd.extraFlags)
