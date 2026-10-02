@@ -36,31 +36,40 @@ Measured on Kim as configured before this change: 24 cores, 58 GB RAM, Nix
 
 ## Interpretation
 
-One ordinary compile saturates every core: idle drops to near zero for the
-whole build. Memory headroom stays large (over 42 GB available at the worst
-point). Interactive command latency grows about 1.6x at the median and stays
-under 3x at p95, and a loopback service request stays at 1 ms throughout.
+One ordinary compile drove CPU idle to a median of 8 percent and a minimum
+below 1 percent for the build. Memory headroom stayed large (over 42 GB
+available at the worst point). The trivial evaluation used as a latency proxy
+grew about 1.6x at the median and under 3x at p95. The single sampled
+service endpoint showed no increase at millisecond resolution.
 
-So contention exists at the CPU scheduler level, but this test produced no
-user-visible degradation. That argues for a mechanism that only acts when the
-CPU is actually contended, and against anything that would slow builds on an
-idle machine.
+So the CPU is contended during a build, while memory is not. The two proxies
+are narrow: neither T3 Code responsiveness nor homelab workload latency was
+measured. That supports a provisional preference that only acts when the CPU
+is contended, rather than a cap that also applies to an idle machine.
 
 ## Decision
 
 `machines/kim.nix` sets `CPUWeight = 50` and `IOWeight = 50` on
 `nix-daemon.service`, half of systemd's default weight of 100.
 
-- Weights only matter when a resource is oversubscribed. On an idle machine the
-  daemon still receives every core and the full disk bandwidth, so build times
-  are unchanged.
-- Under contention, interactive sessions and homelab services keep the default
-  weight and therefore win ties against the build, roughly two to one.
-- Rejected: `CPUQuota`, `MemoryMax`, or lowering `max-jobs`/`cores` in
-  `modules/core/nix-settings.nix`. Each would cap builds even when nothing else
-  wants the machine, and the measurement shows no memory pressure to cap.
-- Rejected: resource directives on the T3 Code user service. Lowering the
-  daemon is sufficient and keeps the policy in one place.
+- Weights are relative preferences within one cgroup level, not allocation
+  guarantees. They only matter when a resource is oversubscribed, so an idle
+  machine should still give the daemon every core; build time after the change
+  has not been measured.
+- `nix-daemon.service` lives in `system.slice`, so the weight lowers the build's
+  share against other system services such as the homelab containers and
+  Grafana. Interactive sessions sit in `user.slice`, a sibling of
+  `system.slice` at the root, and are affected only indirectly. Local builds
+  spawned by the daemon stay in its cgroup; client-side evaluation does not.
+- `IOWeight` takes effect only where the block layer honours proportional
+  weights (the `io.cost` or BFQ controllers). It is set for consistency and its
+  effect on Kim's NVMe devices is unverified.
+- Rejected for now: `CPUQuota`, `MemoryMax`, or lowering `max-jobs`/`cores` in
+  `modules/core/nix-settings.nix`. A quota or lower job count limits a build
+  regardless of other demand, and the measurement shows no memory pressure.
+- Rejected for now: resource directives on the T3 Code user service. Whether
+  the daemon weight alone is enough is untested; revisit if T3 responsiveness
+  degrades during builds.
 
 The weights are applied only when Kim is next switched to a generation that
 includes them; evaluating or building the configuration does not change the

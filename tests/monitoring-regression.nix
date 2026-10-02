@@ -247,7 +247,7 @@ in
     ])
     (lib.hasPrefix "count_over_time(homelab:node_cpu_busy:ratio5m[24h]) >= 1380 and " alerts.HomelabCpuAnomaly.expr)
   ];
-  assert expect.all "Nix builds must yield to services under contention through scheduler weights, never CPU or memory caps" [
+  assert expect.all "Kim's nix-daemon must declare CPUWeight and IOWeight 50 and no service-level CPUQuota or MemoryMax" [
     (nixDaemon.CPUWeight == 50)
     (nixDaemon.IOWeight == 50)
     (!(nixDaemon ? CPUQuota))
