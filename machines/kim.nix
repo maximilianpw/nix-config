@@ -34,19 +34,32 @@
     };
   };
 
-  # Always-on server: avoid accidental suspend or hibernation.
-  systemd.sleep.settings.Sleep = {
-    AllowSuspend = "no";
-    AllowHibernation = "no";
-    AllowHybridSleep = "no";
-    AllowSuspendThenHibernate = "no";
-  };
+  systemd = {
+    # Always-on server: avoid accidental suspend or hibernation.
+    sleep.settings.Sleep = {
+      AllowSuspend = "no";
+      AllowHibernation = "no";
+      AllowHybridSleep = "no";
+      AllowSuspendThenHibernate = "no";
+    };
 
-  # Hardware watchdog (SP5100 TCO): auto-reboot if the kernel hard-hangs,
-  # instead of staying down until someone walks over to the box.
-  systemd.settings.Manager = {
-    RuntimeWatchdogSec = "30s";
-    RebootWatchdogSec = "10m";
+    # Hardware watchdog (SP5100 TCO): auto-reboot if the kernel hard-hangs,
+    # instead of staying down until someone walks over to the box.
+    settings.Manager = {
+      RuntimeWatchdogSec = "30s";
+      RebootWatchdogSec = "10m";
+    };
+
+    # Scheduler weights, not caps: builds still take the whole machine when it
+    # is idle, but interactive sessions and homelab services (default weight
+    # 100) win ties once every core is busy. One ordinary compile saturates all
+    # 24 cores while leaving memory and loopback services untouched, so quotas,
+    # memory limits, or a lower max-jobs would only slow uncontended builds.
+    # See docs/kim-build-contention.md.
+    services.nix-daemon.serviceConfig = {
+      CPUWeight = 50;
+      IOWeight = 50;
+    };
   };
 
   hardware.bluetooth.enable = lib.mkDefault false;
