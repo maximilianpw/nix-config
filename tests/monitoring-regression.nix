@@ -28,6 +28,12 @@
   publicIngressScrape = builtins.head (
     builtins.filter (scrapeConfig: scrapeConfig.job_name == "public-ingress") prometheus.scrapeConfigs
   );
+  cliProxyBackendScrape = builtins.head (
+    builtins.filter (scrapeConfig: scrapeConfig.job_name == "cliproxyapi-backend") prometheus.scrapeConfigs
+  );
+  cliProxyBackend = import ../modules/cliproxyapi/config.nix;
+  cliProxyCredentialPath = "/run/credentials/prometheus-blackbox-exporter.service/cliproxyapi-local-api-key";
+  blackboxService = config.systemd.services.prometheus-blackbox-exporter;
   localBackendTargets = (builtins.head localBackendScrape.static_configs).targets;
   publicIngressTargets = (builtins.head publicIngressScrape.static_configs).targets;
   expectedLocalBackendTargets = map (endpoint: endpoint.monitorUrl) (
@@ -105,6 +111,23 @@ in
     (publicIngressScrape.scrape_interval == "5m")
     (publicIngressTargets == expectedPublicIngressTargets)
     (homelab.publicEndpoints.cliproxy.publicMonitorUrl == "https://${homelab.publicEndpoints.cliproxy.host}/healthz")
+  ];
+  assert expect.all "CLIProxyAPI readiness must be an authenticated loopback probe whose token never enters the Nix store" [
+    ((builtins.head cliProxyBackendScrape.static_configs).targets == ["${cliProxyBackend.baseUrl}/v1/models"])
+    (lib.hasPrefix "http://127.0.0.1:" cliProxyBackend.baseUrl)
+    (cliProxyBackendScrape.params.module == ["cliproxyapi_models"])
+    (cliProxyBackendScrape.scrape_interval == "1m")
+    (cliProxyBackendScrape.relabel_configs == publicIngressScrape.relabel_configs)
+    (builtins.elem "cliproxyapi-local-api-key:${config.sops.secrets.cliproxyapi-local-api-key.path}" blackboxService.serviceConfig.LoadCredential)
+    (lib.all (credential: !(lib.hasInfix " " credential)) blackboxService.serviceConfig.LoadCredential)
+    (builtins.elem "prometheus-blackbox-exporter.service" config.sops.secrets.cliproxyapi-local-api-key.restartUnits)
+    (!(builtins.elem "${cliProxyBackend.baseUrl}/v1/models" publicIngressTargets))
+    (!(builtins.elem "${cliProxyBackend.baseUrl}/v1/models" localBackendTargets))
+    (builtins.hasAttr "CLIProxyAPIBackendUnready" alerts)
+    (alerts.CLIProxyAPIBackendUnready."for" == "5m")
+    (alerts.CLIProxyAPIBackendUnready.labels.severity == "critical")
+    (lib.hasInfix ''probe_success{job="cliproxyapi-backend"} == 0'' alerts.CLIProxyAPIBackendUnready.expr)
+    (lib.hasInfix ''absent(probe_success{job="cliproxyapi-backend"})'' alerts.CLIProxyAPIBackendUnready.expr)
   ];
   assert lib.assertMsg (
     builtins.elem "textfile" exporters.node.enabledCollectors
@@ -249,5 +272,12 @@ in
     pkgs.runCommand "monitoring-regression" {} ''
       cmp ${lib.escapeShellArg homeDashboardPath} ${../homelab/grafana/kim-overview.json}
       grep -F -- 'immich-server.service' ${lib.escapeShellArg systemdMetricsService.serviceConfig.ExecStart}
+      # The blackbox module must reference the systemd credential path and must
+      # not embed a bearer token or any /run/secrets path in the store.
+      grep -F -- ${lib.escapeShellArg cliProxyCredentialPath} ${exporters.blackbox.configFile}
+      if grep -E -- 'bearer_token:|credentials:|/run/secrets/' ${exporters.blackbox.configFile}; then
+        echo "blackbox configuration must not embed credential material" >&2
+        exit 1
+      fi
       touch "$out"
     ''
