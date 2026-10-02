@@ -53,12 +53,12 @@ let
   };
 
   renderZenModel = model:
-    "      - name: \"${model.id}\"\n"
-    + "        alias: \"${model.id}\"\n"
-    + "        display-name: \"${model.displayName}\"\n"
-    + "        max-context-length: ${toString model.contextLength}\n"
-    + "        input-modalities: [${builtins.concatStringsSep ", " model.inputModalities}]\n"
-    + "        output-modalities: [text]\n";
+    "        - name: \"${model.id}\"\n"
+    + "          alias: \"${model.id}\"\n"
+    + "          display-name: \"${model.displayName}\"\n"
+    + "          max-context-length: ${toString model.contextLength}\n"
+    + "          input-modalities: [${builtins.concatStringsSep ", " model.inputModalities}]\n"
+    + "          output-modalities: [text]\n";
 in
   cliProxy
   // {
@@ -67,34 +67,62 @@ in
       localApiKey,
       openCodeZenApiKey,
     }: ''
-      host: "${cliProxy.host}"
-      port: ${toString cliProxy.port}
-      auth-dir: "${homeDirectory}/.cli-proxy-api"
+      # CLIProxyAPI v8 layout. A present v8 field wins over its legacy spelling,
+      # so do not reintroduce legacy top-level keys alongside these.
+      config-version: 8
 
-      api-keys:
-        - "${localApiKey}"
+      server:
+        host: "${cliProxy.host}"
+        port: ${toString cliProxy.port}
 
-      remote-management:
+      management:
         allow-remote: true
         secret-key: "${cliProxy.managementKeyHash}"
 
+      access:
+        api-keys:
+          - "${localApiKey}"
+
+      oauth:
+        auth-dir: "${homeDirectory}/.cli-proxy-api"
+
       routing:
         strategy: weighted-round-robin
+        # Keep a client session on one credential so provider prompt caches
+        # stay warm; subagents inherit the parent's credential (default).
         session-affinity: true
         session-affinity-ttl: "1h"
+        # Zen reuses model IDs served by the OAuth providers. Require its `zen/`
+        # prefix so adding this fallback cannot change existing model routing.
+        force-model-prefix: true
 
-      # Zen reuses model IDs served by the OAuth providers. Require its `zen/`
-      # prefix so adding this fallback cannot change existing model routing.
-      force-model-prefix: true
+      requests:
+        streaming:
+          # Remote clients reach this through Cloudflare, which drops streams
+          # idle for about 100 seconds, e.g. during long silent reasoning.
+          keepalive-seconds: 15
+          # Retry on another credential when a stream fails before its first byte.
+          bootstrap-retries: 1
 
-      openai-compatibility:
-        - name: "opencode-zen"
-          prefix: "${openCodeZen.prefix}"
-          base-url: "${openCodeZen.baseUrl}"
-          api-key-entries:
-            - api-key: "${openCodeZenApiKey}"
-          models:
+      # With two accounts per provider, one model's quota limit should not
+      # bench the whole credential for every other model.
+      upstream:
+        codex:
+          model-level-cooling: true
+        claude:
+          model-level-cooling: true
+
+      api-keys:
+        openai-compatibility:
+          - name: "opencode-zen"
+            prefix: "${openCodeZen.prefix}"
+            base-url: "${openCodeZen.baseUrl}"
+            keys:
+              - api-key: "${openCodeZenApiKey}"
+            models:
       ${builtins.concatStringsSep "" (map renderZenModel openCodeZen.chatModels)}
-      usage-statistics-enabled: false
+      observability:
+        usage:
+          usage-statistics-enabled: false
     '';
   }
