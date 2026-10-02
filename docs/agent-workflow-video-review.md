@@ -53,8 +53,10 @@ Checking our setup against the video's assumptions found these gaps. Each is
 tracked where it will be worked on.
 
 - The public proxy health route never contacts CLIProxyAPI, and the quota
-  service is outside the monitored unit inventory. See the
-  [homelab backlog](homelab-backlog.md#monitoring-and-policy).
+  service was outside the monitored unit inventory. Both are addressed by a
+  fixed-target readiness probe and a start-limited, inventoried quota unit.
+  Decided 2026-10-02: crash-loop containment is the accepted contract; no
+  pre-activation compatibility preflight for the pi-config checkout.
 - Kim declares no build concurrency or service resource weights. See the
   [homelab backlog](homelab-backlog.md#monitoring-and-policy).
 - The shared agent policy references skills that are not installed. See the
