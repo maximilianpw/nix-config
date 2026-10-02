@@ -298,7 +298,7 @@
       port = 19009;
       publicMonitorPath = "/healthz";
     };
-    operations.units = ["cliproxyapi.service" "nginx.service"];
+    operations.units = ["cliproxyapi.service" "cliproxyapi-quota.service" "nginx.service"];
   };
 
   homelab-mcp = {

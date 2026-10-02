@@ -44,6 +44,14 @@ in {
     listenAddress = cliProxy.host;
     port = cliProxy.quotaPort;
   };
+  # A broken package or credential directory must surface as a failed unit
+  # that HomelabImportantUnitFailed can alert on, so cap restart attempts
+  # rather than loop forever. The Fleet module's RestartSec = 5 lets an
+  # immediately failing start exhaust this limit within its interval.
+  systemd.services.cliproxyapi-quota.unitConfig = lib.mkIf runServer {
+    StartLimitIntervalSec = 300;
+    StartLimitBurst = 5;
+  };
 
   systemd.services.cliproxyapi = lib.mkIf runServer {
     description = "CLIProxyAPI local AI provider proxy";

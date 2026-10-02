@@ -33,6 +33,10 @@ Provider OAuth credentials remain mutable state in `~/.cli-proxy-api` on Kim. Th
 
 The `cliproxyapi-quota` systemd service comes from Fleet's `nixosModules.cliproxy-quota` and runs the pinned `cliproxy-quota` package as the same user as CLIProxyAPI, with a read-only home. It binds only `127.0.0.1:8318`, reads Kim's current provider credentials from `~/.cli-proxy-api`, and returns only the parsed quota summary; the contract is documented in Fleet's `services/cliproxy-quota/README.md`. Nginx exposes `/quota/v1/{codex,claude,xai}` to clients using the existing public API key; it strips that key before forwarding and never gives clients the management key. `cliproxyapi-util quota` comes from the same package and reads `quotaUrl` from `~/.config/cliproxyapi/client.json`: the loopback endpoint on Kim, the public one elsewhere. The Pi extension still reads the local provider state directly on Kim and uses the public endpoint on other hosts; it moves to `quotaUrl` in a later pi-config change. The dashboard remains at `https://cliproxy.maximilian.pw/management.html#/login`; Pi does not use its privileged login.
 
+### Quota service failure contract
+
+`cliproxyapi-quota.service` runs Fleet's pinned `cliproxy-quota` package, so it no longer depends on a mutable checkout; Fleet owns the implementation and it must not be copied into nix-config. The unit restarts on transient failures but is start-limited to five attempts per 300 seconds, so a broken package or immediately failing start reaches the `failed` state after startup instead of restart-looping. The unit is listed in `lib/homelab-services.nix`, so `HomelabImportantUnitFailed` and `HomelabRepeatedServiceRestarts` alert on it. A server that stays running while serving incompatible responses is not detected by this mechanism; the HTTP contract is covered by Fleet's tests. Recover by fixing the cause (or rolling back the generation) and running `systemctl reset-failed cliproxyapi-quota.service` followed by `systemctl start cliproxyapi-quota.service`.
+
 ### Zen upstream protocol constraints
 
 The configured Zen upstream is deliberately explicit, prefix-isolated, and
@@ -64,4 +68,4 @@ Billable provider credentials are runtime SOPS material. They must be rendered
 from encrypted secrets at runtime and must never be stored as Nix literals or
 written to the Nix store.
 
-Pi's dynamic model discovery and quota client are implemented in the separate `~/pi-config` repository and linked into `~/.pi/agent` by `users/maxpw/modules/agent-tools.nix`. The installed `cliproxyapi-util quota --json` command runs that shared client and reports deterministic availability for Codex, Claude, and Grok.
+Pi's dynamic model discovery and quota client are implemented in the separate `~/pi-config` repository and linked into `~/.pi/agent` by `users/maxpw/modules/agent-tools.nix`. The installed `cliproxyapi-util quota --json` command comes from Fleet's `cliproxy-quota` package, reads the quota HTTP endpoint at `quotaUrl`, and reports deterministic availability for Codex, Claude, and Grok.
