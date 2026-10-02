@@ -15,6 +15,10 @@
 - Require explicit authorization before publishing or pushing, deploying, changing shared infrastructure or live data, or performing destructive operations. Authorization for local verification does not authorize those actions.
 - Use `grill-me` for explicitly requested planning interviews or unresolved product/design decisions that need user input. Load `domain-modeling` when that interview should update `CONTEXT.md` or record an ADR. Neither is mandatory for implementation.
 
+## Unattended execution
+
+When running unattended (no human in the loop), do not read `.env` or `.env.*` files. Treat the authorization boundaries above as absolute: with nobody available to approve, publishing, pushing, deploying, changing shared infrastructure or live data, and destructive operations are out of scope rather than deferred.
+
 ## Delegation
 
 Keep decisions, synthesis, implementation, and user interaction in the current thread. Use subagents only for bounded research or review that can be described up front and returned as a concise report. Use Herdr when the user asks for a visible or multi-turn agent in another tab.

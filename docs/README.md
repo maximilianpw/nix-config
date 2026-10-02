@@ -36,6 +36,7 @@ completed plans and superseded research.
 
 - [Media stack decision record](media-stack-research.md)
 - [Kim build contention and Nix daemon scheduler weights](kim-build-contention.md)
+- [ADR 0001: Unattended agent access on Kim](adr/0001-unattended-agent-access.md)
 
 ## Reviews
 

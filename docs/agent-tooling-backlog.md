@@ -26,9 +26,10 @@ Decide whether to add isolated, report-only jobs for:
 - available agent-tooling updates.
 
 These jobs must write reports only. They must not edit this repository by
-default. Open decisions are the report destination, whether the implementation
-belongs in the external `pi-config` repository, and the first unattended host,
-if any.
+default. The first unattended host is Kim, running as `maxpw` under
+[ADR 0001](adr/0001-unattended-agent-access.md); the morning report (PRS-361)
+is the first such job. Report destination and ownership are being settled in
+PRS-361.
 
 A reasonable first trial is one morning report on Kim covering failed checks,
 unavailable agent services, quota availability, and work awaiting a decision.
@@ -54,10 +55,12 @@ the first case the validator should have caught.
 
 ### Unattended credential isolation
 
-Fleet SSH blocks disable agent forwarding by default. Unattended work still
-needs a separate threat model, low-privilege and short-lived credentials, and
-human approval for destructive operations. Define the credential and operation
-allowlist before scheduling any agent work.
+Decided in [ADR 0001](adr/0001-unattended-agent-access.md): unattended agents
+on Kim run as the personal user `maxpw` with the same access as an interactive
+session, must not read `.env` or `.env.*` files, and treat the `AGENTS.md`
+authorization boundaries as absolute. No separate user or container is
+introduced. The ADR lists the credential-bearing paths that remain readable so
+the owner can confirm or tighten the scope later.
 
 T3 and the proxy run under the personal user, which Kim also grants Docker
 access. Define which repositories, files, credentials, network services, and
@@ -79,7 +82,9 @@ historical unauthenticated probe into a current compatibility claim.
 
 ## Open decisions
 
-- Report destination: a local report directory, an Obsidian location, or both.
-- Ownership: this repository or the external `pi-config` repository.
-- First unattended host, if unattended work is enabled at all.
-- Credential scope and the operations that must always remain human-approved.
+- Report destination and ownership (this repository or the external
+  `pi-config` repository): being decided in PRS-361.
+
+Decided: the first unattended host is Kim as the personal user `maxpw`, and the
+credential scope and always-human-approved operations are recorded in
+[ADR 0001](adr/0001-unattended-agent-access.md).
