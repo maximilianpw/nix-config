@@ -51,3 +51,6 @@ age-keys.txt
 
 # Generated portal metadata for Amp orb services
 /.amp/portals/*
+
+# Agent worktrees created by Claude Code
+.claude/worktrees/
