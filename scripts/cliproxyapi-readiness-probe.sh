@@ -16,13 +16,17 @@ if (( $# != 0 )); then
   exit 2
 fi
 
-case $CLIPROXYAPI_MODELS_URL in
-  http://127.0.0.1:*/v1/models) ;;
-  *)
-    echo "CLIProxyAPI readiness probe target must be a loopback /v1/models URL" >&2
-    exit 1
-    ;;
-esac
+# Anchored so userinfo, extra hosts, queries, or fragments cannot smuggle a
+# different destination past the loopback check.
+if [[ ! $CLIPROXYAPI_MODELS_URL =~ ^http://127[.]0[.]0[.]1:([0-9]{1,5})/v1/models$ ]]; then
+  echo "CLIProxyAPI readiness probe target must be http://127.0.0.1:<port>/v1/models" >&2
+  exit 1
+fi
+target_port=$((10#${BASH_REMATCH[1]}))
+if (( target_port < 1 || target_port > 65535 )); then
+  echo "CLIProxyAPI readiness probe target port must be between 1 and 65535" >&2
+  exit 1
+fi
 
 credential_file="$CREDENTIALS_DIRECTORY/cliproxyapi-local-api-key"
 if [[ ! -r $credential_file ]]; then
@@ -55,22 +59,29 @@ body_file="$work_dir/body"
   printf 'Authorization: Bearer %s\n' "$api_key" > "$header_file"
 )
 
+# --disable must come first so ~/.curlrc is ignored; --noproxy keeps proxy
+# environment variables from redirecting the fixed loopback request. A
+# non-zero curl exit (timeout, truncated body, connection error) is never
+# ready, even when the status and partial body look right.
+curl_exit=0
 http_status=$("$CURL_BIN" \
+  --disable \
   --silent \
   --show-error \
+  --noproxy '*' \
   --max-time 10 \
   --max-redirs 0 \
   --header @"$header_file" \
   --output "$body_file" \
   --write-out '%{http_code}' \
-  "$CLIPROXYAPI_MODELS_URL" 2>/dev/null || true)
+  "$CLIPROXYAPI_MODELS_URL" 2>/dev/null) || curl_exit=$?
 case $http_status in
   [0-9][0-9][0-9]) ;;
   *) http_status=000 ;;
 esac
 
 ready=0
-if [[ $http_status == 200 && -s $body_file ]]; then
+if (( curl_exit == 0 )) && [[ $http_status == 200 && -s $body_file ]]; then
   body=$(< "$body_file")
   if [[ $body =~ \"object\"[[:space:]]*:[[:space:]]*\"list\" ]]; then
     ready=1

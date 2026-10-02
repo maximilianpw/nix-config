@@ -181,6 +181,8 @@
         (alert "HomelabLocalBackendDown" ''absent(probe_success{job="local-backends"}) or probe_success{job="local-backends"} == 0 or up{job="local-backends"} == 0'' "10m" "critical" "A declared homelab backend is unhealthy")
         (alert "HomelabPublicIngressDown" ''absent(probe_success{job="public-ingress"}) or probe_success{job="public-ingress"} == 0 or up{job="public-ingress"} == 0'' "10m" "critical" "A declared public ingress endpoint is unreachable")
         (alert "CLIProxyAPIBackendUnready" ''cliproxyapi_backend_ready == 0'' "5m" "critical" "CLIProxyAPI on loopback is not answering authenticated model listings")
+        # Fires about six minutes after the last write: three missed one-minute
+        # runs cross the 180s threshold, then the condition must hold for 3m.
         (alert "CLIProxyAPIReadinessProbeStale" ''absent(node_textfile_mtime_seconds{file="${cliProxyReadinessFile}"}) or time() - node_textfile_mtime_seconds{file="${cliProxyReadinessFile}"} > 180'' "3m" "warning" "The CLIProxyAPI readiness probe has not refreshed for more than three minutes")
         (alert "HomelabBackupStale" ''absent(homelab_backup_last_success_timestamp_seconds) or (time() - homelab_backup_last_success_timestamp_seconds > 129600)'' "15m" "critical" "No successful local backup has been recorded in 36 hours")
         (alert "HomelabBorgCheckStale" ''absent(homelab_borg_check_last_success_timestamp_seconds) or (time() - homelab_borg_check_last_success_timestamp_seconds > 777600)'' "30m" "critical" "No successful Borg consistency check has been recorded in 9 days")
@@ -278,8 +280,9 @@ in {
 
     environment.systemPackages = [homelabCheck];
 
-    # systemd restart of an idle oneshot runs it once, so a rotated key is
-    # probed immediately instead of waiting for the next timer tick.
+    # The credential is loaded per run, so a rotated key is used by the next
+    # timer tick. sops-nix issues try-restart, which does not start an idle
+    # oneshot; an immediate re-probe needs an explicit systemctl start.
     sops.secrets.${cliProxyCredentialName}.restartUnits = ["cliproxyapi-readiness-probe.service"];
 
     services = {
