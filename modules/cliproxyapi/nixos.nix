@@ -39,6 +39,15 @@ in {
   systemd.services.cliproxyapi-quota = lib.mkIf runServer {
     description = "CLIProxyAPI quota-only loopback endpoint";
     wantedBy = ["multi-user.target"];
+    # The script lives in the mutable ~/pi-config checkout. A missing or broken
+    # checkout must surface as a failed unit that HomelabImportantUnitFailed can
+    # alert on, so cap restart attempts rather than loop forever. A
+    # ConditionPathExists guard is deliberately omitted: a failed condition
+    # leaves the unit "inactive", which monitoring treats as healthy.
+    unitConfig = {
+      StartLimitIntervalSec = 300;
+      StartLimitBurst = 5;
+    };
     serviceConfig = {
       User = currentSystemUser;
       ExecStart = "${lib.getExe pkgs.bun} ${homeDirectory}/pi-config/cli/cliproxyapi-quota-server.ts";

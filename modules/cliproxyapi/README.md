@@ -33,6 +33,10 @@ Provider OAuth credentials remain mutable state in `~/.cli-proxy-api` on Kim. Th
 
 The `cliproxyapi-quota` systemd service runs `~/pi-config/cli/cliproxyapi-quota-server.ts` as the same user as CLIProxyAPI. It binds only `127.0.0.1:8318`, reads Kim's current provider credentials, and returns only the parsed quota summary. Nginx exposes `/quota/v1/{codex,claude,xai}` to clients using the existing public API key; it strips that key before forwarding and never gives clients the management key. The Pi extension uses this endpoint on remote hosts and reads the local provider state directly on Kim. Keep the Pi checkout on Kim updated before activating a configuration that starts this service. The dashboard remains at `https://cliproxy.maximilian.pw/management.html#/login`; Pi does not use its privileged login.
 
+### Compatibility contract with pi-config
+
+`cliproxyapi-quota.service` depends on `~/pi-config/cli/cliproxyapi-quota-server.ts` from the separate `pi-config` repository; that repository owns the implementation, and it must not be copied into nix-config. The unit restarts on transient failures but is start-limited to five attempts per 300 seconds, so a missing or immediately failing entry point reaches the `failed` state after startup instead of restart-looping. The unit is listed in `lib/homelab-services.nix`, so `HomelabImportantUnitFailed` and `HomelabRepeatedServiceRestarts` alert on it. A server that stays running while serving incompatible responses is not detected by this mechanism; protocol-compatibility validation between the Pi extension and the quota server remains separate. Recover by repairing the checkout and running `systemctl reset-failed cliproxyapi-quota.service` followed by `systemctl start cliproxyapi-quota.service`.
+
 ### Zen upstream protocol constraints
 
 The configured Zen upstream is deliberately explicit, prefix-isolated, and
