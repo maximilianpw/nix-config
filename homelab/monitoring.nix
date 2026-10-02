@@ -9,6 +9,10 @@
   inherit (homelab) endpoints;
   prometheus = config.services.prometheus;
   inherit (prometheus) alertmanager exporters;
+  cliProxy = import ../modules/cliproxyapi/config.nix;
+  cliProxyCredentialName = "cliproxyapi-local-api-key";
+  cliProxyCredentialPath = "/run/credentials/prometheus-blackbox-exporter.service/${cliProxyCredentialName}";
+  cliProxyModelsUrl = "${cliProxy.baseUrl}/v1/models";
   alertReceiverName =
     if monitoringCfg.alertWebhookUrlFile == null
     then "local-sink"
@@ -74,21 +78,41 @@
     annotations = {inherit summary;};
   };
   blackboxConfig = (pkgs.formats.yaml {}).generate "homelab-blackbox.yaml" {
-    modules.http_2xx = {
-      prober = "http";
-      timeout = "10s";
-      http = {
-        preferred_ip_protocol = "ip4";
-        follow_redirects = true;
-        headers.User-Agent = "maximilian-homelab-monitor/1";
-        # Tunarr's health endpoint returns HTTP 200 even when a component is
-        # unhealthy. Treat its compact JSON error marker as a failed probe.
-        fail_if_body_matches_regexp = [
-          ''"type":"error"''
-          ''"installed":false''
-          ''"maintenance":true''
-          ''"needsDbUpgrade":true''
-        ];
+    modules = {
+      http_2xx = {
+        prober = "http";
+        timeout = "10s";
+        http = {
+          preferred_ip_protocol = "ip4";
+          follow_redirects = true;
+          headers.User-Agent = "maximilian-homelab-monitor/1";
+          # Tunarr's health endpoint returns HTTP 200 even when a component is
+          # unhealthy. Treat its compact JSON error marker as a failed probe.
+          fail_if_body_matches_regexp = [
+            ''"type":"error"''
+            ''"installed":false''
+            ''"maintenance":true''
+            ''"needsDbUpgrade":true''
+          ];
+        };
+      };
+      # The public /healthz is answered by nginx alone, so this authenticated
+      # loopback probe is the only signal that CLIProxyAPI itself is serving.
+      # /v1/models is served from the in-process model registry: it exercises
+      # the SOPS-rendered API key without sending a billable provider request.
+      cliproxyapi_models = {
+        prober = "http";
+        timeout = "10s";
+        http = {
+          preferred_ip_protocol = "ip4";
+          follow_redirects = false;
+          headers.User-Agent = "maximilian-homelab-monitor/1";
+          authorization = {
+            type = "Bearer";
+            credentials_file = cliProxyCredentialPath;
+          };
+          fail_if_body_not_matches_regexp = [''"object":\s*"list"''];
+        };
       };
     };
   };
@@ -125,6 +149,16 @@
     ];
     inherit (publicIngressScrape) relabel_configs;
   };
+  cliProxyBackendScrape = {
+    job_name = "cliproxyapi-backend";
+    scrape_interval = "1m";
+    metrics_path = "/probe";
+    params.module = ["cliproxyapi_models"];
+    static_configs = [
+      {targets = [cliProxyModelsUrl];}
+    ];
+    inherit (publicIngressScrape) relabel_configs;
+  };
   homelabRuleGroups = [
     {
       name = "homelab-adaptive-baselines";
@@ -157,6 +191,7 @@
         (alert "HomelabSmartctlExporterDown" ''absent(up{job="smartctl"}) or up{job="smartctl"} == 0'' "5m" "critical" "The SMART exporter is absent or unreachable")
         (alert "HomelabLocalBackendDown" ''absent(probe_success{job="local-backends"}) or probe_success{job="local-backends"} == 0 or up{job="local-backends"} == 0'' "10m" "critical" "A declared homelab backend is unhealthy")
         (alert "HomelabPublicIngressDown" ''absent(probe_success{job="public-ingress"}) or probe_success{job="public-ingress"} == 0 or up{job="public-ingress"} == 0'' "10m" "critical" "A declared public ingress endpoint is unreachable")
+        (alert "CLIProxyAPIBackendUnready" ''absent(probe_success{job="cliproxyapi-backend"}) or probe_success{job="cliproxyapi-backend"} == 0 or up{job="cliproxyapi-backend"} == 0'' "5m" "critical" "CLIProxyAPI on loopback is not answering authenticated model listings")
         (alert "HomelabBackupStale" ''absent(homelab_backup_last_success_timestamp_seconds) or (time() - homelab_backup_last_success_timestamp_seconds > 129600)'' "15m" "critical" "No successful local backup has been recorded in 36 hours")
         (alert "HomelabBorgCheckStale" ''absent(homelab_borg_check_last_success_timestamp_seconds) or (time() - homelab_borg_check_last_success_timestamp_seconds > 777600)'' "30m" "critical" "No successful Borg consistency check has been recorded in 9 days")
         (alert "HomelabBorgVerifyStale" ''absent(homelab_borg_verify_last_success_timestamp_seconds) or (time() - homelab_borg_verify_last_success_timestamp_seconds > 3456000)'' "1h" "warning" "No successful cryptographic Borg verification has been recorded in 40 days")
@@ -253,6 +288,10 @@ in {
 
     environment.systemPackages = [homelabCheck];
 
+    # The blackbox exporter reads the key through a systemd credential so the
+    # store-resident probe configuration carries only the credential path.
+    sops.secrets.${cliProxyCredentialName}.restartUnits = ["prometheus-blackbox-exporter.service"];
+
     services = {
       prometheus = {
         enable = true;
@@ -282,6 +321,7 @@ in {
           (scrape "alertmanager" alertmanager.port)
           localBackendScrape
           publicIngressScrape
+          cliProxyBackendScrape
         ];
 
         alertmanager = {
@@ -525,6 +565,9 @@ in {
             "${alertWebhookCredentialName}:${monitoringCfg.alertWebhookUrlFile}"
           ];
         };
+        prometheus-blackbox-exporter.serviceConfig.LoadCredential = [
+          "${cliProxyCredentialName}:${config.sops.secrets.${cliProxyCredentialName}.path}"
+        ];
         grafana.serviceConfig.ExecStartPre = [grafanaSecretKeySetup];
       };
     };
