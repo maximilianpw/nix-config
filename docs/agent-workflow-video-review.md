@@ -57,8 +57,10 @@ tracked where it will be worked on.
   fixed-target readiness probe and a start-limited, inventoried quota unit.
   Decided 2026-10-02: crash-loop containment is the accepted contract; no
   pre-activation compatibility preflight for the pi-config checkout.
-- Kim declares no build concurrency or service resource weights. See the
-  [homelab backlog](homelab-backlog.md#monitoring-and-policy).
+- Kim declared no build concurrency or service resource weights. Measured
+  2026-10-02: one compile saturates all cores with no user-visible service
+  degradation. Decision: CPU and IO scheduler weights on the Nix daemon, no
+  caps. See `docs/kim-build-contention.md` once merged.
 - The shared agent policy references skills that are not installed. See the
   [agent tooling backlog](agent-tooling-backlog.md#prompt-debt-validation).
 - Unattended credential scope and a first scheduled report remain open
