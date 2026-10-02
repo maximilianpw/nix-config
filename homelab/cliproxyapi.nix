@@ -1,6 +1,8 @@
 {
   config,
+  inputs,
   lib,
+  pkgs,
   ...
 }: let
   homelab = import ../lib/homelab.nix {inherit lib;};
@@ -68,7 +70,7 @@ in {
         };
         "= /healthz".return = "204";
         "= /management.html" = {
-          alias = "${../assets/cliproxy-ui/management.html}";
+          alias = "${inputs.fleet.packages.${pkgs.stdenv.hostPlatform.system}.cliproxy-ui}/share/cliproxy-ui/management.html";
           extraConfig = ''
             add_header Cache-Control "no-store" always;
           '';

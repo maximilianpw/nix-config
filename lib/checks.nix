@@ -32,6 +32,7 @@
     };
     homelab-ingress-regression = import ../tests/homelab-ingress-regression.nix {
       config = self.nixosConfigurations.kim.config;
+      fleetPackages = inputs.fleet.packages;
       inherit lib;
       pkgs = nixpkgs.legacyPackages.x86_64-linux;
     };

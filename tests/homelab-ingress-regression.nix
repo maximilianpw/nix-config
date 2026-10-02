@@ -1,5 +1,6 @@
 {
   config,
+  fleetPackages,
   lib,
   pkgs,
 }: let
@@ -52,7 +53,7 @@ in
     (cliproxy.locations."/".return == "302 /management.html")
     (lib.hasInfix "absolute_redirect off;" cliproxy.locations."/".extraConfig)
     (cliproxy.locations."= /healthz".return == "204")
-    (cliproxy.locations."= /management.html".alias == "${../assets/cliproxy-ui/management.html}")
+    (cliproxy.locations."= /management.html".alias == "${fleetPackages.x86_64-linux.cliproxy-ui}/share/cliproxy-ui/management.html")
     (cliproxy.locations."= /management.html".proxyPass == null)
     (lib.hasInfix "Cache-Control \"no-store\"" cliproxy.locations."= /management.html".extraConfig)
     (cliproxy.locations."/v0/management/".proxyPass == cliproxyBackend)
