@@ -227,6 +227,7 @@
           actionlint
           alejandra
           bashInteractive
+          curl
           deadnix
           git
           gnumake

@@ -78,6 +78,12 @@ in
     (config.sops.templates."cliproxyapi-upstream-auth.conf".mode == "0400")
     (!(builtins.elem cliproxyPort config.networking.firewall.allowedTCPPorts))
   ];
+  assert expect.all "the public CLIProxyAPI /healthz must stay a bare nginx 204 that never reaches the upstream proxy" [
+    (cliproxy.locations."= /healthz".return == "204")
+    (cliproxy.locations."= /healthz".proxyPass == null)
+    (cliproxy.locations."= /healthz".extraConfig == "")
+    (homelab.publicEndpoints.cliproxy.publicMonitorUrl == "https://${homelab.publicEndpoints.cliproxy.host}/healthz")
+  ];
   assert lib.assertMsg (
     lib.all (name: homelab.services.${name}.endpoint.authorizationOwner == "application") [
       "homeassistant"

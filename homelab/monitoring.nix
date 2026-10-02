@@ -9,6 +9,9 @@
   inherit (homelab) endpoints;
   prometheus = config.services.prometheus;
   inherit (prometheus) alertmanager exporters;
+  cliProxy = import ../modules/cliproxyapi/config.nix;
+  cliProxyCredentialName = "cliproxyapi-local-api-key";
+  cliProxyReadinessFile = "${nodeExporterTextfileDirectory}/cliproxyapi-readiness.prom";
   alertReceiverName =
     if monitoringCfg.alertWebhookUrlFile == null
     then "local-sink"
@@ -38,6 +41,26 @@
       export AWK_BIN=${lib.getExe pkgs.gawk}
       export HOMELAB_METRICS_DIR=${lib.escapeShellArg nodeExporterTextfileDirectory}
       exec ${lib.getExe pkgs.bash} ${../scripts/homelab-systemd-metrics.sh} ${lib.escapeShellArgs importantSystemdUnits}
+    '';
+  };
+  # The public /healthz is answered by nginx alone, so this authenticated
+  # loopback probe is the only signal that CLIProxyAPI itself is serving.
+  # /v1/models is served from the in-process model registry: it exercises the
+  # SOPS-rendered API key without sending a billable provider request. The
+  # destination is fixed here; the blackbox exporter was rejected because its
+  # unauthenticated /probe endpoint lets any loopback caller pick the target
+  # that receives the bearer token.
+  cliProxyReadinessProbe = pkgs.writeShellApplication {
+    name = "cliproxyapi-readiness-probe";
+    runtimeInputs = [
+      pkgs.coreutils
+      pkgs.curl
+    ];
+    text = ''
+      export CURL_BIN=${lib.getExe pkgs.curl}
+      export CLIPROXYAPI_MODELS_URL=${lib.escapeShellArg "${cliProxy.baseUrl}/v1/models"}
+      export HOMELAB_METRICS_DIR=${lib.escapeShellArg nodeExporterTextfileDirectory}
+      exec ${lib.getExe pkgs.bash} ${../scripts/cliproxyapi-readiness-probe.sh}
     '';
   };
   hostHeartbeat = pkgs.writeShellApplication {
@@ -157,6 +180,10 @@
         (alert "HomelabSmartctlExporterDown" ''absent(up{job="smartctl"}) or up{job="smartctl"} == 0'' "5m" "critical" "The SMART exporter is absent or unreachable")
         (alert "HomelabLocalBackendDown" ''absent(probe_success{job="local-backends"}) or probe_success{job="local-backends"} == 0 or up{job="local-backends"} == 0'' "10m" "critical" "A declared homelab backend is unhealthy")
         (alert "HomelabPublicIngressDown" ''absent(probe_success{job="public-ingress"}) or probe_success{job="public-ingress"} == 0 or up{job="public-ingress"} == 0'' "10m" "critical" "A declared public ingress endpoint is unreachable")
+        (alert "CLIProxyAPIBackendUnready" ''cliproxyapi_backend_ready == 0'' "5m" "critical" "CLIProxyAPI on loopback is not answering authenticated model listings")
+        # Fires about six minutes after the last write: three missed one-minute
+        # runs cross the 180s threshold, then the condition must hold for 3m.
+        (alert "CLIProxyAPIReadinessProbeStale" ''absent(node_textfile_mtime_seconds{file="${cliProxyReadinessFile}"}) or time() - node_textfile_mtime_seconds{file="${cliProxyReadinessFile}"} > 180'' "3m" "warning" "The CLIProxyAPI readiness probe has not refreshed for more than three minutes")
         (alert "HomelabBackupStale" ''absent(homelab_backup_last_success_timestamp_seconds) or (time() - homelab_backup_last_success_timestamp_seconds > 129600)'' "15m" "critical" "No successful local backup has been recorded in 36 hours")
         (alert "HomelabBorgCheckStale" ''absent(homelab_borg_check_last_success_timestamp_seconds) or (time() - homelab_borg_check_last_success_timestamp_seconds > 777600)'' "30m" "critical" "No successful Borg consistency check has been recorded in 9 days")
         (alert "HomelabBorgVerifyStale" ''absent(homelab_borg_verify_last_success_timestamp_seconds) or (time() - homelab_borg_verify_last_success_timestamp_seconds > 3456000)'' "1h" "warning" "No successful cryptographic Borg verification has been recorded in 40 days")
@@ -252,6 +279,11 @@ in {
     };
 
     environment.systemPackages = [homelabCheck];
+
+    # The credential is loaded per run, so a rotated key is used by the next
+    # timer tick. sops-nix issues try-restart, which does not start an idle
+    # oneshot; an immediate re-probe needs an explicit systemctl start.
+    sops.secrets.${cliProxyCredentialName}.restartUnits = ["cliproxyapi-readiness-probe.service"];
 
     services = {
       prometheus = {
@@ -463,23 +495,36 @@ in {
         mode = "0755";
       };
 
-      timers.homelab-systemd-metrics = {
-        description = "Refresh systemd resource metrics for Prometheus";
-        wantedBy = ["timers.target"];
-        timerConfig = {
-          OnBootSec = "30s";
-          OnUnitActiveSec = "60s";
-          AccuracySec = "5s";
+      timers = {
+        homelab-systemd-metrics = {
+          description = "Refresh systemd resource metrics for Prometheus";
+          wantedBy = ["timers.target"];
+          timerConfig = {
+            OnBootSec = "30s";
+            OnUnitActiveSec = "60s";
+            AccuracySec = "5s";
+          };
         };
-      };
 
-      timers.homelab-host-heartbeat = lib.mkIf (monitoringCfg.hostHeartbeatUrlFile != null) {
-        description = "Signal Kim availability to an external dead-man monitor";
-        wantedBy = ["timers.target"];
-        timerConfig = {
-          OnBootSec = "2m";
-          OnUnitActiveSec = "5m";
-          AccuracySec = "30s";
+        cliproxyapi-readiness-probe = {
+          description = "Probe CLIProxyAPI readiness for Prometheus";
+          wantedBy = ["timers.target"];
+          timerConfig = {
+            OnBootSec = "1m";
+            OnUnitActiveSec = "60s";
+            AccuracySec = "1s";
+            RandomizedDelaySec = "5s";
+          };
+        };
+
+        homelab-host-heartbeat = lib.mkIf (monitoringCfg.hostHeartbeatUrlFile != null) {
+          description = "Signal Kim availability to an external dead-man monitor";
+          wantedBy = ["timers.target"];
+          timerConfig = {
+            OnBootSec = "2m";
+            OnUnitActiveSec = "5m";
+            AccuracySec = "30s";
+          };
         };
       };
 
@@ -494,6 +539,34 @@ in {
             ProtectHome = true;
             ProtectSystem = "strict";
             ReadWritePaths = [nodeExporterTextfileDirectory];
+          };
+        };
+
+        # Runs as root like the sibling textfile collectors because the node
+        # exporter directory is root-owned; the sandbox below leaves it with
+        # no capabilities, no home, a read-only system, and loopback only.
+        cliproxyapi-readiness-probe = {
+          description = "Probe CLIProxyAPI readiness for Prometheus";
+          after = ["cliproxyapi.service"];
+          serviceConfig = {
+            Type = "oneshot";
+            ExecStart = lib.getExe cliProxyReadinessProbe;
+            LoadCredential = [
+              "${cliProxyCredentialName}:${config.sops.secrets.${cliProxyCredentialName}.path}"
+            ];
+            CapabilityBoundingSet = [""];
+            IPAddressAllow = ["localhost"];
+            IPAddressDeny = ["any"];
+            NoNewPrivileges = true;
+            PrivateDevices = true;
+            PrivateTmp = true;
+            ProtectHome = true;
+            ProtectSystem = "strict";
+            ReadWritePaths = [nodeExporterTextfileDirectory];
+            RestrictAddressFamilies = [
+              "AF_INET"
+              "AF_UNIX"
+            ];
           };
         };
 
