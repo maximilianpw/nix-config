@@ -30,6 +30,15 @@ default. Open decisions are the report destination, whether the implementation
 belongs in the external `pi-config` repository, and the first unattended host,
 if any.
 
+A reasonable first trial is one morning report on Kim covering failed checks,
+unavailable agent services, quota availability, and work awaiting a decision.
+Deterministic scripts gather the facts; an agent is used only where explanation
+or prioritization adds value. The report is timestamped, distinguishes failures
+from unknown results, contains no secret values, and makes no repository or
+service changes. Nix owns the service lifecycle and package wiring; prompts and
+extensions stay in `pi-config`. Start only after the credential scope below is
+defined.
+
 ### Prompt-debt validation
 
 A future check may report missing commands or files, warnings against editing
@@ -37,12 +46,28 @@ generated files, Fleet aliases absent from inventory, oversized policy files,
 and rules duplicated between repository and global instructions. It should
 start as a read-only report before becoming a lint gate.
 
+Known instance: the shared policy in `users/maxpw/agents/shared/AGENTS.md`
+names `grilling` and `grill-with-docs`, but only `grill-me` is installed in the
+agent skill catalogs. Home Manager distributes that policy to several agents, so
+the stale reference repeats across tools. Fix the references so every required
+skill resolves, without assuming `grill-me` covers the `CONTEXT.md` and ADR
+duties `grill-with-docs` described. This is the first case the validator should
+catch.
+
 ### Unattended credential isolation
 
 Fleet SSH blocks disable agent forwarding by default. Unattended work still
 needs a separate threat model, low-privilege and short-lived credentials, and
 human approval for destructive operations. Define the credential and operation
 allowlist before scheduling any agent work.
+
+T3 and the proxy run under the personal user, which Kim also grants Docker
+access. Define which repositories, files, credentials, network services, and
+operations an unattended task needs, starting with read-only reporting. For
+editing tasks, evaluate a separate account or container with deliberate proxy
+access and no default access to personal credentials, privileged Docker control,
+or live service data. Acceptance is that representative allowed tasks work and
+excluded accesses fail; pick the isolation mechanism after that.
 
 ### CLIProxyAPI upstream protocol revalidation
 
