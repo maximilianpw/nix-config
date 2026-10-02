@@ -44,6 +44,17 @@ class Handler(http.server.BaseHTTPRequestHandler):
             status, body = 200, b'{"object": "list", "data": [{"id": "gpt-5.6-sol", "object": "model"}]}'
         elif mode == "unauthorized":
             status, body = 401, b'{"error": {"message": "unauthorized", "type": "invalid_request_error"}}'
+        elif mode == "truncated":
+            # Advertise a full listing, send a matching prefix, then close early.
+            status, body = 200, b'{"object": "list", "data": [{"id": "gpt-5.6-sol"'
+            self.send_response(status)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(body) + 4096))
+            self.send_header("Connection", "close")
+            self.end_headers()
+            self.wfile.write(body)
+            self.wfile.flush()
+            return
         else:
             status, body = 200, b'<html><body>management ui</body></html>'
         self.send_response(status)
@@ -61,68 +72,18 @@ with open(os.environ["FIXTURE_PORT_FILE"], "w", encoding="utf-8") as handle:
 server.serve_forever()
 EOF
 
-# curl is not part of the dev shell, so stand in for the subset the probe uses
-# with a real HTTP round trip and a record of every process argument.
-cat > "$fake_curl" <<'EOF'
-#!/usr/bin/env python3
-import sys
-import urllib.error
-import urllib.request
-
-with open(sys.argv[0] + ".arguments", "a", encoding="utf-8") as log:
-    log.write("\n".join(sys.argv[1:]) + "\n")
-
-arguments = sys.argv[1:]
-headers = {}
-output = None
-write_out = None
-url = None
-index = 0
-while index < len(arguments):
-    argument = arguments[index]
-    if argument in {"--silent", "--show-error"}:
-        index += 1
-    elif argument in {"--max-time", "--max-redirs"}:
-        index += 2
-    elif argument == "--header":
-        value = arguments[index + 1]
-        assert value.startswith("@"), "probe must pass headers through a file"
-        with open(value[1:], encoding="utf-8") as handle:
-            for line in handle:
-                name, _, header_value = line.rstrip("\n").partition(": ")
-                headers[name] = header_value
-        index += 2
-    elif argument == "--output":
-        output = arguments[index + 1]
-        index += 2
-    elif argument == "--write-out":
-        write_out = arguments[index + 1]
-        index += 2
-    elif argument.startswith("-"):
-        raise SystemExit(f"unsupported curl argument {argument}")
-    else:
-        assert url is None, "probe must request exactly one URL"
-        url = argument
-        index += 1
-
-assert url is not None and output is not None and write_out == "%{http_code}"
-request = urllib.request.Request(url, headers=headers)
-status = 0
-exit_code = 0
-try:
-    with urllib.request.urlopen(request, timeout=5) as response:
-        status = response.status
-        body = response.read()
-except urllib.error.HTTPError as error:
-    status = error.code
-    body = error.read()
-except urllib.error.URLError:
-    body = b""
-    exit_code = 7
-with open(output, "wb") as handle:
-    handle.write(body)
-sys.stdout.write(f"{status:03d}")
-raise SystemExit(exit_code)
+# The real curl (from the dev shell) performs the request; this wrapper only
+# records every process argument so the test can prove the key is not there.
+real_curl=$(command -v curl || true)
+if [[ -z $real_curl ]]; then
+  echo "curl not on PATH; run inside 'nix develop'" >&2
+  exit 1
+fi
+cat > "$fake_curl" <<EOF
+#!/usr/bin/env bash
+set -euo pipefail
+printf '%s\\n' "\$@" >> "$fake_curl.arguments"
+exec "$real_curl" "\$@"
 EOF
 chmod +x "$fake_curl"
 
@@ -173,6 +134,8 @@ if grep -Fq -- 'local-test-key-123' "$fake_curl.arguments"; then
   exit 1
 fi
 grep -Fxq -- '--max-redirs' "$fake_curl.arguments"
+[[ "$(head -n 1 "$fake_curl.arguments")" == '--disable' ]]
+grep -Fxq -- '--noproxy' "$fake_curl.arguments"
 
 # HTTP 401 from the backend means the key did not load: not ready.
 printf 'unauthorized' > "$mode_file"
@@ -187,6 +150,14 @@ run_probe
 assert_ready_value 0
 [[ "$(request_count)" == 3 ]]
 
+# A 200 whose body starts like a listing but is cut off before completion:
+# curl exits non-zero (partial file) and the probe must not report ready.
+printf 'truncated' > "$mode_file"
+run_probe
+assert_ready_value 0
+grep -Fxq -- 'cliproxyapi_backend_probe_http_status 200' "$metrics_file"
+[[ "$(request_count)" == 4 ]]
+
 # Missing credential: fail without sending a request or touching the file.
 printf 'ok' > "$mode_file"
 before=$(cat "$metrics_file")
@@ -194,7 +165,7 @@ if PROBE_CREDENTIALS_DIRECTORY="$test_root/missing" run_probe >/dev/null 2>&1; t
   echo "probe unexpectedly ran without a credential" >&2
   exit 1
 fi
-[[ "$(request_count)" == 3 ]]
+[[ "$(request_count)" == 4 ]]
 [[ "$(cat "$metrics_file")" == "$before" ]]
 
 # Empty credential: same treatment as a missing one.
@@ -205,7 +176,7 @@ if PROBE_CREDENTIALS_DIRECTORY="$empty_dir" run_probe >/dev/null 2>&1; then
   echo "probe unexpectedly ran with an empty credential" >&2
   exit 1
 fi
-[[ "$(request_count)" == 3 ]]
+[[ "$(request_count)" == 4 ]]
 
 # The destination is fixed: arguments are rejected and non-loopback or
 # non-models targets never receive the key.
@@ -213,13 +184,29 @@ if run_probe "http://127.0.0.1:${port}/v1/models" >/dev/null 2>&1; then
   echo "probe unexpectedly accepted a positional target" >&2
   exit 1
 fi
-for bad_url in "http://10.0.0.5:${port}/v1/models" "https://cliproxy.example/v1/models" "http://127.0.0.1:${port}/v1/chat/completions"; do
+bad_urls=(
+  "http://10.0.0.5:${port}/v1/models"
+  "https://cliproxy.example/v1/models"
+  "http://127.0.0.1:${port}/v1/chat/completions"
+  "http://127.0.0.1:${port}@127.0.0.2:9999/v1/models"
+  "http://user:pass@127.0.0.1:${port}/v1/models"
+  "http://127.0.0.1:${port}/v1/models?x=1"
+  "http://127.0.0.1:${port}/v1/models#frag"
+  "http://127.0.0.1:${port}/v1/models/"
+  "http://127.0.0.1:/v1/models"
+  "http://127.0.0.1/v1/models"
+  "http://127.0.0.1:0/v1/models"
+  "http://127.0.0.1:70000/v1/models"
+  "http://127.0.0.1:${port}/v1/models http://127.0.0.2:9999/"
+  "http://127.0.0.10:${port}/v1/models"
+)
+for bad_url in "${bad_urls[@]}"; do
   if PROBE_URL="$bad_url" run_probe >/dev/null 2>&1; then
     echo "probe unexpectedly accepted target $bad_url" >&2
     exit 1
   fi
 done
-[[ "$(request_count)" == 3 ]]
+[[ "$(request_count)" == 4 ]]
 
 # Backend down: the file still refreshes, reporting not ready and status 0.
 kill "$server_pid"
