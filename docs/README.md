@@ -36,6 +36,10 @@ completed plans and superseded research.
 
 - [Media stack decision record](media-stack-research.md)
 
+## Reviews
+
+- [Agent workflow video review (2026-10-02)](agent-workflow-video-review.md)
+
 ## Open backlog
 
 - [Homelab backlog](homelab-backlog.md)
