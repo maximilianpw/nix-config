@@ -41,6 +41,10 @@ let
     port = 8317;
     baseUrl = "http://${host}:${toString port}";
     publicBaseUrl = "https://cliproxy.maximilian.pw";
+    # Fleet's quota-only loopback endpoint on the server host. nginx exposes
+    # it publicly at ${publicBaseUrl}/quota/v1/ behind the public API key.
+    quotaPort = 8318;
+    quotaBaseUrl = "http://${host}:${toString quotaPort}";
     publicApiKeyPath = "/run/secrets/cliproxyapi-public-api-key";
     localApiKeyPath = "/run/secrets/cliproxyapi-local-api-key";
     managementKeyHash = "$2b$12$NjrcwG.5nSCnzZRK0lAwAOTw0eDr.5PP1rVfd3q.YEdss3IHwP8CC";

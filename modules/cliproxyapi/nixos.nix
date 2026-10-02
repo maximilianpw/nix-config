@@ -36,17 +36,13 @@ in {
     };
   };
 
-  systemd.services.cliproxyapi-quota = lib.mkIf runServer {
-    description = "CLIProxyAPI quota-only loopback endpoint";
-    wantedBy = ["multi-user.target"];
-    serviceConfig = {
-      User = currentSystemUser;
-      ExecStart = "${lib.getExe pkgs.bun} ${homeDirectory}/pi-config/cli/cliproxyapi-quota-server.ts";
-      Restart = "always";
-      RestartSec = 5;
-      WorkingDirectory = homeDirectory;
-      NoNewPrivileges = true;
-    };
+  # Packaged by Fleet; reads the same credentials CLIProxyAPI writes.
+  services.cliproxyapi-quota = lib.mkIf runServer {
+    enable = true;
+    user = currentSystemUser;
+    credentialDirectory = "${homeDirectory}/.cli-proxy-api";
+    listenAddress = cliProxy.host;
+    port = cliProxy.quotaPort;
   };
 
   systemd.services.cliproxyapi = lib.mkIf runServer {

@@ -1,6 +1,7 @@
 {agentConfigDirectory}: {
   config,
   currentSystemName,
+  inputs,
   lib,
   pkgs,
   ...
@@ -15,6 +16,12 @@
     if useLocalProxy
     then cliProxy.localApiKeyPath
     else cliProxy.publicApiKeyPath;
+  # Kim reads its own loopback quota endpoint; other hosts use the public one.
+  quotaUrl =
+    if useLocalProxy
+    then "${cliProxy.quotaBaseUrl}/quota/v1"
+    else "${cliProxy.publicBaseUrl}/quota/v1";
+  quotaPackage = inputs.fleet.packages.${pkgs.stdenv.hostPlatform.system}.cliproxy-quota;
   proxyApiKey = "{env:CLIPROXYAPI_API_KEY}";
   exportProxyApiKey = "export CLIPROXYAPI_API_KEY=\"$(${pkgs.coreutils}/bin/cat ${lib.escapeShellArg proxyApiKeyPath})\"";
   jsonFormat = pkgs.formats.json {};
@@ -78,6 +85,7 @@ in {
       force = true;
       source = jsonFormat.generate "cliproxyapi-client.json" {
         rootUrl = proxyBaseUrl;
+        inherit quotaUrl;
         apiKeyFile = proxyApiKeyPath;
       };
     };
@@ -164,7 +172,7 @@ in {
       executable = true;
       text = ''
         #!${pkgs.bash}/bin/bash
-        exec ${lib.getExe pkgs.bun} ${lib.escapeShellArg "${config.home.homeDirectory}/pi-config/cli/cliproxyapi-util.ts"} "$@"
+        exec ${lib.getExe' quotaPackage "cliproxyapi-util"} "$@"
       '';
     };
     ".local/bin/pi-direct" = {

@@ -78,7 +78,7 @@ in {
         "/v0/management/" = managementLocation;
         "/v8/management/" = managementLocation;
         "/quota/v1/" = {
-          proxyPass = "http://127.0.0.1:8318";
+          proxyPass = cliProxy.quotaBaseUrl;
           extraConfig = ''
             if ($cliproxyapi_public_authorized = 0) { return 401; }
             proxy_set_header Authorization "";
