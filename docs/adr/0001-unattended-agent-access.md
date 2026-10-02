@@ -65,21 +65,29 @@ writes a local Markdown file and changes nothing else.
   project-local environment files in checkouts under `maxpw`'s home; it does
   not cover the Nix-managed secret material listed in the next section, which
   remains readable by any process running as `maxpw`.
-- The authorization boundaries in `AGENTS.md` are absolute for unattended
-  sessions. A workload that needs to push, deploy, or mutate live data is out
-  of scope for unattended execution until this ADR is revised.
+- The authorization boundaries in `AGENTS.md` still apply. An unattended
+  session cannot ask for approval at runtime, so publishing, pushing,
+  deploying, changing shared infrastructure or live data, and destructive
+  operations are available to it only when the task definition grants them in
+  advance. Otherwise they are out of scope for that run, not deferred.
 - Because `maxpw` is in the `docker` group, an unattended session is
   root-equivalent on Kim's host filesystem through the Docker socket. The
   decision accepts this; it is listed below so it can be reconsidered.
-- Scheduling additional unattended workloads should cite this ADR and state
-  whether the workload stays read-only. Expanding beyond read-only work is a
-  change to this decision, not an application of it.
+- Additional unattended workloads should cite this ADR and state what they
+  read, write, and which pre-authorized operations they perform. The decision
+  grants interactive-equivalent access, so an editing workload is an
+  application of it, not a revision; tightening the confirmation list below
+  would be a revision.
+- The runtime rule in the shared `AGENTS.md` is distributed to every host that
+  receives that policy. Unattended work currently exists only on Kim; the rule
+  is written generally so it holds wherever such work is later scheduled.
 
 ## Credential-bearing paths not excluded by this decision
 
-This section is for confirmation. It is a factual inventory, derived from this
-repository's declarations, of secret material that a process running as `maxpw`
-on Kim can read and that the `.env` exclusion does not cover. It is not a list
+This section is for confirmation. It is derived from this repository's
+declarations and lists secret material that a process running as `maxpw` on Kim
+can read if the item is present, and that the `.env` exclusion does not cover.
+Whether each item exists at a given moment was not checked at runtime. It is not a list
 of additional exclusions. Each line names the path and what it grants. No
 secret contents were read while compiling it.
 
@@ -139,8 +147,8 @@ secret contents were read while compiling it.
   Git credential entered interactively stays usable for an hour through the
   cache socket.
 - `~/.config/gh/hosts.yml`, if present: a GitHub CLI token. `gh` is not
-  installed by this configuration, so the file exists only after a manual
-  install and login.
+  provisioned by this configuration; the file is present only if `gh` was
+  installed and authenticated by other means.
 
 ### Fleet and host access
 

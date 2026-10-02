@@ -62,13 +62,10 @@ authorization boundaries as absolute. No separate user or container is
 introduced. The ADR lists the credential-bearing paths that remain readable so
 the owner can confirm or tighten the scope later.
 
-T3 and the proxy run under the personal user, which Kim also grants Docker
-access. Define which repositories, files, credentials, network services, and
-operations an unattended task needs, starting with read-only reporting. For
-editing tasks, evaluate a separate account or container with deliberate proxy
-access and no default access to personal credentials, privileged Docker control,
-or live service data. Acceptance is that representative allowed tasks work and
-excluded accesses fail; pick the isolation mechanism after that.
+Considered and deferred: a separate account or container with scoped proxy
+access and no default access to personal credentials, Docker control, or live
+service data. Revisit if the owner tightens the ADR's confirmation list or if
+an unattended workload needs access the personal user should not hold.
 
 ### CLIProxyAPI upstream protocol revalidation
 

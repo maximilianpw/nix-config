@@ -17,7 +17,7 @@
 
 ## Unattended execution
 
-When running unattended (no human in the loop), do not read `.env` or `.env.*` files. Treat the authorization boundaries above as absolute: with nobody available to approve, publishing, pushing, deploying, changing shared infrastructure or live data, and destructive operations are out of scope rather than deferred.
+When running unattended (no human in the loop), do not read `.env` or `.env.*` files. Operations that require explicit authorization above are available only when the task definition granted them in advance; with nobody to ask, anything not pre-authorized is out of scope for that run rather than deferred.
 
 ## Delegation
 
