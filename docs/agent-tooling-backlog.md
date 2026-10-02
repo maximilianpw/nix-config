@@ -46,13 +46,11 @@ generated files, Fleet aliases absent from inventory, oversized policy files,
 and rules duplicated between repository and global instructions. It should
 start as a read-only report before becoming a lint gate.
 
-Known instance: the shared policy in `users/maxpw/agents/shared/AGENTS.md`
-names `grilling` and `grill-with-docs`, but only `grill-me` is installed in the
-agent skill catalogs. Home Manager distributes that policy to several agents, so
-the stale reference repeats across tools. Fix the references so every required
-skill resolves, without assuming `grill-me` covers the `CONTEXT.md` and ADR
-duties `grill-with-docs` described. This is the first case the validator should
-catch.
+Resolved example: the shared policy in `users/maxpw/agents/shared/AGENTS.md`
+named `grilling` and `grill-with-docs` while only `grill-me` was installed. Home
+Manager distributes that policy to several agents, so the stale reference
+repeated across tools. It now names `grill-me` and `domain-modeling`. This is
+the first case the validator should have caught.
 
 ### Unattended credential isolation
 
