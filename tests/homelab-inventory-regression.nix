@@ -62,6 +62,10 @@ in
   "every declared homelab systemd unit must exist in Kim's evaluated configuration";
   assert lib.assertMsg (lib.all realService storageUnits)
   "every /srv dependency must target a real service rather than a generated empty unit";
+  assert expect.all "the CLIProxyAPI quota endpoint must be an operations unit so it is monitored with the gateway" [
+    (builtins.elem "cliproxyapi-quota.service" homelab.services.cliproxy.operations.units)
+    (builtins.elem "cliproxyapi-quota.service" homelab.importantSystemdUnits)
+  ];
   assert expect.all "endpoint bind scope must default to loopback with explicit host-bound exceptions" [
     (homelab.services.jellyfin.endpoint.bindScope == "host")
     (homelab.services.plex.endpoint.bindScope == "host")

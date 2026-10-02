@@ -40,6 +40,7 @@
   cpuBusyQueries = builtins.filter (query: lib.hasInfix ''mode="idle"'' query) panelQueries;
   queryText = lib.concatStringsSep "\n" panelQueries;
   systemdMetricsService = config.systemd.services.homelab-systemd-metrics;
+  quotaService = config.systemd.services.cliproxyapi-quota;
   metricsDirectoryRule = config.systemd.tmpfiles.settings."10-homelab-metrics"."/var/lib/prometheus-node-exporter-text-files".d;
 in
   assert lib.assertMsg (prometheus.listenAddress == "127.0.0.1")
@@ -136,6 +137,14 @@ in
     (builtins.elem "/var/lib/prometheus-node-exporter-text-files" config.systemd.services.homelab-container-audit.serviceConfig.ReadWritePaths)
     (builtins.elem "homelab-container-audit.service" homelab.importantSystemdUnits)
     (builtins.elem "homelab-container-audit.timer" homelab.importantSystemdUnits)
+  ];
+  assert expect.all "the CLIProxyAPI quota service must be monitored and must fail visibly when its pi-config script is missing" [
+    (builtins.elem "cliproxyapi-quota.service" homelab.importantSystemdUnits)
+    (lib.hasInfix "cliproxyapi-quota[.]service" systemdIncludeFlag)
+    (quotaService.unitConfig.StartLimitIntervalSec == 300)
+    (quotaService.unitConfig.StartLimitBurst == 5)
+    (quotaService.serviceConfig.Restart == "always")
+    (!(quotaService.unitConfig ? ConditionPathExists))
   ];
   assert lib.assertMsg (prometheus.ruleFiles != [])
   "Prometheus must load the high-signal homelab alert rules";
