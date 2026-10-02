@@ -41,6 +41,7 @@
   queryText = lib.concatStringsSep "\n" panelQueries;
   systemdMetricsService = config.systemd.services.homelab-systemd-metrics;
   quotaService = config.systemd.services.cliproxyapi-quota;
+  nixDaemon = config.systemd.services.nix-daemon.serviceConfig;
   metricsDirectoryRule = config.systemd.tmpfiles.settings."10-homelab-metrics"."/var/lib/prometheus-node-exporter-text-files".d;
 in
   assert lib.assertMsg (prometheus.listenAddress == "127.0.0.1")
@@ -245,6 +246,12 @@ in
       "HomelabBorgVerifyStale"
     ])
     (lib.hasPrefix "count_over_time(homelab:node_cpu_busy:ratio5m[24h]) >= 1380 and " alerts.HomelabCpuAnomaly.expr)
+  ];
+  assert expect.all "Nix builds must yield to services under contention through scheduler weights, never CPU or memory caps" [
+    (nixDaemon.CPUWeight == 50)
+    (nixDaemon.IOWeight == 50)
+    (!(nixDaemon ? CPUQuota))
+    (!(nixDaemon ? MemoryMax))
   ];
     pkgs.runCommand "monitoring-regression" {} ''
       cmp ${lib.escapeShellArg homeDashboardPath} ${../homelab/grafana/kim-overview.json}

@@ -35,6 +35,7 @@ completed plans and superseded research.
 ## Accepted decisions
 
 - [Media stack decision record](media-stack-research.md)
+- [Kim build contention and Nix daemon scheduler weights](kim-build-contention.md)
 
 ## Reviews
 
