@@ -28,11 +28,10 @@
   publicIngressScrape = builtins.head (
     builtins.filter (scrapeConfig: scrapeConfig.job_name == "public-ingress") prometheus.scrapeConfigs
   );
-  cliProxyBackendScrape = builtins.head (
-    builtins.filter (scrapeConfig: scrapeConfig.job_name == "cliproxyapi-backend") prometheus.scrapeConfigs
-  );
   cliProxyBackend = import ../modules/cliproxyapi/config.nix;
-  cliProxyCredentialPath = "/run/credentials/prometheus-blackbox-exporter.service/cliproxyapi-local-api-key";
+  cliProxyReadinessFile = "/var/lib/prometheus-node-exporter-text-files/cliproxyapi-readiness.prom";
+  readinessProbeService = config.systemd.services.cliproxyapi-readiness-probe;
+  readinessProbeTimer = config.systemd.timers.cliproxyapi-readiness-probe;
   blackboxService = config.systemd.services.prometheus-blackbox-exporter;
   localBackendTargets = (builtins.head localBackendScrape.static_configs).targets;
   publicIngressTargets = (builtins.head publicIngressScrape.static_configs).targets;
@@ -112,22 +111,34 @@ in
     (publicIngressTargets == expectedPublicIngressTargets)
     (homelab.publicEndpoints.cliproxy.publicMonitorUrl == "https://${homelab.publicEndpoints.cliproxy.host}/healthz")
   ];
-  assert expect.all "CLIProxyAPI readiness must be an authenticated loopback probe whose token never enters the Nix store" [
-    ((builtins.head cliProxyBackendScrape.static_configs).targets == ["${cliProxyBackend.baseUrl}/v1/models"])
+  assert expect.all "CLIProxyAPI readiness must be a fixed-target loopback probe that holds the key as a systemd credential" [
     (lib.hasPrefix "http://127.0.0.1:" cliProxyBackend.baseUrl)
-    (cliProxyBackendScrape.params.module == ["cliproxyapi_models"])
-    (cliProxyBackendScrape.scrape_interval == "1m")
-    (cliProxyBackendScrape.relabel_configs == publicIngressScrape.relabel_configs)
-    (builtins.elem "cliproxyapi-local-api-key:${config.sops.secrets.cliproxyapi-local-api-key.path}" blackboxService.serviceConfig.LoadCredential)
-    (lib.all (credential: !(lib.hasInfix " " credential)) blackboxService.serviceConfig.LoadCredential)
-    (builtins.elem "prometheus-blackbox-exporter.service" config.sops.secrets.cliproxyapi-local-api-key.restartUnits)
+    (readinessProbeTimer.wantedBy == ["timers.target"])
+    (readinessProbeTimer.timerConfig.OnUnitActiveSec == "60s")
+    (readinessProbeTimer.timerConfig.AccuracySec == "1s")
+    (readinessProbeService.serviceConfig.Type == "oneshot")
+    (readinessProbeService.serviceConfig.LoadCredential
+      == ["cliproxyapi-local-api-key:${config.sops.secrets.cliproxyapi-local-api-key.path}"])
+    (config.sops.secrets.cliproxyapi-local-api-key.path == "/run/secrets/cliproxyapi-local-api-key")
+    (readinessProbeService.serviceConfig.ProtectHome == true)
+    (readinessProbeService.serviceConfig.ProtectSystem == "strict")
+    (readinessProbeService.serviceConfig.ReadWritePaths == ["/var/lib/prometheus-node-exporter-text-files"])
+    (readinessProbeService.serviceConfig.IPAddressAllow == ["localhost"])
+    (readinessProbeService.serviceConfig.IPAddressDeny == ["any"])
+    (builtins.elem "AF_INET" readinessProbeService.serviceConfig.RestrictAddressFamilies)
+    (builtins.elem "cliproxyapi-readiness-probe.service" config.sops.secrets.cliproxyapi-local-api-key.restartUnits)
+    (builtins.elem "cliproxyapi-readiness-probe.service" homelab.importantSystemdUnits)
+    (builtins.elem "cliproxyapi-readiness-probe.timer" homelab.importantSystemdUnits)
     (!(builtins.elem "${cliProxyBackend.baseUrl}/v1/models" publicIngressTargets))
     (!(builtins.elem "${cliProxyBackend.baseUrl}/v1/models" localBackendTargets))
-    (builtins.hasAttr "CLIProxyAPIBackendUnready" alerts)
+    (!(builtins.elem "cliproxyapi-backend" scrapeJobNames))
+    (!(blackboxService.serviceConfig ? LoadCredential))
+    (alerts.CLIProxyAPIBackendUnready.expr == "cliproxyapi_backend_ready == 0")
     (alerts.CLIProxyAPIBackendUnready."for" == "5m")
     (alerts.CLIProxyAPIBackendUnready.labels.severity == "critical")
-    (lib.hasInfix ''probe_success{job="cliproxyapi-backend"} == 0'' alerts.CLIProxyAPIBackendUnready.expr)
-    (lib.hasInfix ''absent(probe_success{job="cliproxyapi-backend"})'' alerts.CLIProxyAPIBackendUnready.expr)
+    (lib.hasInfix ''absent(node_textfile_mtime_seconds{file="${cliProxyReadinessFile}"})'' alerts.CLIProxyAPIReadinessProbeStale.expr)
+    (lib.hasInfix ''time() - node_textfile_mtime_seconds{file="${cliProxyReadinessFile}"} > 180'' alerts.CLIProxyAPIReadinessProbeStale.expr)
+    (alerts.CLIProxyAPIReadinessProbeStale."for" == "3m")
   ];
   assert lib.assertMsg (
     builtins.elem "textfile" exporters.node.enabledCollectors
@@ -273,11 +284,13 @@ in
     pkgs.runCommand "monitoring-regression" {} ''
       cmp ${lib.escapeShellArg homeDashboardPath} ${../homelab/grafana/kim-overview.json}
       grep -F -- 'immich-server.service' ${lib.escapeShellArg systemdMetricsService.serviceConfig.ExecStart}
-      # The blackbox module must reference the systemd credential path and must
-      # not embed a bearer token or any /run/secrets path in the store.
-      grep -F -- ${lib.escapeShellArg cliProxyCredentialPath} ${exporters.blackbox.configFile}
-      if grep -E -- 'bearer_token:|credentials:|/run/secrets/' ${exporters.blackbox.configFile}; then
-        echo "blackbox configuration must not embed credential material" >&2
+      # Narrow guards on the rendered artifacts: the probe wrapper pins the
+      # loopback destination and the blackbox file gained no credential module.
+      # The shell test in scripts/tests covers the probe's behavior.
+      grep -F -- 'CLIPROXYAPI_MODELS_URL=${cliProxyBackend.baseUrl}/v1/models' ${lib.escapeShellArg readinessProbeService.serviceConfig.ExecStart}
+      grep -F -- 'cliproxyapi-readiness-probe.sh' ${lib.escapeShellArg readinessProbeService.serviceConfig.ExecStart}
+      if grep -F -- 'cliproxyapi' ${exporters.blackbox.configFile}; then
+        echo "the blackbox exporter must not carry a CLIProxyAPI module" >&2
         exit 1
       fi
       touch "$out"
