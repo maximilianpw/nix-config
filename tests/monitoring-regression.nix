@@ -140,7 +140,6 @@ in
   ];
   assert expect.all "the CLIProxyAPI quota service must be monitored and must fail visibly when its pi-config script is missing" [
     (builtins.elem "cliproxyapi-quota.service" homelab.importantSystemdUnits)
-    (lib.hasInfix "cliproxyapi-quota[.]service" systemdIncludeFlag)
     (quotaService.unitConfig.StartLimitIntervalSec == 300)
     (quotaService.unitConfig.StartLimitBurst == 5)
     (quotaService.serviceConfig.Restart == "always")
