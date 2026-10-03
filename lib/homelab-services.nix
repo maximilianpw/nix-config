@@ -123,36 +123,6 @@
     };
   };
 
-  tautulli = {
-    endpoint = {
-      authorizationOwner = "tailscale";
-      exposure = "tailnet";
-      port = 8181;
-    };
-    state.paths = ["/var/lib/tautulli"];
-    backup.quiesce = [
-      {
-        unit = "tautulli.service";
-        until = "archive";
-      }
-    ];
-    operations.units = ["tautulli.service"];
-    recovery = {
-      order = 96;
-      versionPolicy = "restore-archived-version-first";
-      runbook = "docs/media-companions.md#recovery";
-      acceptance = ["plex-connection-and-watch-history-load"];
-      secretOwners = ["mutable-state:/var/lib/tautulli"];
-    };
-    presentation = {
-      group = "operations";
-      title = "Tautulli";
-      icon = "tautulli.png";
-      description = "Plex playback statistics";
-      order = 77;
-    };
-  };
-
   tdarr = {
     endpoint = {
       authorizationOwner = "tailscale";

@@ -54,3 +54,6 @@ age-keys.txt
 
 # Agent worktrees created by Claude Code
 .claude/worktrees/
+
+# Local research/review artifacts, not part of the flake
+plans/

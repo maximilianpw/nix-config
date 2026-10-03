@@ -1,7 +1,7 @@
 # Media companions
 
-Kim's configuration adds Recyclarr, Unpackerr, Maintainerr, Tdarr, Tautulli,
-Kometa, cross-seed, and autobrr to the [existing media stack](media-stack.md).
+Kim's configuration adds Recyclarr, Unpackerr, Maintainerr, Tdarr, Kometa,
+cross-seed, and autobrr to the [existing media stack](media-stack.md).
 Chaptarr is excluded. The selection uses a minimum of 1,000 GitHub stars;
 see the dated [maintenance research](media-stack-additions-research.md).
 
@@ -19,7 +19,6 @@ configuration does not activate it.
 | Unpackerr | `unpackerr.service` | Torrent extraction for Sonarr, Radarr, and Lidarr |
 | autobrr | `https://autobrr.liger-shilling.ts.net` | Manager clients and HD acquisition filters configured |
 | Maintainerr | `https://maintainerr.liger-shilling.ts.net` | Configure a media server and rules |
-| Tautulli | `https://tautulli.liger-shilling.ts.net` | Connect the intended Plex account |
 | Tdarr | `https://tdarr.liger-shilling.ts.net` | Worker paused; no jobs run automatically |
 | Kometa | `docker-kometa.service` | Genre/decade collections; daily at 03:15 |
 | cross-seed | `cross-seed.service`, local API port 2468 | Waits for `/var/lib/cross-seed/integrations.json` |
@@ -31,14 +30,13 @@ is not published. Kometa is a scheduler and cross-seed 6.x has no dashboard.
 
 ### Tailscale enrollment
 
-The inventory already feeds these four dashboards into Kim's Tailscale Serve
+The inventory already feeds these three dashboards into Kim's Tailscale Serve
 configuration. The tailnet's service definitions, host approval, and access
 policy are managed outside this repository.
 
 In the [Tailscale Services admin page](https://login.tailscale.com/admin/services),
-define any missing services named `autobrr`, `maintainerr`, `tautulli`, and
-`tdarr`, each with endpoint `tcp:443`. After deployment, approve Kim's host
-advertisement for each service unless the existing auto-approval policy covers
+define any missing services named `autobrr`, `maintainerr`, and `tdarr`, each
+with endpoint `tcp:443`. After deployment, approve Kim's host advertisement for each service unless the existing auto-approval policy covers
 Kim's `tag:homelab` identity. Ensure access grants permit the intended users or
 devices to reach those `svc:` destinations on port 443. The backend ports in
 the module remain loopback-only. See the [Tailscale Services guide](https://tailscale.com/kb/1552/tailscale-services).
@@ -85,18 +83,14 @@ setup connects Sonarr, Radarr, Lidarr, and qBittorrent. Its `maxpw` account
 login is saved in `/home/maxpw/.local/state/media-companions/autobrr-login.json`
 with mode 0600; read it in a private terminal and change the password in autobrr.
 
-### Maintainerr and Tautulli
+### Maintainerr
 
 Connect Maintainerr to either Plex at `http://127.0.0.1:32400` or Jellyfin at
 `http://127.0.0.1:8096`, and configure its manager and Seerr connections in the
 dashboard. This is one instance; managing both media servers independently
 requires another instance with separate state. The user chose Plex only;
-the initial setup connects Plex, Sonarr, Radarr, Tautulli, and Seerr. Begin with
+connect Plex, Sonarr, Radarr, and Seerr. Begin with
 collections and review the matches before enabling deletion actions. No rules are provisioned.
-
-Tautulli connects to Plex at `http://127.0.0.1:32400`. Its account token and
-watch history stay in `/var/lib/tautulli`. Tautulli's supported environment
-setting enforces the loopback listener without rewriting its configuration.
 
 ### Tdarr
 
@@ -169,6 +163,14 @@ without injecting downloads into qBittorrent. Do not configure that directory
 as a torrent-client watch folder. Automatic injection and any required link
 directories should be configured only after confirming the private tracker's
 rules and a working match. No existing torrent categories are changed.
+
+## Tautulli removal on 2026-10-03
+
+Tautulli is no longer declared in this configuration. Its service, account,
+Tailscale endpoint, dashboard entry, and backup/recovery metadata were removed.
+The historical setup notes below describe the earlier deployment. This change
+does not delete existing application state or modify Maintainerr's stored
+integrations or the Tailscale admin service definitions.
 
 ## Setup status on 2026-09-30
 
@@ -249,11 +251,10 @@ pinned OCI image digests before restoring application state. Follow the
 
 Required state is `/var/lib/recyclarr`, `/var/lib/unpackerr`,
 `/var/lib/private/autobrr`, `/var/lib/autobrr-session`, `/var/lib/cross-seed`,
-`/var/lib/kometa`, `/var/lib/maintainerr`, `/var/lib/tautulli`, and
-`/var/lib/tdarr`. Tdarr logs/samples and Kometa logs are excluded. Restore the
-Servarr managers too, because Recyclarr and Unpackerr reuse their API keys.
+`/var/lib/kometa`, `/var/lib/maintainerr`, and `/var/lib/tdarr`. Tdarr logs/samples
+and Kometa logs are excluded. Restore the Servarr managers too, because Recyclarr and Unpackerr reuse their API keys.
 
 Before resuming jobs, validate the private integration files, Plex/TMDb account
 connections, and stored rule definitions. Keep Tdarr paused and Maintainerr
-actions inactive while checking restored state. Verify Tautulli's watch history,
-autobrr's filters, cross-seed's saved matches, and Recyclarr's profile state.
+actions inactive while checking restored state. Verify autobrr's filters,
+cross-seed's saved matches, and Recyclarr's profile state.

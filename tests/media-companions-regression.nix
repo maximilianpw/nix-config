@@ -7,7 +7,7 @@
   homelab = import ../lib/homelab.nix {inherit lib;};
   containers = config.virtualisation.oci-containers.containers;
   manifest = config.custom.backup.manifestMetadata;
-  names = ["autobrr" "cross-seed" "kometa" "maintainerr" "recyclarr" "tautulli" "tdarr" "unpackerr"];
+  names = ["autobrr" "cross-seed" "kometa" "maintainerr" "recyclarr" "tdarr" "unpackerr"];
   noPublicListener = name:
     homelab.services.${name}.endpoint.exposure
     == "tailnet"
@@ -19,7 +19,7 @@
     && builtins.elem "media-secondary-directories.service" service.requires
     && builtins.elem "srv-media\\x2dsecondary.mount" service.bindsTo;
 in
-  assert lib.assertMsg (lib.all noPublicListener ["autobrr" "maintainerr" "tautulli" "tdarr"])
+  assert lib.assertMsg (lib.all noPublicListener ["autobrr" "maintainerr" "tdarr"])
   "media companion dashboards must stay private without host firewall openings";
   assert expect.all "private listeners and credential bootstrap must be explicit" [
     (config.services.autobrr.settings.host == "127.0.0.1")
@@ -27,8 +27,6 @@ in
     (containers.maintainerr.environment.UI_HOSTNAME == "127.0.0.1")
     (containers.tdarr.ports == ["127.0.0.1:8265:8265"])
     (config.services.cross-seed.settings.host == "127.0.0.1")
-    (config.systemd.services.tautulli.environment.TAUTULLI_HTTP_HOST == "127.0.0.1")
-    (config.systemd.services.tautulli.serviceConfig.StateDirectoryMode == "0700")
   ];
   assert lib.assertMsg (lib.all (name: lib.hasInfix "@sha256:" containers.${name}.image) ["maintainerr" "tdarr" "kometa"])
   "media companion OCI images must use immutable digests";

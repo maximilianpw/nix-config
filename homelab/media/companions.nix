@@ -71,7 +71,6 @@ in {
       unpackerr = pkgs.unpackerr.version;
       autobrr = config.services.autobrr.package.version;
       cross-seed = config.services.cross-seed.package.version;
-      tautulli = config.services.tautulli.package.version;
       maintainerr = maintainerrImage;
       tdarr = tdarrImage;
       kometa = kometaImage;
@@ -82,7 +81,6 @@ in {
     groups = {
       recyclarr = {};
       unpackerr = {};
-      tautulli = {};
     };
     users = {
       recyclarr = {
@@ -93,10 +91,6 @@ in {
         isSystemUser = true;
         group = "unpackerr";
         extraGroups = ["media"];
-      };
-      tautulli = {
-        isSystemUser = true;
-        group = "tautulli";
       };
       maintainerr = {
         isSystemUser = true;
@@ -139,15 +133,6 @@ in {
         useClientTorrents = true;
         seasonFromEpisodes = null;
       };
-    };
-    tautulli = {
-      enable = true;
-      openFirewall = false;
-      user = "tautulli";
-      group = "tautulli";
-      dataDir = "/var/lib/tautulli";
-      configFile = "/var/lib/tautulli/config.ini";
-      inherit (endpoints.tautulli) port;
     };
   };
 
@@ -349,10 +334,6 @@ in {
         # root-readable JSON file before starting the daemon.
         unitConfig.ConditionPathExists = "/var/lib/cross-seed/integrations.json";
         serviceConfig = privateService "cross-seed";
-      };
-      tautulli = {
-        environment.TAUTULLI_HTTP_HOST = "127.0.0.1";
-        serviceConfig = privateService "tautulli";
       };
       docker-tdarr = requiresSecondaryMedia;
       docker-kometa.unitConfig.ConditionPathExists = "/var/lib/kometa/config.yml";
