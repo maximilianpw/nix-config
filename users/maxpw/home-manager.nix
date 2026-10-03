@@ -35,6 +35,7 @@ in {
       ./modules/vicinae.nix
       ../../modules/fleet/home-manager.nix
       ./modules/t3code-server.nix
+      ./modules/morning-report.nix
       ./modules/shells.nix
       ./modules/syncthing.nix
       ./modules/gpg.nix

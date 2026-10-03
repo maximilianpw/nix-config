@@ -14,31 +14,59 @@ prompt.
   before deployment or destructive operations. Do not add another prompt file
   that duplicates this policy.
 
+## Scheduled read-only reports
+
+### Implemented: morning report on long-running-agent homelab hosts
+
+`users/maxpw/modules/morning-report.nix` runs `scripts/morning-report.sh` as
+the `morning-report` user service and timer (07:00 local, up to five minutes
+of randomized delay, `Persistent=true`). It is enabled on every inventory host
+with `longRunningAgents = true` and the `homelab` profile. Kim is currently
+the only such host, but the gate is a predicate, not a host name: any future
+host that matches both will also schedule the report. The run is deterministic
+shell with no agent or LLM step. Its only writes are
+`~/reports/morning/YYYY-MM-DD.md` (replaced atomically through a temporary file
+in the same directory, mode 0600) and a scratch directory it removes; systemd,
+local files, `gh`, and `git` are only read, and `git` runs with
+`--no-optional-locks` so `status` does not refresh the index. It covers:
+
+- failed system and user units, plus homelab important units from
+  `lib/homelab.nix` that are not active (units systemd cannot load are
+  reported as `not loaded`, and only an `inactive` oneshot is labelled as
+  between runs; a `failed` oneshot reads as failed);
+- agent services: `t3code.service` (user), `cliproxyapi.service`,
+  `cliproxyapi-quota.service`, `cliproxyapi-readiness-probe.timer`, and the
+  latest `cliproxyapi_backend_ready` sample when the readiness textfile exists;
+- quota availability from `cliproxyapi-util quota --json` (family, status,
+  used percent; never tokens);
+- open pull requests in `maximilianpw/nix-config` from `gh` when it is
+  installed and authenticated;
+- repository state of `~/nix-config`: uncommitted change count, checked-out
+  branch, and the latest commit on `main`.
+
+Every section prints an explicit `unknown` marker instead of omitting a source
+that did not answer (a `gh` timeout is worded as such rather than as missing
+authentication), and the script exits non-zero only for setup failures or a
+report that cannot be written. Subprocesses run under `timeout -k 5` from an
+empty scratch directory and the script never reads dotenv files.
+`scripts/tests/morning-report-test.sh` (run by `make check-scripts` and the CI
+`shell-safety` job) covers the healthy, same-day re-run, all-sources-failing,
+timeout and malformed-payload, atomic-write, scratch-allocation-failure, and
+dotenv cases; `tests/morning-report-regression.nix` asserts the gating and the
+oneshot timer wiring. Run
+`systemctl --user start morning-report.service` on Kim for an on-demand report
+and `journalctl --user -u morning-report` for its log.
+
+### Remaining
+
+- Further report types: prompt-debt findings, Fleet inventory and reachability
+  drift, and available agent-tooling updates.
+- An optional agent summarization step that reads the Markdown report and
+  writes a short digest next to it; it must stay read-only and must follow the
+  credential isolation decisions below.
+- Delivery beyond the local directory, for example an Obsidian location.
+
 ## Deferred work
-
-### Scheduled read-only reports
-
-Decide whether to add isolated, report-only jobs for:
-
-- repository health and failed verification notes;
-- prompt-debt findings;
-- Fleet inventory and reachability drift;
-- available agent-tooling updates.
-
-These jobs must write reports only. They must not edit this repository by
-default. The first unattended host is Kim, running as `maxpw` under
-[ADR 0001](adr/0001-unattended-agent-access.md); the morning report (PRS-361)
-is the first such job. Report destination and ownership are being settled in
-PRS-361.
-
-A reasonable first trial is one morning report on Kim covering failed checks,
-unavailable agent services, quota availability, and work awaiting a decision.
-Deterministic scripts gather the facts; an agent is used only where explanation
-or prioritization adds value. The report is timestamped, distinguishes failures
-from unknown results, contains no secret values, and makes no repository or
-service changes. Nix owns the service lifecycle and package wiring; prompts and
-extensions stay in `pi-config`. Start only after the credential scope below is
-defined.
 
 ### Prompt-debt validation
 
@@ -79,9 +107,9 @@ historical unauthenticated probe into a current compatibility claim.
 
 ## Open decisions
 
-- Report destination and ownership (this repository or the external
-  `pi-config` repository): being decided in PRS-361.
-
-Decided: the first unattended host is Kim as the personal user `maxpw`, and the
-credential scope and always-human-approved operations are recorded in
-[ADR 0001](adr/0001-unattended-agent-access.md).
+- Decided 2026-10-02: the first unattended host is Kim as the personal user
+  `maxpw`, reports land in a local directory under the user's home, and the
+  deterministic report lives in this repository. Credential scope and the
+  always-human-approved operations are recorded in
+  [ADR 0001](adr/0001-unattended-agent-access.md).
+- Whether to add an Obsidian destination alongside the local directory.
