@@ -5,14 +5,14 @@
   fetchurl,
 }: let
   pname = "nextcloud-app-calendar";
-  version = "6.6.1";
+  version = "6.6.2";
 in
   stdenvNoCC.mkDerivation {
     inherit pname version;
 
     src = fetchurl {
       url = "https://github.com/nextcloud-releases/calendar/releases/download/v${version}/calendar-v${version}.tar.gz";
-      hash = "sha256-/WYw3uxWg2h4TFae8Bx9ntisyhq2gzzxKiv/WYSj+ns=";
+      hash = "sha256-foNjLUQ20wN6NNHHPLwG1cy26PwQ8JaoakOgUVWIUpw=";
     };
 
     dontConfigure = true;
