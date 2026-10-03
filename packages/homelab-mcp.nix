@@ -28,7 +28,7 @@
 in
   stdenvNoCC.mkDerivation {
     pname = "homelab-mcp";
-    version = "0-unstable-2026-10-01";
+    version = "0-unstable-2026-10-03-music";
     inherit src;
     sourceRoot = ".";
     nativeBuildInputs = [makeWrapper];
