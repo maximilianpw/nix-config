@@ -24,7 +24,6 @@ in {
     ];
 
     brews = [
-      "maximilianpw/tap/loggle"
       "maximilianpw/tap/rmus"
       "ffmpeg"
       "gnupg"

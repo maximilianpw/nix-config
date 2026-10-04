@@ -14,6 +14,13 @@
       inputs.home-manager.follows = "home-manager";
     };
 
+    # Own terminal log viewer; pinned to a release tag so every host gets the
+    # same binary without depending on the Homebrew tap.
+    loggle = {
+      url = "github:maximilianpw/loggle/v0.2.0";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     nix-darwin.url = "github:nix-darwin/nix-darwin/nix-darwin-26.05";
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
 
