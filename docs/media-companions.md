@@ -18,8 +18,8 @@ configuration does not activate it.
 | Recyclarr | `recyclarr.timer`, `recyclarr.service` | Daily quality-profile sync |
 | Unpackerr | `unpackerr.service` | Torrent extraction for Sonarr, Radarr, and Lidarr |
 | autobrr | `https://autobrr.liger-shilling.ts.net` | Manager clients and HD acquisition filters configured |
-| Maintainerr | `https://maintainerr.liger-shilling.ts.net` | Configure a media server and rules |
-| Tdarr | `https://tdarr.liger-shilling.ts.net` | Worker paused; no jobs run automatically |
+| Maintainerr | `https://maintainerr.liger-shilling.ts.net` | Two movie review policies; no deletion |
+| Tdarr | `https://tdarr.liger-shilling.ts.net` | One CPU worker for quick health checks; no transcoding |
 | Kometa | `docker-kometa.service` | Genre/decade collections; daily at 03:15 |
 | cross-seed | `cross-seed.service`, local API port 2468 | Waits for `/var/lib/cross-seed/integrations.json` |
 
@@ -89,26 +89,51 @@ Connect Maintainerr to either Plex at `http://127.0.0.1:32400` or Jellyfin at
 `http://127.0.0.1:8096`, and configure its manager and Seerr connections in the
 dashboard. This is one instance; managing both media servers independently
 requires another instance with separate state. The user chose Plex only;
-connect Plex, Sonarr, Radarr, and Seerr. Begin with
-collections and review the matches before enabling deletion actions. No rules are provisioned.
+connect Plex, Sonarr, Radarr, and Seerr. Connections and rules are stored in
+Maintainerr's backed-up application database, rather than provisioned by Nix.
+
+On 2026-10-03, the stale Tautulli URL and API key were removed, and two daily
+review policies were configured for the Plex Movies library:
+
+- **Watched movies idle 180 days:** at least one Plex view, with the latest
+  view/play date at least 180 days ago.
+- **Unwatched movies older than 365 days:** added at least 365 days ago, with
+  zero views, no viewers in Plex history, and no recorded play date.
+
+Both run at 04:30 in Europe/Paris and use the explicit **Do nothing** action.
+Their collections stay inside Maintainerr. They do not create Plex collections,
+tag or unmonitor titles, enable overlays, or delete files. The first evaluation
+found zero watched candidates and two unwatched candidates. Review matches in
+Maintainerr before deciding on any removal policy; Plex history may be incomplete.
 
 ### Tdarr
 
-The initial application setup creates Movies, TV Shows, Anime, Movies - LaCie,
-and TV Shows - LaCie libraries. Each has transcoding disabled, health checks
-enabled, and automatic scans disabled. All worker counts remain zero.
+Movies, TV Shows, Anime, Movies - LaCie, and TV Shows - LaCie are configured
+for quick HandBrake header checks. These detect basic readability/header
+problems; they do not decode every frame or prove a file is free of corruption.
+Each library discovers new files hourly, uses one scanner thread, and holds
+newly scanned files for one hour before processing. Folder watching and scans
+on startup remain disabled. Library settings live in Tdarr's backed-up database.
 
-The container sees only the two library trees and its transcode cache at
-`/srv/media/.tdarr-cache`. Paths inside the container match the host paths.
-The Radeon render device is available. No processing jobs or transcoding flows
-are created, and the internal node starts paused with all worker counts at zero.
+One low-priority CPU health-check worker is enabled. Transcoding is disabled
+in every library, both transcode worker counts are zero, and automatic
+acceptance of transcodes is off. Thorough FFmpeg checks and GPU health checks
+remain disabled. Existing files are checked once; hourly discovery does not
+continually recheck the whole library.
 
-Run a manual library scan and review health-check settings before choosing a
-transcoding flow.
-Unpause the node and choose worker counts in the dashboard when ready. The
-declarative startup values reapply on restart, so change them in the module
-when processing should persist across restarts. The cache stays on the NVMe;
-it and downloaded media are outside the backed-up control state.
+The Nix configuration starts the node unpaused with one CPU health-check
+worker and mounts both library trees read-only. Paths inside the container
+match the host paths. The cache at `/srv/media/.tdarr-cache` stays writable on
+the NVMe; it and downloaded media are outside the backed-up control state.
+Transcoding would require a separate configuration change to allow library
+writes, along with an explicitly selected flow and worker count.
+
+On 2026-10-03, the application settings were applied live and an initial scan
+discovered 630 files. One stable file was released from the hold for a pilot
+check, which passed; the other 629 files retained the import delay. No files
+were transcoded. The Nix startup and read-only mount changes still require
+a host rebuild. Until that activation, a container restart reapplies the old
+paused/zero-worker defaults and the library mounts remain writable.
 
 Unpackerr, cross-seed, and Tdarr require both media mounts and stop when the
 secondary disk is unmounted. They cannot create directories beneath its hidden
@@ -239,7 +264,8 @@ After an explicitly authorized deployment, check the private dashboards and
 the daily Recyclarr timer. Confirm profiles load without reassigning titles,
 Unpackerr recognizes the torrent queues, and the original archives remain.
 Kometa and cross-seed remain skipped until their private configuration exists.
-Verify Tdarr is paused before adding any library processing.
+Verify Tdarr has one CPU health-check worker, zero transcode/GPU workers, and
+read-only library mounts. Confirm all libraries have transcoding disabled.
 
 ## Recovery
 

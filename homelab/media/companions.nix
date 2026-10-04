@@ -154,7 +154,7 @@ in {
         extraOptions = ["--network=host" "--cap-drop=ALL" "--security-opt=no-new-privileges"];
       };
       tdarr = {
-        # 2.92.01, with the internal worker paused until configured in the UI.
+        # 2.92.01. One health-check worker; library mounts prohibit media writes.
         image = tdarrImage;
         ports = ["127.0.0.1:${toString endpoints.tdarr.port}:8265"];
         volumes = [
@@ -162,8 +162,8 @@ in {
           "/var/lib/tdarr/configs:/app/configs"
           "/var/lib/tdarr/logs:/app/logs"
           "${mediaRoot}/.tdarr-cache:/temp"
-          "${mediaRoot}/library:${mediaRoot}/library"
-          "${secondaryMediaRoot}/library:${secondaryMediaRoot}/library"
+          "${mediaRoot}/library:${mediaRoot}/library:ro"
+          "${secondaryMediaRoot}/library:${secondaryMediaRoot}/library:ro"
         ];
         environment = {
           TZ = config.time.timeZone;
@@ -177,10 +177,10 @@ in {
           inContainer = "true";
           nodeName = "kim";
           openBrowser = "false";
-          startPaused = "true";
+          startPaused = "false";
           transcodecpuWorkers = "0";
           transcodegpuWorkers = "0";
-          healthcheckcpuWorkers = "0";
+          healthcheckcpuWorkers = "1";
           healthcheckgpuWorkers = "0";
           cronPluginUpdate = "";
           maxLogSizeMB = "10";

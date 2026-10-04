@@ -36,13 +36,19 @@ in
     (config.systemd.services.cross-seed.unitConfig.ConditionPathExists == "/var/lib/cross-seed/integrations.json")
     (config.services.cross-seed.settings.action == "save")
     (config.systemd.services.docker-kometa.unitConfig.ConditionPathExists == "/var/lib/kometa/config.yml")
-    (containers.tdarr.environment.startPaused == "true")
     (containers.tdarr.environment.transcodecpuWorkers == "0")
     (containers.tdarr.environment.transcodegpuWorkers == "0")
     (config.systemd.services.unpackerr.environment.UN_SONARR_0_DELETE_ORIG == "false")
     (config.systemd.services.unpackerr.environment.UN_RADARR_0_DELETE_ORIG == "false")
     (config.systemd.services.unpackerr.environment.UN_LIDARR_0_DELETE_ORIG == "false")
     (!builtins.hasAttr "chaptarr" homelab.services)
+  ];
+  assert expect.all "Tdarr must check health without rewriting either library" [
+    (containers.tdarr.environment.startPaused == "false")
+    (containers.tdarr.environment.healthcheckcpuWorkers == "1")
+    (containers.tdarr.environment.healthcheckgpuWorkers == "0")
+    (builtins.elem "/srv/media/library:/srv/media/library:ro" containers.tdarr.volumes)
+    (builtins.elem "/srv/media-secondary/library:/srv/media-secondary/library:ro" containers.tdarr.volumes)
   ];
   assert lib.assertMsg (lib.all (name:
     builtins.hasAttr name manifest.applicationVersions
