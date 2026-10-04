@@ -722,6 +722,27 @@
         "type": "github"
       }
     },
+    "loggle": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1791047748,
+        "narHash": "sha256-PM6FrDoKt3imra97Vo/MIBNqSXoGK4TJDyzpO0kdBiQ=",
+        "owner": "maximilianpw",
+        "repo": "loggle",
+        "rev": "5766e489a4f6e6f68525eb73d0eadba47b107ad3",
+        "type": "github"
+      },
+      "original": {
+        "owner": "maximilianpw",
+        "ref": "v0.2.0",
+        "repo": "loggle",
+        "type": "github"
+      }
+    },
     "nix-darwin": {
       "inputs": {
         "nixpkgs": [
@@ -924,6 +945,7 @@
         "home-manager": "home-manager",
         "hyprland": "hyprland",
         "llm-agents": "llm-agents",
+        "loggle": "loggle",
         "nix-darwin": "nix-darwin",
         "nix-index-database": "nix-index-database",
         "nixos-hardware": "nixos-hardware",

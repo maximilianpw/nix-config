@@ -94,8 +94,12 @@ in {
 
     file = {
       ".config/amp/settings.json".source = source "amp/settings.json";
-      ".codex/AGENTS.md".source = source "shared/AGENTS.md";
-      ".claude/CLAUDE.md".source = source "shared/AGENTS.md";
+      ".codex/AGENTS.md".text =
+        builtins.readFile ../agents/shared/AGENTS.md
+        + "\n"
+        + builtins.readFile ../agents/codex/AGENTS.md;
+      ".config/agent-policy/AGENTS.md".source = source "shared/AGENTS.md";
+      ".claude/CLAUDE.md".source = source "claude/CLAUDE.md";
       ".config/opencode/AGENTS.md".source = source "shared/AGENTS.md";
       ".pi/agent/AGENTS.md".source = source "shared/AGENTS.md";
       ".claude/settings.json".source = source "claude/settings.json";
