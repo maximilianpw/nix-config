@@ -27,11 +27,15 @@ jobs:
         with:
           use-flakehub: false
 
-      - name: Update every flake input
-        run: nix flake update
+      # The private superlocal input is moved locally by `make update`; CI can
+      # neither fetch it nor publish its pin, so update every other input.
+      - name: Update every public flake input
+        run: |
+          mapfile -t inputs < <(nix flake metadata --json | jq -r '.locks.nodes.root.inputs | keys[] | select(. != "superlocal")')
+          nix flake update "${inputs[@]}"
 
       - name: Evaluate the updated flake before opening a PR
-        run: nix flake check --no-build
+        run: nix flake check --no-build --no-write-lock-file --override-input superlocal path:./tests/stubs/superlocal
 
       - name: Open pull request
         id: create-pull-request

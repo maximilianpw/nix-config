@@ -32,11 +32,17 @@ jobs:
         with:
           use-flakehub: false
 
+      - name: Use the public Superlocal stub
+        run: scripts/ci/use-superlocal-stub.sh
+
       - name: Run nix-update for each package
         id: bump
         env:
           PACKAGES: ${{ github.event.inputs.packages }}
-        run: scripts/ci/update-packages.sh
+        run: |
+          scripts/ci/update-packages.sh
+          # The stub relock is CI-local; never propose it in the package PR.
+          git checkout -- flake.lock
 
       - name: Check for changes
         id: diff

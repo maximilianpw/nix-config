@@ -30,6 +30,19 @@ The evaluating user fetches the input with their GitHub SSH key. `nh` builds as
 that user and elevates only for activation. Rolling back the NixOS generation
 rolls back the code. It does not undo SQLite migrations; see Recovery.
 
+## CI
+
+This repository's CI can't fetch the private input, and it must not build the
+real application: Kim's CI builds are pushed to the public `maximilianpw` Cachix
+cache. Every CI job that runs `nix` first runs
+`scripts/ci/use-superlocal-stub.sh`, which relocks its checkout onto the inert
+public stub in `tests/stubs/superlocal`.
+- CI therefore checks Kim's wiring, not the app. The app is tested in its own
+  repository and built on Kim at rebuild.
+- The weekly input-update job leaves the `superlocal` pin alone; `make update`
+  moves it locally.
+- When the real module's options change, mirror them in the stub.
+
 ## Ports and ingress
 
 - Web client: `127.0.0.1:19011`. This is the inventory endpoint that Tailscale

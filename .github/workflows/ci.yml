@@ -27,6 +27,8 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: DeterminateSystems/determinate-nix-action@8d87e8d5e5b8a8309d4281094560f127d9a265f1 # v3
+      - name: Use the public Superlocal stub
+        run: scripts/ci/use-superlocal-stub.sh
       - run: nix build .#checks.x86_64-linux.pre-commit-check --no-link
 
   shell-safety:
@@ -34,6 +36,8 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: DeterminateSystems/determinate-nix-action@8d87e8d5e5b8a8309d4281094560f127d9a265f1 # v3
+      - name: Use the public Superlocal stub
+        run: scripts/ci/use-superlocal-stub.sh
       - run: nix develop --command make check-scripts
 
   regression-checks:
@@ -41,6 +45,8 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: DeterminateSystems/determinate-nix-action@8d87e8d5e5b8a8309d4281094560f127d9a265f1 # v3
+      - name: Use the public Superlocal stub
+        run: scripts/ci/use-superlocal-stub.sh
       - name: Build configuration regression checks
         run: scripts/ci/build-regression-checks.sh
 
@@ -49,6 +55,8 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: DeterminateSystems/determinate-nix-action@8d87e8d5e5b8a8309d4281094560f127d9a265f1 # v3
+      - name: Use the public Superlocal stub
+        run: scripts/ci/use-superlocal-stub.sh
       - name: Evaluate headless and parked desktop profiles
         run: |
           nix eval --raw .#checks.x86_64-linux.eval-kim.drvPath
@@ -59,6 +67,8 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: DeterminateSystems/determinate-nix-action@8d87e8d5e5b8a8309d4281094560f127d9a265f1 # v3
+      - name: Use the public Superlocal stub
+        run: scripts/ci/use-superlocal-stub.sh
       - uses: cachix/cachix-action@38b082610b782e7e93e209c35fd730d399dee866 # v17
         with:
           name: maximilianpw
@@ -70,6 +80,8 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: DeterminateSystems/determinate-nix-action@8d87e8d5e5b8a8309d4281094560f127d9a265f1 # v3
+      - name: Use the public Superlocal stub
+        run: scripts/ci/use-superlocal-stub.sh
       - uses: cachix/cachix-action@38b082610b782e7e93e209c35fd730d399dee866 # v17
         with:
           name: maximilianpw
@@ -85,4 +97,6 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: DeterminateSystems/determinate-nix-action@8d87e8d5e5b8a8309d4281094560f127d9a265f1 # v3
+      - name: Use the public Superlocal stub
+        run: scripts/ci/use-superlocal-stub.sh
       - run: nix build .#darwinConfigurations.joyce.system --no-link
