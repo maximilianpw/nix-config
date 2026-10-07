@@ -7,7 +7,7 @@
 SCRIPT_DIR := scripts
 CONFIG_DIR := $(shell pwd)
 # Inputs bumped by `make update`; the rest move only with `make update-all`.
-CORE_INPUTS := nixpkgs nixpkgs-unstable home-manager nix-darwin fenix llm-agents
+CORE_INPUTS := nixpkgs nixpkgs-unstable home-manager nix-darwin fenix llm-agents superlocal
 SHELL_SCRIPTS = $(SCRIPT_DIR)/*.sh $(SCRIPT_DIR)/ci/*.sh $(SCRIPT_DIR)/lib/*.sh $(SCRIPT_DIR)/tests/*.sh packages/scripts/*.sh
 
 help: ## Show this help message

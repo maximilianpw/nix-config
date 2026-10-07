@@ -23,6 +23,9 @@ make build      # optional: build without switching
 make rebuild
 ```
 
+`superlocal` is one of the Makefile's `CORE_INPUTS`, so `make update` also moves
+it, along with the other core inputs.
+
 The evaluating user fetches the input with their GitHub SSH key. `nh` builds as
 that user and elevates only for activation. Rolling back the NixOS generation
 rolls back the code. It does not undo SQLite migrations; see Recovery.
