@@ -1,4 +1,4 @@
-.PHONY: help bootstrap chezmoi-bootstrap chezmoi-check chezmoi-preview chezmoi-apply rebuild rebuild-processes cleanup-rebuild check-nvim check-scripts check-linux lint update update-all update-packages update-nextcloud-apps build generations rollback gc wsl info
+.PHONY: help bootstrap chezmoi-bootstrap chezmoi-check chezmoi-preview chezmoi-apply rebuild rebuild-processes cleanup-rebuild check-nvim check-scripts check-linux lint update update-all update-packages update-nvim-plugins update-nextcloud-apps build generations rollback gc wsl info
 
 # Default target
 .DEFAULT_GOAL := help
@@ -7,7 +7,8 @@
 SCRIPT_DIR := scripts
 CONFIG_DIR := $(shell pwd)
 # Inputs bumped by `make update`; the rest move only with `make update-all`.
-CORE_INPUTS := nixpkgs nixpkgs-unstable home-manager nix-darwin fenix llm-agents superlocal
+# nixvim follows nixpkgs-unstable, so it must move in lockstep with it.
+CORE_INPUTS := nixpkgs nixpkgs-unstable home-manager nix-darwin fenix llm-agents superlocal nixvim hjem
 SHELL_SCRIPTS = $(SCRIPT_DIR)/*.sh $(SCRIPT_DIR)/ci/*.sh $(SCRIPT_DIR)/lib/*.sh $(SCRIPT_DIR)/tests/*.sh packages/scripts/*.sh
 
 help: ## Show this help message
@@ -46,12 +47,14 @@ cleanup-rebuild: ## Stop only the tracked active rebuild process tree
 update: ## Update core flake inputs (CORE_INPUTS in this Makefile)
 	@echo "Updating core flake inputs: $(CORE_INPUTS)"
 	@nix flake update $(CORE_INPUTS)
+	@$(MAKE) update-nvim-plugins
 	@echo "Done! Run 'make rebuild' to apply updates."
 
 update-all: ## Update all flake inputs and repo-local custom packages
 	@echo "Updating all flake inputs..."
 	@nix flake update
 	@$(MAKE) update-packages
+	@$(MAKE) update-nvim-plugins
 	@echo "Done! Run 'make rebuild' to apply updates."
 
 update-packages: ## Bump repo-local custom packages via nix-update
@@ -60,6 +63,11 @@ update-packages: ## Bump repo-local custom packages via nix-update
 	@echo "handles them; here we only bump what this host can evaluate."
 	@echo "(skills/hunkdiff come from the llm-agents input: use 'make update')"
 	@$(SCRIPT_DIR)/ci/update-packages.sh --local
+
+update-nvim-plugins: ## Move Neovim's pinned Lua plugins to upstream HEAD (replaces :Lazy update)
+	@$(SCRIPT_DIR)/nvim-plugin-pins.sh --all
+	@echo "Check the editor before rebuilding:"
+	@echo "  nix build .#checks.$$(nix eval --impure --raw --expr builtins.currentSystem).nvim-candidate .#checks.$$(nix eval --impure --raw --expr builtins.currentSystem).hjem-lifecycle-regression --no-link"
 
 update-nextcloud-apps: ## Bump declaratively managed Nextcloud apps
 	@nix run .#nix-update -- --flake nextcloud-calendar

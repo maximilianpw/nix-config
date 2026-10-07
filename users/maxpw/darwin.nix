@@ -59,7 +59,6 @@ in {
       "cursor"
       "mullvad-vpn"
       "termius"
-      "obsidian"
       "linear"
       "kitlangton-hex"
       "granola"
@@ -72,7 +71,8 @@ in {
     onActivation = {
       autoUpdate = true;
       cleanup = "zap";
-      upgrade = true;
+      # Temporary: ChatGPT's current cask download returns 404. Restore once fixed upstream.
+      upgrade = false;
       # Homebrew now requires an explicit confirmation flag when `brew bundle`
       # is run with cleanup during nix-darwin activation.
       extraFlags = ["--force-cleanup"];

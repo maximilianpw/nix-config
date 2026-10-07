@@ -41,12 +41,14 @@ in {
       ./modules/gpg.nix
       ./modules/himalaya.nix
       ./modules/xdg.nix
+      ./modules/app-config.nix
       ./modules/linux-services.nix
       ./modules/tmux.nix
       ./modules/neovim.nix
       ./modules/packages/dev-tools.nix
       ./modules/packages/terminal-tools.nix
       ./modules/packages/linux-desktop.nix
+      ./modules/packages/darwin-apps.nix
       ./modules/packages/custom-scripts.nix
     ]
     ++ lib.optionals (isDarwin || isWSL) [

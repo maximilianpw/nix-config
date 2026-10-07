@@ -1,9 +1,17 @@
 {pkgs, ...}: {
+  # Nix owns runtimes and shell configuration; Vite+ only manages its own data.
+  home.sessionVariables = {
+    VP_NODE_MANAGER = "no";
+    VP_PM_MANAGER = "no";
+    VP_SELF_SETUP_NO_MODIFY_PATH = "1";
+  };
+
   home.packages = [
     # Programming languages & runtimes
     pkgs.nodejs_24
     pkgs.pnpm
     pkgs.bun
+    pkgs.vite-plus # Global vp/vpx/vpr CLI; projects can pin their own toolchain
     pkgs.python3
     pkgs.go
     # Rust via fenix (stable, project flakes provide full toolchains)

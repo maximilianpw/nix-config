@@ -1,0 +1,172 @@
+{
+  "$schema": "https://raw.githubusercontent.com/nicolo-ribaudo/oxc/json-schema/npm/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "unicorn", "import", "promise", "oxc"],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn",
+    "pedantic": "warn",
+    "perf": "warn",
+    "style": "warn"
+  },
+  "env": {
+    "es2024": true,
+    "node": true,
+    "browser": true
+  },
+  "globals": {
+    "NodeJS": "readonly"
+  },
+  "rules": {
+    // ── Ported from your eslintrc.typescript.json ──────────────────
+    "typescript/consistent-type-imports": ["warn", { "prefer": "type-imports" }],
+    "typescript/consistent-type-exports": ["warn", { "fixMixedExportsWithInlineTypeSpecifier": true }],
+    "typescript/no-explicit-any": "warn",
+    "typescript/no-non-null-assertion": "warn",
+    "eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
+    "eslint/no-console": "off",
+    "eslint/prefer-const": "warn",
+    "eslint/no-var": "error",
+    "eslint/eqeqeq": ["warn", "always", { "null": "ignore" }],
+    "eslint/curly": ["warn", "all"],
+    "eslint/no-duplicate-imports": "error",
+
+    // ── Opinionated: TypeScript strictness ─────────────────────────
+    "typescript/no-floating-promises": "error",
+    "typescript/no-misused-promises": "error",
+    "typescript/await-thenable": "error",
+    "typescript/no-unnecessary-type-assertion": "warn",
+    "typescript/no-unnecessary-condition": "warn",
+    "typescript/prefer-optional-chain": "warn",
+    "typescript/prefer-nullish-coalescing": "warn",
+    "typescript/no-unsafe-argument": "warn",
+    "typescript/no-unsafe-assignment": "warn",
+    "typescript/no-unsafe-call": "warn",
+    "typescript/no-unsafe-member-access": "warn",
+    "typescript/no-unsafe-return": "warn",
+    "typescript/no-import-type-side-effects": "warn",
+    "typescript/no-duplicate-enum-values": "error",
+    "typescript/prefer-as-const": "error",
+    "typescript/no-unnecessary-type-parameters": "warn",
+    "typescript/consistent-type-definitions": ["warn", "interface"],
+    "typescript/consistent-generic-constructors": "warn",
+    "typescript/no-empty-object-type": "warn",
+    "typescript/no-wrapper-object-types": "error",
+
+    // ── Opinionated: code quality ──────────────────────────────────
+    "eslint/no-empty-function": "warn",
+    "eslint/no-lonely-if": "warn",
+    "eslint/no-unneeded-ternary": "warn",
+    "eslint/no-useless-rename": "warn",
+    "eslint/no-useless-computed-key": "warn",
+    "eslint/no-useless-concat": "warn",
+    "eslint/no-useless-constructor": "warn",
+    "eslint/no-useless-return": "warn",
+    "eslint/no-else-return": "warn",
+    "eslint/object-shorthand": "warn",
+    "eslint/prefer-template": "warn",
+    "eslint/prefer-object-spread": "warn",
+    "eslint/prefer-destructuring": "warn",
+    "eslint/prefer-exponentiation-operator": "warn",
+    "eslint/prefer-rest-params": "warn",
+    "eslint/prefer-spread": "warn",
+    "eslint/no-param-reassign": "warn",
+    "eslint/no-return-assign": "warn",
+    "eslint/no-throw-literal": "warn",
+    "eslint/no-self-compare": "warn",
+    "eslint/no-template-curly-in-string": "warn",
+    "eslint/no-constructor-return": "error",
+    "eslint/no-promise-executor-return": "error",
+    "eslint/symbol-description": "warn",
+    "eslint/guard-for-in": "warn",
+
+    // ── Opinionated: unicorn (modern JS idioms) ────────────────────
+    "unicorn/prefer-array-flat-map": "warn",
+    "unicorn/prefer-array-some": "warn",
+    "unicorn/prefer-includes": "warn",
+    "unicorn/prefer-string-starts-ends-with": "warn",
+    "unicorn/prefer-string-trim-start-end": "warn",
+    "unicorn/prefer-number-properties": "warn",
+    "unicorn/prefer-optional-catch-binding": "warn",
+    "unicorn/no-typeof-undefined": "warn",
+    "unicorn/no-useless-spread": "warn",
+    "unicorn/no-useless-promise-resolve-reject": "warn",
+    "unicorn/throw-new-error": "error",
+    "unicorn/prefer-node-protocol": "warn",
+    "unicorn/no-unnecessary-await": "warn",
+    "unicorn/no-array-for-each": "warn",
+    "unicorn/prefer-array-find": "warn",
+    "unicorn/no-lonely-if": "warn",
+
+    // ── Opinionated: import hygiene ────────────────────────────────
+    "import/no-self-import": "error",
+    "import/no-cycle": "error",
+    "import/first": "warn",
+    "import/no-duplicates": "error",
+    "import/newline-after-import": "warn",
+    "import/no-default-export": "off",
+
+    // ── Opinionated: promise safety ────────────────────────────────
+    "promise/no-return-in-finally": "error",
+    "promise/valid-params": "error",
+    "promise/no-new-statics": "error",
+
+    // ── Tame noisy pedantic/style rules ────────────────────────────
+    "eslint/no-magic-numbers": "off",
+    "eslint/max-lines-per-function": "off",
+    "eslint/max-lines": "off",
+    "eslint/max-params": "off",
+    "eslint/id-length": "off",
+    "eslint/sort-keys": "off",
+    "eslint/sort-imports": "off",
+    "eslint/no-plusplus": "off",
+    "eslint/no-continue": "off",
+    "eslint/no-ternary": "off",
+    "eslint/no-undefined": "off",
+    "eslint/no-void": "off",
+    "eslint/no-inline-comments": "off",
+    "eslint/no-negated-condition": "off",
+    "eslint/capitalized-comments": "off",
+    "eslint/init-declarations": "off",
+    "eslint/no-bitwise": "off",
+    "eslint/func-names": "off",
+    "eslint/no-nested-ternary": "off",
+    "eslint/vars-on-top": "off",
+    "eslint/func-style": "off",
+    "eslint/new-cap": "off",
+    "eslint/prefer-destructuring": "warn",
+    "typescript/prefer-literal-enum-member": "off",
+    "typescript/no-empty-interface": "off",
+    "typescript/explicit-function-return-type": "off",
+    "typescript/explicit-module-boundary-types": "off",
+    "typescript/class-literal-property-style": "off"
+  },
+  "overrides": [
+    {
+      "files": ["**/*.test.{ts,tsx,js,jsx}", "**/*.spec.{ts,tsx,js,jsx}", "**/__tests__/**"],
+      "rules": {
+        "eslint/no-empty-function": "off",
+        "typescript/no-explicit-any": "off",
+        "typescript/no-unsafe-assignment": "off",
+        "typescript/no-unsafe-member-access": "off",
+        "typescript/no-unsafe-call": "off",
+        "typescript/no-non-null-assertion": "off",
+        "eslint/no-param-reassign": "off"
+      }
+    },
+    {
+      "files": ["**/*.config.{ts,js,mjs,cjs}", "**/vite.config.*", "**/next.config.*", "**/tailwind.config.*"],
+      "rules": {
+        "import/no-default-export": "off"
+      }
+    }
+  ],
+  "ignorePatterns": [
+    "dist",
+    "build",
+    "node_modules",
+    ".next",
+    "coverage",
+    "*.min.js",
+    "*.generated.*"
+  ]
+}

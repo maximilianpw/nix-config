@@ -5,6 +5,11 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-26.05";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
 
+    vite-plus = {
+      url = "github:ryoppippi/nix-vite-plus";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
+    };
+
     home-manager.url = "github:nix-community/home-manager/release-26.05";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
@@ -58,6 +63,20 @@
 
     stylix.url = "github:nix-community/stylix/release-26.05";
     stylix.inputs.nixpkgs.follows = "nixpkgs";
+
+    # Neovim configuration framework (users/maxpw/neovim). Its package set
+    # follows nixpkgs-unstable, matching the editor Home Manager installs today.
+    nixvim = {
+      url = "github:nix-community/nixvim";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
+    };
+
+    # Manifest-based $HOME linker, imported only by hosts with `hjem = true` in
+    # lib/hosts.nix: its nix-darwin module adds launch agents even with no users.
+    hjem = {
+      url = "github:feel-co/hjem";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs @ {
@@ -73,6 +92,7 @@
     # Overlay to pull select packages from nixpkgs-unstable and add custom packages
     overlays = [
       fenix.overlays.default
+      inputs.vite-plus.overlays.default
       (_: prev: let
         llm = inputs.llm-agents.packages.${prev.stdenv.hostPlatform.system};
         resignBunBinary = package: binaryPath:
@@ -135,6 +155,8 @@
         cliproxyapi = final.callPackage ./packages/cliproxyapi.nix {};
         cua-driver = final.callPackage ./packages/cua-driver.nix {};
         nextcloud-calendar = final.callPackage ./packages/nextcloud-calendar.nix {};
+        lazygit-nvim-edit = final.callPackage ./packages/lazygit-nvim-edit.nix {};
+        herdr-shell = final.callPackage ./packages/herdr-shell.nix {};
       })
     ];
 
@@ -152,6 +174,20 @@
 
     nixosHosts = lib.filterAttrs (_: host: !host.darwin) hosts;
     darwinHosts = lib.filterAttrs (_: host: host.darwin) hosts;
+    mkPkgs = system:
+      import nixpkgs {
+        inherit system overlays;
+        config.allowUnfree = true;
+      };
+
+    # Nixvim editor packages; language tooling comes from the same stable
+    # package set Home Manager uses.
+    nvim = system:
+      import ./users/maxpw/neovim/packages.nix {
+        inherit inputs system;
+        toolPkgs = mkPkgs system;
+      };
+
     desktopKim = mkConfiguredSystem "kim" (hosts.kim
       // {
         linuxDesktop = true;
@@ -202,29 +238,32 @@
 
     # Eval-only checks catch typos, missing modules, and type errors without building.
     checks = import ./lib/checks.nix {
-      inherit desktopKim hosts inputs lib mkPreCommitCheck nixpkgs self;
+      inherit desktopKim hosts inputs lib mkPreCommitCheck nixpkgs nvim self;
     };
 
     # Custom packages exposed as flake outputs so `nix build .#<name>` and
     # `nix-update --flake <name>` can find them. The overlay still injects
     # these into `pkgs.*` for module consumption — this is additive.
     packages = let
-      mkPkgs = system:
-        import nixpkgs {
-          inherit system overlays;
-          config.allowUnfree = true;
-        };
+      editorPackages = system: {
+        inherit (nvim system) nvim nvim-vscode nvim-candidate nvim-vscode-candidate;
+        inherit (mkPkgs system) lazygit-nvim-edit herdr-shell;
+      };
     in {
       x86_64-linux = let
         pkgs = mkPkgs "x86_64-linux";
-      in {
-        inherit (pkgs) helium obsidian skills cliproxyapi cua-driver nextcloud-calendar hunkdiff nix-update tunarr jellyfin jellyfin-web jellyfin-ffmpeg;
-      };
+      in
+        editorPackages "x86_64-linux"
+        // {
+          inherit (pkgs) helium obsidian skills cliproxyapi cua-driver nextcloud-calendar hunkdiff nix-update tunarr jellyfin jellyfin-web jellyfin-ffmpeg vite-plus;
+        };
       aarch64-darwin = let
         pkgs = mkPkgs "aarch64-darwin";
-      in {
-        inherit (pkgs) cua-driver skills nextcloud-calendar hunkdiff nix-update;
-      };
+      in
+        editorPackages "aarch64-darwin"
+        // {
+          inherit (pkgs) cua-driver skills nextcloud-calendar hunkdiff nix-update obsidian vite-plus;
+        };
     };
 
     formatter = nixpkgs.lib.genAttrs ["aarch64-linux" "x86_64-linux" "aarch64-darwin"] (

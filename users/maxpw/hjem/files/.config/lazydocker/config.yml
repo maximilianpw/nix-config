@@ -1,0 +1,12 @@
+gui:
+  theme:
+    # Kitty's Catppuccin Mocha ANSI palette supplies these semantic colors.
+    activeBorderColor:
+      - blue
+      - bold
+    inactiveBorderColor:
+      - white
+    selectedLineBgColor:
+      - black
+    optionsTextColor:
+      - blue

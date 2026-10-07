@@ -1,0 +1,21 @@
+{
+  "displayName": "max",
+  "diffOptions": {
+    "diffStyle": "split",
+    "defaultDiffType": "since-base",
+    "hideWhitespace": false,
+    "diffIndicators": "bars",
+    "overflow": "scroll",
+    "lineBgIntensity": "subtle",
+    "lineDiffType": "word-alt"
+  },
+  "prompts": {
+    "review": {
+      "denied": "\n\nTreat the feedback above as human review input. Validate each finding against the code, then address confirmed issues without introducing unrelated changes. If a request is unclear, conflicts with the codebase, or cannot be applied safely, explain the issue and ask for clarification. Run the smallest relevant checks afterward and briefly summarize the changes and validation."
+    }
+  },
+  "reviewAnalysis": {
+    "semanticDiff": true,
+    "callFlow": false
+  }
+}
