@@ -5,6 +5,11 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-26.05";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
 
+    vite-plus = {
+      url = "github:ryoppippi/nix-vite-plus";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
+    };
+
     home-manager.url = "github:nix-community/home-manager/release-26.05";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
@@ -82,6 +87,7 @@
     # Overlay to pull select packages from nixpkgs-unstable and add custom packages
     overlays = [
       fenix.overlays.default
+      inputs.vite-plus.overlays.default
       (_: prev: let
         llm = inputs.llm-agents.packages.${prev.stdenv.hostPlatform.system};
         resignBunBinary = package: binaryPath:
@@ -244,14 +250,14 @@
       in
         editorPackages "x86_64-linux"
         // {
-          inherit (pkgs) helium obsidian skills cliproxyapi cua-driver nextcloud-calendar hunkdiff nix-update tunarr jellyfin jellyfin-web jellyfin-ffmpeg;
+          inherit (pkgs) helium obsidian skills cliproxyapi cua-driver nextcloud-calendar hunkdiff nix-update tunarr jellyfin jellyfin-web jellyfin-ffmpeg vite-plus;
         };
       aarch64-darwin = let
         pkgs = mkPkgs "aarch64-darwin";
       in
         editorPackages "aarch64-darwin"
         // {
-          inherit (pkgs) cua-driver skills nextcloud-calendar hunkdiff nix-update obsidian;
+          inherit (pkgs) cua-driver skills nextcloud-calendar hunkdiff nix-update obsidian vite-plus;
         };
     };
 
