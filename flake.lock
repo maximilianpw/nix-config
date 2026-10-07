@@ -870,6 +870,22 @@
         "type": "github"
       }
     },
+    "nixpkgs-darwin": {
+      "locked": {
+        "lastModified": 1791244311,
+        "narHash": "sha256-cy5PsNucfXU5+KtLR+S9/zdkWOUplhL5Xr0LQWhSYbs=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "2bd3427b41d10b8318383195efe502ed1baca6cd",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixpkgs-26.05-darwin",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "nixpkgs-unstable": {
       "locked": {
         "lastModified": 1790981744,
@@ -914,6 +930,22 @@
       "original": {
         "owner": "nixos",
         "ref": "nixos-26.05",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_4": {
+      "locked": {
+        "lastModified": 1791260994,
+        "narHash": "sha256-Miqqk/ammqnTUxaoCyvtwoPeLbI1ksFyLxi/CazZpWY=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "151fa4e8ddfdd8dd25d945ad94ed54a13de9f6e4",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-unstable",
         "repo": "nixpkgs",
         "type": "github"
       }
@@ -982,7 +1014,8 @@
         "nixpkgs": "nixpkgs_3",
         "nixpkgs-unstable": "nixpkgs-unstable",
         "sops-nix": "sops-nix",
-        "stylix": "stylix"
+        "stylix": "stylix",
+        "superlocal": "superlocal"
       }
     },
     "rust-analyzer-src": {
@@ -1054,6 +1087,25 @@
         "ref": "release-26.05",
         "repo": "stylix",
         "type": "github"
+      }
+    },
+    "superlocal": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_4",
+        "nixpkgs-darwin": "nixpkgs-darwin"
+      },
+      "locked": {
+        "lastModified": 1791371896,
+        "narHash": "sha256-0Lm6wepTdalxhTk/nm0DCGtzKNOnl3jCPL5NK21DyCw=",
+        "ref": "refs/heads/main",
+        "rev": "c837c9066b06eaaf69a34f38e09c615b33890c8c",
+        "revCount": 30,
+        "type": "git",
+        "url": "ssh://git@github.com/maximilianpw/superlocal"
+      },
+      "original": {
+        "type": "git",
+        "url": "ssh://git@github.com/maximilianpw/superlocal"
       }
     },
     "systems": {

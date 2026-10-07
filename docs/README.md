@@ -26,6 +26,7 @@ completed plans and superseded research.
 - [Media stack](media-stack.md)
 - [Nextcloud Calendar](nextcloud-calendar.md)
 - [Paperless](paperless.md)
+- [Superlocal](superlocal.md)
 - [CLIProxyAPI gateway](../modules/cliproxyapi/README.md)
 
 ## Platform setup

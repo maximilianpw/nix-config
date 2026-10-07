@@ -1126,6 +1126,41 @@
     };
   };
 
+  superlocal = {
+    endpoint = {
+      authorizationOwner = "tailscale";
+      exposure = "tailnet";
+      port = 19011;
+    };
+    state.paths = ["/var/lib/superlocal"];
+    backup.quiesce = [
+      {
+        unit = "superlocal.service";
+        until = "archive";
+      }
+    ];
+    operations.units = ["superlocal.service"];
+    recovery = {
+      order = 97;
+      versionPolicy = "restore-archived-version-first";
+      runbook = "docs/superlocal.md#recovery";
+      acceptance = [
+        "sqlite-integrity-and-mailbox-list-load"
+        "cached-conversation-opens-without-provider-reauthorization"
+      ];
+      secretOwners = [
+        "mutable-state:/var/lib/superlocal"
+        "provider-oauth-client:google-cloud-console"
+      ];
+    };
+    presentation = {
+      group = "applications";
+      title = "Superlocal";
+      icon = "mdi-email-fast-outline";
+      description = "Unified email";
+      order = 45;
+    };
+  };
   syncthing = {
     endpoint = {
       authorizationOwner = "tailscale";
