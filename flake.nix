@@ -60,6 +60,13 @@
       url = "github:nix-community/nixvim";
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
+
+    # Manifest-based $HOME linker, imported only by hosts with `hjem = true` in
+    # lib/hosts.nix: its nix-darwin module adds launch agents even with no users.
+    hjem = {
+      url = "github:feel-co/hjem";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs @ {

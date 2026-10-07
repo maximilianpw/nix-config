@@ -1,0 +1,134 @@
+{
+  // ───── Window / workbench ─────
+  "window.commandCenter": true,
+  "workbench.colorTheme": "Everforest Dark",
+  "workbench.iconTheme": "vscode-icons",
+  "everforest.darkContrast": "hard",
+  "workbench.sideBar.location": "right",
+  "workbench.secondarySideBar.defaultVisibility": "hidden",
+  "peacock.affectSideBarBorder": true,
+  "vsicons.dontShowNewVersionMessage": true,
+
+  // ───── Editor: font / cursor / display ─────
+  "editor.fontFamily": "JetBrains Mono, Monaco, 'Courier New', monospace",
+  "editor.fontSize": 14,
+  "editor.fontLigatures": true,
+  "editor.lineNumbers": "relative",
+  "editor.cursorBlinking": "solid",
+  "editor.cursorSmoothCaretAnimation": "off",
+  "editor.cursorSurroundingLines": 8,
+  "editor.cursorSurroundingLinesStyle": "all",
+  "editor.scrollBeyondLastLine": false,
+  "editor.smoothScrolling": false,
+  "workbench.list.smoothScrolling": false,
+  "editor.minimap.enabled": false,
+  "editor.minimap.scale": 2,
+  "editor.minimap.autohide": "mouseover",
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": "active",
+  "editor.linkedEditing": true,
+  "editor.wordWrap": "on",
+  "editor.tokenColorCustomizations": {
+    "textMateRules": [],
+  },
+  "editor.unicodeHighlight.allowedLocales": {
+    "fr": true,
+  },
+
+  // ───── Editor: behavior ─────
+  "editor.formatOnSave": true,
+  "editor.suggestSelection": "first",
+  "editor.inlineSuggest.enabled": true,
+  "editor.accessibilitySupport": "off",
+  "diffEditor.codeLens": true,
+
+  // ───── Files / explorer ─────
+  "files.autoSave": "onWindowChange",
+  "files.exclude": {
+    "**/.direnv": true,
+    "**/.idea": true,
+    "**/.jj": true,
+  },
+  "explorer.confirmDelete": false,
+  "explorer.confirmDragAndDrop": false,
+
+  // ───── Git ─────
+  "git.autofetch": true,
+  "git.enableSmartCommit": true,
+  "git.confirmSync": false,
+  "githubPullRequests.pullBranch": "never",
+
+  // ───── AI ─────
+  // Cursor Tab is native; avoid carrying VS Code Copilot policy into Cursor.
+  "cursor.cpp.disabledLanguages": ["plaintext", "markdown", "scminput"],
+  "claudeCode.preferredLocation": "panel",
+
+  // ───── Language: formatters ─────
+  "[html]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[css]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[json]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[markdown]": { "editor.defaultFormatter": "yzhang.markdown-all-in-one" },
+  "[dockercompose]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[javascript]": { "editor.defaultFormatter": "vscode.typescript-language-features" },
+  "[typescript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[typescriptreact]": { "editor.defaultFormatter": "vscode.typescript-language-features" },
+  "[python]": { "editor.formatOnType": true },
+  "[java]": { "editor.defaultFormatter": "redhat.java" },
+  "[php]": { "editor.defaultFormatter": "DEVSENSE.phptools-vscode" },
+  "[rust]": {
+    "editor.defaultFormatter": "rust-lang.rust-analyzer",
+    "editor.formatOnSave": true,
+  },
+  "prettier.tabWidth": 2,
+
+  // ───── Language: tooling ─────
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "python.languageServer": "Pylance",
+  "go.toolsManagement.autoUpdate": true,
+  "rust-analyzer.check.command": "clippy",
+  "cmake.configureOnOpen": true,
+  "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
+  "reactSnippets.settings.prettierEnabled": true,
+  "npm.enableRunFromFolder": true,
+  "workbench.editorAssociations": {
+    "*.ipynb": "jupyter.notebook.ipynb",
+  },
+
+  // ───── Telemetry / privacy ─────
+  "telemetry.telemetryLevel": "off",
+  "redhat.telemetry.enabled": false,
+  "aws.telemetry": false,
+  "amazonQ.telemetry": false,
+  "security.workspace.trust.enabled": true,
+  "security.workspace.trust.untrustedFiles": "prompt",
+  "docker.extension.enableComposeLanguageServer": false,
+
+  // ───── Accessibility signals (silence sounds) ─────
+  "accessibility.signals.lineHasError": { "sound": "off" },
+  "accessibility.signals.lineHasFoldedArea": { "sound": "off" },
+  "accessibility.signals.lineHasBreakpoint": { "sound": "off" },
+  "accessibility.signals.lineHasInlineSuggestion": { "sound": "off" },
+  "accessibility.signals.terminalQuickFix": { "sound": "off" },
+  "accessibility.signals.onDebugBreak": { "sound": "off" },
+  "accessibility.signals.noInlayHints": { "sound": "off" },
+  "accessibility.signals.taskCompleted": { "sound": "off" },
+  "accessibility.signals.taskFailed": { "sound": "off" },
+  "accessibility.signals.notebookCellCompleted": { "sound": "off" },
+  "accessibility.signals.notebookCellFailed": { "sound": "off" },
+
+  // ───── vscode-pets ─────
+  "vscode-pets.theme": "forest",
+  "vscode-pets.petType": "totoro",
+  "vscode-pets.petSize": "medium",
+  "vscode-pets.position": "panel",
+
+  // ───── vscode-neovim ─────
+  "extensions.experimental.affinity": {
+    "asvetliakov.vscode-neovim": 1,
+  },
+  "vscode-neovim.neovimExecutablePaths.darwin": "/etc/profiles/per-user/max-vev/bin/nvim-vscode",
+
+  // ───── Cursor-specific ─────
+  "window.autoDetectColorScheme": false,
+}

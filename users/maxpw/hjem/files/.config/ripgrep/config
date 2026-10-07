@@ -1,0 +1,6 @@
+# Search hidden files and directories by default.
+--hidden
+
+# Still ignore Git internals and very large blobs.
+--glob=!.git/*
+--max-filesize=5M

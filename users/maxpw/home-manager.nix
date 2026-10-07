@@ -41,6 +41,7 @@ in {
       ./modules/gpg.nix
       ./modules/himalaya.nix
       ./modules/xdg.nix
+      ./modules/app-config.nix
       ./modules/linux-services.nix
       ./modules/tmux.nix
       ./modules/neovim.nix

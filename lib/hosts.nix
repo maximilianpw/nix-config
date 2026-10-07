@@ -67,6 +67,7 @@
     darwin = true;
     wsl = false;
     linuxDesktop = false;
+    hjem = true;
     profiles = [
       "base"
       "dev"

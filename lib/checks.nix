@@ -14,6 +14,10 @@
     eval-kim-desktop = desktopKim.config.system.build.toplevel;
     eval-cuno = self.nixosConfigurations.cuno.config.system.build.toplevel;
     nvim-candidate = (nvim "x86_64-linux").nvim-candidate-check;
+    hjem-lifecycle-regression = import ../tests/hjem-lifecycle-regression.nix {
+      inherit (inputs) hjem;
+      pkgs = nixpkgs.legacyPackages.x86_64-linux;
+    };
     pre-commit-check = mkPreCommitCheck "x86_64-linux";
     actual-config-regression = import ../tests/actual-config-regression.nix {
       config = self.nixosConfigurations.kim.config;
@@ -128,6 +132,10 @@
   aarch64-darwin = {
     eval-joyce = self.darwinConfigurations.joyce.system;
     nvim-candidate = (nvim "aarch64-darwin").nvim-candidate-check;
+    hjem-lifecycle-regression = import ../tests/hjem-lifecycle-regression.nix {
+      inherit (inputs) hjem;
+      pkgs = nixpkgs.legacyPackages.aarch64-darwin;
+    };
     pre-commit-check = mkPreCommitCheck "aarch64-darwin";
   };
 }

@@ -57,6 +57,15 @@ in
       ++ lib.optional (!darwin) inputs.sops-nix.nixosModules.sops
       ++ lib.optional wsl inputs.nixos-wsl.nixosModules.wsl
       ++ lib.optional (!darwin) inputs.fleet.nixosModules.cliproxy-quota
+      ++ lib.optionals hostRecord.hjem [
+        (
+          if darwin
+          then inputs.hjem.darwinModules.default
+          else inputs.hjem.nixosModules.default
+        )
+        ../users/${userDir}/hjem
+      ]
+      ++ lib.optional (hostRecord.hjem && darwin) ../users/${userDir}/hjem/darwin.nix
       ++ [
         machineConfig
         userOSConfig

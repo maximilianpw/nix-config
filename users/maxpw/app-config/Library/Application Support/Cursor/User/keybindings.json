@@ -1,0 +1,53 @@
+// Pass commonly-hijacked Vim chords through to Neovim when the editor is focused
+// and we're not in insert mode. Each entry overrides VS Code's default binding
+// for that chord (e.g. ctrl+d → "Add Selection To Next Find Match").
+[
+  {
+    "key": "ctrl+d",
+    "command": "vscode-neovim.send",
+    "args": "<C-d>",
+    "when": "editorTextFocus && neovim.mode != 'insert'"
+  },
+  {
+    "key": "ctrl+u",
+    "command": "vscode-neovim.send",
+    "args": "<C-u>",
+    "when": "editorTextFocus && neovim.mode != 'insert'"
+  },
+  {
+    "key": "ctrl+f",
+    "command": "vscode-neovim.send",
+    "args": "<C-f>",
+    "when": "editorTextFocus && neovim.mode != 'insert'"
+  },
+  {
+    "key": "ctrl+b",
+    "command": "vscode-neovim.send",
+    "args": "<C-b>",
+    "when": "editorTextFocus && neovim.mode != 'insert'"
+  },
+  {
+    "key": "ctrl+a",
+    "command": "vscode-neovim.send",
+    "args": "<C-a>",
+    "when": "editorTextFocus && neovim.mode != 'insert'"
+  },
+  {
+    "key": "ctrl+w",
+    "command": "vscode-neovim.send",
+    "args": "<C-w>",
+    "when": "editorTextFocus && neovim.mode != 'insert'"
+  },
+  {
+    "key": "ctrl+y",
+    "command": "vscode-neovim.send",
+    "args": "<C-y>",
+    "when": "editorTextFocus && neovim.mode != 'insert'"
+  },
+  {
+    "key": "ctrl+e",
+    "command": "vscode-neovim.send",
+    "args": "<C-e>",
+    "when": "editorTextFocus && neovim.mode != 'insert'"
+  }
+]

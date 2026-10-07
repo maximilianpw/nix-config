@@ -1,0 +1,266 @@
+# Herdr configuration
+# Managed by chezmoi at ~/.config/herdr/config.toml.
+# Terminal-native workspace/tab/pane manager.
+
+onboarding = false
+
+[terminal]
+# Use Fish locally; the wrapper opens plain SSH shells in remote workspaces.
+default_shell = "herdr-shell"
+shell_mode = "auto"
+# New panes and tabs start in the current pane's directory.
+new_cwd = "follow"
+kitty_graphics = true
+
+[theme]
+# Herdr's built-in dark Catppuccin theme is the Mocha palette.
+name = "catppuccin"
+auto_switch = false
+
+[update]
+channel = "stable"
+
+[keys]
+# Match tmux: C-Space.
+prefix = "ctrl+space"
+
+# Basics.
+help = "prefix+?"
+settings = "prefix+shift+s"
+detach = "prefix+d"
+reload_config = "prefix+r"
+goto = "prefix+slash"
+# prefix+o opens document review; prefix+n switches to the next tab.
+open_notification_target = ""
+
+# Workspace controls:
+#   prefix+w       choose workspace
+#   prefix+shift+w rename workspace (avoids symbol-layer gymnastics)
+#   prefix+( / )   previous / next workspace
+workspace_picker = "prefix+w"
+new_workspace = "prefix+shift+n"
+new_worktree = "prefix+shift+t"
+open_worktree = "prefix+t"
+remove_worktree = "prefix+alt+t"
+rename_workspace = "prefix+shift+w"
+close_workspace = "prefix+shift+d"
+previous_workspace = "prefix+("
+next_workspace = "prefix+)"
+switch_workspace = "prefix+shift+1..9"
+
+# Agent controls.
+focus_agent = "prefix+alt+1..9"
+previous_agent = "prefix+alt+["
+next_agent = "prefix+alt+]"
+
+# Tab controls.
+new_tab = "prefix+c"
+previous_tab = "prefix+p"
+next_tab = "prefix+n"
+switch_tab = "alt+1..9"
+rename_tab = "prefix+comma"
+close_tab = "prefix+ampersand"
+rename_pane = "prefix+shift+p"
+edit_scrollback = "prefix+e"
+
+# Pane creation:
+#   prefix+| split right
+#   prefix+- split down
+split_vertical = "prefix+|"
+split_horizontal = "prefix+minus"
+close_pane = "prefix+x"
+zoom = "prefix+z"
+copy_mode = "prefix+["
+
+# Pane resize mode.
+resize_mode = "prefix+shift+r"
+
+# Pane navigation; Vim/Neovim-aware navigation owns the direct chords.
+# Prefix bindings remain available as an escape hatch from any pane.
+focus_pane_left = "prefix+h"
+focus_pane_down = "prefix+j"
+focus_pane_up = "prefix+k"
+focus_pane_right = "prefix+l"
+cycle_pane_next = "prefix+tab"
+cycle_pane_previous = "prefix+shift+tab"
+last_pane = "prefix+semicolon"
+
+# Match tmux's status toggle.
+toggle_sidebar = "prefix+b"
+
+# Navigate-mode movement.
+navigate_workspace_up = "up"
+navigate_workspace_down = "down"
+navigate_pane_left = "h"
+navigate_pane_down = "j"
+navigate_pane_up = "k"
+navigate_pane_right = "l"
+
+# vim-herdr-navigation forwards these chords into Vim/Neovim when focused;
+# otherwise it focuses the adjacent Herdr pane.
+[[keys.command]]
+key = "ctrl+h"
+type = "plugin_action"
+command = "vim-herdr-navigation.left"
+description = "Navigate left (Vim/Herdr)"
+
+[[keys.command]]
+key = "ctrl+j"
+type = "plugin_action"
+command = "vim-herdr-navigation.down"
+description = "Navigate down (Vim/Herdr)"
+
+[[keys.command]]
+key = "ctrl+k"
+type = "plugin_action"
+command = "vim-herdr-navigation.up"
+description = "Navigate up (Vim/Herdr)"
+
+[[keys.command]]
+key = "ctrl+l"
+type = "plugin_action"
+command = "vim-herdr-navigation.right"
+description = "Navigate right (Vim/Herdr)"
+
+# Plannotator terminal annotations.
+[[keys.command]]
+key = "prefix+a"
+type = "plugin_action"
+command = "annotate.capture"
+description = "Annotate terminal text"
+
+[[keys.command]]
+key = "prefix+shift+a"
+type = "plugin_action"
+command = "annotate.copy-context"
+description = "Copy annotations as context"
+
+[[keys.command]]
+key = "prefix+m"
+type = "plugin_action"
+command = "annotate.manage"
+description = "Manage annotations"
+
+# Plannotator document and agent-reply review.
+[[keys.command]]
+key = "prefix+o"
+type = "plugin_action"
+command = "annotate.open"
+description = "Review documents in this folder"
+
+[[keys.command]]
+key = "prefix+shift+o"
+type = "plugin_action"
+command = "annotate.last"
+description = "Review the agent's last reply"
+
+# Match tmux's three-cell prefix+arrow pane resizing.
+[[keys.command]]
+key = "prefix+left"
+type = "shell"
+command = "herdr pane resize --current --direction left --amount 3"
+description = "Resize pane left"
+
+[[keys.command]]
+key = "prefix+down"
+type = "shell"
+command = "herdr pane resize --current --direction down --amount 3"
+description = "Resize pane down"
+
+[[keys.command]]
+key = "prefix+up"
+type = "shell"
+command = "herdr pane resize --current --direction up --amount 3"
+description = "Resize pane up"
+
+[[keys.command]]
+key = "prefix+right"
+type = "shell"
+command = "herdr pane resize --current --direction right --amount 3"
+description = "Resize pane right"
+
+# Match tmux's terminal-tool popups.
+[[keys.command]]
+key = "prefix+g"
+type = "popup"
+command = "lazygit"
+width = "90%"
+height = "90%"
+description = "Open lazygit"
+
+[[keys.command]]
+key = "prefix+shift+g"
+type = "popup"
+command = "jjui"
+width = "90%"
+height = "90%"
+description = "Open jjui"
+
+# Match tmux's prefix+shift+b break-pane binding.
+[[keys.command]]
+key = "prefix+shift+b"
+type = "shell"
+command = "pane_id=$(herdr pane current --current | jq -r '.result.pane.pane_id') && herdr pane move \"$pane_id\" --new-tab --focus"
+description = "Break pane into a new tab"
+
+# The herdr-shell wrapper opens every pane in this workspace over plain SSH.
+[[keys.command]]
+key = "prefix+alt+k"
+type = "shell"
+command = "herdr workspace create --label kim --focus"
+description = "Open Kim in a new remote workspace"
+
+[ui]
+# Distinguish Ghostty tabs by Herdr workspace and the focused pane title.
+window_title = "{workspace}: {terminal_title}"
+sidebar_width = 32
+sidebar_min_width = 18
+sidebar_max_width = 36
+mouse_capture = true
+right_click_passthrough_modifier = "ctrl"
+mouse_scroll_lines = 3
+# Close panes/tabs without prompting.
+confirm_close = false
+prompt_new_tab_name = true
+prompt_new_workspace_name = true
+
+show_agent_labels_on_pane_borders = true
+agent_panel_sort = "spaces"
+
+[ui.sidebar.spaces]
+# Leave a blank row between workspaces for clearer visual separation.
+row_gap = 1
+# Keep the default Catppuccin styling.
+rows = [["state_icon", "workspace"], ["branch", "git_status"]]
+
+[ui.toast]
+delivery = "herdr"
+delay_seconds = 1
+
+[ui.toast.herdr]
+position = "top-right"
+
+[ui.toast.clipboard]
+enabled = true
+position = "bottom-center"
+
+[ui.sound]
+# Keep sound notifications disabled.
+enabled = false
+
+[session]
+# Resume supported coding agents when restoring sessions.
+resume_agents_on_restore = true
+
+[remote]
+manage_ssh_config = true
+
+[experimental]
+# Persist recent pane output to disk.
+# This persists recent pane output to disk; keep in mind it may include secrets.
+pane_history = true
+allow_nested = false
+
+[advanced]
+# Scrollback limit is byte-based.
+scrollback_limit_bytes = 52428800

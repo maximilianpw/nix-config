@@ -8,7 +8,7 @@ SCRIPT_DIR := scripts
 CONFIG_DIR := $(shell pwd)
 # Inputs bumped by `make update`; the rest move only with `make update-all`.
 # nixvim follows nixpkgs-unstable, so it must move in lockstep with it.
-CORE_INPUTS := nixpkgs nixpkgs-unstable home-manager nix-darwin fenix llm-agents nixvim
+CORE_INPUTS := nixpkgs nixpkgs-unstable home-manager nix-darwin fenix llm-agents nixvim hjem
 SHELL_SCRIPTS = $(SCRIPT_DIR)/*.sh $(SCRIPT_DIR)/ci/*.sh $(SCRIPT_DIR)/lib/*.sh $(SCRIPT_DIR)/tests/*.sh packages/scripts/*.sh
 
 help: ## Show this help message
@@ -67,7 +67,7 @@ update-packages: ## Bump repo-local custom packages via nix-update
 update-nvim-plugins: ## Move Neovim's pinned Lua plugins to upstream HEAD (replaces :Lazy update)
 	@$(SCRIPT_DIR)/nvim-plugin-pins.sh --all
 	@echo "Check the editor before rebuilding:"
-	@echo "  nix build .#checks.$$(nix eval --impure --raw --expr builtins.currentSystem).nvim-candidate --no-link"
+	@echo "  nix build .#checks.$$(nix eval --impure --raw --expr builtins.currentSystem).nvim-candidate .#checks.$$(nix eval --impure --raw --expr builtins.currentSystem).hjem-lifecycle-regression --no-link"
 
 update-nextcloud-apps: ## Bump declaratively managed Nextcloud apps
 	@nix run .#nix-update -- --flake nextcloud-calendar

@@ -1,0 +1,17 @@
+{
+  "mcpAllowlist": [],
+  "terminalAllowlist": [],
+  "autoRun": {
+    "allow_instructions": [
+      "Allow read-only inspection of the current workspace and its version-control history.",
+      "Allow project-local formatting, linting, type-checking, tests, and builds when they stay inside the workspace and do not deploy, publish, or change remote state."
+    ],
+    "block_instructions": [
+      "Require approval for git push, jj git push, force pushes, package publishing, releases, deployments, and any action that changes remote, cloud, production, or infrastructure state.",
+      "Require approval for destructive commands, including recursive deletion, git reset --hard, git clean, discarding uncommitted work, deleting branches, rewriting history, or killing processes.",
+      "Require approval before reading, printing, transmitting, creating, or modifying credentials, tokens, private keys, .env files other than examples, SSH configuration, cloud configuration, authentication files, or MCP configuration.",
+      "Require approval for writes outside the current workspace, changes to system or editor configuration, privilege escalation, sudo, or changes to file ownership and permissions.",
+      "Require approval for database migrations or mutating MCP and database operations; read-only queries may proceed through normal Auto-review."
+    ]
+  }
+}
