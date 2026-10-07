@@ -35,8 +35,16 @@ in
     && container.environment.PORT == toString endpoint.port
   )
   "Executor must only publish its HTTP endpoint on loopback";
-  assert lib.assertMsg (container.volumes == ["/var/lib/executor:/data"])
-  "Executor must persist its database and generated encryption keys outside Docker";
+  assert lib.assertMsg (builtins.elem
+    ''--health-cmd=bun -e "fetch('http://127.0.0.1:${toString endpoint.port}/api/health').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"''
+    container.extraOptions)
+  "Executor must override the image healthcheck to use its configured loopback port";
+  assert lib.assertMsg (container.volumes
+    == [
+      "/var/lib/executor:/data"
+      "${pkgs.pkgsStatic.busybox}/bin/busybox:/bin/sh:ro"
+    ])
+  "Executor must persist state and provide a read-only static shell for Docker's CMD-SHELL healthcheck";
   assert lib.assertMsg (
     container.environment.EXECUTOR_WEB_BASE_URL
     == endpoint.url
