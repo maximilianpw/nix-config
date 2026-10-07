@@ -53,20 +53,32 @@ The inventory adds `svc:superlocal` to the Tailscale Serve reconciler. If the
 tailnet requires service creation or host approval, approve only
 `svc:superlocal` for Kim before expecting the URL to resolve.
 
-## First start and real mailboxes
+## Mode and mailboxes
 
-The first start creates `/var/lib/superlocal/superlocal.local.json` in `mock`
-mode, with two fictional mailboxes. To connect real mail, edit it as the service
-user with the service stopped. Set `mode` to `real` and enable providers as
-described in Superlocal's README ("Connect real providers"):
+`homelab/superlocal.nix` sets `mode = "real"`, which the module passes to the
+service as `SUPERLOCAL_MODE`. The service creates
+`/var/lib/superlocal/superlocal.local.json` on first start. It holds the
+`instanceId`, which the data directory is keyed to, so keep it. The mode
+override doesn't rewrite the file. IMAP, which includes the built-in Fastmail
+and iCloud presets, is enabled by default.
+
+Add mailboxes in the app under **Settings → Add Accounts**. Credentials go to
+the host and are stored encrypted under `/var/lib/superlocal/data`. They never
+pass through Nix or sops.
+
+Fastmail uses IMAP/SMTP, so it needs a Fastmail **app password** with Mail
+access (Fastmail → Settings → Privacy & Security → App passwords), not an API
+token. Basic plans don't offer app passwords. Superlocal saves Sent copies
+itself, so leave Fastmail's own Sent copy for third-party clients off.
+
+Other provider settings, such as custom IMAP presets, still live in the JSON
+file. Edit it as the service user with the service stopped:
 
 ```sh
 sudo systemctl stop superlocal.service
 sudo -u superlocal $EDITOR /var/lib/superlocal/superlocal.local.json
 sudo systemctl start superlocal.service
 ```
-
-Keep the generated `instanceId`. The data directory is keyed to it.
 
 Gmail needs a Google OAuth web client. Register
 `https://superlocal.liger-shilling.ts.net/v1/oauth/google/callback` as a

@@ -12,6 +12,9 @@ in {
 
   services.superlocal = {
     enable = true;
+    # Real mail; mailboxes and their app passwords are added in Settings and
+    # stored encrypted in the state directory, never in Nix.
+    mode = "real";
     # Tailscale Serve terminates HTTPS for this origin and proxies to the web
     # port; Superlocal's loopback mode accepts exactly one such ts.net origin.
     origin = superlocal.url;

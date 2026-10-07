@@ -1095,11 +1095,11 @@
         "nixpkgs-darwin": "nixpkgs-darwin"
       },
       "locked": {
-        "lastModified": 1791371896,
-        "narHash": "sha256-0Lm6wepTdalxhTk/nm0DCGtzKNOnl3jCPL5NK21DyCw=",
+        "lastModified": 1791377690,
+        "narHash": "sha256-VJee1u501tSNXNV0TzfqaKHBfHDymVraxnpgUFRHcao=",
         "ref": "refs/heads/main",
-        "rev": "c837c9066b06eaaf69a34f38e09c615b33890c8c",
-        "revCount": 30,
+        "rev": "014d3dbb825cab302d9281194c3b9ca2dcaf0192",
+        "revCount": 31,
         "type": "git",
         "url": "ssh://git@github.com/maximilianpw/superlocal"
       },

@@ -38,6 +38,10 @@
           type = types.nullOr types.str;
           default = null;
         };
+        mode = mkOption {
+          type = types.nullOr (types.enum ["mock" "real"]);
+          default = null;
+        };
         stateDir = mkOption {
           type = types.str;
           default = "/var/lib/superlocal";
