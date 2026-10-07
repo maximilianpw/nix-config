@@ -11,6 +11,10 @@ in {
     restartUnits = [unit];
   };
 
+  # The default metrics listener chooses an available port dynamically. Pin it
+  # to loopback so Prometheus can retain tunnel connection/error history.
+  systemd.services."cloudflared-tunnel-${tunnelId}".environment.TUNNEL_METRICS = "127.0.0.1:20241";
+
   services.cloudflared = {
     enable = true;
 

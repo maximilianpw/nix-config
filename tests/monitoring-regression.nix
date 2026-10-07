@@ -48,6 +48,52 @@
   quotaService = config.systemd.services.cliproxyapi-quota;
   nixDaemon = config.systemd.services.nix-daemon.serviceConfig;
   metricsDirectoryRule = config.systemd.tmpfiles.settings."10-homelab-metrics"."/var/lib/prometheus-node-exporter-text-files".d;
+  filesystemAlertTests = (pkgs.formats.yaml {}).generate "filesystem-alert-tests.yaml" {
+    rule_files = prometheus.ruleFiles;
+    evaluation_interval = "1m";
+    tests = map (fault: {
+      name = "secondary media filesystem ${fault}";
+      interval = "1m";
+      input_series = [
+        {
+          series = ''node_filesystem_readonly{mountpoint="/srv/media-secondary",fstype="ext4"}'';
+          values =
+            if fault == "readonly"
+            then "1 1 1"
+            else "0 0 0";
+        }
+        {
+          series = ''node_filesystem_device_error{mountpoint="/srv/media-secondary",fstype="ext4"}'';
+          values =
+            if fault == "device-error"
+            then "1 1 1"
+            else "0 0 0";
+        }
+      ];
+      alert_rule_test =
+        map (rule: {
+          alertname = rule.name;
+          eval_time = "1m";
+          exp_alerts = lib.optional (fault == rule.fault) {
+            exp_labels = {
+              mountpoint = "/srv/media-secondary";
+              fstype = "ext4";
+              severity = "critical";
+            };
+            exp_annotations.summary = alerts.${rule.name}.annotations.summary;
+          };
+        }) [
+          {
+            name = "HomelabFilesystemReadOnly";
+            fault = "readonly";
+          }
+          {
+            name = "HomelabFilesystemDeviceError";
+            fault = "device-error";
+          }
+        ];
+    }) ["healthy" "readonly" "device-error"];
+  };
 in
   assert lib.assertMsg (prometheus.listenAddress == "127.0.0.1")
   "Prometheus must bind only to IPv4 loopback";
@@ -98,6 +144,16 @@ in
   "PostgreSQL 17 and newer must enable the replacement checkpoint collector";
   assert lib.assertMsg (builtins.elem "postgres" scrapeJobNames)
   "Prometheus must scrape the local PostgreSQL exporter";
+  assert expect.all "Prometheus must retain Cloudflare tunnel telemetry from a pinned loopback listener" [
+    (config.systemd.services."cloudflared-tunnel-${homelab.infrastructure.cloudflare.tunnelId}".environment.TUNNEL_METRICS == "127.0.0.1:20241")
+    ((builtins.head (builtins.filter (job: job.job_name == "cloudflared") prometheus.scrapeConfigs)).static_configs
+      == [
+        {
+          targets = ["127.0.0.1:20241"];
+          labels = {};
+        }
+      ])
+  ];
   assert lib.assertMsg (builtins.elem "alertmanager" scrapeJobNames)
   "Prometheus must scrape its local Alertmanager";
   assert lib.assertMsg (builtins.elem "public-ingress" scrapeJobNames && exporters.blackbox.enable)
@@ -282,8 +338,18 @@ in
       "HomelabCpuAnomaly"
       "HomelabStaleDockerContainers"
       "HomelabBorgVerifyStale"
+      "HomelabFilesystemReadOnly"
+      "HomelabFilesystemDeviceError"
     ])
     (lib.hasPrefix "count_over_time(homelab:node_cpu_busy:ratio5m[24h]) >= 1380 and " alerts.HomelabCpuAnomaly.expr)
+  ];
+  assert expect.all "Operational filesystem failures must include the secondary media mount and alert promptly" [
+    (alerts.HomelabFilesystemReadOnly.expr == ''node_filesystem_readonly{mountpoint=~"/|/srv|/srv/media-secondary",fstype!="rootfs"} == 1'')
+    (alerts.HomelabFilesystemDeviceError.expr == ''node_filesystem_device_error{mountpoint=~"/|/srv|/srv/media-secondary",fstype!="rootfs"} == 1'')
+    (alerts.HomelabFilesystemReadOnly."for" == "1m")
+    (alerts.HomelabFilesystemDeviceError."for" == "1m")
+    (alerts.HomelabFilesystemReadOnly.labels.severity == "critical")
+    (alerts.HomelabFilesystemDeviceError.labels.severity == "critical")
   ];
   assert expect.all "Kim's nix-daemon must declare CPUWeight and IOWeight 50 and no service-level CPUQuota or MemoryMax" [
     (nixDaemon.CPUWeight == 50)
@@ -292,6 +358,7 @@ in
     (!(nixDaemon ? MemoryMax))
   ];
     pkgs.runCommand "monitoring-regression" {} ''
+      ${lib.getExe' pkgs.prometheus.cli "promtool"} test rules ${filesystemAlertTests}
       cmp ${lib.escapeShellArg homeDashboardPath} ${../homelab/grafana/kim-overview.json}
       grep -F -- 'immich-server.service' ${lib.escapeShellArg systemdMetricsService.serviceConfig.ExecStart}
       # Narrow guards on the rendered artifacts: the probe wrapper pins the

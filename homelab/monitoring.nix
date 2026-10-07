@@ -191,6 +191,8 @@
         (alert "HomelabMediaSecondaryAbsent" ''absent(node_filesystem_size_bytes{mountpoint="/srv/media-secondary",fstype!="rootfs"})'' "15m" "warning" "The LaCie media disk is not mounted, so downloaders are stopped")
         (alert "HomelabFilesystemWarning" ''100 * (1 - node_filesystem_avail_bytes{mountpoint=~"/|/srv|/srv/media-secondary"} / node_filesystem_size_bytes{mountpoint=~"/|/srv|/srv/media-secondary"}) > 80'' "30m" "warning" "A primary filesystem is more than 80% full")
         (alert "HomelabFilesystemCritical" ''100 * (1 - node_filesystem_avail_bytes{mountpoint=~"/|/srv|/srv/media-secondary"} / node_filesystem_size_bytes{mountpoint=~"/|/srv|/srv/media-secondary"}) > 90'' "15m" "critical" "A primary filesystem is more than 90% full")
+        (alert "HomelabFilesystemReadOnly" ''node_filesystem_readonly{mountpoint=~"/|/srv|/srv/media-secondary",fstype!="rootfs"} == 1'' "1m" "critical" "An operational filesystem has become read-only")
+        (alert "HomelabFilesystemDeviceError" ''node_filesystem_device_error{mountpoint=~"/|/srv|/srv/media-secondary",fstype!="rootfs"} == 1'' "1m" "critical" "The node exporter cannot read an operational filesystem")
         (alert "HomelabSmartFailure" ''smartctl_device_smart_status != 1'' "5m" "critical" "SMART reports an unhealthy storage device")
         (alert "HomelabNvmeTemperatureHigh" ''smartctl_device_temperature{temperature_type="current"} > 80'' "15m" "warning" "An NVMe device has remained above 80°C")
         (alert "HomelabPostgresExporterDown" ''absent(pg_up) or pg_up == 0'' "5m" "critical" "The PostgreSQL exporter cannot query PostgreSQL")
@@ -312,6 +314,10 @@ in {
           (scrape "postgres" exporters.postgres.port)
           (scrape "prometheus" prometheus.port)
           (scrape "alertmanager" alertmanager.port)
+          {
+            job_name = "cloudflared";
+            static_configs = [{targets = [config.systemd.services."cloudflared-tunnel-${homelab.infrastructure.cloudflare.tunnelId}".environment.TUNNEL_METRICS];}];
+          }
           localBackendScrape
           publicIngressScrape
         ];
