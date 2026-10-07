@@ -3,7 +3,39 @@
 Companion to `docs/nixvim-hjem-migration-plan.md`. Records the baseline, the
 ownership ledger, what is implemented, and what still needs approval. The user
 completed Joyce's rebuild on 2026-10-07. Joyce's editor is now cut over;
-Hjem group 1 is also active and verified on Joyce. Kim and Cuno have not been migrated.
+Hjem group 1 is also active and verified on Joyce. All three hosts now enable
+the migration declaratively. Kim was rebuilt by the user and its ownership
+cleanup verified on 2026-10-07; Cuno's live cutover is pending connectivity.
+
+## Fleet rollout (2026-10-07)
+
+- `lib/hosts.nix` enables Hjem on Kim, Cuno and Joyce. Home Manager selects
+  Nixvim from the same `hostRecord.hjem` flag, keeping ownership in sync.
+- Linux `nvim-candidate` and `hjem-lifecycle-regression` checks build and pass.
+  Both Kim and Cuno system closures build; `nix flake check --no-build` passes.
+- Kim: user rebuilt; Home Manager, Hjem activation and Hjem state update exited
+  successfully. All 21 Hjem files match their manifest sources; three writable
+  app-config links resolve into the checkout. Nixvim starts with store-only
+  runtime paths, and both helpers resolve through the user profile.
+- Kim recovery directory:
+  `~/.local/state/nvim-migration-recovery/kim-cleanup-20261007-204854`.
+  It contains the retired editor directory and two shadowing helpers, 15
+  activation backups, the Hjem manifest and before/after chezmoi ignore rules.
+  No backup content was deleted; unrelated application backups were untouched.
+- The separate dotfiles repository excludes the migrated paths on all three
+  fleet hosts. It uses the operating-system `hostname` command because
+  chezmoi's DNS-derived `.chezmoi.hostname` reports `127-0-0-1` on Kim.
+  Kim's remaining chezmoi-owned files are the two legacy Zed configs and the
+  research note; none overlaps the migration. Chezmoi is not yet retired.
+- Joyce: remote inspection confirms the profile editor and Hjem manifest are
+  present. No remote rebuild or file cleanup was performed.
+- Cuno: Fleet access timed out. Before its first migrated rebuild, synchronize
+  the dotfiles exclusions, snapshot affected targets and retire shadowing
+  helpers. Its live state is unverified.
+- Interactive LSP/DAP, online AI and Cursor integration acceptance remains open.
+
+The phase table below records the original Joyce rollout; the fleet status
+above supersedes its Kim/Cuno and Linux-execution pending notes.
 
 ## Status by phase
 

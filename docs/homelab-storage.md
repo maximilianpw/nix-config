@@ -20,7 +20,7 @@ ls -l /dev/disk/by-id /dev/disk/by-uuid
 | root | UUID `b7617fb1-d251-481a-9395-d17bbc9d0c1f` | Disko currently records `nvme-CT1000P3PSSD8_25144F70A197`; verify live | ext4 | Never run the Disko layout until this by-id is reverified |
 | `/srv` | label `storage` | `nvme-CT1000P3PSSD8_25164F85F83A` (verify live) | ext4 | Primary media and service state; retained for compatibility |
 | local backup | UUID `73afcc5c-6148-4dc2-ae0e-61649ce71120` | `ata-TOSHIBA_MQ04UBF100_35PPP14JT` (verify live) | ext4 | Removable Borg repository at `/mnt/backups` |
-| LaCie media | `ata-ST5000LM000-2AN170_WCJ23AWJ-part2` | LaCie enclosure, SMR disk serial `WCJ23AWJ` (verify live) | ext4 after provisioning | `/srv/media-secondary`; new finished downloads and library; nofail, downloaders require it; not part of Borg |
+| LaCie media | `ata-ST5000LM000-2AN170_WCJ23AWJ-part2`; UUID `4139bef6-d76c-4c41-99f6-3fd6090bdcd1` | LaCie enclosure, SMR disk serial `WCJ23AWJ` (observed 2026-10-07; reverify before operations) | ext4, label `media-secondary` | `/srv/media-secondary`; new finished downloads and library; nofail, downloaders require it; not part of Borg |
 
 Do not infer a role from an NVMe namespace number. Update the table only from
 live output, and review monitoring device arguments in the same change.
@@ -28,12 +28,56 @@ live output, and review monitoring device arguments in the same change.
 ## LaCie media disk
 
 `homelab/storage.nix` pins partition 2 by hardware identity and expects
-**ext4**. When this declaration was prepared, that partition was unmounted
-exFAT (UUID `9A66-BF3F`). **Do not activate the configuration until ext4 has
-been provisioned**: the downloader containers require the mount and would stay
-stopped. Provisioning permanently erases the partition. Partition 1 is left
-untouched. Reconfirm the physical disk and every identifier, not just
-`/dev/sdb`:
+**ext4**. A read-only audit on **2026-10-07** confirmed that provisioning is
+complete: partition 2 is mounted read-write at `/srv/media-secondary`, with
+UUID `4139bef6-d76c-4c41-99f6-3fd6090bdcd1` and label `media-secondary`.
+**Do not rerun the provisioning commands on the existing media disk.**
+
+The disk is nominally 5 TB (about 4.5 TiB). At the audit it had approximately
+717 GiB used and 3.6 TiB available. Kernel names changed from `sdb2` to `sdc2`
+during last week's reconnect and are now `sdb2` again; use the stable by-id,
+not those transient names.
+
+### Reliability and monitoring observations
+
+For September 28–October 4, 2026 (CEST):
+
+- Prometheus's available-space utilization peaked at about 20.3%. There was
+  one brief pending missing-mount alert during the September 29 reconnect;
+  no missing-mount or capacity alert reached firing state.
+- September 28 had UAS command aborts and a USB reset. The September 29
+  disconnect logged lost sync-page writes and a JBD2 journal I/O error.
+  After reconnect, the kernel reported that UAS was disabled in favor of
+  `usb-storage`, matching the quirk in `homelab/storage.nix`.
+- Read I/O errors with USB resets still occurred on October 1, October 2,
+  and October 4 after that transport change. Mount availability and free
+  space do **not** establish disk or transport health. The cause and any
+  data-integrity impact remain unconfirmed; do not repair a mounted filesystem
+  or run destructive tests as a diagnostic shortcut. Follow-up found more read
+  errors on October 5 and a disconnect while mounted at 01:30, with a journal
+  abort and lost writes before remount at 01:32. September 29 also remounted
+  shortly before disconnect. These events were not clean unplugs; the logs do
+  not establish whether cable removal or an electrical dropout caused them.
+- At the audit, filesystem/missing-mount monitoring covered this drive, but
+  the SMART exporter explicitly monitored only the two NVMe devices. Its
+  healthy SMART readings therefore said nothing about the LaCie.
+- Follow-up configuration changes add critical read-only/device-error alerts
+  for the operational mounts, including this disk. They were verified loaded
+  and healthy after the October 7 rebuild, with both fault gauges at 0.
+  They cannot detect every short transport failure. SMART passthrough and
+  persistent kernel-event monitoring remain unverified/follow-up work.
+
+See [the weekly monitoring review](monitoring-review-2026-10-07.md) for the
+related service incidents and follow-up priorities. Media is not covered by
+Borg; preserve an independent copy before undertaking repair or replacement.
+
+### Provisioning a replacement (destructive; not for the mounted disk)
+
+The original partition was exFAT (UUID `9A66-BF3F`). The following historical
+procedure is only a template for an explicitly approved, physically verified
+blank replacement. Provisioning permanently erases the partition. Partition 1
+is left untouched. Reconfirm the physical disk and every identifier, not just
+`/dev/sdb`, and substitute the verified replacement's identity:
 
 ```sh
 target=/dev/disk/by-id/ata-ST5000LM000-2AN170_WCJ23AWJ-part2

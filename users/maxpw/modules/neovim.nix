@@ -1,16 +1,14 @@
 {
-  hostname,
+  hostRecord,
   inputs,
   lib,
   pkgs,
   ...
 }: let
-  # Hosts whose editor has moved from chezmoi + programs.neovim to the Nixvim
-  # packages in users/maxpw/neovim. Chezmoi's .chezmoiignore must exclude
-  # .config/nvim and the two helper scripts for exactly these hosts; see the
+  # Editor and application-file ownership move together. Chezmoi must exclude
+  # .config/nvim and the two helper scripts on each migrated host; see the
   # cutover procedure in docs/nixvim-hjem-ledger.md.
-  nixvimHosts = ["joyce"];
-  useNixvim = lib.elem hostname nixvimHosts;
+  useNixvim = hostRecord.hjem;
 
   editor = inputs.self.packages.${pkgs.stdenv.hostPlatform.system};
   # programs.neovim's viAlias/vimAlias equivalents.

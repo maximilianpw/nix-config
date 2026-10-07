@@ -9,13 +9,22 @@ same destination in both systems.
 | --- | --- | --- |
 | OS, services, firewall, mounts, users | NixOS / nix-darwin | `make build`, then `make rebuild` |
 | Packages, shells, editor executables, SSH/fleet | Home Manager in this repo | system rebuild |
-| Neovim Lua, formatter/linter policy, app content | chezmoi source | `make chezmoi-preview`, then `make chezmoi-apply` |
+| Neovim Lua and plugin configuration | Nixvim in `users/maxpw/neovim/` | candidate checks, then system rebuild |
+| Migrated static app content | Hjem in `users/maxpw/hjem/` | system rebuild |
+| Migrated app-written settings | Home Manager links to `users/maxpw/app-config/` | checkout edits; recovery from Git |
+| Remaining legacy app content | chezmoi source | `make chezmoi-preview`, then `make chezmoi-apply` |
 | Encrypted machine/application secrets | sops-nix in this repo | edit with `sops`; system rebuild |
 
-Home Manager deliberately disables management of Neovim's `init.lua`; chezmoi
-owns that tree. Home Manager provides the binaries the editor and its plugins
-execute. `scripts/chezmoi.sh` formalizes initialization, no-write validation,
-preview, and interactive apply without silently overwriting a new machine.
+Kim, Cuno and Joyce enable Nixvim and Hjem together through the host
+inventory's `hjem` flag. Home Manager installs the editor packages; chezmoi
+must exclude the editor, packaged helpers and migrated app files before a
+host's cutover. Cuno's live cutover is still pending. See the
+[Nixvim/Hjem ledger](nixvim-hjem-ledger.md) for ownership, verified rollout
+state, recovery snapshots and the per-host cutover procedure.
+
+`scripts/chezmoi.sh` formalizes initialization, no-write validation, preview,
+and interactive apply for paths that remain owned by chezmoi. Do not run an
+apply with stale migration exclusions.
 
 Chezmoi's `private_` filename prefix sets restrictive file permissions. It does
 **not** encrypt file contents. Secrets belong in sops, a password manager, or a
