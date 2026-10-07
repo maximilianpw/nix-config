@@ -57,6 +57,8 @@ affected checks without asking; report checks that could not run.
 - Joyce's Nix daemon is owned by Determinate: keep `nix.enable = false`; daemon
   settings live in `/etc/nix/nix.custom.conf` via `machines/joyce.nix`.
 - macOS GUI apps belong in Homebrew declarations; activation cleanup is `zap`.
+  Self-contained notarized apps may move to
+  `users/maxpw/modules/packages/darwin-apps.nix`; follow its non-zapping handover.
 - Hyprland comes from the flake input, not nixpkgs.
 - For storage/recovery work, use `docs/homelab-recovery.md` and the affected
   service's runbook. Never point restore or provisioning tools at live paths or

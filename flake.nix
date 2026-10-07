@@ -251,7 +251,7 @@
       in
         editorPackages "aarch64-darwin"
         // {
-          inherit (pkgs) cua-driver skills nextcloud-calendar hunkdiff nix-update;
+          inherit (pkgs) cua-driver skills nextcloud-calendar hunkdiff nix-update obsidian;
         };
     };
 

@@ -48,6 +48,7 @@ in {
       ./modules/packages/dev-tools.nix
       ./modules/packages/terminal-tools.nix
       ./modules/packages/linux-desktop.nix
+      ./modules/packages/darwin-apps.nix
       ./modules/packages/custom-scripts.nix
     ]
     ++ lib.optionals (isDarwin || isWSL) [

@@ -59,7 +59,6 @@ in {
       "cursor"
       "mullvad-vpn"
       "termius"
-      "obsidian"
       "linear"
       "kitlangton-hex"
       "granola"
