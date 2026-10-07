@@ -53,6 +53,13 @@
 
     stylix.url = "github:nix-community/stylix/release-26.05";
     stylix.inputs.nixpkgs.follows = "nixpkgs";
+
+    # Neovim configuration framework (users/maxpw/neovim). Its package set
+    # follows nixpkgs-unstable, matching the editor Home Manager installs today.
+    nixvim = {
+      url = "github:nix-community/nixvim";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
+    };
   };
 
   outputs = inputs @ {
@@ -130,6 +137,8 @@
         cliproxyapi = final.callPackage ./packages/cliproxyapi.nix {};
         cua-driver = final.callPackage ./packages/cua-driver.nix {};
         nextcloud-calendar = final.callPackage ./packages/nextcloud-calendar.nix {};
+        lazygit-nvim-edit = final.callPackage ./packages/lazygit-nvim-edit.nix {};
+        herdr-shell = final.callPackage ./packages/herdr-shell.nix {};
       })
     ];
 
@@ -147,6 +156,20 @@
 
     nixosHosts = lib.filterAttrs (_: host: !host.darwin) hosts;
     darwinHosts = lib.filterAttrs (_: host: host.darwin) hosts;
+    mkPkgs = system:
+      import nixpkgs {
+        inherit system overlays;
+        config.allowUnfree = true;
+      };
+
+    # Nixvim editor packages; language tooling comes from the same stable
+    # package set Home Manager uses.
+    nvim = system:
+      import ./users/maxpw/neovim/packages.nix {
+        inherit inputs system;
+        toolPkgs = mkPkgs system;
+      };
+
     desktopKim = mkConfiguredSystem "kim" (hosts.kim
       // {
         linuxDesktop = true;
@@ -197,29 +220,32 @@
 
     # Eval-only checks catch typos, missing modules, and type errors without building.
     checks = import ./lib/checks.nix {
-      inherit desktopKim hosts inputs lib mkPreCommitCheck nixpkgs self;
+      inherit desktopKim hosts inputs lib mkPreCommitCheck nixpkgs nvim self;
     };
 
     # Custom packages exposed as flake outputs so `nix build .#<name>` and
     # `nix-update --flake <name>` can find them. The overlay still injects
     # these into `pkgs.*` for module consumption — this is additive.
     packages = let
-      mkPkgs = system:
-        import nixpkgs {
-          inherit system overlays;
-          config.allowUnfree = true;
-        };
+      editorPackages = system: {
+        inherit (nvim system) nvim nvim-vscode nvim-candidate nvim-vscode-candidate;
+        inherit (mkPkgs system) lazygit-nvim-edit herdr-shell;
+      };
     in {
       x86_64-linux = let
         pkgs = mkPkgs "x86_64-linux";
-      in {
-        inherit (pkgs) helium obsidian skills cliproxyapi cua-driver nextcloud-calendar hunkdiff nix-update tunarr jellyfin jellyfin-web jellyfin-ffmpeg;
-      };
+      in
+        editorPackages "x86_64-linux"
+        // {
+          inherit (pkgs) helium obsidian skills cliproxyapi cua-driver nextcloud-calendar hunkdiff nix-update tunarr jellyfin jellyfin-web jellyfin-ffmpeg;
+        };
       aarch64-darwin = let
         pkgs = mkPkgs "aarch64-darwin";
-      in {
-        inherit (pkgs) cua-driver skills nextcloud-calendar hunkdiff nix-update;
-      };
+      in
+        editorPackages "aarch64-darwin"
+        // {
+          inherit (pkgs) cua-driver skills nextcloud-calendar hunkdiff nix-update;
+        };
     };
 
     formatter = nixpkgs.lib.genAttrs ["aarch64-linux" "x86_64-linux" "aarch64-darwin"] (
