@@ -9,6 +9,8 @@ CONFIG_DIR := $(shell pwd)
 # Inputs bumped by `make update`; the rest move only with `make update-all`.
 # nixvim follows nixpkgs-unstable, so it must move in lockstep with it.
 CORE_INPUTS := nixpkgs nixpkgs-unstable home-manager nix-darwin fenix llm-agents superlocal nixvim hjem
+# Only update commands inherit temporary GitHub credentials.
+UPDATE_AUTH := $(SCRIPT_DIR)/with-github-auth.sh
 SHELL_SCRIPTS = $(SCRIPT_DIR)/*.sh $(SCRIPT_DIR)/ci/*.sh $(SCRIPT_DIR)/lib/*.sh $(SCRIPT_DIR)/tests/*.sh packages/scripts/*.sh
 
 help: ## Show this help message
@@ -46,16 +48,16 @@ cleanup-rebuild: ## Stop only the tracked active rebuild process tree
 
 update: ## Update core flake inputs, T3 Code, and Neovim plugin pins
 	@echo "Updating core flake inputs: $(CORE_INPUTS)"
-	@nix flake update $(CORE_INPUTS)
-	@python3 packages/scripts/update-t3code.py
+	@$(UPDATE_AUTH) nix flake update $(CORE_INPUTS)
+	@$(UPDATE_AUTH) python3 packages/scripts/update-t3code.py
 	@$(MAKE) update-nvim-plugins
 	@echo "Done! Run 'make rebuild' to apply updates."
 
 update-all: ## Update all flake inputs and repo-local custom packages
 	@echo "Updating all flake inputs..."
-	@nix flake update
+	@$(UPDATE_AUTH) nix flake update
 	@$(MAKE) update-packages
-	@python3 packages/scripts/update-t3code.py
+	@$(UPDATE_AUTH) python3 packages/scripts/update-t3code.py
 	@$(MAKE) update-nvim-plugins
 	@echo "Done! Run 'make rebuild' to apply updates."
 
@@ -64,15 +66,15 @@ update-packages: ## Bump repo-local custom packages via nix-update
 	@echo "Note: Linux-only packages cannot be built from macOS. The CI workflow"
 	@echo "handles them; here we only bump what this host can evaluate."
 	@echo "(skills/hunkdiff come from the llm-agents input: use 'make update')"
-	@$(SCRIPT_DIR)/ci/update-packages.sh --local
+	@$(UPDATE_AUTH) $(SCRIPT_DIR)/ci/update-packages.sh --local
 
 update-nvim-plugins: ## Move Neovim's pinned Lua plugins to upstream HEAD (replaces :Lazy update)
-	@$(SCRIPT_DIR)/nvim-plugin-pins.sh --all
+	@$(UPDATE_AUTH) $(SCRIPT_DIR)/nvim-plugin-pins.sh --all
 	@echo "Check the editor before rebuilding:"
 	@echo "  nix build .#checks.$$(nix eval --impure --raw --expr builtins.currentSystem).nvim-candidate .#checks.$$(nix eval --impure --raw --expr builtins.currentSystem).hjem-lifecycle-regression --no-link"
 
 update-nextcloud-apps: ## Bump declaratively managed Nextcloud apps
-	@nix run .#nix-update -- --flake nextcloud-calendar
+	@$(UPDATE_AUTH) nix run .#nix-update -- --flake nextcloud-calendar
 
 
 check-nvim: ## Verify every tool the Neovim config uses is on PATH

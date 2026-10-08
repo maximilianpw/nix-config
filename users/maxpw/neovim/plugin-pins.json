@@ -2,8 +2,8 @@
   "amp.nvim": {
     "owner": "sourcegraph",
     "repo": "amp.nvim",
-    "rev": "3b9ad5ef0328de1b35cc9bfa723a37db5daf9434",
-    "hash": "sha256-f/li32jpVigbZANnnbgSArnOH4nusj0DUz7952K+Znw="
+    "rev": "01ede44322220da5dc0b73ad8ace328a5ec1f5bf",
+    "hash": "sha256-RS9BWupC50xhYos5eXqYz9SdVgl17zK4b09Ifze2j4A="
   },
   "bufferline.nvim": {
     "owner": "akinsho",
@@ -20,38 +20,38 @@
   "conform.nvim": {
     "owner": "stevearc",
     "repo": "conform.nvim",
-    "rev": "619363c30309d29ffa631e67c8183f2a72caa373",
-    "hash": "sha256-pMWvC7sqOFjsMUhxTzMcoSifn7E5CVindvQVl9dEfB8="
+    "rev": "016802de402556da54c36bd7359b441266b01cdd",
+    "hash": "sha256-7VkQLpkDak/O5tphT/EWX/rE9r0Dd2UCF5CFbl4rK+A="
   },
   "flash.nvim": {
     "owner": "folke",
     "repo": "flash.nvim",
-    "rev": "fcea7ff883235d9024dc41e638f164a450c14ca2",
-    "hash": "sha256-pHh0tJd/ynfjriu8xjnKunKVDHkoXii6ZbikdkIwovY="
+    "rev": "5f0f270fdc7c5b0c21d903ee85b9cb06f2ac636a",
+    "hash": "sha256-88DoXkz8M6ehkzS9VNu2/T0FENpduTbgiUZd+GeVVX4="
   },
   "friendly-snippets": {
     "owner": "rafamadriz",
     "repo": "friendly-snippets",
-    "rev": "6cd7280adead7f586db6fccbd15d2cac7e2188b9",
-    "hash": "sha256-FzApcTbWfFkBD9WsYMhaCyn6ky8UmpUC2io/co/eByM="
+    "rev": "b4d01b0fdf3c9a549961c2f9ffe8dc09be166219",
+    "hash": "sha256-Wp10iRKSn6yNUmNbu2o10cKPkytNjs0cdjBUpEYVlow="
   },
   "gitsigns.nvim": {
     "owner": "lewis6991",
     "repo": "gitsigns.nvim",
-    "rev": "dd3f588bacbeb041be6facf1742e42097f62165d",
-    "hash": "sha256-wZyoOlwRW49FDdwYmw95RzAvjnss1A9FACyVJlX5Xgs="
+    "rev": "851a051e2bd2caba97e23314c68d69f1b1cf5d19",
+    "hash": "sha256-cCBMRmH6gd+rbdsXrphKIVQVKyTklaMrw5qezDOfQ7g="
   },
   "go.nvim": {
     "owner": "ray-x",
     "repo": "go.nvim",
-    "rev": "5c741a26f5df77c95d42d8f48e7008aea10e5f4f",
-    "hash": "sha256-Xap+L2uXcwtnbFDBB416cV6vVI8dtvsmXE/05gH/kbI="
+    "rev": "f5d1f11d4f616efbe2339286310bb89c4853d769",
+    "hash": "sha256-/8AcDSqrAZj8xxpbWWgHVDQgwYyYiO00+7VTXhR23os="
   },
   "grug-far.nvim": {
     "owner": "MagicDuck",
     "repo": "grug-far.nvim",
-    "rev": "5506c2f59dc9ab2ed6c233585412b24d31d51521",
-    "hash": "sha256-iPiKtNFY4Ufjuw6dW6LX78RyJ5kA+q0ytRqdDH7Qwtg="
+    "rev": "11595bf747edc270bce2069d1020502ad4ae56cf",
+    "hash": "sha256-gkWjZM7xn2OqM6KEoqSaJ+POqcrWO93rO6aOgvsrJhc="
   },
   "lazydev.nvim": {
     "owner": "folke",
@@ -68,26 +68,26 @@
   "mini.nvim": {
     "owner": "nvim-mini",
     "repo": "mini.nvim",
-    "rev": "11afe78a10570fe1d0c7ed0b6fc2b5b19098cb45",
-    "hash": "sha256-cXPF96OMqqQ+q6AyMeouc9GLUU/PL35KvZphy/Ys/s4="
+    "rev": "fa9037326e9996381e34a14b6350e18168618532",
+    "hash": "sha256-9Z6Fij3iCI0eph+Axcg9YfHcHBpa4XHDq2Un2X7bzBo="
   },
   "neo-tree.nvim": {
     "owner": "nvim-neo-tree",
     "repo": "neo-tree.nvim",
-    "rev": "ebd66767191714e008ce73b769518a763ff31bdc",
-    "hash": "sha256-OVYt5QMWHRs/ivFcblHcgbqNkg+xzohG+IifPJBfY3o="
+    "rev": "ffdf8d93c8db197a5cab072a18cc8da69d490b81",
+    "hash": "sha256-jtEPxxXBxEUTeBNJ/hTOKxkQJ1aoBYyKWzoQLBJREsg="
   },
   "neotest": {
     "owner": "nvim-neotest",
     "repo": "neotest",
-    "rev": "ad991822b7076b1d940b33a9d6d0d30416d5df81",
-    "hash": "sha256-5f8HTX32NCBwSosQWhecHfDrbfGOFGc6WbrPVm4wmNU="
+    "rev": "27bf921498043f7ecd821d6db68d05de244bbd02",
+    "hash": "sha256-BiU0OEN8kTbPbLr0f1ueHXFWwQN8djXlqqInFlV01rM="
   },
   "neotest-golang": {
     "owner": "fredrikaverpil",
     "repo": "neotest-golang",
-    "rev": "f0ba097d4af098c036aac24cd647480d0d301ad2",
-    "hash": "sha256-gfMoCkqPEjicL7zsbv3F2NsLCLSTEWk9MzP0spCj5OI="
+    "rev": "65b2be63c3de00e6f15c05388ebdc8d603dbd727",
+    "hash": "sha256-EZG10y2ZLi0D33czCP3hv5azbWwBz3xEtNS5KdTk844="
   },
   "neotest-jest": {
     "owner": "nvim-neotest",
@@ -104,8 +104,8 @@
   "neotest-vitest": {
     "owner": "marilari88",
     "repo": "neotest-vitest",
-    "rev": "2f19d215d7d4d7f121826f99f6f35a81e2c18a6f",
-    "hash": "sha256-QvtaCUno7/8pU32f5YLWrlYAzjDhBTmCtgxweIUFAow="
+    "rev": "b0c265743c877058068dbc40d104ea5d40e6b257",
+    "hash": "sha256-3BeHnwu+bpESfiyE/wAcJdX0afDt+dA+wFqX+wEf9yQ="
   },
   "noice.nvim": {
     "owner": "folke",
@@ -116,14 +116,14 @@
   "nui.nvim": {
     "owner": "MunifTanjim",
     "repo": "nui.nvim",
-    "rev": "de740991c12411b663994b2860f1a4fd0937c130",
-    "hash": "sha256-41slmnvt1z7sCxvpiVuFmQ9g7eCaxQi1dDCL3AxSL1A="
+    "rev": "10fc361835c856ba4233ef5ea135b919bf3dce97",
+    "hash": "sha256-UJp9A5Qb38ie552wRdHAeA9vm5PFURumYP9wZ83OU7Y="
   },
   "nvim-dap": {
     "owner": "mfussenegger",
     "repo": "nvim-dap",
-    "rev": "531771530d4f82ad2d21e436e3cc052d68d7aebb",
-    "hash": "sha256-pgD51NWFyjK1FrXZ8MFFIM9DX2OBxL7cd7JlST2Twvc="
+    "rev": "cfa2d58f4537aca6ca83e2de1a0d9f1491121264",
+    "hash": "sha256-9T6EL8mZ1rddDXBNvkh68jQSKK1bhi73IvyD6v464x8="
   },
   "nvim-dap-go": {
     "owner": "leoluz",
@@ -134,8 +134,8 @@
   "nvim-dap-ui": {
     "owner": "rcarriga",
     "repo": "nvim-dap-ui",
-    "rev": "1a66cabaa4a4da0be107d5eda6d57242f0fe7e49",
-    "hash": "sha256-J/gUD4X//JtC2HB3HBeONivCQdMnXDnZJWd6jFF9+nk="
+    "rev": "cc9dd33aade7f20bae414d0cba163bc60d4d4b43",
+    "hash": "sha256-za3/6W1J6aMvNZQq8ANCq+TGHKHJtSxR/C5t3/oL3DI="
   },
   "nvim-dap-virtual-text": {
     "owner": "theHamsta",
@@ -146,44 +146,44 @@
   "nvim-lint": {
     "owner": "mfussenegger",
     "repo": "nvim-lint",
-    "rev": "d48f3a76189d03b2239f6df1b2f7e3fa8353743b",
-    "hash": "sha256-5mlNCE0KFGfJTocV5NMlczZMmZKGzxqVdUO23KVZ4O8="
+    "rev": "f6230a5c06ba59e6059c14637f1dbe29a7978b9b",
+    "hash": "sha256-0efsCxMeYu1Wp/lhWFV1MWTRsa9aW25YQIU1rccezBM="
   },
   "nvim-lspconfig": {
     "owner": "neovim",
     "repo": "nvim-lspconfig",
-    "rev": "07dff35e7c95288861200b788ef32d6103f107f0",
-    "hash": "sha256-irSuqHKnAm0ReA9R9qJYtoWPp8XdE4bcWovVn7jkGPo="
+    "rev": "db68de3575fff9dd9bb78b34c8371759ed35fe34",
+    "hash": "sha256-+LHqtAWAR6UW2ud+pp0Lw4w3YOLVhjS8tW2jjGbh6Ps="
   },
   "nvim-nio": {
     "owner": "nvim-neotest",
     "repo": "nvim-nio",
-    "rev": "21f5324bfac14e22ba26553caf69ec76ae8a7662",
-    "hash": "sha256-eDbzJAGdUBhTwuD0Nt9FihZj1MmVdQfn/GKIybuu5a8="
+    "rev": "edcc181a875301dd21840189aa2f2f9ad69fc172",
+    "hash": "sha256-7NWyTAF6cgB2weYRBmEtGnWlA+pn2A35wlLttOuLNN8="
   },
   "nvim-ts-autotag": {
     "owner": "windwp",
     "repo": "nvim-ts-autotag",
-    "rev": "88c1453db4ba7dd24131086fe51fdf74e587d275",
-    "hash": "sha256-bvBf9wEDxdwlMGN29v4dEPexZGuxZZr7s+6xAOrDNKI="
+    "rev": "d7220b55e16ed3c04e88086256def5d282429493",
+    "hash": "sha256-L0A0at16v8SrylDAaRzUyU/H2vgd7zrT2WP+Ofgiv7s="
   },
   "nvim-web-devicons": {
     "owner": "nvim-tree",
     "repo": "nvim-web-devicons",
-    "rev": "dfbfaa967a6f7ec50789bead7ef87e336c1fa63c",
-    "hash": "sha256-pcU69LrhXFgXcvxbsBqLkUhgYEVGjMUDmEjaKZTSv+0="
+    "rev": "58447c1fca354bbf184425e4a8d01deecbd6f3c4",
+    "hash": "sha256-6LC1IxH3h2T8cMOtwUiJst7+Bk9Uux9tG2xiCbr8hPc="
   },
   "obsidian.nvim": {
     "owner": "obsidian-nvim",
     "repo": "obsidian.nvim",
-    "rev": "2a8af7bd141123c7911fd0956ad986f29fe5bf12",
-    "hash": "sha256-9Su5t8cJAHlXV+EE4GLa1+BhezfHZIZgl2P6kBrkX8E="
+    "rev": "d3939a735817a1c7309682b87e861bb9e69c8c20",
+    "hash": "sha256-QUDBxWD4lGqYrWiTDwRSxLwPTc6gXKKLF63gskW/qrg="
   },
   "package-info.nvim": {
     "owner": "vuki656",
     "repo": "package-info.nvim",
-    "rev": "9725099fb118bab8360e560c1219bff60763b7e1",
-    "hash": "sha256-KCA7E766yRnV7XMrcwwpe7m1/pgiqecKtCWVtAlfGfU="
+    "rev": "b86cf49efc3855dd94afb33304b278f6f122bf1a",
+    "hash": "sha256-ajoRR1KZfRn0i/BdJTSSLudJfppYkAdVaOeojNItoa8="
   },
   "persistent-breakpoints.nvim": {
     "owner": "Weissle",
@@ -200,20 +200,20 @@
   "render-markdown.nvim": {
     "owner": "MeanderingProgrammer",
     "repo": "render-markdown.nvim",
-    "rev": "f422cb5c6855f150e2ddcfaf44e7157b98b34f6a",
-    "hash": "sha256-ukJUaqEYI60o/lyLM5GaKsRdMW/24IZnzVzPB9/Q/zo="
+    "rev": "245956d67572c137df375dbf256e96bdb07e0937",
+    "hash": "sha256-YMasr2FwIJI7oTW77UnWegx2TWTj0EkSJoHtsD5ls+w="
   },
   "rustaceanvim": {
     "owner": "mrcjkb",
     "repo": "rustaceanvim",
-    "rev": "88575b98bb9937fb9983ddec5e532b67e75ce677",
-    "hash": "sha256-mLYE6XwWY3P4teI3XzW49TuN327E8Ew9fcr1DtsWUIk="
+    "rev": "a968f5133b8b24f481de12f08cd79420d1ace559",
+    "hash": "sha256-Fg20mGTMBhbausVuF2NtZJVia6w7Bj4ROuc38TBlId0="
   },
   "schemastore.nvim": {
     "owner": "b0o",
     "repo": "SchemaStore.nvim",
-    "rev": "19936230448bfb3dfd4314070e8bc499ceb55928",
-    "hash": "sha256-DgdxPOaYwd/3hYawps3cZBTNEFAPLZ9h0o6wA7sVMlY="
+    "rev": "31626d9d0a95418bf12a8b3f0e8f9f42e73e1f35",
+    "hash": "sha256-KnXZT8OAHOBnRqWJ8xMnFh+Y4v+YqnAInu2+6hgMqyw="
   },
   "snacks.nvim": {
     "owner": "folke",
@@ -230,8 +230,8 @@
   "ts-comments.nvim": {
     "owner": "folke",
     "repo": "ts-comments.nvim",
-    "rev": "123a9fb12e7229342f807ec9e6de478b1102b041",
-    "hash": "sha256-ORK3XpHANaqvp1bfMG2GJmAiaOsLoGW82ebL/FJtKaA="
+    "rev": "a59d6092213447450191122c9346f309161504cb",
+    "hash": "sha256-uqFE+EXQt6+UqwxVRdgk7oY05DPo5sV1q9KvvE1xVGk="
   },
   "ts-error-translator.nvim": {
     "owner": "dmmulroy",
