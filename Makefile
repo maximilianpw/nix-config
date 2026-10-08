@@ -44,9 +44,10 @@ rebuild-processes: ## Show the identity-checked active rebuild process tree
 cleanup-rebuild: ## Stop only the tracked active rebuild process tree
 	@$(SCRIPT_DIR)/lib/rebuild-state.sh cleanup
 
-update: ## Update core flake inputs (CORE_INPUTS in this Makefile)
+update: ## Update core flake inputs, T3 Code, and Neovim plugin pins
 	@echo "Updating core flake inputs: $(CORE_INPUTS)"
 	@nix flake update $(CORE_INPUTS)
+	@python3 packages/scripts/update-t3code.py
 	@$(MAKE) update-nvim-plugins
 	@echo "Done! Run 'make rebuild' to apply updates."
 
@@ -54,6 +55,7 @@ update-all: ## Update all flake inputs and repo-local custom packages
 	@echo "Updating all flake inputs..."
 	@nix flake update
 	@$(MAKE) update-packages
+	@python3 packages/scripts/update-t3code.py
 	@$(MAKE) update-nvim-plugins
 	@echo "Done! Run 'make rebuild' to apply updates."
 

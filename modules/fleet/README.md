@@ -191,11 +191,13 @@ Capability fields:
 The homelab Tailscale Serve configuration exposes it only within the tailnet at
 `https://t3code.liger-shilling.ts.net`.
 
-`users/maxpw/settings.nix` contains the shared release lock for Kim's npm server
-and Joyce's Homebrew-installed desktop app. Joyce installs the exact arm64
-release through a generated private Homebrew tap and pins it after Homebrew
-Bundle runs. To upgrade, update both the version and DMG SHA-256 in that file,
-then rebuild Joyce and Kim from the same configuration revision.
+`packages/t3code-release.json` pins the shared release for Kim's packaged
+headless server and Joyce's Nix-installed desktop app. `make update` discovers
+complete nightlies and updates both artifact hashes together; rebuild Joyce and
+Kim explicitly from the same reviewed revision. Hjem exposes the Mac app, and
+the server no longer downloads from npm at startup. See
+[T3 Code packaging and Homebrew handover](../../docs/t3code.md) before the first
+activation: old casks must be removed without zapping userdata.
 
 After a service start, retrieve the one-time pairing token from the user journal:
 

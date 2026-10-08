@@ -16,5 +16,6 @@
 }: {
   home.packages = lib.optionals isDarwin [
     pkgs.obsidian
+    pkgs.t3code
   ];
 }

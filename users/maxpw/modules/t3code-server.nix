@@ -6,34 +6,26 @@
   lib,
   ...
 }: let
-  # The server itself is headless: run it on Linux desktops and on the
-  # Kim is the homelab box, where Tailscale Serve provides tailnet-only HTTPS.
+  # Run headlessly on Linux desktops and Kim, where Tailscale Serve provides
+  # tailnet-only HTTPS.
   runServer = isLinuxDesktop || hostname == "kim";
-  inherit (import ../settings.nix {inherit pkgs;}) t3codeRelease;
-  servicePath =
-    [
-      pkgs.nodejs
-      pkgs.claude-code
-      pkgs.codex
-      pkgs.opencode
-      pkgs.grok
-      pkgs.git
-      pkgs.openssh
+  servicePath = [
+    pkgs.nodejs
+    pkgs.claude-code
+    pkgs.codex
+    pkgs.opencode
+    pkgs.grok
+    pkgs.git
+    pkgs.openssh
 
-      # T3 probes $SHELL with POSIX syntax; use Bash instead of the login Nu shell.
-      pkgs.bash
-      pkgs.mise
-      pkgs.zoxide
-    ]
-    ++ [
-      # node-pty has no prebuild for this Node runtime and falls back to node-gyp.
-      pkgs.gcc
-      pkgs.gnumake
-      pkgs.python3
-    ];
+    # T3 probes $SHELL with POSIX syntax; use Bash instead of the login Nu shell.
+    pkgs.bash
+    pkgs.mise
+    pkgs.zoxide
+  ];
 in {
   home.packages = lib.optionals runServer [
-    pkgs.nodejs
+    pkgs.t3code
   ];
 
   systemd.user.services.t3code = lib.mkIf runServer {
@@ -43,7 +35,7 @@ in {
     };
 
     Service = {
-      ExecStart = "${pkgs.nodejs}/bin/npx --yes t3@${t3codeRelease.version} serve --host 127.0.0.1 --port 51000 --base-dir %h/.local/share/t3code --no-browser";
+      ExecStart = "${pkgs.t3code}/bin/t3 serve --host 127.0.0.1 --port 51000 --base-dir %h/.local/share/t3code --no-browser";
       Restart = "on-failure";
       RestartSec = "5s";
       StandardOutput = "journal";

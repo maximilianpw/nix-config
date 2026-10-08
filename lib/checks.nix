@@ -9,6 +9,18 @@
   self,
 }: {
   x86_64-linux = {
+    t3code-package = import ../tests/t3code-package-check.nix {
+      pkgs = nixpkgs.legacyPackages.x86_64-linux;
+      package = self.packages.x86_64-linux.t3code;
+    };
+    t3code-config-regression = import ../tests/t3code-config-regression.nix {
+      inherit lib;
+      pkgs = nixpkgs.legacyPackages.x86_64-linux;
+      linuxPackage = self.packages.x86_64-linux.t3code;
+      kim = self.nixosConfigurations.kim.config;
+      joyce = self.darwinConfigurations.joyce.config;
+      cuno = self.nixosConfigurations.cuno.config;
+    };
     eval-kim = self.nixosConfigurations.kim.config.system.build.toplevel;
     # Keep the parked Hyprland profile evaluable while kim is headless.
     eval-kim-desktop = desktopKim.config.system.build.toplevel;
@@ -130,6 +142,10 @@
     };
   };
   aarch64-darwin = {
+    t3code-package = import ../tests/t3code-package-check.nix {
+      pkgs = nixpkgs.legacyPackages.aarch64-darwin;
+      package = self.packages.aarch64-darwin.t3code;
+    };
     eval-joyce = self.darwinConfigurations.joyce.system;
     nvim-candidate = (nvim "aarch64-darwin").nvim-candidate-check;
     hjem-lifecycle-regression = import ../tests/hjem-lifecycle-regression.nix {

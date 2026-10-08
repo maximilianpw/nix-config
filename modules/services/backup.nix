@@ -3,7 +3,6 @@
   pkgs,
   lib,
   currentSystemUser ? "maxpw",
-  currentSystemUserDir ? currentSystemUser,
   ...
 }: let
   cfg = config.custom.backup;
@@ -25,7 +24,7 @@
   # from each owning module's `custom.backup.prepareSteps` entry.
   databaseApplicationUnits = homelab.backup.dumpUnits;
   fileApplicationUnits = homelab.backup.archiveUnits;
-  t3codeVersion = (import ../../users/${currentSystemUserDir}/settings.nix {inherit pkgs;}).t3codeRelease.version;
+  t3codeVersion = pkgs.t3code.version;
   baseBackupPaths = [
     "${homeDir}/nix-config"
     "${homeDir}/Documents"

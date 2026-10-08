@@ -151,6 +151,7 @@
         # Keep Jellyfin's server, web client, and patched FFmpeg together on the
         # locked unstable package set so upgrades move them as one unit.
         inherit (unstable) jellyfin jellyfin-web jellyfin-ffmpeg;
+        t3code = final.callPackage ./packages/t3code.nix {};
         obsidian = final.callPackage ./packages/obsidian.nix {};
         cliproxyapi = final.callPackage ./packages/cliproxyapi.nix {};
         cua-driver = final.callPackage ./packages/cua-driver.nix {};
@@ -255,14 +256,14 @@
       in
         editorPackages "x86_64-linux"
         // {
-          inherit (pkgs) helium obsidian skills cliproxyapi cua-driver nextcloud-calendar hunkdiff nix-update tunarr jellyfin jellyfin-web jellyfin-ffmpeg vite-plus;
+          inherit (pkgs) helium obsidian skills cliproxyapi cua-driver nextcloud-calendar hunkdiff nix-update tunarr jellyfin jellyfin-web jellyfin-ffmpeg vite-plus t3code;
         };
       aarch64-darwin = let
         pkgs = mkPkgs "aarch64-darwin";
       in
         editorPackages "aarch64-darwin"
         // {
-          inherit (pkgs) cua-driver skills nextcloud-calendar hunkdiff nix-update obsidian vite-plus;
+          inherit (pkgs) cua-driver skills nextcloud-calendar hunkdiff nix-update obsidian vite-plus t3code;
         };
     };
 
@@ -282,6 +283,7 @@
           deadnix
           git
           gnumake
+          gh
           jq
           nix
           nodejs
