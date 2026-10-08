@@ -111,6 +111,11 @@ in
         mkdir -p "$out/libexec/t3code"
         cp -R . "$out/libexec/t3code/"
         chmod -R u+w "$out/libexec/t3code"
+        # Launch Electron directly against Nix libraries, not AppRun's bundled
+        # distro support tree (which carries obsolete GTK/DBus dependencies).
+        rm -rf "$out/libexec/t3code/usr" "$out/libexec/t3code/AppRun" \
+          "$out/libexec/t3code/.DirIcon" "$out/libexec/t3code/t3code.png" \
+          "$out/libexec/t3code/t3code.desktop"
         rm "$out/libexec/t3code/libvulkan.so.1"
         ln -s ${lib.getLib pkgs.vulkan-loader}/lib/libvulkan.so.1 "$out/libexec/t3code/"
         runHook postInstall
