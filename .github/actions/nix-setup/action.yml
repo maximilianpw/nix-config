@@ -1,0 +1,15 @@
+name: Nix setup
+description: Install Determinate Nix with optional GitHub-backed caching
+inputs:
+  cache:
+    description: Enable Magic Nix Cache (leave disabled for jobs using Cachix)
+    required: false
+    default: 'false'
+runs:
+  using: composite
+  steps:
+    - uses: DeterminateSystems/determinate-nix-action@8d87e8d5e5b8a8309d4281094560f127d9a265f1 # v3
+    - uses: DeterminateSystems/magic-nix-cache-action@84c0677f58dcedf3b91f8223ce36a9ea5b3c84b7 # v15
+      if: inputs.cache == 'true'
+      with:
+        use-flakehub: false

@@ -6,45 +6,65 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      full_builds:
+        description: 'Also build Kim, Cuno WSL image and Joyce (up to 45 minutes each)'
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.ref }}-${{ inputs.full_builds == true && 'full' || 'checks' }}
   cancel-in-progress: true
 
 jobs:
   flake-health:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: DeterminateSystems/determinate-nix-action@8d87e8d5e5b8a8309d4281094560f127d9a265f1 # v3
+      - uses: ./.github/actions/nix-setup
       - uses: DeterminateSystems/flake-checker-action@786422608c7bded2bbc9741ad9f91356842bf520 # v14
+        with:
+          nixpkgs-keys: nixpkgs,nixpkgs-unstable
+          fail-mode: true
+          ignore-missing-flake-lock: false
 
   lint:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: DeterminateSystems/determinate-nix-action@8d87e8d5e5b8a8309d4281094560f127d9a265f1 # v3
+      - uses: ./.github/actions/nix-setup
+        with:
+          cache: 'true'
       - name: Use the public Superlocal stub
         run: scripts/ci/use-superlocal-stub.sh
       - run: nix build .#checks.x86_64-linux.pre-commit-check --no-link
 
   shell-safety:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: DeterminateSystems/determinate-nix-action@8d87e8d5e5b8a8309d4281094560f127d9a265f1 # v3
+      - uses: ./.github/actions/nix-setup
+        with:
+          cache: 'true'
       - name: Use the public Superlocal stub
         run: scripts/ci/use-superlocal-stub.sh
       - run: nix develop --command make check-scripts
 
   regression-checks:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: DeterminateSystems/determinate-nix-action@8d87e8d5e5b8a8309d4281094560f127d9a265f1 # v3
+      - uses: ./.github/actions/nix-setup
+        with:
+          cache: 'true'
       - name: Use the public Superlocal stub
         run: scripts/ci/use-superlocal-stub.sh
       - name: Build configuration regression checks
@@ -52,21 +72,29 @@ jobs:
 
   eval-profiles:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: DeterminateSystems/determinate-nix-action@8d87e8d5e5b8a8309d4281094560f127d9a265f1 # v3
+      - uses: ./.github/actions/nix-setup
+        with:
+          cache: 'true'
       - name: Use the public Superlocal stub
         run: scripts/ci/use-superlocal-stub.sh
-      - name: Evaluate headless and parked desktop profiles
+      - name: Evaluate all hosts and the parked desktop profile
         run: |
           nix eval --raw .#checks.x86_64-linux.eval-kim.drvPath
           nix eval --raw .#checks.x86_64-linux.eval-kim-desktop.drvPath
+          nix eval --raw .#checks.x86_64-linux.eval-cuno.drvPath
+          nix eval --raw .#checks.aarch64-darwin.eval-joyce.drvPath
 
   build-kim:
+    if: github.event_name == 'workflow_dispatch' && inputs.full_builds == true
+    needs: [flake-health, lint, shell-safety, regression-checks, eval-profiles]
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: DeterminateSystems/determinate-nix-action@8d87e8d5e5b8a8309d4281094560f127d9a265f1 # v3
+      - uses: ./.github/actions/nix-setup
       - name: Use the public Superlocal stub
         run: scripts/ci/use-superlocal-stub.sh
       - uses: cachix/cachix-action@38b082610b782e7e93e209c35fd730d399dee866 # v17
@@ -76,10 +104,13 @@ jobs:
       - run: nix build .#nixosConfigurations.kim.config.system.build.toplevel --no-link
 
   build-cuno-image:
+    if: github.event_name == 'workflow_dispatch' && inputs.full_builds == true
+    needs: [flake-health, lint, shell-safety, regression-checks, eval-profiles]
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: DeterminateSystems/determinate-nix-action@8d87e8d5e5b8a8309d4281094560f127d9a265f1 # v3
+      - uses: ./.github/actions/nix-setup
       - name: Use the public Superlocal stub
         run: scripts/ci/use-superlocal-stub.sh
       - uses: cachix/cachix-action@38b082610b782e7e93e209c35fd730d399dee866 # v17
@@ -93,10 +124,15 @@ jobs:
           test -s "$RUNNER_TEMP/nixos.wsl"
 
   build-darwin:
+    if: github.event_name == 'workflow_dispatch' && inputs.full_builds == true
+    needs: [flake-health, lint, shell-safety, regression-checks, eval-profiles]
     runs-on: macos-14
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: DeterminateSystems/determinate-nix-action@8d87e8d5e5b8a8309d4281094560f127d9a265f1 # v3
+      - uses: ./.github/actions/nix-setup
+        with:
+          cache: 'true'
       - name: Use the public Superlocal stub
         run: scripts/ci/use-superlocal-stub.sh
       - run: nix build .#darwinConfigurations.joyce.system --no-link

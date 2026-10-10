@@ -14,7 +14,7 @@
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
     fleet = {
-      url = "github:maximilianpw/fleet/a5de8eaa245aef373594a1d2a4e2d27127f00f5f";
+      url = "github:maximilianpw/fleet/v0.1.0";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.home-manager.follows = "home-manager";
     };
@@ -135,6 +135,13 @@
         # unstable package without shadowing the stable one globally (which
         # would force mass rebuilds of everything depending on it).
         inherit unstable;
+        # The legacy Equinox host returns 403; ngrok's host serves the same
+        # pinned artifacts. Keep the version and hash until nixpkgs migrates.
+        ngrok = prev.ngrok.overrideAttrs (old: {
+          src = old.src.overrideAttrs (src: {
+            urls = map (builtins.replaceStrings ["https://bin.equinox.io/"] ["https://bin.ngrok.com/"]) src.urls;
+          });
+        });
         # direnv 2.37.1 fish tests get killed during build on macOS (sandbox/OOM)
         direnv = prev.direnv.overrideAttrs (_: {doCheck = false;});
         # Home Assistant integrations move on a monthly cadence, so keep Core

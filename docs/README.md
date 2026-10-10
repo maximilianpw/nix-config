@@ -9,6 +9,7 @@ completed plans and superseded research.
 - [Bootstrap](../BOOTSTRAP.md)
 - [Configuration ownership and recovery](config-ownership-and-recovery.md)
 - [Fleet and remote development](../modules/fleet/README.md)
+- [Git merging and dependency-update CI](git-and-ci-workflow.md)
 
 ## Recovery and storage
 
@@ -41,6 +42,7 @@ completed plans and superseded research.
 
 ## Reviews
 
+- [Nix configuration inspiration review (2026-10-08)](nix-config-inspiration-research.md)
 - [Agent workflow video review (2026-10-02)](agent-workflow-video-review.md)
 
 ## Open backlog

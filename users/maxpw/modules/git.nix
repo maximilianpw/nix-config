@@ -7,6 +7,11 @@
   programs = {
     gh.enable = true;
     lazygit.enable = true;
+    mergiraf = {
+      enable = true;
+      enableGitIntegration = true;
+      enableJujutsuIntegration = true;
+    };
     git = {
       enable = true;
       lfs.enable = true;
@@ -45,10 +50,19 @@
         };
         github.user = "maximilianpw";
         init.defaultBranch = "main";
-        push.default = "tracking";
-        push.autoSetupRemote = true;
+        push = {
+          default = "tracking";
+          autoSetupRemote = true;
+          # Additional protection for force-with-lease, not permission to force push.
+          useForceIfIncludes = true;
+        };
         pull.rebase = false;
         rebase.updateRefs = true;
+        rebase.missingCommitsCheck = "error";
+        diff = {
+          colorMoved = "dimmed-zebra";
+          colorMovedWS = "allow-indentation-change";
+        };
         rerere.enabled = true;
         tag.gpgSign = true;
       };

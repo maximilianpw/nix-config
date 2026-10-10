@@ -19,6 +19,7 @@ jobs:
   update:
     name: Bump custom packages
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       actions: write
       contents: write
@@ -26,11 +27,9 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: DeterminateSystems/determinate-nix-action@8d87e8d5e5b8a8309d4281094560f127d9a265f1 # v3
-
-      - uses: DeterminateSystems/magic-nix-cache-action@84c0677f58dcedf3b91f8223ce36a9ea5b3c84b7 # v15
+      - uses: ./.github/actions/nix-setup
         with:
-          use-flakehub: false
+          cache: 'true'
 
       - name: Use the public Superlocal stub
         run: scripts/ci/use-superlocal-stub.sh
@@ -67,20 +66,21 @@ jobs:
             Automated version bumps from `nix-update`, run by
             `.github/workflows/update-packages.yml`.
 
-            CI builds `kim`, produces Cuno's WSL import image, and builds the
-            Darwin system on a macOS runner.
+            CI runs lightweight checks and evaluates every host configuration.
+            Full Kim, Cuno-image and Darwin builds require a separate manual
+            CI run with full_builds enabled.
 
             ${{ steps.bump.outputs.failed_packages && format('> [!WARNING]\n> Packages that failed to update: `{0}`', steps.bump.outputs.failed_packages) || '' }}
           delete-branch: true
 
-      - name: Dispatch full CI for the update branch
+      - name: Dispatch lightweight CI for the update branch
         if: steps.create-pull-request.outputs.pull-request-operation == 'created' || steps.create-pull-request.outputs.pull-request-operation == 'updated'
         env:
           GH_TOKEN: ${{ github.token }}
           UPDATE_BRANCH: ${{ steps.create-pull-request.outputs.pull-request-branch }}
         run: |
           for attempt in 1 2 3 4 5; do
-            if gh workflow run ci.yml --ref "$UPDATE_BRANCH"; then
+            if gh workflow run ci.yml --ref "$UPDATE_BRANCH" -f full_builds=false; then
               exit 0
             fi
             echo "CI dispatch attempt $attempt failed; retrying" >&2

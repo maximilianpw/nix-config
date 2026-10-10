@@ -9,6 +9,11 @@
   self,
 }: {
   x86_64-linux = {
+    git-merge-regression = import ../tests/git-merge-regression.nix {
+      inherit lib;
+      pkgs = nixpkgs.legacyPackages.x86_64-linux;
+      home = self.nixosConfigurations.kim.config.home-manager.users.maxpw;
+    };
     t3code-package = import ../tests/t3code-package-check.nix {
       pkgs = nixpkgs.legacyPackages.x86_64-linux;
       package = self.packages.x86_64-linux.t3code;
@@ -142,6 +147,11 @@
     };
   };
   aarch64-darwin = {
+    git-merge-regression = import ../tests/git-merge-regression.nix {
+      inherit lib;
+      pkgs = nixpkgs.legacyPackages.aarch64-darwin;
+      home = self.darwinConfigurations.joyce.config.home-manager.users.max-vev;
+    };
     t3code-package = import ../tests/t3code-package-check.nix {
       pkgs = nixpkgs.legacyPackages.aarch64-darwin;
       package = self.packages.aarch64-darwin.t3code;
