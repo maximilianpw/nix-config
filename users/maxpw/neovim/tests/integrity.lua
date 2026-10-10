@@ -53,6 +53,8 @@ local fuzzy = require("blink.cmp.fuzzy")
 assert(fuzzy.implementation_type == "rust", "blink.cmp is not using its Rust matcher: " .. tostring(fuzzy.implementation_type))
 local ok_fff, fff_rust = pcall(require, "fff.rust")
 assert(ok_fff and type(fff_rust) == "table", "fff.nvim native library failed to load: " .. tostring(fff_rust))
+-- Without the Nix-built library codediff would try to download one on first use.
+assert(require("codediff.core.installer.libvscode_diff").is_installed(), "codediff.nvim native library is missing")
 
 for _, lang in ipairs(vim.g.maxpw_treesitter_parsers) do
   assert(vim.treesitter.language.add(lang), "missing Treesitter parser: " .. lang)

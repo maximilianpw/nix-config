@@ -125,6 +125,7 @@ done
 check "package integrity" in_editor "$NVIM_TERMINAL" "$NVIM_TESTS/integrity.lua"
 check "completion provider contracts" in_editor "$NVIM_TERMINAL" "$NVIM_TESTS/completion.lua"
 check "plugin contracts" in_editor "$NVIM_TERMINAL" "$NVIM_TESTS/plugins.lua"
+check "key ownership" in_editor "$NVIM_TERMINAL" "$NVIM_TESTS/keymaps.lua"
 check "dashboard without lazy.nvim" in_editor "$NVIM_TERMINAL" "$NVIM_TESTS/dashboard.lua"
 
 echo "--- VS Code package ---"

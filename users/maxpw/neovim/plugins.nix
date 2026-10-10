@@ -81,6 +81,7 @@ in {
     // {
       # Native Rust matcher / library built by nixpkgs.
       "blink.cmp" = withoutDeps vimPlugins.blink-cmp;
+      "codediff.nvim" = withoutDeps vimPlugins.codediff-nvim;
       "fff.nvim" = withoutDeps vimPlugins.fff-nvim;
       # Queries must match the nixpkgs-built grammars; textobjects tracks the
       # same main-branch API.

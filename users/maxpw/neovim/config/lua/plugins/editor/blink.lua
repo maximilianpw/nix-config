@@ -9,18 +9,17 @@ local spec = {
       preset = "default",
       ["<C-space>"] = { "show", "show_documentation", "hide_documentation" },
       ["<C-e>"] = { "hide" },
+      -- With preselect off, accept only acts on an item chosen with <C-n>/<C-p>/arrows.
       ["<CR>"] = { "accept", "fallback" },
-      -- Prefer Blink's menu, then snippet navigation, then Supermaven, then indentation.
+      ["<C-y>"] = { "select_and_accept", "fallback" },
+      -- Tab never takes the menu: snippet navigation, then Supermaven, then indentation.
       ["<Tab>"] = {
-        function(cmp)
-          if cmp.is_menu_visible() then
-            return cmp.select_and_accept()
-          end
-        end,
         "snippet_forward",
         function()
           local ok, suggestion = pcall(require, "supermaven-nvim.completion_preview")
           if ok and suggestion.has_suggestion() then
+            -- Undo the suggestion separately from the text typed before it.
+            vim.api.nvim_feedkeys(vim.keycode("<C-g>u"), "n", false)
             -- Blink invokes keymap handlers while Neovim may still hold a text lock.
             vim.schedule(suggestion.on_accept_suggestion)
             return true
@@ -57,7 +56,7 @@ local spec = {
         },
       },
       list = {
-        selection = { preselect = true, auto_insert = false },
+        selection = { preselect = false, auto_insert = false },
       },
       ghost_text = { enabled = false },
     },

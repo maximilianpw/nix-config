@@ -6,13 +6,15 @@
 #   runtime files and mappings cannot leak into VS Code.
 #
 # `toolPkgs` supplies the language tooling (normally the system's stable package
-# set, as Home Manager uses today). Neovim and its plugins come from Nixvim's own
-# package set, which follows nixpkgs-unstable. `appName` isolates
+# set, as Home Manager uses today). Plugins come from Nixvim's own package set,
+# which follows nixpkgs-unstable; so does the editor unless `editor` supplies
+# another unwrapped Neovim (the nightly build). `appName` isolates
 # stdpath(data/state/cache) for side-by-side candidates; null means "nvim".
 {
   profile,
   toolPkgs,
   appName ? null,
+  editor ? null,
 }: {
   lib,
   pkgs,
@@ -61,7 +63,10 @@ in {
 
   imports = [./options.nix];
 
-  package = pkgs.neovim-unwrapped;
+  package =
+    if editor != null
+    then editor
+    else pkgs.neovim-unwrapped;
   wrapRc = true;
   # Keep ~/.config/nvim and stdpath("data")/site off the runtimepath so the old
   # chezmoi-deployed tree and lazy.nvim-era parsers can never be loaded.

@@ -61,24 +61,9 @@ local blink = dofile(root .. "/lua/plugins/editor/blink.lua").opts
 local tab = blink.keymap["<Tab>"]
 assert(blink.keymap.preset == "default", "Blink default completion preset is disabled")
 assert(type(tab) == "table", "Blink contextual Tab mapping is missing")
-assert(tab[2] == "snippet_forward" and tab[4] == "fallback", "Blink Tab priority is misconfigured")
-
-local blink_accepted = false
-local handled = tab[1]({
-  is_menu_visible = function()
-    return true
-  end,
-  select_and_accept = function()
-    blink_accepted = true
-    return true
-  end,
-})
-assert(handled and blink_accepted, "Blink Tab did not prioritize the visible completion menu")
-assert(tab[1]({
-  is_menu_visible = function()
-    return false
-  end,
-}) == nil, "Blink Tab blocked snippet navigation without a visible menu")
+assert(#tab == 3 and tab[1] == "snippet_forward" and tab[3] == "fallback", "Blink Tab priority is misconfigured")
+assert(blink.completion.list.selection.preselect == false, "Enter would accept an item the user did not select")
+assert(vim.deep_equal(blink.keymap["<CR>"], { "accept", "fallback" }), "Enter is not explicit-selection accept")
 
 local preview_module = "supermaven-nvim.completion_preview"
 local original_preview = package.loaded[preview_module]
@@ -91,7 +76,15 @@ package.loaded[preview_module] = {
     supermaven_accepted = true
   end,
 }
-assert(tab[3]() == true, "Blink Tab did not handle visible Supermaven text")
+-- Capture the undo-break keys instead of letting a later drain run them in Normal mode.
+local feedkeys, fed = vim.api.nvim_feedkeys, nil
+vim.api.nvim_feedkeys = function(keys)
+  fed = keys
+end
+local handled = tab[2]()
+vim.api.nvim_feedkeys = feedkeys
+assert(handled == true, "Blink Tab did not handle visible Supermaven text")
+assert(fed == vim.keycode("<C-g>u"), "Supermaven acceptance does not start a new undo step")
 assert(not supermaven_accepted, "Blink Tab accepted Supermaven text while Neovim may hold a text lock")
 vim.wait(100, function()
   return supermaven_accepted
@@ -102,7 +95,7 @@ package.loaded[preview_module] = {
     return false
   end,
 }
-assert(tab[3]() == nil, "Blink Tab blocked indentation without a Supermaven suggestion")
+assert(tab[2]() == nil, "Blink Tab blocked indentation without a Supermaven suggestion")
 package.loaded[preview_module] = original_preview
 
 assert(blink.keymap[ai.keymaps.accept_suggestion] == nil, "AI acceptance conflicts with Blink")

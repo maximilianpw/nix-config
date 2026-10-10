@@ -3,6 +3,30 @@
 -- Clear highlights on search when pressing <Esc> in normal mode
 vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<CR>")
 
+-- vim.snippet sessions survive <Esc>, and a stale session would keep <Tab>
+-- jumping back into the snippet instead of accepting AI text or indenting.
+vim.keymap.set({ "i", "s" }, "<Esc>", function()
+  if vim.snippet.active() then
+    vim.snippet.stop()
+  end
+  return "<Esc>"
+end, { expr = true, desc = "Escape and end snippet" })
+
+-- Native multicursors (0.13): the default <C-l> clears them, but <C-l> is tmux
+-- navigation here. Clearing the namespace is the documented alternative.
+if vim.fn.has("nvim-0.13") == 1 then
+  vim.keymap.set("n", "<C-q>", function()
+    vim.api.nvim_buf_clear_namespace(0, vim.api.nvim_create_namespace("nvim.multicursor"), 0, -1)
+  end, { desc = "Clear multicursors" })
+end
+
+if not vim.g.vscode then
+  vim.keymap.set("n", "<leader>uu", function()
+    vim.cmd.packadd("nvim.undotree")
+    vim.cmd.Undotree()
+  end, { desc = "Undo Tree" })
+end
+
 -- Exit terminal mode
 vim.keymap.set("t", "<Esc><Esc>", "<C-\\><C-n>", { desc = "Exit terminal mode" })
 

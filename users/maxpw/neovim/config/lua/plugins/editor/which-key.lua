@@ -54,6 +54,8 @@ local spec = {
       { "<leader>b", group = "Buffer" },
       { "<leader>y", group = "Yank" },
       { "<leader>O", group = "Obsidian" },
+      { "<leader>u", group = "UI/Undo" },
+      { "<leader>x", group = "Quickfix/Diagnostics" },
       { "<leader>D", desc = "Lazydocker" },
       -- Git hunk navigation
       { "]h", desc = "Next Hunk" },

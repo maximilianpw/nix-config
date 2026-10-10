@@ -22,18 +22,32 @@ interactive workflow. Plugin revisions live in `users/maxpw/neovim/plugin-pins.j
 move them with `scripts/nvim-plugin-pins.sh`.
 
 Treesitter textobject mappings use the standalone main-branch API. Insert-mode
-`<Tab>` accepts a visible Blink completion, advances snippets, accepts visible
-Supermaven ghost text, or falls back to indentation, in that order. `<C-l>`
+`<Tab>` advances snippets, accepts visible Supermaven ghost text, or falls back
+to indentation, in that order; it never takes the Blink menu. Nothing is
+preselected, so `<CR>` accepts only an item chosen with `<C-n>`/`<C-p>`/arrows,
+and `<C-y>` accepts the first item. `<Esc>` ends a snippet session. `<C-l>`
 accepts Supermaven directly. The `<leader>db` and `<leader>dB` mappings save
 breakpoints and restore them even when DAP loads after the file was opened.
 
-Before switching to 0.13, review `:help news`: `Q` adds native multicursors,
-while the default `<C-l>` clears them. This config maps normal-mode `<C-l>` to
-tmux navigation, so multicursor clearing needs a separate mapping if used.
-`vim.hl.on_yank()` is deprecated in favor of `vim.hl.hl_op()`, and native
-file watching improves `autoread`. Keep compatibility with stable until the
-host package is deliberately switched; there is no need to replace lz.n,
-Blink, or the LSP configuration merely to try 0.13.
+Each key has one owner, checked by `tests/keymaps.lua`. Neo-tree owns directory
+buffers; oil.nvim opens only on `-`. quicker.nvim owns the quickfix and
+location-list windows, including diagnostics (`<leader>xx`/`<leader>xX`).
+todo-comments owns TODO highlighting. mini.operators uses `cx` (exchange) and
+`cr` (replace) so `gr*` LSP and `gx` keep their Neovim defaults; mini.ai's
+next/last objects are `aN`/`iN`/`aL`/`iL`, leaving native `an`/`in`/`al`/`il`.
+
+The terminal `nvim` runs the Neovim development build (0.13-dev) from the
+`neovim-nightly-overlay` input; `nvim-stable` is the same configuration on the
+release editor and shares its state, and VS Code stays on the release editor.
+`checks.<system>.nvim-candidate` tests the installed editors and
+`checks.<system>.nvim-stable` the fallback, so keep the configuration working
+on both: guard development-only APIs with `vim.fn.has("nvim-0.13")`. Refresh
+the development build with `nix flake update neovim-nightly-overlay`.
+
+On 0.13, `Q` toggles a native multicursor instead of replaying the last
+recorded macro (use `@@`). The default `<C-l>` would clear cursors, but
+`<C-l>` is tmux navigation here, so `<C-q>` clears them. `]C`/`[C` stay
+treesitter class-end motions rather than multicursor navigation.
 
 ## Tools
 

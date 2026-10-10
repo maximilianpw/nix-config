@@ -77,6 +77,11 @@
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
+    # Neovim development (0.13-dev) editor for the terminal profile. Its own
+    # nixpkgs is kept: following ours can break its Tree-sitter vendor hashes.
+    # The nested neovim-src revision is what `nix flake update` advances.
+    neovim-nightly-overlay.url = "github:nix-community/neovim-nightly-overlay";
+
     # Manifest-based $HOME linker, imported only by hosts with `hjem = true` in
     # lib/hosts.nix: its nix-darwin module adds launch agents even with no users.
     hjem = {
@@ -260,7 +265,7 @@
     # these into `pkgs.*` for module consumption — this is additive.
     packages = let
       editorPackages = system: {
-        inherit (nvim system) nvim nvim-vscode nvim-candidate nvim-vscode-candidate;
+        inherit (nvim system) nvim nvim-stable nvim-vscode nvim-candidate nvim-vscode-candidate;
         inherit (mkPkgs system) lazygit-nvim-edit herdr-shell;
       };
     in {

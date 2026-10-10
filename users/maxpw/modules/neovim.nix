@@ -37,9 +37,11 @@ in
     })
 
     (lib.mkIf useNixvim {
-      # The same derivations `checks.<system>.nvim-candidate` tests.
+      # The same derivations `checks.<system>.nvim-candidate` and
+      # `nvim-stable` test.
       home.packages = [
         editor.nvim
+        editor.nvim-stable
         editor.nvim-vscode
         viAliases
         pkgs.lazygit-nvim-edit

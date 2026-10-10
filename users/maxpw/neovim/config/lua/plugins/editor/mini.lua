@@ -3,7 +3,22 @@ local spec = {
   "mini.nvim",
   event = "DeferredUIEnter",
   after = function()
-    require("mini.ai").setup({ n_lines = 250 })
+    require("mini.ai").setup({
+      n_lines = 250,
+      -- The defaults (an/in/al/il) shadow native incremental selection (0.12)
+      -- and buffer/line textobjects (0.13).
+      mappings = {
+        around_next = "aN",
+        inside_next = "iN",
+        around_last = "aL",
+        inside_last = "iL",
+      },
+    })
+    -- Default prefixes take gr (LSP) and gx (open URL).
+    require("mini.operators").setup({
+      exchange = { prefix = "cx" },
+      replace = { prefix = "cr" },
+    })
     require("mini.move").setup()
     require("mini.surround").setup()
     require("mini.pairs").setup()
@@ -16,16 +31,6 @@ local spec = {
 
     require("mini.trailspace").setup()
     require("mini.sessions").setup()
-
-    local hipatterns = require("mini.hipatterns")
-    hipatterns.setup({
-      highlighters = {
-        fixme = { pattern = "%f[%w]()FIXME()%f[%W]", group = "MiniHipatternsFixme" },
-        hack = { pattern = "%f[%w]()HACK()%f[%W]", group = "MiniHipatternsHack" },
-        todo = { pattern = "%f[%w]()TODO()%f[%W]", group = "MiniHipatternsTodo" },
-        note = { pattern = "%f[%w]()NOTE()%f[%W]", group = "MiniHipatternsNote" },
-      },
-    })
   end,
   keys = vim.g.vscode and {} or {
     {

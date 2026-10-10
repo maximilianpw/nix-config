@@ -161,6 +161,12 @@
     "rev": "edcc181a875301dd21840189aa2f2f9ad69fc172",
     "hash": "sha256-7NWyTAF6cgB2weYRBmEtGnWlA+pn2A35wlLttOuLNN8="
   },
+  "nvim-treesitter-context": {
+    "owner": "nvim-treesitter",
+    "repo": "nvim-treesitter-context",
+    "rev": "8decd73460d26ef0a0befb745d022dd1fc2c38b8",
+    "hash": "sha256-TQmvxQXqFlENw+xHOcIbf0FK/J1ZTPJEplU/fHatdWA="
+  },
   "nvim-ts-autotag": {
     "owner": "windwp",
     "repo": "nvim-ts-autotag",
@@ -179,6 +185,12 @@
     "rev": "ab794e1774c4cfd84f02b37720a92e38ea4c053d",
     "hash": "sha256-W1j9DBHMHgPBj4atYyMT1a0F0wLNveko/8SZE81I0TU="
   },
+  "oil.nvim": {
+    "owner": "stevearc",
+    "repo": "oil.nvim",
+    "rev": "b73018b75affd13fa38e2fc94ef753b465f770d7",
+    "hash": "sha256-Q8t2GYOEBWcR19Ht2ZCx5FEusscY76LhXVae4ZW/3j0="
+  },
   "package-info.nvim": {
     "owner": "vuki656",
     "repo": "package-info.nvim",
@@ -196,6 +208,12 @@
     "repo": "plenary.nvim",
     "rev": "74b06c6c75e4eeb3108ec01852001636d85a932b",
     "hash": "sha256-nkfETDkPiE+Kd2BWYZijgUp9bP8RgFwRmvqJz2BMuq4="
+  },
+  "quicker.nvim": {
+    "owner": "stevearc",
+    "repo": "quicker.nvim",
+    "rev": "4a6883cb13fe097a20a046eb55f6dffd239276e3",
+    "hash": "sha256-CVW0GJhSD/J4iSFgGpXlTWViPePIlw+Wu3tF9urWMIE="
   },
   "render-markdown.nvim": {
     "owner": "MeanderingProgrammer",
@@ -226,6 +244,12 @@
     "repo": "supermaven-nvim",
     "rev": "07d20fce48a5629686aefb0a7cd4b25e33947d50",
     "hash": "sha256-1z3WKIiikQqoweReUyK5O8MWSRN5y95qcxM6qzlKMME="
+  },
+  "todo-comments.nvim": {
+    "owner": "folke",
+    "repo": "todo-comments.nvim",
+    "rev": "31e3c38ce9b29781e4422fc0322eb0a21f4e8668",
+    "hash": "sha256-VGeIRfwQsHgSO89Pmn6yIP9na1F6mmYZx0HDLe9IKCQ="
   },
   "ts-comments.nvim": {
     "owner": "folke",

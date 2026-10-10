@@ -64,10 +64,18 @@ vim.api.nvim_exec_autocmds("User", { pattern = "DeferredUIEnter" })
 assert_bridges()
 
 -- mini.nvim sets up only its editing modules here; sessions and trailspace are terminal-only.
-for _, module in ipairs({ "mini.ai", "mini.move", "mini.surround", "mini.pairs", "mini.splitjoin", "mini.align" }) do
+for _, module in ipairs({
+  "mini.ai",
+  "mini.operators",
+  "mini.move",
+  "mini.surround",
+  "mini.pairs",
+  "mini.splitjoin",
+  "mini.align",
+}) do
   assert(package.loaded[module], "VS Code is missing editing primitive: " .. module)
 end
-for _, module in ipairs({ "mini.trailspace", "mini.sessions", "mini.hipatterns" }) do
+for _, module in ipairs({ "mini.trailspace", "mini.sessions" }) do
   assert(package.loaded[module] == nil, "VS Code loaded terminal-only module: " .. module)
 end
 assert(vim.fn.maparg("<leader>qs", "n") == "", "VS Code mini spec includes terminal session keys")

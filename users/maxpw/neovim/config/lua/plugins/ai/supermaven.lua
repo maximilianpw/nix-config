@@ -4,7 +4,7 @@
 local opts = {
   disable_inline_completion = false,
   disable_keymaps = false,
-  -- <Tab> accepts suggestions contextually through Blink; keep <C-l> as a direct AI fallback.
+  -- <Tab> accepts suggestions through Blink after snippet navigation; <C-l> is a direct fallback.
   keymaps = { accept_suggestion = "<C-l>" },
 }
 
