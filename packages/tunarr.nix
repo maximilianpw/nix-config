@@ -6,7 +6,7 @@
   patchelf,
   ffmpeg,
 }: let
-  version = "2026.9.3";
+  version = "2026.10.1";
 in
   stdenv.mkDerivation {
     pname = "tunarr";
@@ -14,7 +14,7 @@ in
 
     src = fetchurl {
       url = "https://github.com/chrisbenincasa/tunarr/releases/download/v${version}/tunarr-v${version}-linux-x64.tar.gz";
-      hash = "sha256-1ooxvaAsdl7tXdZDM/opuLurIIWE0vyo1oPQj2pRwNE=";
+      hash = "sha256-Qa8zaWLa91OqNkSi45UpBH8STVpIs/m4YRk8DPWXZl0=";
     };
 
     sourceRoot = ".";
