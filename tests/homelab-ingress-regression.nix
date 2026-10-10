@@ -20,7 +20,7 @@
   cliproxyBackend = (import ../modules/cliproxyapi/config.nix).baseUrl;
   nextcloudListen = config.services.nginx.virtualHosts.${homelab.publicEndpoints.nextcloud.host}.listen;
 in
-  assert lib.assertMsg (publicNames == ["cliproxy" "executor" "homeassistant" "jellyfin" "leerr" "nextcloud" "plex" "seerr"])
+  assert lib.assertMsg (publicNames == ["actual" "cliproxy" "executor" "homeassistant" "jellyfin" "leerr" "nextcloud" "plex" "seerr"])
   "Cloudflare ingress must expose the declared public application set";
   assert lib.assertMsg (ingressHosts == publicHosts)
   "Cloudflare ingress must derive exactly from the public service inventory";
@@ -86,6 +86,7 @@ in
   ];
   assert lib.assertMsg (
     lib.all (name: homelab.services.${name}.endpoint.authorizationOwner == "application") [
+      "actual"
       "homeassistant"
       "jellyfin"
       "leerr"

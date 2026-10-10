@@ -5,9 +5,21 @@
   pkgs,
 }: let
   homelab = import ../lib/homelab.nix {inherit lib;};
-  endpoint = homelab.endpoints.actual;
+  endpoint = homelab.publicEndpoints.actual;
+  tunnel = config.services.cloudflared.tunnels.${homelab.infrastructure.cloudflare.tunnelId};
   actual = config.services.actual;
 in
+  assert lib.assertMsg (
+    homelab.services.actual.endpoint.exposure
+    == "public"
+    && homelab.services.actual.endpoint.authorizationOwner == "application"
+    && endpoint.url == "https://actual.maximilian.pw"
+    && !(homelab.privateServices ? actual)
+    && tunnel.ingress.${endpoint.host}.service == homelab.loopbackUrl endpoint.port
+    && tunnel.ingress.${endpoint.host}.originRequest.httpHostHeader == endpoint.host
+    && !(builtins.elem endpoint.port config.networking.firewall.allowedTCPPorts)
+  )
+  "Actual Budget must use Cloudflare HTTPS with application authentication, no tailnet service and no public backend port";
   assert lib.assertMsg actual.enable
   "Actual Budget must be enabled";
   assert lib.assertMsg (actual.package == expectedPackage)

@@ -254,6 +254,19 @@ and data files. Never combine that route with an exporter import.
 
 ### Actual Budget
 
+Actual is served at `https://actual.maximilian.pw` through the existing Cloudflare
+Tunnel, with application-owned password authentication. The server remains on
+Kim at `127.0.0.1:19006`; budget state and backups remain in `/var/lib/actual`.
+The inventory removes Actual from Tailscale Serve when the configuration is
+activated. DNS is managed outside this flake: before cutover, ensure a proxied
+CNAME for `actual.maximilian.pw` targets
+`5b712ae4-3ce4-4499-9cb7-a57cde1c571f.cfargotunnel.com`. DNS changes and host
+activation require explicit operator approval. Verify the existing server
+password is set before exposing the service; do not publish an uninitialized
+instance. After cutover, verify `/health`, password login, and budget sync over
+the public HTTPS URL. Update clients and any registered bank-sync OAuth callback
+to the new hostname; do not copy or delete server state for this ingress change.
+
 Keep `actual.service` stopped and restore the complete staged
 `/var/lib/actual` directory. Its `server-files/account.sqlite` contains the
 hashed server password, registered budget files, and active session state;
@@ -261,7 +274,7 @@ hashed server password, registered budget files, and active session state;
 as one recovery point and start the Actual package version recorded at
 `applicationVersions.actual` on loopback. Sign in with the existing server
 password, open a representative budget, and verify a client can synchronize
-before enabling tailnet ingress. If end-to-end encryption is enabled for a
+before enabling Cloudflare ingress. If end-to-end encryption is enabled for a
 budget, its encryption password is separate recovery material and is not
 recoverable from the server state.
 

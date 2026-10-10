@@ -175,8 +175,9 @@
 
   actual = {
     endpoint = {
-      authorizationOwner = "tailscale";
-      exposure = "tailnet";
+      authorizationOwner = "application";
+      exposure = "public";
+      hostname = "actual.maximilian.pw";
       port = 19006;
       monitorPath = "/health";
     };
