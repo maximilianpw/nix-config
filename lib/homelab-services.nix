@@ -614,8 +614,9 @@
 
   leerr = {
     endpoint = {
-      authorizationOwner = "tailscale";
-      exposure = "tailnet";
+      authorizationOwner = "application";
+      exposure = "public";
+      hostname = "leerr.maximilian.pw";
       port = 19008;
       monitorPath = "/health";
     };
@@ -630,10 +631,10 @@
     recovery = {
       order = 95;
       versionPolicy = "restore-archived-version-first";
-      runbook = "docs/leerr.md#recovery";
+      runbook = "docs/homelab-recovery.md";
       acceptance = [
         "sqlite-integrity-and-account-login-pass"
-        "per-user-jellyfin-library-loads-without-fixtures"
+        "per-user-plex-library-loads-without-fixtures"
       ];
       secretOwners = [
         "sops:leerr-encryption-key"

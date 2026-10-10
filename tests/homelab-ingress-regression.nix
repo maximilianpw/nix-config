@@ -20,7 +20,7 @@
   cliproxyBackend = (import ../modules/cliproxyapi/config.nix).baseUrl;
   nextcloudListen = config.services.nginx.virtualHosts.${homelab.publicEndpoints.nextcloud.host}.listen;
 in
-  assert lib.assertMsg (publicNames == ["cliproxy" "executor" "homeassistant" "jellyfin" "nextcloud" "plex" "seerr"])
+  assert lib.assertMsg (publicNames == ["cliproxy" "executor" "homeassistant" "jellyfin" "leerr" "nextcloud" "plex" "seerr"])
   "Cloudflare ingress must expose the declared public application set";
   assert lib.assertMsg (ingressHosts == publicHosts)
   "Cloudflare ingress must derive exactly from the public service inventory";
@@ -88,6 +88,7 @@ in
     lib.all (name: homelab.services.${name}.endpoint.authorizationOwner == "application") [
       "homeassistant"
       "jellyfin"
+      "leerr"
       "nextcloud"
       "plex"
       "seerr"
@@ -100,16 +101,18 @@ in
   "Nextcloud trusted proxies must remain loopback-only";
   assert lib.assertMsg (config.services.home-assistant.config.http.trusted_proxies == ["127.0.0.1" "::1"])
   "Home Assistant trusted proxies must remain loopback-only";
-  assert expect.all "Leerr must use private HTTPS, loopback-only proxy trust, isolated state and a separate encryption key" [
-    (homelab.services.leerr.endpoint.exposure == "tailnet")
+  assert expect.all "Leerr must use public HTTPS, loopback-only proxy trust, isolated state and a separate encryption key" [
+    (homelab.services.leerr.endpoint.exposure == "public")
+    (!(homelab.privateServices ? leerr))
+    (tunnel.ingress."leerr.maximilian.pw".service == "http://127.0.0.1:19008")
     (config.systemd.services.leerr.environment.HOST == "127.0.0.1")
-    (config.systemd.services.leerr.environment.LEERR_ORIGIN == "https://leerr.${homelab.tailnetDomain}")
+    (config.systemd.services.leerr.environment.LEERR_ORIGIN == "https://leerr.maximilian.pw")
     (config.systemd.services.leerr.environment.LEERR_TRUST_PROXY == "127.0.0.1")
     (config.systemd.services.leerr.serviceConfig.User == "leerr")
     (config.systemd.services.leerr.serviceConfig.StateDirectoryMode == "0700")
     (config.sops.secrets.leerr-encryption-key.owner == "leerr")
     (!(lib.hasPrefix "/var/lib/leerr/" config.systemd.services.leerr.environment.LEERR_KEY_FILE))
-    (!(builtins.elem homelab.privateServices.leerr.port config.networking.firewall.allowedTCPPorts))
+    (!(builtins.elem homelab.publicEndpoints.leerr.port config.networking.firewall.allowedTCPPorts))
   ];
   assert expect.all "Forgejo and its Actions runner must stay on Kim's tailnet with a rootless container runtime" [
     (homelab.services.forgejo.endpoint.exposure == "tailnet")

@@ -31,6 +31,12 @@
     # nixpkgs: it needs Bun >= 1.4, which nixos-26.05 does not ship.
     superlocal.url = "git+ssh://git@github.com/maximilianpw/superlocal";
 
+    # Own music server; consume its package rather than vendoring its source.
+    leerr = {
+      url = "github:maximilianpw/leerr";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     nix-darwin.url = "github:nix-darwin/nix-darwin/nix-darwin-26.05";
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
 

@@ -816,6 +816,26 @@
         "type": "github"
       }
     },
+    "leerr": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1791549685,
+        "narHash": "sha256-YQEPXdYSe5JDQ6psMGm1ceA2MMlWzduwEE5IwXzpr64=",
+        "owner": "maximilianpw",
+        "repo": "leerr",
+        "rev": "fd5363fe361aceb0d785677378284c9635d94c14",
+        "type": "github"
+      },
+      "original": {
+        "owner": "maximilianpw",
+        "repo": "leerr",
+        "type": "github"
+      }
+    },
     "llm-agents": {
       "inputs": {
         "bun2nix": "bun2nix",
@@ -1115,6 +1135,7 @@
         "hjem": "hjem",
         "home-manager": "home-manager",
         "hyprland": "hyprland",
+        "leerr": "leerr",
         "llm-agents": "llm-agents",
         "loggle": "loggle",
         "nix-darwin": "nix-darwin",

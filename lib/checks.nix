@@ -14,6 +14,9 @@
       pkgs = nixpkgs.legacyPackages.x86_64-linux;
       home = self.nixosConfigurations.kim.config.home-manager.users.maxpw;
     };
+    # Upstream runs tests in the package build and memory-heavy lint separately.
+    leerr-package = inputs.leerr.packages.x86_64-linux.default;
+    leerr-lint = inputs.leerr.checks.x86_64-linux.lint;
     t3code-package = import ../tests/t3code-package-check.nix {
       pkgs = nixpkgs.legacyPackages.x86_64-linux;
       package = self.packages.x86_64-linux.t3code;
