@@ -42,6 +42,7 @@
     pre-commit-check = mkPreCommitCheck "x86_64-linux";
     actual-config-regression = import ../tests/actual-config-regression.nix {
       config = self.nixosConfigurations.kim.config;
+      expectedPackage = inputs.nixpkgs-unstable.legacyPackages.x86_64-linux.actual-server;
       inherit lib;
       pkgs = nixpkgs.legacyPackages.x86_64-linux;
     };

@@ -1,5 +1,6 @@
 {
   config,
+  expectedPackage,
   lib,
   pkgs,
 }: let
@@ -9,6 +10,8 @@
 in
   assert lib.assertMsg actual.enable
   "Actual Budget must be enabled";
+  assert lib.assertMsg (actual.package == expectedPackage)
+  "Actual Budget must track the nixpkgs-unstable package updated by the flake workflow";
   assert lib.assertMsg (!actual.openFirewall)
   "Actual Budget must not open a host firewall port";
   assert lib.assertMsg (

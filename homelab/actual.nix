@@ -1,6 +1,7 @@
 {
   config,
   lib,
+  pkgs,
   ...
 }: let
   homelab = import ../lib/homelab.nix {inherit lib;};
@@ -10,6 +11,8 @@ in {
 
   services.actual = {
     enable = true;
+    # Track releases through nixpkgs-unstable, refreshed by make update and CI.
+    package = pkgs.unstable.actual-server;
     openFirewall = false;
     settings = {
       hostname = "127.0.0.1";
