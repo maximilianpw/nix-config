@@ -25,8 +25,6 @@
       inherit lib;
       pkgs = nixpkgs.legacyPackages.x86_64-linux;
       linuxPackage = self.packages.x86_64-linux.t3code;
-      darwinPackage = self.packages.aarch64-darwin.t3code;
-      desktopPackage = self.packages.aarch64-darwin.t3code-desktop;
       kim = self.nixosConfigurations.kim.config;
       joyce = self.darwinConfigurations.joyce.config;
       cuno = self.nixosConfigurations.cuno.config;
@@ -162,7 +160,6 @@
     t3code-package = import ../tests/t3code-package-check.nix {
       pkgs = nixpkgs.legacyPackages.aarch64-darwin;
       package = self.packages.aarch64-darwin.t3code;
-      desktopPackage = self.packages.aarch64-darwin.t3code-desktop;
     };
     eval-joyce = self.darwinConfigurations.joyce.system;
     nvim-candidate = (nvim "aarch64-darwin").nvim-candidate-check;

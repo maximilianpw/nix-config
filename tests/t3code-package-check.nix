@@ -1,7 +1,6 @@
 {
   pkgs,
   package,
-  desktopPackage ? null,
 }:
 pkgs.runCommand "t3code-package-check" {nativeBuildInputs = [pkgs.coreutils pkgs.git pkgs.bash];} ''
   export HOME="$TMPDIR/home"
@@ -12,19 +11,8 @@ pkgs.runCommand "t3code-package-check" {nativeBuildInputs = [pkgs.coreutils pkgs
   timeout 30 ${package}/bin/t3 --version > version.txt
   grep -Fx 't3 v${package.version}' version.txt
   ${pkgs.lib.optionalString pkgs.stdenv.hostPlatform.isDarwin ''
-    # Upstream builds a launcher bundle, not a notarized release artifact.
-    app="${desktopPackage}/Applications/${package.unwrapped.appName}.app"
-    test -x "${desktopPackage}/bin/t3code-desktop"
-    test -x "$app/Contents/MacOS/${package.unwrapped.appName}"
-    test -f "$app/Contents/Info.plist"
-    test -d "$app/Contents/Resources"
-    ${pkgs.python3}/bin/python3 - <<'PY'
-    import json
-    from pathlib import Path
-    manifest = Path("${package.unwrapped.desktop}/libexec/t3code/apps/desktop/package.json")
-    assert json.loads(manifest.read_text())["version"] == "${package.version}"
-    PY
-    grep -Fx 'Name=${package.unwrapped.appName}' "${desktopPackage}/share/applications/t3code.desktop"
+    /usr/bin/codesign --verify --deep --strict '${package}/Applications/T3 Code (Nightly).app'
+    test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' '${package}/Applications/T3 Code (Nightly).app/Contents/Info.plist')" = '${package.version}'
   ''}
   # Darwin's build sandbox rejects native server subprocesses (spawn EPERM).
   # Run this disposable-state test outside the sandbox on macOS; Linux has its

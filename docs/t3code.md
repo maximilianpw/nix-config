@@ -1,56 +1,39 @@
 # T3 Code packaging, updates, and Homebrew handover
 
-T3 Code uses the pinned `llm-agents` build recipe with a narrow nightly override
-in `packages/t3code-nightly.nix`. `t3code` provides Kim's CLI/server and Joyce's
-CLI; `t3code-desktop` uses the desktop output of that same build. The override
-pins the source tag, pnpm dependency hash, and Rust dependency hash and adjusts
-the build-time version and Nightly branding. There is no copied package recipe
-or release-artifact updater. Remove the override when upstream offers nightlies.
+This repository packages the official nightly release artifacts in
+`packages/t3code.nix`. `packages/t3code-release.json` pins one version and both
+artifact hashes: the arm64 macOS ZIP and x86-64 Linux AppImage. No external
+packaging flake or Homebrew tap is involved.
 
-- The current pin is **0.0.46-nightly.20261011.2994**, matching the release used
-  by our former custom binary package—not the older upstream Alpha release.
-- Joyce installs the source-built app through Nix. Hjem exposes it at
-  `~/Applications/Nix User Apps/T3 Code (Nightly).app`. This is not the official
-  signed/notarized nightly release bundle.
-- Kim's user service runs `t3 serve` with packaged Node.js, not Electron or
-  `npx`. Startup does not fetch packages from npm. The upstream wrapper adds
-  its coding-agent providers to PATH.
+- Joyce installs the signed, unmodified app bundle through Nix. Hjem exposes it
+  at `~/Applications/Nix User Apps/T3 Code (Nightly).app`.
+- Kim's user service runs the bundled server via `t3` using Electron's Node
+  runtime, not `npx`. Native modules ship with the release; startup does not
+  fetch packages from npm. This includes an Electron runtime in the Linux
+  closure even though Kim runs headlessly.
 - Cuno does not run a T3 server.
-- The backup manifest still records the packaged server version. The service state
-  path, loopback port, Tailscale exposure, and online backup are unchanged.
-
-## Migrating from the custom nightly package
-
-The version is unchanged, but packaging and the Electron runtime differ. Test
-the source-built desktop with disposable state before opening existing data.
-Preserve a restorable backup first; rolling back Nix does not undo database
-migrations. Never run the old and new apps against the same state concurrently.
-Re-add stale Dock shortcuts after activation and verify history, pairing, and
-the connection to Kim before retiring the old generation.
+- The backup manifest records the packaged server version.
 
 ## Updating
 
-`make update` / `nix flake update llm-agents` update the upstream build recipe
-and its dependencies. **They do not advance our nightly source pin.** Updating
-that pin is a separate reviewed change in `packages/t3code-nightly.nix`:
+Run `make update` as usual. It updates core flake inputs, discovers T3 releases,
+then updates Neovim plugin pins. `make update-all` also runs T3 discovery.
+Plain `nix flake update` does **not** update this repo-local release manifest.
 
-1. Choose an explicit nightly tag and update `version`. Never downgrade casually.
-2. Prefetch its source hash with
-   `nix store prefetch-file --unpack --json https://github.com/pingdotgg/t3code/archive/refs/tags/v<VERSION>.tar.gz`.
-3. Replace the pnpm and Cargo hashes with `lib.fakeHash`, build
-   `nix build .#t3code.pnpmDeps --no-link` and
-   `nix build .#t3code.resourceMonitor.cargoDeps --no-link`, and record the
-   reported actual hashes. These expected hash-mismatch failures discover the
-   hashes; rerun with real hashes and never commit placeholders.
-4. Build and verify both platforms below. Nightlies may require compatibility
-   fixes as upstream changes. A dependency-fetch success is not a package test.
+Discovery requires Python 3, Nix, and an authenticated `gh` CLI (`nix develop`
+provides the tools, not authentication). The updater reads up to ten pages of
+100 GitHub releases, orders nightly versions numerically, skips drafts and
+incomplete uploads, and never downgrades. Both artifacts must be uploaded and
+nonempty. It downloads them through `nix store prefetch-file` and compares any
+upstream SHA-256 digest supplied by GitHub. Only after both downloads succeed
+is the manifest replaced. Hashes pin bytes; they do not independently establish
+publisher identity. The macOS package check verifies its code signature.
 
-Both packages share the override. Do not update only the outer wrapper version:
-the built package manifests, native monitor, and dependency sources must agree.
-The regression check enforces the nightly source/version relationship; the
-package checks verify CLI and desktop manifest versions.
+No newer complete release is a successful no-op. API/download failures fail the
+command and preserve the T3 pin. Other steps of `make update` may already have
+changed their own files; the whole Make target is not a transaction.
 
-Review the pin and lockfile changes, then validate:
+Review the manifest diff, then validate:
 
 ```sh
 nix build .#checks.aarch64-darwin.t3code-package --no-link
@@ -65,17 +48,16 @@ make check-linux
 
 The Linux package check includes the HTTP smoke test. On macOS, the Nix build
 sandbox rejects native server subprocesses (`spawn EPERM`), so its build check
-covers CLI/version and desktop bundle structure; the separate command above
-covers HTTP startup. It does not assert notarization or a publisher signature.
+covers CLI/version/signature and the separate command above covers HTTP startup.
 
 Rebuild Joyce and Kim explicitly from the same reviewed revision. These are full
 system activations, not T3-only updates; other pending system changes also apply.
 Close T3 before replacing its desktop version. Restarting Kim's service disrupts
 connections, so deploy from an independent terminal rather than through T3.
-Neither lockfile updates nor package builds activate machines.
+Neither discovery nor package builds activate machines.
 
-Darwin sets `T3CODE_DISABLE_AUTO_UPDATE=1` in the user launchd environment
-for the Nix-owned desktop, including Finder/Dock launches.
+The `t3code` wrapper sets `T3CODE_DISABLE_AUTO_UPDATE=1`. Darwin also sets it in
+the user launchd environment for Finder/Dock launches, which bypass the wrapper.
 After activation, verify `launchctl getenv T3CODE_DISABLE_AUTO_UPDATE` prints `1`
 and relaunch the app. GUI behavior and connection to Kim require a manual smoke
 test; CLI/package checks alone do not establish those.
@@ -91,15 +73,15 @@ inspection failure also blocks activation.
 1. Build the Nix package without activating:
 
    ```sh
-   nix build .#t3code-desktop --out-link /tmp/t3code-desktop-nix
-   nix run .#t3code -- serve --help
+   nix build .#t3code --out-link /tmp/t3code-nix
+   /tmp/t3code-nix/bin/t3 serve --help
    ```
 
 2. Quit the existing app. Verify the new app with disposable state before using
-   real data, explicitly disabling updates:
+   real data, using its wrapper (which disables updates):
 
    ```sh
-   T3CODE_DISABLE_AUTO_UPDATE=1 T3CODE_HOME="$(mktemp -d)" /tmp/t3code-desktop-nix/bin/t3code-desktop
+   T3CODE_HOME="$(mktemp -d)" /tmp/t3code-nix/bin/t3code
    ```
 
    Verify launch and updater behavior, then quit. Preserve/back up existing T3
