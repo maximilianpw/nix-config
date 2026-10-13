@@ -23,6 +23,7 @@ in {
       pkgs.cua-driver
       pkgs.opencode
       pkgs.grok
+      pkgs.muse-code
       pkgs.herdr
       pkgs.executor
       pkgs.amp-cli
@@ -94,6 +95,7 @@ in {
 
     file = {
       ".config/amp/settings.json".source = source "amp/settings.json";
+      ".config/muse/settings.json".source = source "muse/settings.json";
       ".codex/AGENTS.md".text =
         builtins.readFile ../agents/shared/AGENTS.md
         + "\n"

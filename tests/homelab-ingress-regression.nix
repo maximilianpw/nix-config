@@ -78,6 +78,12 @@ in
     (config.sops.templates."cliproxyapi-upstream-auth.conf".mode == "0400")
     (!(builtins.elem cliproxyPort config.networking.firewall.allowedTCPPorts))
   ];
+  assert expect.all "Muse catalog discovery must use the authenticated live model registry, never the management redirect" [
+    (cliproxy.locations."= /muse-code/models".proxyPass == "${cliproxyBackend}/v1/models")
+    (lib.hasInfix "if ($cliproxyapi_public_authorized = 0) { return 401; }" cliproxy.locations."= /muse-code/models".extraConfig)
+    (lib.hasInfix config.sops.templates."cliproxyapi-upstream-auth.conf".path cliproxy.locations."= /muse-code/models".extraConfig)
+    (lib.hasInfix "Cache-Control \"no-store\"" cliproxy.locations."= /muse-code/models".extraConfig)
+  ];
   assert expect.all "the public CLIProxyAPI /healthz must stay a bare nginx 204 that never reaches the upstream proxy" [
     (cliproxy.locations."= /healthz".return == "204")
     (cliproxy.locations."= /healthz".proxyPass == null)

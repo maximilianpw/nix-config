@@ -4,8 +4,8 @@
   lib,
   ...
 }: {
-  # Finder/Dock launches bypass the package's bin/t3code wrapper. Set the
-  # documented updater opt-out in the GUI session without modifying Info.plist.
+  # Disable in-app updates for the Nix-owned, source-built desktop, including
+  # Finder/Dock launches, without modifying the upstream package.
   launchd.user.envVariables.T3CODE_DISABLE_AUTO_UPDATE = "1";
 
   # Homebrew cleanup is zap. Never let it remove a retired T3 cask and its

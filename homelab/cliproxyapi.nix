@@ -85,6 +85,16 @@ in {
             add_header Cache-Control "no-store" always;
           '';
         };
+        # Muse probes this nonstandard path before sending Responses requests.
+        # Return the authenticated registry, not the root management redirect.
+        "= /muse-code/models" = {
+          proxyPass = "${cliProxy.baseUrl}/v1/models";
+          extraConfig = ''
+            if ($cliproxyapi_public_authorized = 0) { return 401; }
+            include ${config.sops.templates."cliproxyapi-upstream-auth.conf".path};
+            add_header Cache-Control "no-store" always;
+          '';
+        };
         "/v1/" = {
           proxyPass = cliProxy.baseUrl;
           proxyWebsockets = true;

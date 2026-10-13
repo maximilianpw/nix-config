@@ -106,6 +106,8 @@
       inputs.vite-plus.overlays.default
       (_: prev: let
         llm = inputs.llm-agents.packages.${prev.stdenv.hostPlatform.system};
+        llmPkgs = inputs.llm-agents.inputs.nixpkgs.legacyPackages.${prev.stdenv.hostPlatform.system};
+        t3codeNightly = llmPkgs.callPackage ./packages/t3code-nightly.nix {inherit llm;};
         resignBunBinary = package: binaryPath:
           if prev.stdenv.hostPlatform.isDarwin
           then
@@ -131,8 +133,10 @@
         inherit (llm) codex;
         inherit (llm) opencode;
         inherit (llm) grok;
+        inherit (llm) muse-code;
         inherit (llm) herdr;
         inherit (llm) executor;
+        inherit (t3codeNightly) t3code t3code-desktop;
         amp-cli = llm.amp;
         inherit pi;
         inherit (llm) skills;
@@ -169,7 +173,6 @@
         # Keep Jellyfin's server, web client, and patched FFmpeg together on the
         # locked unstable package set so upgrades move them as one unit.
         inherit (unstable) jellyfin jellyfin-web jellyfin-ffmpeg;
-        t3code = final.callPackage ./packages/t3code.nix {};
         obsidian = final.callPackage ./packages/obsidian.nix {};
         cliproxyapi = final.callPackage ./packages/cliproxyapi.nix {};
         cua-driver = final.callPackage ./packages/cua-driver.nix {};
@@ -274,14 +277,14 @@
       in
         editorPackages "x86_64-linux"
         // {
-          inherit (pkgs) helium obsidian skills cliproxyapi cua-driver nextcloud-calendar hunkdiff nix-update tunarr jellyfin jellyfin-web jellyfin-ffmpeg vite-plus t3code;
+          inherit (pkgs) helium obsidian skills cliproxyapi cua-driver nextcloud-calendar hunkdiff nix-update tunarr jellyfin jellyfin-web jellyfin-ffmpeg vite-plus t3code t3code-desktop;
         };
       aarch64-darwin = let
         pkgs = mkPkgs "aarch64-darwin";
       in
         editorPackages "aarch64-darwin"
         // {
-          inherit (pkgs) cua-driver skills nextcloud-calendar hunkdiff nix-update obsidian vite-plus t3code;
+          inherit (pkgs) cua-driver skills nextcloud-calendar hunkdiff nix-update obsidian vite-plus t3code t3code-desktop;
         };
     };
 

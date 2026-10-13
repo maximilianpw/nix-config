@@ -27,7 +27,20 @@
   jsonFormat = pkgs.formats.json {};
   kimiModel = "kimi-k3";
   grokModel = "grok-4.6";
-  directOpenCodeModel = "openai/gpt-5.5";
+  directOpenCodeModel = "openai/${cliProxy.defaultModel}";
+  # Muse also needs the gateway's /muse-code/models compatibility route.
+  # Kim stays on loopback, but uses the gateway rather than the raw backend.
+  museGatewayPort = (import ../../lib/homelab.nix {inherit lib;}).publicEndpoints.cliproxy.port;
+  museProxyBaseUrl =
+    if useLocalProxy
+    then "http://${cliProxy.host}:${toString museGatewayPort}"
+    else cliProxy.publicBaseUrl;
+  museProxyOverrides = lib.escapeShellArgs [
+    "-c"
+    "endpoint_transport.base_url=${builtins.toJSON "${museProxyBaseUrl}/v1"}"
+    "-c"
+    "endpoint_transport.auth=\"bearer\""
+  ];
 
   opencodeConfig =
     lib.recursiveUpdate
@@ -149,7 +162,49 @@ in {
       executable = true;
       text = ''
         #!${pkgs.bash}/bin/bash
-        exec ${lib.getExe pkgs.codex} -c cli_auth_credentials_store=file -c mcp_oauth_credentials_store=file "$@"
+        exec ${lib.getExe pkgs.codex} \
+          -c ${lib.escapeShellArg "model=${builtins.toJSON cliProxy.defaultModel}"} \
+          -c cli_auth_credentials_store=file -c mcp_oauth_credentials_store=file "$@"
+      '';
+    };
+    ".local/bin/muse" = {
+      executable = true;
+      text = ''
+        #!${pkgs.bash}/bin/bash
+        set -euo pipefail
+        # Do not pass the proxy token to first-party account/auxiliary commands.
+        case "''${1:-}" in
+          config|export|trace|model-profile|skills|voice|plugins|sandbox|schema|session-message|mcp|auth|login|logout|init)
+            exec ${lib.getExe pkgs.muse-code} "$@"
+            ;;
+        esac
+
+        # Both gateway entry points authenticate with the public client token.
+        META_API_KEY="$(${pkgs.coreutils}/bin/cat ${lib.escapeShellArg cliProxy.publicApiKeyPath})"
+        test -n "$META_API_KEY"
+        export META_API_KEY
+        export MUSE_MODEL="''${MUSE_MODEL:-muse-wonder-1.0}"
+
+        # Muse parses exec/serve separately from its interactive root flags.
+        case "''${1:-}" in
+          exec|serve)
+            subcommand="$1"
+            shift
+            set -- "$subcommand" ${museProxyOverrides} "$@"
+            ;;
+          *)
+            set -- ${museProxyOverrides} "$@"
+            ;;
+        esac
+        exec ${lib.getExe pkgs.muse-code} "$@"
+      '';
+    };
+    ".local/bin/muse-direct" = {
+      executable = true;
+      text = ''
+        #!${pkgs.bash}/bin/bash
+        export MUSE_MODEL="''${MUSE_MODEL:-muse-wonder-1.0}"
+        exec ${lib.getExe pkgs.muse-code} "$@"
       '';
     };
     ".local/bin/grok" = {

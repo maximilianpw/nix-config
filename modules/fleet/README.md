@@ -187,15 +187,15 @@ Capability fields:
 
 ## T3 Code
 
-`kim` runs the pinned T3 Code nightly server on loopback port `51000`.
+`kim` runs the pinned T3 Code server on loopback port `51000`.
 The homelab Tailscale Serve configuration exposes it only within the tailnet at
 `https://t3code.liger-shilling.ts.net`.
 
-`packages/t3code-release.json` pins the shared release for Kim's packaged
-headless server and Joyce's Nix-installed desktop app. `make update` discovers
-complete nightlies and updates both artifact hashes together; rebuild Joyce and
-Kim explicitly from the same reviewed revision. Hjem exposes the Mac app, and
-the server no longer downloads from npm at startup. See
+The `llm-agents` flake input owns the build recipe; `packages/t3code-nightly.nix`
+pins one nightly source build for Kim's `t3code` server and Joyce's
+`t3code-desktop`. `make update` updates the recipe, not that nightly pin. Rebuild
+Joyce and Kim explicitly from the same reviewed revision. Hjem exposes the
+source-built Mac app; server startup does not download from npm. See
 [T3 Code packaging and Homebrew handover](../../docs/t3code.md) before the first
 activation: old casks must be removed without zapping userdata.
 

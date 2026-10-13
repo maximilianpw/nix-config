@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "context": {
+    "foreign_personal_rules": true,
+    "foreign_personal_skills": true
+  },
+  "telemetry": {
+    "enabled": false
+  },
+  "mcpServers": {
+    "executor": {
+      "type": "streamable-http",
+      "url": "https://executor.liger-shilling.ts.net/mcp",
+      "enabled": true,
+      "mode": "optional"
+    }
+  }
+}

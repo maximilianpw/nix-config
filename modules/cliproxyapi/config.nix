@@ -48,7 +48,7 @@ let
     publicApiKeyPath = "/run/secrets/cliproxyapi-public-api-key";
     localApiKeyPath = "/run/secrets/cliproxyapi-local-api-key";
     managementKeyHash = "$2b$12$NjrcwG.5nSCnzZRK0lAwAOTw0eDr.5PP1rVfd3q.YEdss3IHwP8CC";
-    defaultModel = "gpt-5.6-sol";
+    defaultModel = "gpt-6-astra";
     inherit openCodeZen;
   };
 

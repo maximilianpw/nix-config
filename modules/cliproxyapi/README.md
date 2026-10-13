@@ -5,9 +5,29 @@ This folder owns the CLIProxyAPI gateway on Kim and the agent clients that use i
 - `config.nix` is the shared endpoint, authentication, model, and server configuration.
 - `nixos.nix` runs the systemd server only on Kim and installs the public client token on every NixOS/WSL host.
 - `darwin.nix` installs only the public client token; Joyce no longer runs a local proxy.
-- `home-manager.nix` generates the Claude, Codex, Grok, and OpenCode client adapters, their direct-access commands, and `cliproxyapi-util`. Its caller supplies the user's agent-config directory explicitly.
+- `home-manager.nix` generates the Claude, Codex, Grok, Muse, and OpenCode client adapters, their direct-access commands, and `cliproxyapi-util`. Its caller supplies the user's agent-config directory explicitly.
 
 Kim's clients continue to use `127.0.0.1:8317` and read their local API token at runtime from `/run/secrets/cliproxyapi-local-api-key`. Other hosts use `https://cliproxy.maximilian.pw` and read the public API token from `/run/secrets/cliproxyapi-public-api-key`. Both credentials remain in SOPS-managed runtime files rather than generated Nix-store files. Home Manager also exports the endpoint and token-file variables consumed by Pi's CLIProxyAPI extension in the separate `pi-config` repository; that extension fails closed when explicit endpoint or credential configuration is absent rather than silently selecting localhost. The Darwin module removes the obsolete Joyce LaunchAgent left by configurations from before the proxy was centralized and publishes the non-secret endpoint and token-file path to the user launchd environment for GUI-owned agent sessions. The OpenCode base configuration lives at `users/maxpw/agents/opencode/cliproxyapi.json`; Home Manager injects the host-specific endpoint and an environment-variable token reference when it generates the deployed `opencode.json`.
+
+The shared GPT default is `gpt-6-astra` for Codex and OpenCode, including their
+direct wrappers and `pi-direct`. Older GPT variants remain selectable.
+
+### Muse Code
+
+`muse` uses the proxy for interactive/resume, `exec`, and `serve` sessions;
+`muse-direct` preserves native Meta access. The wrapper reads the public client
+token at runtime, pins Bearer authentication for the custom endpoint, and
+selects `muse-wonder-1.0` unless overridden with `MUSE_MODEL` or `--model`.
+`muse-direct` defaults to the same model without proxy routing.
+
+Muse first probes `/muse-code/models`. An exact authenticated nginx location
+forwards that request to the live `/v1/models` registry instead of the management
+redirect. It is a startup compatibility route, not a synthesized native Muse
+model-picker catalog. Kim's Muse wrapper therefore uses the loopback **gateway**
+port (with the public client token), unlike the other local clients that use the
+raw backend. Remote Muse clients use the public gateway. Activate the Kim
+gateway change before the client wrappers. See
+[`Muse setup`](../../users/maxpw/agents/muse/README.md) for verification limitations.
 
 ## Public API on Kim
 
