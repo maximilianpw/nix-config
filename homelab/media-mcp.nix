@@ -14,6 +14,11 @@ in {
     restartUnits = ["homelab-mcp.service"];
   };
 
+  sops.secrets.media-mcp-actual-password = {
+    sopsFile = ../secrets/media-mcp.yaml;
+    restartUnits = ["homelab-mcp.service"];
+  };
+
   # systemd 260.4 fails to deserialize LoadCredential paths containing spaces.
   # A root-only alias avoids that bug without copying Plex's mutable credentials.
   systemd.tmpfiles.settings."10-homelab-mcp-credentials" = {
@@ -26,12 +31,13 @@ in {
   };
 
   systemd.services.homelab-mcp = {
-    description = "Homelab media MCP for Executor";
+    description = "Homelab media and budget MCP for Executor";
     wantedBy = ["multi-user.target"];
-    after = ["network.target" "sops-nix.service" "sonarr.service" "radarr.service" "lidarr.service" "prowlarr.service" "seerr.service" "plex.service"];
+    after = ["network.target" "sops-nix.service" "sonarr.service" "radarr.service" "lidarr.service" "prowlarr.service" "seerr.service" "plex.service" "actual.service"];
     environment = {
       HOMELAB_MCP_HOST = "127.0.0.1";
       HOMELAB_MCP_PORT = toString homelab.services.homelab-mcp.endpoint.port;
+      ACTUAL_URL = homelab.loopbackUrl homelab.services.actual.endpoint.port;
     };
     serviceConfig = {
       ExecStart = lib.getExe package;
@@ -47,6 +53,7 @@ in {
         "prowlarr-config.xml:/var/lib/prowlarr/config.xml"
         "seerr-settings.json:/var/lib/jellyseerr/config/settings.json"
         "plex-preferences.xml:/run/homelab-mcp-credentials/plex-preferences.xml"
+        "actual-password:${config.sops.secrets.media-mcp-actual-password.path}"
       ];
       Restart = "on-failure";
       RestartSec = "5s";

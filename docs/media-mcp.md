@@ -52,6 +52,25 @@ admin and Kim SOPS recipients. SQLite state and its encryption key live together
 in `/var/lib/private/homelab-mcp`, exposed to the service as
 `/var/lib/homelab-mcp`. The inventory includes them in quiesced backups.
 
+## Actual Budget
+
+The `actual_*` tools read and edit the Actual budget served by `actual.service`
+on `127.0.0.1:19006`. The service signs in with the Actual server password from
+the SOPS secret `media-mcp-actual-password` in `secrets/media-mcp.yaml`, loaded
+as the `actual-password` credential. It opens the server's only budget; if more
+budgets are added, set `ACTUAL_BUDGET_SYNC_ID` in the unit's environment to the
+sync ID shown in Actual under Settings, Advanced. The budget copy lives in the
+service's private `/tmp` and is downloaded again after every restart. Adding or
+editing transactions and setting budget amounts require `confirm: true`.
+
+After a password change in Actual, update the SOPS secret and rebuild; the unit
+restarts when the secret changes.
+
+`@actual-app/api` in the package must match `actual-server`'s version, currently
+26.10.0. When `make update` moves `pkgs.unstable.actual-server`, the budget tools
+fail with a migrations error until the application's `@actual-app/api` dependency
+is bumped to the same version and the package is refreshed.
+
 ## Plexamp discovery
 
 The October 3 package adds Plex music search, playlist reads, creation, renaming,
@@ -78,23 +97,23 @@ task after those checks. The package itself does not run a scheduler.
 
 ## Package provenance
 
-`packages/homelab-mcp/source.tar.gz` is a snapshot of the working tree at
-`/home/maxpw/local/homelab-mcp` on 2026-10-03, including its uncommitted persistence
-work. It contains only `package.json`, `bun.lock`, `src/`, and `drizzle/`.
-SHA-256: `8d871638452bf18a94770c7a8a4bb2ca7f4eefb4b9a541a237c2a980ff640494`.
-Release tag: `homelab-mcp-2026-10-03-music` in this repository.
-The dependency lockfile and database migrations are unchanged from October 1.
+`packages/homelab-mcp/source.tar.gz` is commit `d43e983` ("Add Actual Budget
+tools") of `/home/maxpw/local/homelab-mcp`, made on 2026-10-16. It contains only
+`package.json`, `bun.lock`, `src/`, `drizzle/` and `patches/`.
+SHA-256: `8332b760879043592c07883d2ff9f2defaacfc6a9e1d1a145a8f77661039fb25`.
+Database migrations are unchanged from October 1.
 The Nix package runs the TypeScript with Bun and installs production dependencies
-from the frozen lockfile in a fixed-output derivation. It does not depend on the
-development checkout at runtime.
+from the frozen lockfile in a fixed-output derivation. Bun applies the
+better-sqlite3 patch from `patches/` during that install; the package then
+compiles the patched addon with node-gyp, because the unpatched prebuilds crash
+Bun. It does not depend on the development checkout at runtime.
 
 To refresh the snapshot from the application checkout:
 
 ```sh
 bun run typecheck && bun run test
-tar --sort=name --mtime=@0 --owner=0 --group=0 --numeric-owner \
-  -czf /home/maxpw/nix-config/packages/homelab-mcp/source.tar.gz \
-  package.json bun.lock src drizzle
+git archive --format=tar HEAD package.json bun.lock src drizzle patches \
+  | gzip -n -9 > /home/maxpw/nix-config/packages/homelab-mcp/source.tar.gz
 ```
 
 Update the provenance digest and package version. If dependencies change, update
