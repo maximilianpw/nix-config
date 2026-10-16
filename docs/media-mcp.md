@@ -97,10 +97,11 @@ task after those checks. The package itself does not run a scheduler.
 
 ## Package provenance
 
-`packages/homelab-mcp/source.tar.gz` is commit `d43e983` ("Add Actual Budget
-tools") of `/home/maxpw/local/homelab-mcp`, made on 2026-10-16. It contains only
-`package.json`, `bun.lock`, `src/`, `drizzle/` and `patches/`.
-SHA-256: `8332b760879043592c07883d2ff9f2defaacfc6a9e1d1a145a8f77661039fb25`.
+`packages/homelab-mcp/source.tar.gz` is commit `5ba9f9b` ("Fix
+actual_update_transaction under bun") of `/home/maxpw/local/homelab-mcp`, made
+on 2026-10-16. It contains only `package.json`, `bun.lock`, `src/`, `drizzle/`
+and `patches/`.
+SHA-256: `693d8a351a0d0ae80a4dcf4e30398a7d5a0dfea237f45020ff4787c2038f67e6`.
 Database migrations are unchanged from October 1.
 The Nix package runs the TypeScript with Bun and installs production dependencies
 from the frozen lockfile in a fixed-output derivation. Bun applies the

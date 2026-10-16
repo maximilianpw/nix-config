@@ -34,7 +34,7 @@
 in
   stdenv.mkDerivation {
     pname = "homelab-mcp";
-    version = "0-unstable-2026-10-16-actual";
+    version = "0-unstable-2026-10-16-actual-fix";
     inherit src;
     sourceRoot = ".";
     nativeBuildInputs = [makeWrapper node-gyp nodejs python3];
