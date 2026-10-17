@@ -298,6 +298,7 @@ in
     (alerts.HomelabStorageKernelMetricsStale."for" == "3m")
     (alerts.HomelabFilesystemFillingSoon."for" == "1h")
     (lib.hasInfix "predict_linear" alerts.HomelabFilesystemFillingSoon.expr)
+    (lib.any (package: lib.getName package == "homelab-public-ingress-check") config.environment.systemPackages)
     (lib.any (package: lib.getName package == "homelab-media-smart-check") config.environment.systemPackages)
   ];
   assert expect.all "Alertmanager must receive alerts over loopback even before an external receiver is configured" [
@@ -446,6 +447,7 @@ in
       ${lib.getExe' pkgs.prometheus.cli "promtool"} test rules ${filesystemAlertTests}
       ${lib.getExe' pkgs.prometheus.cli "promtool"} test rules ${storageAlertTests}
       ${lib.getExe pkgs.bash} ${../scripts}/tests/homelab-storage-kernel-metrics-test.sh
+      ${lib.getExe pkgs.bash} ${../scripts}/tests/homelab-public-ingress-check-test.sh
       ${lib.getExe pkgs.bash} ${../scripts}/tests/homelab-media-smart-check-test.sh
       grep -F -- 'homelab-storage-kernel-metrics.py' ${lib.escapeShellArg storageKernelMetricsService.serviceConfig.ExecStart}
       cmp ${lib.escapeShellArg homeDashboardPath} ${../homelab/grafana/kim-overview.json}
