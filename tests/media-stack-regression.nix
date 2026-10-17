@@ -444,6 +444,22 @@ in
     && quiescesBefore "qbittorrent-proxy.socket" "container@qbt.service"
     && quiescesBefore "sabnzbd-proxy.socket" "container@sab.service")
   "Borg must disable downloader socket activation before quiescing every mutable media control plane";
-    pkgs.runCommand "media-stack-regression" {} ''
+    pkgs.runCommand "media-stack-regression" {
+      nativeBuildInputs = [pkgs.bash pkgs.jq pkgs.coreutils pkgs.findutils pkgs.diffutils pkgs.gnused];
+    } ''
+      mkdir -p scripts/tests
+      cp ${../scripts/tunarr-reconcile-settings.sh} scripts/tunarr-reconcile-settings.sh
+      cp ${../scripts/tests/tunarr-reconcile-settings-test.sh} scripts/tests/tunarr-reconcile-settings-test.sh
+      bash scripts/tests/tunarr-reconcile-settings-test.sh
+      # Exercise the configured ExecStartPre too, redirected to disposable state.
+      # This catches regressions back to the upstream CLI that never exits.
+      sed "s|export TUNARR_SETTINGS_FILE=.*|export TUNARR_SETTINGS_FILE=$PWD/settings.json|" \
+        ${tunarrService.serviceConfig.ExecStartPre} > reconcile-settings
+      timeout 5 bash reconcile-settings
+      jq -e \
+        --arg ffmpeg ${lib.getExe pkgs.ffmpeg} \
+        --arg ffprobe ${lib.getExe' pkgs.ffmpeg "ffprobe"} \
+        '.settings.ffmpeg.ffmpegExecutablePath == $ffmpeg and .settings.ffmpeg.ffprobeExecutablePath == $ffprobe' \
+        settings.json > /dev/null
       touch "$out"
     ''

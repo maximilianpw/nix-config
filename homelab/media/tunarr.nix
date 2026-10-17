@@ -6,16 +6,14 @@
 }: let
   common = import ./common.nix {inherit config lib pkgs;};
   inherit (common) endpoints mediaRoot secondaryMediaRoot secondaryUsenetRoot usenetRoot;
-  tunarrReconcileSettings = let
-    ffmpeg = lib.getExe pkgs.ffmpeg;
-    ffprobe = lib.getExe' pkgs.ffmpeg "ffprobe";
-  in
-    pkgs.writeShellScript "tunarr-reconcile-settings" ''
-      exec ${lib.getExe pkgs.tunarr} --database /var/lib/tunarr settings update \
-        --settings.ffmpeg.ffmpegExecutablePath=${ffmpeg} \
-        --settings.ffmpeg.ffprobeExecutablePath=${ffprobe} \
-        >/dev/null
-    '';
+  tunarrReconcileSettings = pkgs.writeShellScript "tunarr-reconcile-settings" ''
+    export PATH=${lib.makeBinPath [pkgs.coreutils]}
+    export JQ_BIN=${lib.getExe pkgs.jq}
+    export TUNARR_SETTINGS_FILE=/var/lib/tunarr/settings.json
+    export FFMPEG_BIN=${lib.getExe pkgs.ffmpeg}
+    export FFPROBE_BIN=${lib.getExe' pkgs.ffmpeg "ffprobe"}
+    ${builtins.readFile ../../scripts/tunarr-reconcile-settings.sh}
+  '';
 in {
   custom.backup.applicationVersions.tunarr = pkgs.tunarr.version;
 
