@@ -109,9 +109,9 @@ in {
       shellAliases =
         (builtins.removeAttrs shellAliases ["jtp" "ls" "fnix"])
         // (builtins.removeAttrs agentAliases ["ccc" "claudex"]);
-      configFile.source = ../config.nu;
-      extraConfig = builtins.readFile ../extra-config.nu;
-      extraEnv = template.render ../extra-env.nu {
+      configFile.source = ../shell/config.nu;
+      extraConfig = builtins.readFile ../shell/extra-config.nu;
+      extraEnv = template.render ../shell/extra-env.nu {
         BASH_INTERACTIVE = "${pkgs.bashInteractive}/bin/bash";
       };
       plugins = with pkgs.nushellPlugins;
@@ -150,7 +150,7 @@ in {
       enable = true;
       shellAliases = shellAliases // agentAliases;
       interactiveShellInit = lib.strings.concatStrings (lib.strings.intersperse "\n" [
-        (builtins.readFile ../config.fish)
+        (builtins.readFile ../shell/config.fish)
         "set -g SHELL ${pkgs.fish}/bin/fish"
       ]);
 
