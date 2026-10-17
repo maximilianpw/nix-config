@@ -1,6 +1,6 @@
 -- The plugin is Nix-managed. Its completion engine (sm-agent) is downloaded by
 -- the plugin into ~/.supermaven on first use: an approved runtime exception,
--- see docs/nixvim-hjem-migration-plan.md. It is not Nix-built or offline-capable.
+-- see docs/nixvim-hjem.md. It is not Nix-built or offline-capable.
 local opts = {
   disable_inline_completion = false,
   disable_keymaps = false,

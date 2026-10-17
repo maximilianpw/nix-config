@@ -39,7 +39,7 @@
       hjem = mkOption {
         type = types.bool;
         default = false;
-        description = "Hjem owns this user's static app files (users/<userDir>/hjem); see docs/nixvim-hjem-ledger.md.";
+        description = "Hjem owns this user's static app files (users/<userDir>/hjem); see docs/nixvim-hjem.md.";
       };
       hardwareModules = mkOption {
         type = types.listOf types.str;

@@ -18,9 +18,9 @@ same destination in both systems.
 Kim, Cuno and Joyce enable Nixvim and Hjem together through the host
 inventory's `hjem` flag. Home Manager installs the editor packages; chezmoi
 must exclude the editor, packaged helpers and migrated app files before a
-host's cutover. Cuno's live cutover is still pending. See the
-[Nixvim/Hjem ledger](nixvim-hjem-ledger.md) for ownership, verified rollout
-state, recovery snapshots and the per-host cutover procedure.
+host's cutover. Cuno's live cutover is still pending. See
+[Nixvim and Hjem](nixvim-hjem.md) for the editing workflow, per-host cutover
+and rollback, and Hjem's known hazards.
 
 `scripts/dev/chezmoi.sh` formalizes initialization, no-write validation, preview,
 and interactive apply for paths that remain owned by chezmoi. Do not run an

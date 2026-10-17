@@ -8,6 +8,7 @@ completed plans and superseded research.
 - [Repository overview](../README.md)
 - [Bootstrap](../BOOTSTRAP.md)
 - [Configuration ownership and recovery](config-ownership-and-recovery.md)
+- [Nixvim and Hjem](nixvim-hjem.md)
 - [Fleet and remote development](../modules/fleet/README.md)
 - [Git merging and dependency-update CI](git-and-ci-workflow.md)
 
@@ -36,14 +37,8 @@ completed plans and superseded research.
 
 ## Accepted decisions
 
-- [Media stack decision record](media-stack-research.md)
 - [Kim build contention and Nix daemon scheduler weights](kim-build-contention.md)
 - [ADR 0001: Unattended agent access on Kim](adr/0001-unattended-agent-access.md)
-
-## Reviews
-
-- [Nix configuration inspiration review (2026-10-08)](nix-config-inspiration-research.md)
-- [Agent workflow video review (2026-10-02)](agent-workflow-video-review.md)
 
 ## Open backlog
 

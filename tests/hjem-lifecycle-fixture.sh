@@ -7,7 +7,7 @@
 # created and removed, nothing a user or another owner wrote is deleted, the
 # two-stage handoff works, and older manifests roll back. Known upstream hazards
 # (single-use backup slot, partial failures, warn-only validation) are recorded
-# in docs/nixvim-hjem-ledger.md rather than pinned here, so an upstream fix does
+# in docs/nixvim-hjem.md rather than pinned here, so an upstream fix does
 # not fail this check.
 set -euo pipefail
 

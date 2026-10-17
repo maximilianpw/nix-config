@@ -7,7 +7,7 @@
 }: let
   # Editor and application-file ownership move together. Chezmoi must exclude
   # .config/nvim and the two helper scripts on each migrated host; see the
-  # cutover procedure in docs/nixvim-hjem-ledger.md.
+  # cutover procedure in docs/nixvim-hjem.md.
   useNixvim = hostRecord.hjem;
 
   editor = inputs.self.packages.${pkgs.stdenv.hostPlatform.system};

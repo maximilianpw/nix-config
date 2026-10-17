@@ -81,10 +81,8 @@ or unsupported read leaves health unknown. Obtain verified telemetry before
 adding this USB disk to the SMART exporter; a passing overall SMART status is
 not proof of filesystem integrity or transport reliability.
 
-See [the weekly monitoring review](monitoring-review-2026-10-07.md) and
-[October 11 investigation](monitoring-review-2026-10-11.md) for the
-related service incidents and follow-up priorities. Media is not covered by
-Borg; preserve an independent copy before undertaking repair or replacement.
+Open monitoring follow-ups are tracked in the
+[homelab backlog](homelab-backlog.md). Media is not covered by Borg; preserve an independent copy before undertaking repair or replacement.
 
 ### Provisioning a replacement (destructive; not for the mounted disk)
 

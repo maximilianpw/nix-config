@@ -2,8 +2,7 @@
 
 Kim's configuration adds Recyclarr, Unpackerr, Maintainerr, Tdarr, Kometa,
 cross-seed, and autobrr to the [existing media stack](media-stack.md).
-Chaptarr is excluded. The selection uses a minimum of 1,000 GitHub stars;
-see the dated [maintenance research](media-stack-additions-research.md).
+Chaptarr is excluded. The selection uses a minimum of 1,000 GitHub stars.
 
 The owning module is `homelab/media/companions.nix`. Service endpoints, backup
 state, and recovery contracts live in `lib/homelab-services.nix`. Native packages
