@@ -24,16 +24,19 @@ completed plans and superseded research.
 - [Atuin](atuin.md)
 - [Forgejo](forgejo.md)
 - [Immich](immich.md)
-- [Leerr](leerr.md)
 - [Media stack](media-stack.md)
+- [Media companions](media-companions.md)
+- [Homelab MCP through Executor](media-mcp.md)
 - [Nextcloud Calendar](nextcloud-calendar.md)
 - [Paperless](paperless.md)
 - [Superlocal](superlocal.md)
 - [CLIProxyAPI gateway](../modules/cliproxyapi/README.md)
 
-## Platform setup
+## Platform setup and packaging
 
 - [Cuno NixOS-WSL setup](wsl-setup.md)
+- [T3 Code packaging and updates](t3code.md)
+- [Vite+ packaging](vite-plus.md)
 
 ## Accepted decisions
 

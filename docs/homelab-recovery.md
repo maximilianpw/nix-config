@@ -368,10 +368,13 @@ its matching package version.
 ### Leerr
 
 Keep `leerr.service` stopped and restore the complete staged `/var/lib/leerr`
-tree with the archived package version and its matching encryption key. Follow
-the maintained [Leerr recovery procedure](leerr.md#recovery) for ownership,
-SQLite, login, and isolated acceptance checks; do not expose the service before
-they pass.
+tree with the archived package version (the `leerr` input in the archived
+`flake.lock`) and its matching encryption key. Preserve owner `leerr:leerr`,
+directory mode 0700, file permissions and SQLite sidecar files. Test SQLite
+integrity, account login and per-user Jellyfin library access in an isolated
+instance; do not expose the service before they pass. A generation rollback
+does not undo a SQLite migration: restore the matching pre-upgrade database if
+the older application cannot read the new schema.
 
 ### Superlocal
 
