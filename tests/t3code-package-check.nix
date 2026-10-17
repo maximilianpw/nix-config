@@ -18,7 +18,7 @@ pkgs.runCommand "t3code-package-check" {nativeBuildInputs = [pkgs.coreutils pkgs
   # Run this disposable-state test outside the sandbox on macOS; Linux has its
   # own loopback namespace and can exercise it as a build check.
   ${pkgs.lib.optionalString pkgs.stdenv.hostPlatform.isLinux ''
-    ${pkgs.python3}/bin/python3 ${../scripts/tests/t3code-server-smoke.py} ${package}/bin/t3 ${package.version}
+    ${pkgs.python3}/bin/python3 ${./t3code-server-smoke.py} ${package}/bin/t3 ${package.version}
   ''}
   touch "$out"
 ''

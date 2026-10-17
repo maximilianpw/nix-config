@@ -40,7 +40,7 @@ nix build .#checks.aarch64-darwin.t3code-package --no-link
 # Disposable-state server smoke test outside macOS's build sandbox:
 package=$(nix build .#t3code --no-link --print-out-paths)
 version=$(nix eval --raw .#t3code.version)
-python3 scripts/tests/t3code-server-smoke.py "$package/bin/t3" "$version"
+python3 tests/t3code-server-smoke.py "$package/bin/t3" "$version"
 # On a Linux builder:
 nix build .#checks.x86_64-linux.t3code-package --no-link
 make check-linux

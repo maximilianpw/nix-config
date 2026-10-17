@@ -1,5 +1,5 @@
 # Pins the Hjem linker behavior the Nixvim/Hjem migration relies on, using the
-# CLI built from the locked input (scripts/tests/hjem-lifecycle-fixture.sh).
+# CLI built from the locked input (tests/hjem-lifecycle-fixture.sh).
 # This covers the linker in a disposable home only; NixOS activation units and
 # the nix-darwin launch agent still need host-level verification.
 {
@@ -12,7 +12,7 @@ in
     nativeBuildInputs = [pkgs.bash pkgs.coreutils pkgs.cue pkgs.diffutils pkgs.gnugrep];
     HJEM = "${hjemCli}/bin/hjem";
   } ''
-    bash ${../scripts/tests/hjem-lifecycle-fixture.sh}
+    bash ${./hjem-lifecycle-fixture.sh}
 
     # Runtime activation only warns about invalid entries (see "Hjem findings" in
     # docs/nixvim-hjem-ledger.md), so the modules' build-time schema check is the

@@ -11,7 +11,7 @@ CONFIG_DIR := $(shell pwd)
 CORE_INPUTS := nixpkgs nixpkgs-unstable home-manager nix-darwin fenix llm-agents superlocal nixvim hjem
 # Only update commands inherit temporary GitHub credentials.
 UPDATE_AUTH := $(SCRIPT_DIR)/dev/with-github-auth.sh
-SHELL_SCRIPTS = $(SCRIPT_DIR)/*/*.sh $(SCRIPT_DIR)/rebuild/lib/*.sh packages/scripts/*.sh
+SHELL_SCRIPTS = $(SCRIPT_DIR)/*/*.sh $(SCRIPT_DIR)/rebuild/lib/*.sh tests/*.sh packages/scripts/*.sh
 
 help: ## Show this help message
 	@echo "Nix-Config Management Commands"

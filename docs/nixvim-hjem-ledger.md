@@ -167,7 +167,7 @@ override.
 ## Hjem findings (pin `2b15569`)
 
 From reading the modules and exercising the CLI at this pin. The regression
-fixture (`scripts/tests/hjem-lifecycle-fixture.sh`) asserts only the safety
+fixture (`tests/hjem-lifecycle-fixture.sh`) asserts only the safety
 properties the configuration relies on; the hazards below are recorded here, not
 pinned, so an upstream fix does not fail the check. Re-check them when moving
 the `hjem` input:
