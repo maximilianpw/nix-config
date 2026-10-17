@@ -2,8 +2,8 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-# shellcheck source=../lib/host-detect.sh
-source "$SCRIPT_DIR/lib/host-detect.sh"
+# shellcheck source=../rebuild/lib/host-detect.sh
+source "$SCRIPT_DIR/rebuild/lib/host-detect.sh"
 
 failures=0
 

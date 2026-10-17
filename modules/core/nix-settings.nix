@@ -26,7 +26,7 @@
   };
 
   # nh keeps a rollback floor; age-only nix.gc could delete every rollback
-  # target after an idle month. scripts/nixos-rebuild.sh no longer cleans.
+  # target after an idle month. scripts/rebuild/nixos-rebuild.sh no longer cleans.
   programs.nh = lib.mkIf config.nix.enable {
     enable = true;
     clean = {

@@ -18,7 +18,7 @@
       export JQ_BIN=${pkgs.jq}/bin/jq
       export HOMELAB_METRICS_DIR=${metricsDirectory}
       export HOMELAB_CONTAINER_STALE_AFTER_SECONDS=259200
-      exec ${pkgs.bash}/bin/bash ${../scripts/homelab-container-audit.sh}
+      exec ${pkgs.bash}/bin/bash ${../scripts/homelab/homelab-container-audit.sh}
     '';
   };
 in {

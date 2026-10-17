@@ -13,7 +13,7 @@
       if (( $# == 0 )); then
         set -- ${lib.escapeShellArgs declarativeAppIds}
       fi
-      exec ${lib.getExe pkgs.bash} ${../scripts/check-nextcloud-app-ownership.sh} "$@"
+      exec ${lib.getExe pkgs.bash} ${../scripts/homelab/check-nextcloud-app-ownership.sh} "$@"
     '';
   };
   storeAppUpdater = pkgs.writeShellApplication {
@@ -23,7 +23,7 @@
       export NEXTCLOUD_OWNERSHIP_CHECK_BIN=${lib.getExe ownershipCheck}
       export NEXTCLOUD_OCC_BIN=${lib.getExe config.services.nextcloud.occ}
       export NEXTCLOUD_FIND_BIN=${lib.getExe pkgs.findutils}
-      exec ${lib.getExe pkgs.bash} ${../scripts/update-nextcloud-store-apps.sh} ${lib.escapeShellArgs declarativeAppIds}
+      exec ${lib.getExe pkgs.bash} ${../scripts/homelab/update-nextcloud-store-apps.sh} ${lib.escapeShellArgs declarativeAppIds}
     '';
   };
 in {
@@ -38,7 +38,7 @@ in {
         export SYSTEMCTL_BIN=${lib.getExe' pkgs.systemd "systemctl"}
         export SLEEP_BIN=${lib.getExe' pkgs.coreutils "sleep"}
         export WAIT_UNIT=nextcloud-update-store-apps.service
-        exec ${lib.getExe pkgs.bash} ${../scripts/wait-unit-inactive.sh}
+        exec ${lib.getExe pkgs.bash} ${../scripts/homelab/wait-unit-inactive.sh}
       '');
     };
   };

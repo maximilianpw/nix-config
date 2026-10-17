@@ -2,8 +2,8 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-# shellcheck source=../lib/rebuild-state.sh
-source "$SCRIPT_DIR/lib/rebuild-state.sh"
+# shellcheck source=../rebuild/lib/rebuild-state.sh
+source "$SCRIPT_DIR/rebuild/lib/rebuild-state.sh"
 
 tmpdir=$(mktemp -d)
 trap '[[ -n "${test_pid:-}" ]] && kill "$test_pid" 2>/dev/null || true; rm -rf "$tmpdir"' EXIT

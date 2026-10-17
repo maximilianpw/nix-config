@@ -11,7 +11,7 @@
     runtimeInputs = [pkgs.coreutils pkgs.sqlite];
     text = ''
       export SQLITE_BIN=${lib.getExe pkgs.sqlite}
-      exec ${lib.getExe pkgs.bash} ${../scripts/uptime-kuma-reconcile.sh}
+      exec ${lib.getExe pkgs.bash} ${../scripts/homelab/uptime-kuma-reconcile.sh}
     '';
   };
 in {

@@ -2,7 +2,7 @@
 set -euo pipefail
 
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-REBUILD_SCRIPT="$SCRIPT_DIR/../nixos-rebuild.sh"
+REBUILD_SCRIPT="$SCRIPT_DIR/../rebuild/nixos-rebuild.sh"
 tmpdir=$(mktemp -d)
 trap 'rm -rf "$tmpdir"' EXIT
 mkdir -p "$tmpdir/home/nix-config" "$tmpdir/bin"

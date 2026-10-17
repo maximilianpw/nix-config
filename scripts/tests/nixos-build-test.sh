@@ -5,11 +5,11 @@ repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 fixture="$tmp/config with spaces"
-mkdir -p "$tmp/bin" "$fixture/scripts/lib"
+mkdir -p "$tmp/bin" "$fixture/scripts/rebuild/lib"
 fixture=$(cd "$fixture" && pwd -P)
 cp "$repo_root/Makefile" "$fixture/Makefile"
-cp "$repo_root/scripts/nixos-build.sh" "$fixture/scripts/"
-cp "$repo_root/scripts/lib/host-detect.sh" "$fixture/scripts/lib/"
+cp "$repo_root/scripts/rebuild/nixos-build.sh" "$fixture/scripts/rebuild/"
+cp "$repo_root/scripts/rebuild/lib/host-detect.sh" "$fixture/scripts/rebuild/lib/"
 export TEST_COMMANDS=$tmp/commands TEST_CONFIG_DIR=$fixture
 
 cat > "$tmp/bin/uname" <<'EOF'
@@ -92,7 +92,7 @@ if TEST_BUILD_STATUS=19 run_case Linux kim maxpw nixos kim 0; then
 fi
 # Direct entry point retains the exact nix build exit status.
 set +e
-TEST_BUILD_STATUS=19 bash "$fixture/scripts/nixos-build.sh" "$fixture" >/dev/null
+TEST_BUILD_STATUS=19 bash "$fixture/scripts/rebuild/nixos-build.sh" "$fixture" >/dev/null
 status=$?
 set -e
 [[ $status == 19 ]]

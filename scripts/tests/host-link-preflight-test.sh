@@ -4,8 +4,8 @@ set -euo pipefail
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
-mkdir -p "$tmp/bin" "$tmp/home/nix-config/scripts/lib"
-cp "$repo_root/scripts/lib/host-detect.sh" "$tmp/home/nix-config/scripts/lib/"
+mkdir -p "$tmp/bin" "$tmp/home/nix-config/scripts/rebuild/lib"
+cp "$repo_root/scripts/rebuild/lib/host-detect.sh" "$tmp/home/nix-config/scripts/rebuild/lib/"
 export TEST_COMMANDS=$tmp/commands
 export REAL_READLINK
 REAL_READLINK=$(command -v readlink)
@@ -67,7 +67,7 @@ bootstrap_case() {
   export TEST_OS=$1 TEST_KIND=$2 NIX_CONFIG_HOST=$3
   shift 3
   : > "$TEST_COMMANDS"
-  printf 'n\n' | bash "$repo_root/scripts/bootstrap.sh" --skip-clone "$@" > "$tmp/out" 2> "$tmp/err"
+  printf 'n\n' | bash "$repo_root/scripts/rebuild/bootstrap.sh" --skip-clone "$@" > "$tmp/out" 2> "$tmp/err"
 }
 
 if TEST_EVAL_STATUS=17 bootstrap_case Linux nixos unknown; then
@@ -97,7 +97,7 @@ assert_no_command nh
 
 export TEST_OS=Darwin TEST_KIND=darwin NIX_CONFIG_HOST=joyce
 : > "$TEST_COMMANDS"
-if bash "$repo_root/scripts/nixos-rebuild.sh" > "$tmp/out" 2> "$tmp/err"; then
+if bash "$repo_root/scripts/rebuild/nixos-rebuild.sh" > "$tmp/out" 2> "$tmp/err"; then
   echo "rebuild unexpectedly ignored mock nh failure" >&2
   exit 1
 fi

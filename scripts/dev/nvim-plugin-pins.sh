@@ -4,14 +4,14 @@
 # they come from the nixpkgs-unstable input that Nixvim follows.
 #
 # Usage:
-#   scripts/nvim-plugin-pins.sh                 list pins
-#   scripts/nvim-plugin-pins.sh NAME [REV]      pin NAME to REV (default: upstream HEAD)
-#   scripts/nvim-plugin-pins.sh --all           move every pin to upstream HEAD
+#   scripts/dev/nvim-plugin-pins.sh                 list pins
+#   scripts/dev/nvim-plugin-pins.sh NAME [REV]      pin NAME to REV (default: upstream HEAD)
+#   scripts/dev/nvim-plugin-pins.sh --all           move every pin to upstream HEAD
 #
 # Then run: nix build .#checks.$(nix eval --impure --raw --expr builtins.currentSystem).nvim-candidate
 set -euo pipefail
 
-repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 pins="${NVIM_PLUGIN_PINS:-$repo_root/users/maxpw/neovim/plugin-pins.json}"
 
 for tool in jq nix; do

@@ -29,7 +29,7 @@ chmod +x "$fake_check" "$fake_sleep"
 
 ATTEMPT_FILE="$attempt_file" SLEEP_FILE="$sleep_file" SUCCEED_ON_ATTEMPT=3 \
   HOMELAB_CHECK_BIN="$fake_check" SLEEP_BIN="$fake_sleep" HOMELAB_CHECK_ATTEMPTS=4 \
-  HOMELAB_CHECK_RETRY_SECONDS=7 "$script_dir/post-switch-homelab-check.sh" /nix/store/previous >/dev/null
+  HOMELAB_CHECK_RETRY_SECONDS=7 "$script_dir/rebuild/post-switch-homelab-check.sh" /nix/store/previous >/dev/null
 test "$(< "$attempt_file")" = 3
 [[ $(wc -l < "$sleep_file") -eq 2 ]]
 test "$(head -n 1 "$sleep_file")" = 7
@@ -38,7 +38,7 @@ rm -f "$attempt_file" "$sleep_file"
 if ATTEMPT_FILE="$attempt_file" SLEEP_FILE="$sleep_file" SUCCEED_ON_ATTEMPT=99 \
   HOMELAB_CHECK_BIN="$fake_check" SLEEP_BIN="$fake_sleep" HOMELAB_CHECK_ATTEMPTS=2 \
   HOMELAB_CHECK_RETRY_SECONDS=0 CURRENT_SYSTEM_LINK="$test_root/missing" \
-  "$script_dir/post-switch-homelab-check.sh" /nix/store/previous >/dev/null 2>&1; then
+  "$script_dir/rebuild/post-switch-homelab-check.sh" /nix/store/previous >/dev/null 2>&1; then
   echo "post-switch check unexpectedly accepted repeated failures" >&2
   exit 1
 fi

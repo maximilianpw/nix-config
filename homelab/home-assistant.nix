@@ -13,7 +13,7 @@
     export TAR_BIN=${lib.getExe pkgs.gnutar}
     export HOME_ASSISTANT_SOURCE_DIR=${lib.escapeShellArg (builtins.head homelab.services.homeassistant.backup.transformedPaths)}
     export HOME_ASSISTANT_ARCHIVE=${lib.escapeShellArg archive}
-    exec ${lib.getExe pkgs.bash} ${../scripts/home-assistant-archive.sh}
+    exec ${lib.getExe pkgs.bash} ${../scripts/homelab/home-assistant-archive.sh}
   '';
 in {
   custom.backup = {

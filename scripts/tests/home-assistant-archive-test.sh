@@ -2,7 +2,7 @@
 set -euo pipefail
 
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
-script="$repo_root/scripts/home-assistant-archive.sh"
+script="$repo_root/scripts/homelab/home-assistant-archive.sh"
 # shellcheck source=scripts/tests/portable-gnu-fixtures.sh
 source "$repo_root/scripts/tests/portable-gnu-fixtures.sh"
 tmp=$(mktemp -d)

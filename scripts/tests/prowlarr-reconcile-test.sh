@@ -2,7 +2,7 @@
 set -euo pipefail
 
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
-script="$repo_root/scripts/prowlarr-reconcile.sh"
+script="$repo_root/scripts/homelab/prowlarr-reconcile.sh"
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 

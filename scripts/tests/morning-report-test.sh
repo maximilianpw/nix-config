@@ -6,7 +6,7 @@
 set -euo pipefail
 
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
-script="$repo_root/scripts/morning-report.sh"
+script="$repo_root/scripts/user/morning-report.sh"
 # shellcheck source=scripts/tests/portable-gnu-fixtures.sh
 source "$repo_root/scripts/tests/portable-gnu-fixtures.sh"
 tmp=$(mktemp -d)

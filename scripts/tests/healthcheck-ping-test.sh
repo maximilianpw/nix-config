@@ -22,7 +22,7 @@ printf '%s\n' 'https://hc-ping.example/secret/' > "$url_file"
 
 for action in start success fail; do
   ARGUMENTS_FILE="$arguments_file" CONFIG_FILE="$config_file" CURL_BIN="$fake_curl" HOMELAB_HEALTHCHECK_URL_FILE="$url_file" \
-    "$script_dir/healthcheck-ping.sh" "$action"
+    "$script_dir/homelab/healthcheck-ping.sh" "$action"
   case $action in
     start) expected='https://hc-ping.example/secret/start' ;;
     success) expected='https://hc-ping.example/secret' ;;
@@ -38,18 +38,18 @@ done
 # sops-nix secret files are not required to end in a newline.
 printf '%s' 'https://hc-ping.example/no-newline' > "$url_file"
 ARGUMENTS_FILE="$arguments_file" CONFIG_FILE="$config_file" CURL_BIN="$fake_curl" \
-  HOMELAB_HEALTHCHECK_URL_FILE="$url_file" "$script_dir/healthcheck-ping.sh" success
+  HOMELAB_HEALTHCHECK_URL_FILE="$url_file" "$script_dir/homelab/healthcheck-ping.sh" success
 grep -Fxq -- 'url = "https://hc-ping.example/no-newline"' "$config_file"
 
 printf '%s\n' 'http://hc-ping.example/secret' > "$url_file"
 if CURL_BIN="$fake_curl" HOMELAB_HEALTHCHECK_URL_FILE="$url_file" \
-  "$script_dir/healthcheck-ping.sh" success >/dev/null 2>&1; then
+  "$script_dir/homelab/healthcheck-ping.sh" success >/dev/null 2>&1; then
   echo "healthcheck ping unexpectedly accepted plaintext HTTP" >&2
   exit 1
 fi
 
 if CURL_BIN="$fake_curl" HOMELAB_HEALTHCHECK_URL_FILE="$test_root/missing" \
-  "$script_dir/healthcheck-ping.sh" success >/dev/null 2>&1; then
+  "$script_dir/homelab/healthcheck-ping.sh" success >/dev/null 2>&1; then
   echo "healthcheck ping unexpectedly accepted a missing URL file" >&2
   exit 1
 fi

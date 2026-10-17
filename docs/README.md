@@ -66,5 +66,5 @@ Deliberately kept despite looking removable:
 - CLI packages without repository references (for example Cava): lack of a
   reference does not prove lack of manual use.
 
-Open follow-up: generate `scripts/ynab-mcp-operations.json` reproducibly once
+Open follow-up: generate `scripts/user/ynab-mcp-operations.json` reproducibly once
 its upstream OpenAPI provenance is decided.

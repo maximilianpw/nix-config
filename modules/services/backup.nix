@@ -113,7 +113,7 @@
       export SQLITE_BIN=${lib.getExe pkgs.sqlite}
       export RSYNC_BIN=${lib.getExe pkgs.rsync}
       export TAR_BIN=${tar}
-      exec ${lib.getExe pkgs.bash} ${../../scripts/t3code-backup.sh}
+      exec ${lib.getExe pkgs.bash} ${../../scripts/homelab/t3code-backup.sh}
     '';
   };
   coordinator = pkgs.writeShellApplication {
@@ -128,7 +128,7 @@
       export HOMELAB_DUMP_UNITS=${lib.escapeShellArg (lib.concatStringsSep " " databaseApplicationUnits)}
       export HOMELAB_ARCHIVE_UNITS=${lib.escapeShellArg (lib.concatStringsSep " " fileApplicationUnits)}
       export HOMELAB_PREPARE_STEPS_FILE=${prepareStepsFile}
-      exec ${lib.getExe pkgs.bash} ${../../scripts/homelab-backup-coordinator.sh} "$@"
+      exec ${lib.getExe pkgs.bash} ${../../scripts/homelab/homelab-backup-coordinator.sh} "$@"
     '';
   };
   healthcheckPing = pkgs.writeShellApplication {
@@ -137,7 +137,7 @@
     text = ''
       export CURL_BIN=${lib.getExe pkgs.curl}
       export HOMELAB_HEALTHCHECK_URL_FILE=${lib.escapeShellArg cfg.healthcheckUrlFile}
-      exec ${lib.getExe pkgs.bash} ${../../scripts/healthcheck-ping.sh} "$@"
+      exec ${lib.getExe pkgs.bash} ${../../scripts/homelab/healthcheck-ping.sh} "$@"
     '';
   };
   postHookRunner = pkgs.writeShellApplication {
@@ -148,7 +148,7 @@
       export HOMELAB_BACKUP_METRICS_DIR=${lib.escapeShellArg backupMetricsDir}
       export DATE_BIN=${lib.getExe' pkgs.coreutils "date"}
       ${lib.optionalString (cfg.healthcheckUrlFile != null) "export HOMELAB_HEARTBEAT_BIN=${lib.getExe healthcheckPing}"}
-      exec ${lib.getExe pkgs.bash} ${../../scripts/homelab-backup-posthook.sh} "$@"
+      exec ${lib.getExe pkgs.bash} ${../../scripts/homelab/homelab-backup-posthook.sh} "$@"
     '';
   };
   inspectMain = pkgs.writeShellApplication {
@@ -168,7 +168,7 @@
       export BORG_REPO=${lib.escapeShellArg cfg.repo}
       export BORG_PASSCOMMAND=${lib.escapeShellArg "cat ${config.sops.secrets.borg-backup-passphrase.path}"}
       export HOMELAB_REQUIRE_ROOT=1
-      exec ${lib.getExe pkgs.bash} ${../../scripts/homelab-backup-inspect.sh} "$@"
+      exec ${lib.getExe pkgs.bash} ${../../scripts/homelab/homelab-backup-inspect.sh} "$@"
     '';
   };
   restoreMain = pkgs.writeShellApplication {
@@ -182,7 +182,7 @@
       export FIND_BIN=${lib.getExe pkgs.findutils}
       export BORG_REPO=${lib.escapeShellArg cfg.repo}
       export BORG_PASSCOMMAND=${lib.escapeShellArg "cat ${config.sops.secrets.borg-backup-passphrase.path}"}
-      ${builtins.readFile ../../scripts/borg-restore-main.sh}
+      ${builtins.readFile ../../scripts/homelab/borg-restore-main.sh}
     '';
   };
 in {
@@ -384,7 +384,7 @@ in {
         export HOMELAB_MANIFEST_PATH=${lib.escapeShellArg "${homelabBackupDir}/manifest.json"}
         export HOMELAB_BACKUP_COORDINATOR_BIN=${lib.getExe coordinator}
         ${lib.optionalString (cfg.healthcheckUrlFile != null) "export HOMELAB_HEARTBEAT_BIN=${lib.getExe healthcheckPing}"}
-        ${builtins.readFile ../../scripts/homelab-backup-pre-hook.sh}
+        ${builtins.readFile ../../scripts/homelab/homelab-backup-pre-hook.sh}
       '';
 
       # Recover file-backed services as soon as Borg has captured and finalized
@@ -462,7 +462,7 @@ in {
             export FLOCK_BIN=${flock}
             export BORG_OPERATION_LOCK_FILE=${lib.escapeShellArg borgOperationLockFile}
             export HOMELAB_BACKUP_METRICS_DIR=${lib.escapeShellArg backupMetricsDir}
-            ${builtins.readFile ../../scripts/homelab-borg-check.sh}
+            ${builtins.readFile ../../scripts/homelab/homelab-borg-check.sh}
           '';
         };
 

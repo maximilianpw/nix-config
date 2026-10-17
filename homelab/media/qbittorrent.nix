@@ -100,7 +100,7 @@ in {
           pkgs.mullvad
         ];
         text = ''
-          ${builtins.readFile ../../scripts/qbittorrent-vpn-prestart.sh}
+          ${builtins.readFile ../../scripts/homelab/qbittorrent-vpn-prestart.sh}
           ${mullvadConnectionGate "qBittorrent"}
         '';
       };

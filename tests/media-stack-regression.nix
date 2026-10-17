@@ -447,8 +447,8 @@ in
     pkgs.runCommand "media-stack-regression" {
       nativeBuildInputs = [pkgs.bash pkgs.jq pkgs.coreutils pkgs.findutils pkgs.diffutils pkgs.gnused];
     } ''
-      mkdir -p scripts/tests
-      cp ${../scripts/tunarr-reconcile-settings.sh} scripts/tunarr-reconcile-settings.sh
+      mkdir -p scripts/homelab scripts/tests
+      cp ${../scripts/homelab/tunarr-reconcile-settings.sh} scripts/homelab/tunarr-reconcile-settings.sh
       cp ${../scripts/tests/tunarr-reconcile-settings-test.sh} scripts/tests/tunarr-reconcile-settings-test.sh
       bash scripts/tests/tunarr-reconcile-settings-test.sh
       # Exercise the configured ExecStartPre too, redirected to disposable state.

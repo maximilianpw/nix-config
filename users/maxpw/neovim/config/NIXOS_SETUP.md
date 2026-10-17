@@ -19,7 +19,7 @@ directories and checks startup, JSX/TSX highlighting, big-file ordering,
 formatter discovery, textobject motions, and breakpoint persistence. It does not
 validate every external language server, authenticated AI service, or every
 interactive workflow. Plugin revisions live in `users/maxpw/neovim/plugin-pins.json`;
-move them with `scripts/nvim-plugin-pins.sh`.
+move them with `scripts/dev/nvim-plugin-pins.sh`.
 
 Treesitter textobject mappings use the standalone main-branch API. Insert-mode
 `<Tab>` advances snippets, accepts visible Supermaven ghost text, or falls back

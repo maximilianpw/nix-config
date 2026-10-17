@@ -63,7 +63,7 @@ DOCKER_BIN="$fake_docker" \
   HOMELAB_METRICS_DIR="$metrics_dir" \
   HOMELAB_CONTAINER_STALE_AFTER_SECONDS=86400 \
   NOW_EPOCH=400000 \
-  "$script_dir/homelab-container-audit.sh" >/dev/null
+  "$script_dir/homelab/homelab-container-audit.sh" >/dev/null
 
 metrics_file="$metrics_dir/homelab-docker-containers.prom"
 grep -F 'homelab_docker_containers 3' "$metrics_file"
@@ -81,7 +81,7 @@ assert_file_mode "$metrics_file" 0644
 
 cp "$metrics_file" "$test_root/expected.prom"
 if FAIL_DOCKER=1 DOCKER_BIN="$fake_docker" DATE_BIN="$test_root/date" HOMELAB_METRICS_DIR="$metrics_dir" \
-  "$script_dir/homelab-container-audit.sh" >/dev/null 2>&1; then
+  "$script_dir/homelab/homelab-container-audit.sh" >/dev/null 2>&1; then
   echo "container audit unexpectedly accepted a Docker failure" >&2
   exit 1
 fi
@@ -90,13 +90,13 @@ cmp "$test_root/expected.prom" "$metrics_file"
 race_state_file="$test_root/race-state"
 RACE_STATE_FILE="$race_state_file" DOCKER_BIN="$fake_docker" DATE_BIN="$test_root/date" HOMELAB_METRICS_DIR="$metrics_dir" \
   HOMELAB_CONTAINER_SNAPSHOT_ATTEMPTS=2 NOW_EPOCH=400000 \
-  "$script_dir/homelab-container-audit.sh" >/dev/null
+  "$script_dir/homelab/homelab-container-audit.sh" >/dev/null
 # The vanished container is excluded from the retried snapshot.
 grep -F 'homelab_docker_containers 3' "$metrics_file"
 test -e "$race_state_file"
 
 FAKE_EMPTY=1 DOCKER_BIN="$fake_docker" DATE_BIN="$test_root/date" HOMELAB_METRICS_DIR="$metrics_dir" \
-  "$script_dir/homelab-container-audit.sh" >/dev/null
+  "$script_dir/homelab/homelab-container-audit.sh" >/dev/null
 grep -F 'homelab_docker_containers 0' "$metrics_file"
 grep -F 'homelab_docker_stale_containers 0' "$metrics_file"
 grep -F 'homelab_docker_unhealthy_containers 0' "$metrics_file"

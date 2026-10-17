@@ -7,11 +7,11 @@ driver". There are three scenarios, from most to least work:
 2. [New (or wiped) Mac](#scenario-2-new-or-wiped-mac)
 3. [Reinstalling an existing host / repo already cloned](#scenario-3-existing-host)
 
-In all cases the finishing move is the same: `./scripts/bootstrap.sh`, which
+In all cases the finishing move is the same: `./scripts/rebuild/bootstrap.sh`, which
 checks prerequisites, enables flakes, sets up the repo, verifies the host exists
 in the flake before maintaining the NixOS-only `/etc/nixos` symlink, checks the sops age key
 (NixOS and Darwin), and offers to run the first rebuild. Run
-`./scripts/bootstrap.sh --dry-run` to see what it would do.
+`./scripts/rebuild/bootstrap.sh --dry-run` to see what it would do.
 
 > **The one dangerous gap to know about (NixOS):** the user password is a
 > sops secret. If the age key is not at `/var/lib/sops-nix/key.txt` before
@@ -71,7 +71,7 @@ needs (see [Adding a new host](#adding-a-new-host)):
 
 1. `machines/<hostname>.nix` + hardware config under `machines/hardware/`
 2. A typed entry in `lib/hosts.nix`
-3. A Darwin login mapping in `scripts/lib/host-detect.sh` (Linux uses its
+3. A Darwin login mapping in `scripts/rebuild/lib/host-detect.sh` (Linux uses its
    actual hostname; WSL is detected explicitly)
 
 Commit and push these from an existing machine if possible, so the new
@@ -99,7 +99,7 @@ sudo chown root:root /var/lib/sops-nix/key.txt
 
 ```bash
 cd ~/nix-config
-./scripts/bootstrap.sh --skip-clone
+./scripts/rebuild/bootstrap.sh --skip-clone
 ```
 
 Say yes to the initial rebuild at the end (or run `make rebuild` later).
@@ -156,7 +156,7 @@ successful rebuild:
      'eval $(op signin); op item get "sops nixos" --fields password --reveal' \
      >> ~/.config/sops/age/keys.txt
    chmod 600 ~/.config/sops/age/keys.txt
-   ./scripts/bootstrap.sh --skip-clone
+   ./scripts/rebuild/bootstrap.sh --skip-clone
    ```
 
    Note: macOS Nix settings (caches, trusted-users) live in
@@ -175,7 +175,7 @@ Kim):
 
 ```bash
 cd ~/nix-config
-./scripts/bootstrap.sh --skip-clone   # or `make bootstrap`
+./scripts/rebuild/bootstrap.sh --skip-clone   # or `make bootstrap`
 ```
 
 On NixOS, place the system age key first (Scenario 1, step 4 above). On
@@ -209,7 +209,7 @@ checks and will tell you if either key is missing.
    ```
 
 3. **Host detection**: Linux must report the same hostname as the inventory
-   key. Only Darwin needs a login mapping in `scripts/lib/host-detect.sh`.
+   key. Only Darwin needs a login mapping in `scripts/rebuild/lib/host-detect.sh`.
 4. **Fleet identity**: generate a dedicated client key outside the repository
    (`ssh-keygen -t ed25519 -f ~/.ssh/fleet_ed25519 -C "fleet <hostname>"`),
    add only its public key and stable IPv4/IPv6 Tailscale addresses to the

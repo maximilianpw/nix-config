@@ -12,6 +12,6 @@
   # userdata implicitly: the operator must do the non-zapping handover first.
   system.activationScripts.preActivation.text = lib.mkBefore ''
     T3CODE_SYSTEM_USER=${lib.escapeShellArg currentSystemUser} \
-      ${lib.getExe pkgs.bash} ${../../../scripts/t3code-pre-activation.sh}
+      ${lib.getExe pkgs.bash} ${../../../scripts/user/t3code-pre-activation.sh}
   '';
 }

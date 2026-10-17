@@ -111,7 +111,7 @@ Gate per group: manifest/destination inspection, collision/removal tests, releva
 
 After all intended hosts have migrated and no deployment still relies on chezmoi:
 
-- Remove its package, `scripts/chezmoi.sh`, Makefile targets, shell aliases and obsolete bootstrap steps. Search the full repo for callers/tests/documentation before removal.
+- Remove its package, `scripts/dev/chezmoi.sh`, Makefile targets, shell aliases and obsolete bootstrap steps. Search the full repo for callers/tests/documentation before removal.
 - Update README, BOOTSTRAP guidance, `docs/config-ownership-and-recovery.md`, and applicable AGENTS guidance with the accepted ownership map and edit/build/apply/recover workflows.
 - Keep pi-config and unmanaged employer/credential locations out of scope.
 - Verify clean disposable-home deployment has all expected files and excludes all protected paths. Re-test a config update, a deletion, and recovery.

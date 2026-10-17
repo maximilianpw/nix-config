@@ -52,7 +52,7 @@ chmod +x "$fake_systemctl"
 
 SYSTEMCTL_BIN="$fake_systemctl" \
   HOMELAB_METRICS_DIR="$metrics_dir" \
-  "$script_dir/homelab-systemd-metrics.sh" \
+  "$script_dir/homelab/homelab-systemd-metrics.sh" \
   immich-server.service \
   jellyfin.service \
   inactive.service
@@ -73,7 +73,7 @@ test -z "$(find "$metrics_dir" -type f ! -name 'homelab-systemd-resources.prom' 
 if FAIL_SYSTEMCTL=1 \
   SYSTEMCTL_BIN="$fake_systemctl" \
   HOMELAB_METRICS_DIR="$metrics_dir" \
-  "$script_dir/homelab-systemd-metrics.sh" \
+  "$script_dir/homelab/homelab-systemd-metrics.sh" \
   immich-server.service \
   jellyfin.service \
   inactive.service >/dev/null 2>&1; then
@@ -83,7 +83,7 @@ fi
 cmp "$expected_metrics" "$metrics_file"
 test -z "$(find "$metrics_dir" -type f ! -name 'homelab-systemd-resources.prom' -print -quit)"
 
-if HOMELAB_METRICS_DIR="$metrics_dir" "$script_dir/homelab-systemd-metrics.sh" >/dev/null 2>&1; then
+if HOMELAB_METRICS_DIR="$metrics_dir" "$script_dir/homelab/homelab-systemd-metrics.sh" >/dev/null 2>&1; then
   echo "collector unexpectedly accepted an empty unit list" >&2
   exit 1
 fi

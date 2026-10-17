@@ -7,9 +7,9 @@ repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 config="$tmp/home/nix-config"
-mkdir -p "$tmp/bin" "$config/scripts/lib"
-cp "$repo_root/scripts/nixos-rebuild.sh" "$config/scripts/"
-cp "$repo_root/scripts/lib/host-detect.sh" "$repo_root/scripts/lib/rebuild-state.sh" "$config/scripts/lib/"
+mkdir -p "$tmp/bin" "$config/scripts/rebuild/lib"
+cp "$repo_root/scripts/rebuild/nixos-rebuild.sh" "$config/scripts/rebuild/"
+cp "$repo_root/scripts/rebuild/lib/host-detect.sh" "$repo_root/scripts/rebuild/lib/rebuild-state.sh" "$config/scripts/rebuild/lib/"
 printf '.artifacts/\n' > "$config/.gitignore"
 printf '{ }\n' > "$config/flake.nix"
 git -C "$config" init -q
@@ -50,7 +50,7 @@ chmod +x "$tmp/bin/"*
 
 HOME="$tmp/home" PATH="$tmp/bin:$PATH" NIX_CONFIG_HOST=joyce \
     NIX_CONFIG_STATE_DIR="$tmp/state" TEST_SNAPSHOT="$tmp/snapshot" \
-    bash "$config/scripts/nixos-rebuild.sh" > "$tmp/out" 2> "$tmp/err" || {
+    bash "$config/scripts/rebuild/nixos-rebuild.sh" > "$tmp/out" 2> "$tmp/err" || {
     cat "$tmp/out" "$tmp/err" >&2
     exit 1
 }

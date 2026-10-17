@@ -2,7 +2,7 @@
 set -euo pipefail
 
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
-inspect="$repo_root/scripts/homelab-backup-inspect.sh"
+inspect="$repo_root/scripts/homelab/homelab-backup-inspect.sh"
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 mkdir -p "$tmp/ha/hass" "$tmp/t3code/userdata"

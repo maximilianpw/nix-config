@@ -2,7 +2,7 @@
 set -euo pipefail
 
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
-backup="$repo_root/scripts/t3code-backup.sh"
+backup="$repo_root/scripts/homelab/t3code-backup.sh"
 # shellcheck source=scripts/tests/portable-gnu-fixtures.sh
 source "$repo_root/scripts/tests/portable-gnu-fixtures.sh"
 tmp=$(mktemp -d)

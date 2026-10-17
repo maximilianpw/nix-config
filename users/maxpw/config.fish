@@ -52,7 +52,7 @@ set -gx EDITOR nvim
 #-------------------------------------------------------------------------------
 # Functions
 #-------------------------------------------------------------------------------
-alias rebuild-nix "~/nix-config/scripts/nixos-rebuild.sh"
+alias rebuild-nix "~/nix-config/scripts/rebuild/nixos-rebuild.sh"
 
 # JJ PR creation with GitHub CLI
 # Usage: jprgh "commit message" [gh pr create args...]

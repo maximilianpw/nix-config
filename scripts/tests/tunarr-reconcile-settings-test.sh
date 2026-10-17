@@ -9,7 +9,7 @@ JQ_BIN=$(command -v jq)
 export TUNARR_SETTINGS_FILE=$tmp/settings.json
 export FFMPEG_BIN=/fixture/ffmpeg
 export FFPROBE_BIN=/fixture/ffprobe
-script=$repo_root/scripts/tunarr-reconcile-settings.sh
+script=$repo_root/scripts/homelab/tunarr-reconcile-settings.sh
 
 # Fresh installations retain Tunarr's responsibility for schema defaults.
 bash "$script"

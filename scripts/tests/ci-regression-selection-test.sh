@@ -57,10 +57,10 @@ set -e
 [[ $status == 19 ]]
 
 # Make must parse more than the first script before reaching ShellCheck.
-mkdir -p "$tmp/syntax/scripts"
+mkdir -p "$tmp/syntax/scripts/dev"
 cp "$repo_root/Makefile" "$tmp/syntax/Makefile"
-printf '#!/usr/bin/env bash\ntrue\n' > "$tmp/syntax/scripts/a-valid.sh"
-printf 'if\n' > "$tmp/syntax/scripts/z-invalid.sh"
+printf '#!/usr/bin/env bash\ntrue\n' > "$tmp/syntax/scripts/dev/a-valid.sh"
+printf 'if\n' > "$tmp/syntax/scripts/dev/z-invalid.sh"
 cat > "$tmp/shellcheck" <<'EOF'
 #!/usr/bin/env bash
 touch "$TEST_BUILD_ARGS"

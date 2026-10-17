@@ -44,7 +44,7 @@ else
 fi
 
 # Platform + host detection (login -> flake config mapping) is shared with
-# bootstrap.sh; the map lives in scripts/lib/host-detect.sh.
+# bootstrap.sh; the map lives in scripts/rebuild/lib/host-detect.sh.
 # shellcheck source=lib/host-detect.sh
 source "$SCRIPT_DIR/lib/host-detect.sh"
 detect_host
@@ -170,7 +170,7 @@ if [[ "$PLATFORM" == "nixos" && "$HOSTNAME" == "kim" ]]; then
         [[ -n "$app_id" ]] && declarative_app_ids+=("$app_id")
     done <<< "$declarative_apps"
 
-    if ! NEXTCLOUD_USE_SUDO=1 "$SCRIPT_DIR/check-nextcloud-app-ownership.sh" "${declarative_app_ids[@]}"; then
+    if ! NEXTCLOUD_USE_SUDO=1 "$SCRIPT_DIR/../homelab/check-nextcloud-app-ownership.sh" "${declarative_app_ids[@]}"; then
         error "Refusing to activate conflicting Nextcloud app ownership"
         exit 1
     fi

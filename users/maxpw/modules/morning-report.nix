@@ -17,7 +17,7 @@
   runReport = hostRecord.longRunningAgents && lib.elem "homelab" hostRecord.profiles;
   reportDirectory = "${config.home.homeDirectory}/reports/morning";
   # Mirrors nodeExporterTextfileDirectory in homelab/monitoring.nix and the
-  # file written by scripts/cliproxyapi-readiness-probe.sh; absence is "unknown".
+  # file written by scripts/homelab/cliproxyapi-readiness-probe.sh; absence is "unknown".
   readinessFile = "/var/lib/prometheus-node-exporter-text-files/cliproxyapi-readiness.prom";
   morningReport = pkgs.writeShellApplication {
     name = "morning-report";
@@ -36,7 +36,7 @@
       export MORNING_REPORT_GITHUB_REPO=maximilianpw/nix-config
       export HOMELAB_IMPORTANT_UNITS=${lib.escapeShellArg (lib.concatStringsSep " " homelab.importantSystemdUnits)}
       export CLIPROXYAPI_READINESS_FILE=${lib.escapeShellArg readinessFile}
-      exec ${lib.getExe pkgs.bash} ${../../../scripts/morning-report.sh} "$@"
+      exec ${lib.getExe pkgs.bash} ${../../../scripts/user/morning-report.sh} "$@"
     '';
   };
 in {

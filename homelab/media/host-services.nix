@@ -38,7 +38,7 @@
       export SLEEP_BIN=${lib.getExe' pkgs.coreutils "sleep"}
       export PROWLARR_CONFIG_FILE=/var/lib/prowlarr/config.xml
       export PROWLARR_URL=${lib.escapeShellArg (homelab.loopbackUrl endpoints.prowlarr.port)}
-      exec ${lib.getExe pkgs.bash} ${../../scripts/prowlarr-reconcile.sh}
+      exec ${lib.getExe pkgs.bash} ${../../scripts/homelab/prowlarr-reconcile.sh}
     '';
   };
   mediaDirectories = [

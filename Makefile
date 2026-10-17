@@ -10,8 +10,8 @@ CONFIG_DIR := $(shell pwd)
 # nixvim follows nixpkgs-unstable, so it must move in lockstep with it.
 CORE_INPUTS := nixpkgs nixpkgs-unstable home-manager nix-darwin fenix llm-agents superlocal nixvim hjem
 # Only update commands inherit temporary GitHub credentials.
-UPDATE_AUTH := $(SCRIPT_DIR)/with-github-auth.sh
-SHELL_SCRIPTS = $(SCRIPT_DIR)/*.sh $(SCRIPT_DIR)/ci/*.sh $(SCRIPT_DIR)/lib/*.sh $(SCRIPT_DIR)/tests/*.sh packages/scripts/*.sh
+UPDATE_AUTH := $(SCRIPT_DIR)/dev/with-github-auth.sh
+SHELL_SCRIPTS = $(SCRIPT_DIR)/*/*.sh $(SCRIPT_DIR)/rebuild/lib/*.sh packages/scripts/*.sh
 
 help: ## Show this help message
 	@echo "Nix-Config Management Commands"
@@ -23,28 +23,28 @@ help: ## Show this help message
 
 bootstrap: ## Bootstrap a new system (initial setup)
 	@echo "Starting bootstrap process..."
-	@$(SCRIPT_DIR)/bootstrap.sh
+	@$(SCRIPT_DIR)/rebuild/bootstrap.sh
 
 chezmoi-bootstrap: ## Clone dotfiles source without applying it
-	@$(SCRIPT_DIR)/chezmoi.sh bootstrap
+	@$(SCRIPT_DIR)/dev/chezmoi.sh bootstrap
 
 chezmoi-check: ## Validate chezmoi source with a no-write dry run
-	@$(SCRIPT_DIR)/chezmoi.sh check
+	@$(SCRIPT_DIR)/dev/chezmoi.sh check
 
 chezmoi-preview: ## Show changes chezmoi would apply
-	@$(SCRIPT_DIR)/chezmoi.sh preview
+	@$(SCRIPT_DIR)/dev/chezmoi.sh preview
 
 chezmoi-apply: ## Review and interactively apply chezmoi dotfiles
-	@$(SCRIPT_DIR)/chezmoi.sh apply
+	@$(SCRIPT_DIR)/dev/chezmoi.sh apply
 
 rebuild: ## Build and switch this checkout's configuration (NixOS/Darwin)
-	@$(SCRIPT_DIR)/nixos-rebuild.sh "$(CONFIG_DIR)"
+	@$(SCRIPT_DIR)/rebuild/nixos-rebuild.sh "$(CONFIG_DIR)"
 
 rebuild-processes: ## Show the identity-checked active rebuild process tree
-	@$(SCRIPT_DIR)/lib/rebuild-state.sh list
+	@$(SCRIPT_DIR)/rebuild/lib/rebuild-state.sh list
 
 cleanup-rebuild: ## Stop only the tracked active rebuild process tree
-	@$(SCRIPT_DIR)/lib/rebuild-state.sh cleanup
+	@$(SCRIPT_DIR)/rebuild/lib/rebuild-state.sh cleanup
 
 update: ## Update core flake inputs, T3 Code, and Neovim plugin pins
 	@echo "Updating core flake inputs: $(CORE_INPUTS)"
@@ -69,7 +69,7 @@ update-packages: ## Bump repo-local custom packages via nix-update
 	@$(UPDATE_AUTH) $(SCRIPT_DIR)/ci/update-packages.sh --local
 
 update-nvim-plugins: ## Move Neovim's pinned Lua plugins to upstream HEAD (replaces :Lazy update)
-	@$(UPDATE_AUTH) $(SCRIPT_DIR)/nvim-plugin-pins.sh --all
+	@$(UPDATE_AUTH) $(SCRIPT_DIR)/dev/nvim-plugin-pins.sh --all
 	@echo "Check the editor before rebuilding:"
 	@echo "  nix build .#checks.$$(nix eval --impure --raw --expr builtins.currentSystem).nvim-candidate .#checks.$$(nix eval --impure --raw --expr builtins.currentSystem).hjem-lifecycle-regression --no-link"
 
@@ -84,14 +84,14 @@ check-scripts: ## Run shell syntax, ShellCheck, and safety regression tests
 	@set -e; for test in $(SCRIPT_DIR)/tests/*-test.sh; do bash "$$test" || { echo "FAILED: $$test" >&2; exit 1; }; done
 
 check-linux: ## Evaluate every x86_64-linux check (forces regression assertions on any host)
-	@$(SCRIPT_DIR)/check-linux-eval.sh
+	@$(SCRIPT_DIR)/dev/check-linux-eval.sh
 
 lint: ## Run Nix linters (statix, deadnix) and format check
 	nix build .#checks.$$(nix eval --impure --raw --expr builtins.currentSystem).pre-commit-check --no-link
 
 build: ## Build system configuration without switching
 	@echo "Building system configuration..."
-	@$(SCRIPT_DIR)/nixos-build.sh "$(CONFIG_DIR)"
+	@$(SCRIPT_DIR)/rebuild/nixos-build.sh "$(CONFIG_DIR)"
 	@echo "Build complete!"
 
 generations: ## List system generations
@@ -99,7 +99,7 @@ generations: ## List system generations
 	@sudo nix-env --list-generations --profile /nix/var/nix/profiles/system
 
 rollback: ## Rollback to previous generation (Kim re-runs its homelab checks)
-	@$(SCRIPT_DIR)/nixos-rollback.sh
+	@$(SCRIPT_DIR)/rebuild/nixos-rollback.sh
 
 gc: ## Delete old generations now (keeps the last 5 and anything from 30 days)
 	@nh clean all --keep 5 --keep-since 30d

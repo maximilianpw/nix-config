@@ -12,7 +12,7 @@
     lidarr = "/var/lib/lidarr/.config/Lidarr/config.xml";
   };
   managerCredentials = names: map (name: "${name}-config:${managerConfigPaths.${name}}") names;
-  withManagerKeys = mappings: command: "${lib.getExe pkgs.python3} ${../../scripts/media-manager-api-env.py} ${lib.escapeShellArgs (lib.concatMap (mapping: ["--api-key" mapping]) mappings)} -- ${command}";
+  withManagerKeys = mappings: command: "${lib.getExe pkgs.python3} ${../../scripts/homelab/media-manager-api-env.py} ${lib.escapeShellArgs (lib.concatMap (mapping: ["--api-key" mapping]) mappings)} -- ${command}";
   privateService = stateDirectory: {
     NoNewPrivileges = true;
     PrivateTmp = true;

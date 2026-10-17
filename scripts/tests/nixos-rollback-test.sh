@@ -29,7 +29,7 @@ run_rollback() {
     : > "$TEST_COMMANDS"
     PATH="$tmp/bin:$PATH" HOMELAB_CHECK_BIN="$tmp/homelab-check" \
         HOMELAB_CHECK_ATTEMPTS=1 CURRENT_SYSTEM_LINK="$tmp/missing" \
-        bash "$repo_root/scripts/nixos-rollback.sh" > "$tmp/out" 2>&1
+        bash "$repo_root/scripts/rebuild/nixos-rollback.sh" > "$tmp/out" 2>&1
 }
 
 run_rollback Linux kim

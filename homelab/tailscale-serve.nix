@@ -15,7 +15,7 @@
   advertiseCommands = lib.mapAttrsToList (_: service: "${tailscale} serve advertise ${lib.escapeShellArg service.tailscaleServiceName}") homelab.privateServices;
   applyCommands = lib.concatStringsSep " &&\n" (rootCommands ++ advertiseCommands);
   desiredServicePattern = lib.concatMapStringsSep "|" (service: lib.escapeShellArg service.tailscaleServiceName) (builtins.attrValues homelab.privateServices);
-  serveScriptText = template.render ../scripts/tailscale-serve-apply.sh {
+  serveScriptText = template.render ../scripts/homelab/tailscale-serve-apply.sh {
     TAILSCALE_BIN = tailscale;
     JQ_BIN = lib.getExe pkgs.jq;
     SLEEP_BIN = lib.getExe' pkgs.coreutils "sleep";

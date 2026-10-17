@@ -40,7 +40,7 @@
       export SYSTEMCTL_BIN=${lib.getExe' pkgs.systemd "systemctl"}
       export AWK_BIN=${lib.getExe pkgs.gawk}
       export HOMELAB_METRICS_DIR=${lib.escapeShellArg nodeExporterTextfileDirectory}
-      exec ${lib.getExe pkgs.bash} ${../scripts/homelab-systemd-metrics.sh} ${lib.escapeShellArgs importantSystemdUnits}
+      exec ${lib.getExe pkgs.bash} ${../scripts/homelab/homelab-systemd-metrics.sh} ${lib.escapeShellArgs importantSystemdUnits}
     '';
   };
   storageKernelMetrics = pkgs.writeShellApplication {
@@ -48,7 +48,7 @@
     text = ''
       export JOURNALCTL_BIN=${lib.getExe' pkgs.systemd "journalctl"}
       export HOMELAB_METRICS_DIR=${lib.escapeShellArg nodeExporterTextfileDirectory}
-      exec ${lib.getExe pkgs.python3} ${../scripts/homelab-storage-kernel-metrics.py}
+      exec ${lib.getExe pkgs.python3} ${../scripts/homelab/homelab-storage-kernel-metrics.py}
     '';
   };
   mediaSmartCheck = pkgs.writeShellApplication {
@@ -57,7 +57,7 @@
       export SMARTCTL_BIN=${lib.getExe' pkgs.smartmontools "smartctl"}
       export JQ_BIN=${lib.getExe pkgs.jq}
       export HOMELAB_MEDIA_SMART_DEVICE=/dev/disk/by-id/ata-ST5000LM000-2AN170_WCJ23AWJ
-      exec ${lib.getExe pkgs.bash} ${../scripts/homelab-media-smart-check.sh}
+      exec ${lib.getExe pkgs.bash} ${../scripts/homelab/homelab-media-smart-check.sh}
     '';
   };
   publicIngressCheck = pkgs.writeShellApplication {
@@ -65,7 +65,7 @@
     text = ''
       export CURL_BIN=${lib.getExe pkgs.curl}
       export HOMELAB_PUBLIC_URLS=${lib.escapeShellArg (lib.concatMapStringsSep " " (endpoint: endpoint.publicMonitorUrl) (builtins.attrValues homelab.publicEndpoints))}
-      exec ${lib.getExe pkgs.bash} ${../scripts/homelab-public-ingress-check.sh} "$@"
+      exec ${lib.getExe pkgs.bash} ${../scripts/homelab/homelab-public-ingress-check.sh} "$@"
     '';
   };
   # The public /healthz is answered by nginx alone, so this authenticated
@@ -85,7 +85,7 @@
       export CURL_BIN=${lib.getExe pkgs.curl}
       export CLIPROXYAPI_MODELS_URL=${lib.escapeShellArg "${cliProxy.baseUrl}/v1/models"}
       export HOMELAB_METRICS_DIR=${lib.escapeShellArg nodeExporterTextfileDirectory}
-      exec ${lib.getExe pkgs.bash} ${../scripts/cliproxyapi-readiness-probe.sh}
+      exec ${lib.getExe pkgs.bash} ${../scripts/homelab/cliproxyapi-readiness-probe.sh}
     '';
   };
   hostHeartbeat = pkgs.writeShellApplication {
@@ -94,7 +94,7 @@
     text = ''
       export CURL_BIN=${lib.getExe pkgs.curl}
       export HOMELAB_HEALTHCHECK_URL_FILE=${lib.escapeShellArg monitoringCfg.hostHeartbeatUrlFile}
-      exec ${lib.getExe pkgs.bash} ${../scripts/healthcheck-ping.sh} success
+      exec ${lib.getExe pkgs.bash} ${../scripts/homelab/healthcheck-ping.sh} success
     '';
   };
   grafanaSecretKeySetup = pkgs.writeShellScript "grafana-secret-key-setup" ''
@@ -278,7 +278,7 @@
       export HOMELAB_CLOUDFLARED_UNIT=${lib.escapeShellArg homelab.infrastructure.cloudflare.unit}
       export HOMELAB_PROMETHEUS_URL=${lib.escapeShellArg (homelab.loopbackUrl prometheus.port)}
       export HOMELAB_INSPECT_BIN=homelab-backup-inspect
-      exec ${lib.getExe pkgs.bash} ${../scripts/homelab-check.sh} "$@"
+      exec ${lib.getExe pkgs.bash} ${../scripts/homelab/homelab-check.sh} "$@"
     '';
   };
 in {

@@ -68,6 +68,6 @@ in
     (builtins.elem "recyclarr.timer" homelab.backup.archiveUnits)
   ];
     pkgs.runCommand "media-companions-regression" {nativeBuildInputs = [pkgs.python3];} ''
-      python3 ${./media-manager-api-env-test.py} ${../scripts/media-manager-api-env.py}
+      python3 ${./media-manager-api-env-test.py} ${../scripts/homelab/media-manager-api-env.py}
       touch "$out"
     ''

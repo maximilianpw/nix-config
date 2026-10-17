@@ -2,7 +2,7 @@
 set -euo pipefail
 
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
-script="$repo_root/scripts/wait-unit-inactive.sh"
+script="$repo_root/scripts/homelab/wait-unit-inactive.sh"
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 

@@ -220,7 +220,7 @@ fi
 # Step 5: Reject unknown or incompatible hosts before privileged link upkeep.
 step "5/8: Verifying this host has a flake configuration..."
 # shellcheck source=lib/host-detect.sh
-source "$CONFIG_DIR/scripts/lib/host-detect.sh"
+source "$CONFIG_DIR/scripts/rebuild/lib/host-detect.sh"
 detect_host
 info "Detected host: $HOSTNAME ($PLATFORM)"
 
@@ -234,7 +234,7 @@ else
     echo "This looks like a new machine. To add it (see BOOTSTRAP.md, 'Adding a new host'):"
     echo "  1. Create machines/${HOSTNAME}.nix (and hardware config under machines/hardware/)"
     echo "  2. Add '${HOSTNAME}' to lib/hosts.nix"
-    echo "  3. On Darwin, add the login mapping in scripts/lib/host-detect.sh"
+    echo "  3. On Darwin, add the login mapping in scripts/rebuild/lib/host-detect.sh"
     echo "  4. Commit, then re-run this script with --skip-clone"
     if [[ "$DRY_RUN" == "true" ]]; then
         warn "[DRY-RUN] This would abort the bootstrap"
@@ -290,7 +290,7 @@ elif [[ "$PLATFORM" == "darwin" ]]; then
         info "[DRY-RUN] Would check $USER_SOPS_KEY exists"
     else
         # shellcheck source=lib/sops-key.sh
-        source "$CONFIG_DIR/scripts/lib/sops-key.sh"
+        source "$CONFIG_DIR/scripts/rebuild/lib/sops-key.sh"
         export SOPS_KEY_USE_SUDO=0
         if validate_sops_key "$USER_SOPS_KEY" "$(id -u)" "$(id -g)"; then
             success "Age key is a user-owned 0600 regular file"
@@ -306,7 +306,7 @@ elif [[ "$PLATFORM" == "nixos" && "$HOSTNAME" != "cuno" ]]; then
         info "[DRY-RUN] Would validate /var/lib/sops-nix/key.txt is a root-owned 0600 regular file"
     else
         # shellcheck source=lib/sops-key.sh
-        source "$CONFIG_DIR/scripts/lib/sops-key.sh"
+        source "$CONFIG_DIR/scripts/rebuild/lib/sops-key.sh"
         export SOPS_KEY_USE_SUDO=1
         if validate_sops_key /var/lib/sops-nix/key.txt 0 0; then
             success "Age key is a root-owned 0600 regular file"
@@ -348,11 +348,11 @@ echo "Next steps:"
 echo "  1. Review the configuration in $CONFIG_DIR"
 echo "  2. Run the rebuild script:"
 if [[ "$PLATFORM" == "darwin" ]]; then
-    echo "     ./scripts/nixos-rebuild.sh"
+    echo "     ./scripts/rebuild/nixos-rebuild.sh"
     echo "     OR"
     echo "     sudo darwin-rebuild switch --flake $CONFIG_DIR#$HOSTNAME"
 else
-    echo "     ./scripts/nixos-rebuild.sh"
+    echo "     ./scripts/rebuild/nixos-rebuild.sh"
     echo "     OR"
     echo "     sudo nixos-rebuild switch --flake $CONFIG_DIR#$HOSTNAME"
 fi
@@ -367,7 +367,7 @@ if [[ "$DRY_RUN" == "false" ]]; then
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         info "Starting initial rebuild..."
-        exec "$CONFIG_DIR/scripts/nixos-rebuild.sh"
+        exec "$CONFIG_DIR/scripts/rebuild/nixos-rebuild.sh"
     else
         info "Skipping initial rebuild. Run it manually when ready."
     fi

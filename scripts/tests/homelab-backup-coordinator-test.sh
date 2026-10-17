@@ -2,8 +2,8 @@
 set -euo pipefail
 
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
-coordinator="$repo_root/scripts/homelab-backup-coordinator.sh"
-posthook="$repo_root/scripts/homelab-backup-posthook.sh"
+coordinator="$repo_root/scripts/homelab/homelab-backup-coordinator.sh"
+posthook="$repo_root/scripts/homelab/homelab-backup-posthook.sh"
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 

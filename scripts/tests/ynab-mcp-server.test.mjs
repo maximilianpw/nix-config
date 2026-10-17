@@ -15,7 +15,7 @@ import {
   readBoundedResponseText,
   validateIsoDate,
   validatePlanId,
-} from "../ynab-mcp-server.mjs";
+} from "../user/ynab-mcp-server.mjs";
 
 const PLAN_ID = "12345678-1234-4234-8234-123456789abc";
 
@@ -299,7 +299,7 @@ test("returns sanitized MCP tool errors", async () => {
 });
 
 test("speaks newline-delimited MCP over stdio without authentication during discovery", async (context) => {
-  const child = spawn(process.execPath, [fileURLToPath(new URL("../ynab-mcp-server.mjs", import.meta.url))], {
+  const child = spawn(process.execPath, [fileURLToPath(new URL("../user/ynab-mcp-server.mjs", import.meta.url))], {
     env: { PATH: process.env.PATH },
     stdio: ["pipe", "pipe", "pipe"],
   });

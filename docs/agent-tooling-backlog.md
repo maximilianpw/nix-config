@@ -18,7 +18,7 @@ prompt.
 
 ### Implemented: morning report on long-running-agent homelab hosts
 
-`users/maxpw/modules/morning-report.nix` runs `scripts/morning-report.sh` as
+`users/maxpw/modules/morning-report.nix` runs `scripts/user/morning-report.sh` as
 the `morning-report` user service and timer (07:00 local, up to five minutes
 of randomized delay, `Persistent=true`). It is enabled on every inventory host
 with `longRunningAgents = true` and the `homelab` profile. Kim is currently

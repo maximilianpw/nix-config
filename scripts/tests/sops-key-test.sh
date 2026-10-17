@@ -2,8 +2,8 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-# shellcheck source=../lib/sops-key.sh
-source "$SCRIPT_DIR/lib/sops-key.sh"
+# shellcheck source=../rebuild/lib/sops-key.sh
+source "$SCRIPT_DIR/rebuild/lib/sops-key.sh"
 
 tmpdir=$(mktemp -d)
 trap 'rm -rf "$tmpdir"' EXIT

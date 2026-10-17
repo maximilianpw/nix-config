@@ -98,7 +98,7 @@ run_probe() {
     CLIPROXYAPI_MODELS_URL="${PROBE_URL:-$models_url}" \
     HOMELAB_METRICS_DIR="$metrics_dir" \
     CREDENTIALS_DIRECTORY="${PROBE_CREDENTIALS_DIRECTORY:-$credentials_dir}" \
-    "$script_dir/cliproxyapi-readiness-probe.sh" "$@"
+    "$script_dir/homelab/cliproxyapi-readiness-probe.sh" "$@"
 }
 
 assert_metric() {

@@ -12,7 +12,7 @@
     export TUNARR_SETTINGS_FILE=/var/lib/tunarr/settings.json
     export FFMPEG_BIN=${lib.getExe pkgs.ffmpeg}
     export FFPROBE_BIN=${lib.getExe' pkgs.ffmpeg "ffprobe"}
-    ${builtins.readFile ../../scripts/tunarr-reconcile-settings.sh}
+    ${builtins.readFile ../../scripts/homelab/tunarr-reconcile-settings.sh}
   '';
 in {
   custom.backup.applicationVersions.tunarr = pkgs.tunarr.version;

@@ -22,7 +22,7 @@ host's cutover. Cuno's live cutover is still pending. See the
 [Nixvim/Hjem ledger](nixvim-hjem-ledger.md) for ownership, verified rollout
 state, recovery snapshots and the per-host cutover procedure.
 
-`scripts/chezmoi.sh` formalizes initialization, no-write validation, preview,
+`scripts/dev/chezmoi.sh` formalizes initialization, no-write validation, preview,
 and interactive apply for paths that remain owned by chezmoi. Do not run an
 apply with stale migration exclusions.
 

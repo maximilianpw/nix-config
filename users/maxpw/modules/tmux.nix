@@ -158,7 +158,7 @@ in {
     # private, and remove pane-content archives/extractions from the old config.
     activation.secureTmuxResurrect = lib.hm.dag.entryAfter ["writeBoundary"] ''
       export TMUX_RESURRECT_DIR=${lib.escapeShellArg resurrectDir}
-      ${builtins.readFile ../../../scripts/secure-tmux-resurrect.sh}
+      ${builtins.readFile ../../../scripts/user/secure-tmux-resurrect.sh}
     '';
   };
 }

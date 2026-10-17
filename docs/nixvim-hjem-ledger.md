@@ -153,7 +153,7 @@ editable source.
    (Neovim and the native plugins blink.cmp, fff.nvim, nvim-treesitter),
    `nixvim` and `hjem`. It then moves every pinned Lua plugin
    (`make update-nvim-plugins`). `make update-all` does the same. For a single
-   plugin: `scripts/nvim-plugin-pins.sh NAME [REV]`. Then run step 3 and the
+   plugin: `scripts/dev/nvim-plugin-pins.sh NAME [REV]`. Then run step 3 and the
    `hjem-lifecycle-regression` check before rebuilding.
 5. Deploy: only after cutover, via the normal rebuild.
 

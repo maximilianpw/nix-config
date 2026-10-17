@@ -2,8 +2,8 @@
 set -euo pipefail
 
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-UPDATE_SCRIPT="$SCRIPT_DIR/../update-nextcloud-store-apps.sh"
-CHECK_SCRIPT="$SCRIPT_DIR/../check-nextcloud-app-ownership.sh"
+UPDATE_SCRIPT="$SCRIPT_DIR/../homelab/update-nextcloud-store-apps.sh"
+CHECK_SCRIPT="$SCRIPT_DIR/../homelab/check-nextcloud-app-ownership.sh"
 tmpdir=$(mktemp -d)
 trap 'rm -rf "$tmpdir"' EXIT
 store_apps="$tmpdir/store-apps"

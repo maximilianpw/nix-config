@@ -7,14 +7,14 @@
   vaultwardenUrl = homelab.privateUrl "vaultwarden";
   ynabMcpServerSource = pkgs.runCommand "ynab-mcp-server-source" {} ''
     mkdir --parents "$out"
-    cp ${../../../../scripts/ynab-mcp-server.mjs} "$out/ynab-mcp-server.mjs"
-    cp ${../../../../scripts/ynab-mcp-operations.json} "$out/ynab-mcp-operations.json"
+    cp ${../../../../scripts/user/ynab-mcp-server.mjs} "$out/ynab-mcp-server.mjs"
+    cp ${../../../../scripts/user/ynab-mcp-operations.json} "$out/ynab-mcp-operations.json"
   '';
 in {
   home.packages = [
     (pkgs.writeShellApplication {
       name = "npmrc-token";
-      text = builtins.readFile ../../../../scripts/npmrc-token.sh;
+      text = builtins.readFile ../../../../scripts/user/npmrc-token.sh;
     })
     (pkgs.writeShellApplication {
       name = "ynab-mcp-server";
@@ -33,7 +33,7 @@ in {
       ];
       text = ''
         export VAULTWARDEN_URL=${lib.escapeShellArg vaultwardenUrl}
-        ${builtins.readFile ../../../../scripts/vault-backup.sh}
+        ${builtins.readFile ../../../../scripts/user/vault-backup.sh}
       '';
     })
   ];

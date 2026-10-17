@@ -50,7 +50,7 @@ service. Access policy and auto-approval rules were not changed.
 ### Recyclarr and Unpackerr
 
 Both load existing Servarr `config.xml` files through systemd `LoadCredential`.
-`scripts/media-manager-api-env.py` validates the API keys and passes them only
+`scripts/homelab/media-manager-api-env.py` validates the API keys and passes them only
 in the child process environment. No key is written into Git, the Nix store,
 or process arguments. Restarting a service takes a fresh credential snapshot.
 
