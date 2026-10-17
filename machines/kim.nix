@@ -6,7 +6,6 @@
   imports = [
     ./hardware/kim.nix
     ../homelab
-    ../modules/services/backup.nix
   ];
 
   networking.hostName = "kim";

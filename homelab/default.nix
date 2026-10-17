@@ -2,6 +2,7 @@
   imports = [
     ./actual.nix
     ./atuin.nix
+    ./backup.nix
     ./cloudflared.nix
     ./cliproxyapi.nix
     ./container-hygiene.nix

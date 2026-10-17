@@ -217,7 +217,7 @@ platform installation and real policy acceptance tests are necessary.
 
 Ryan's [backup threat model][ryan-backup] keeps workstation repository passwords
 off the backup server. That is useful even if retaining Borg rather than adding
-restic. Local `modules/services/backup.nix` is Kim-focused; Joyce's
+restic. Local `homelab/backup.nix` is Kim-focused; Joyce's
 `users/maxpw/modules/syncthing.nix` leaves folder/device pairing to mutable
 Syncthing state. Neither proves Joyce has no backup: Time Machine, other tools
 and the actual folder selection were **not inspected**.

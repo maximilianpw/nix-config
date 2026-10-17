@@ -254,7 +254,7 @@ the complete download and import path.
 Local configuration checks:
 
 ```bash
-alejandra --check homelab/media.nix homelab/media/companions.nix lib/homelab-services.nix lib/checks.nix modules/services/backup.nix tests/media-companions-regression.nix
+alejandra --check homelab/media.nix homelab/media/companions.nix lib/homelab-services.nix lib/checks.nix homelab/backup.nix tests/media-companions-regression.nix
 make lint
 nix flake check --no-build
 nix build .#checks.x86_64-linux.media-companions-regression --no-link

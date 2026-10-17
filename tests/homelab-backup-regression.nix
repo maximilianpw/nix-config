@@ -28,7 +28,7 @@
   missingVersionFixture = lib.evalModules {
     specialArgs = {inherit pkgs;};
     modules = [
-      ../modules/services/backup.nix
+      ../homelab/backup.nix
       {
         _module.check = false;
         custom.backup.applicationVersions = builtins.removeAttrs contributedVersions ["vaultwarden"];
@@ -44,7 +44,7 @@
   conflictingVersionFixture = lib.evalModules {
     specialArgs = {inherit pkgs;};
     modules = [
-      ../modules/services/backup.nix
+      ../homelab/backup.nix
       {_module.check = false;}
       {custom.backup.applicationVersions.actual = "first";}
       {custom.backup.applicationVersions.actual = "second";}
