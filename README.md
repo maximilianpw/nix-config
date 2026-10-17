@@ -20,14 +20,18 @@ while its command remains `fleet`.
   storage, and recovery metadata. Application implementation stays in the
   owning module under `homelab/`.
 - `machines/` contains host-specific operating-system configuration.
-- `modules/` contains shared system, Fleet, desktop, and service modules.
+- `modules/` contains shared system, Fleet, desktop, and CLIProxyAPI modules.
 - `users/maxpw/` contains Home Manager and platform-specific user
   configuration.
+- `scripts/` holds operational scripts grouped by purpose (`rebuild/`,
+  `homelab/`, `dev/`, `user/`, `ci/`); `scripts/tests/` is what
+  `make check-scripts` runs. `tests/` holds the flake checks and their fixtures.
 - `packages/` contains repository-owned package definitions. Flake package and
   check registration live in `flake.nix` and `lib/checks.nix`.
 
-Nix and Home Manager own systems, packages, shells, and executables. The
-separate chezmoi repository owns Neovim and application content. The external
+Nix and Home Manager own systems, packages, shells, and executables. Nixvim
+owns Neovim and Hjem owns static application files; the separate chezmoi
+repository keeps only remaining legacy application content. The external
 `pi-config` repository owns Pi settings, prompts, extensions, and themes. The
 pinned Fleet input owns the installed runtime CLI and tunnel supervision.
 This repository owns the personal Fleet inventory, SSH policy, trust, aliases,

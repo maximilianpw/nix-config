@@ -13,8 +13,10 @@ Home Manager configuration, and Kim's homelab services.
 - `lib/homelab-services.nix` owns service metadata and recovery contracts;
   application options and implementation stay in their owning `homelab/`
   module. See `README.md` and `docs/homelab-recovery.md`.
-- Nix/Home Manager owns systems, packages, shells, and executables. The separate
-  chezmoi repository owns Neovim and app content; `pi-config` owns Pi resources.
+- Nix/Home Manager owns systems, packages, shells, and executables; Nixvim
+  (`users/maxpw/neovim/`) owns Neovim and Hjem (`users/maxpw/hjem/`) owns static
+  app files. The separate chezmoi repository keeps only remaining legacy app
+  content; `pi-config` owns Pi resources.
   Do not give two systems the same destination. See
   `docs/config-ownership-and-recovery.md`.
 
