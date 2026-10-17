@@ -51,6 +51,15 @@
       exec ${lib.getExe pkgs.python3} ${../scripts/homelab-storage-kernel-metrics.py}
     '';
   };
+  mediaSmartCheck = pkgs.writeShellApplication {
+    name = "homelab-media-smart-check";
+    text = ''
+      export SMARTCTL_BIN=${lib.getExe' pkgs.smartmontools "smartctl"}
+      export JQ_BIN=${lib.getExe pkgs.jq}
+      export HOMELAB_MEDIA_SMART_DEVICE=/dev/disk/by-id/ata-ST5000LM000-2AN170_WCJ23AWJ
+      exec ${lib.getExe pkgs.bash} ${../scripts/homelab-media-smart-check.sh}
+    '';
+  };
   # The public /healthz is answered by nginx alone, so this authenticated
   # loopback probe is the only signal that CLIProxyAPI itself is serving.
   # /v1/models is served from the in-process model registry: it exercises the
@@ -293,7 +302,7 @@ in {
       prometheus = config.services.prometheus.package.version;
     };
 
-    environment.systemPackages = [homelabCheck];
+    environment.systemPackages = [homelabCheck mediaSmartCheck];
 
     # The credential is loaded per run, so a rotated key is used by the next
     # timer tick. sops-nix issues try-restart, which does not start an idle
