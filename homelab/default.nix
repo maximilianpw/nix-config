@@ -9,13 +9,13 @@
     ./executor.nix
     ./forgejo.nix
     ./home-assistant.nix
-    ./homepage.nix
+    ./homepage
     ./immich.nix
     ./leerr.nix
     ./media-mcp.nix
-    ./media.nix
-    ./miniflux.nix
-    ./monitoring.nix
+    ./media
+    ./miniflux
+    ./monitoring
     ./nextcloud.nix
     ./paperless.nix
     ./storage.nix

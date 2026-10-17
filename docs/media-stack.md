@@ -440,7 +440,7 @@ sudo -u plex vainfo --display drm --device /dev/dri/renderD128
 ```
 
 Before relying on hardware transcoding, confirm the output reports the codecs
-declared in `homelab/media.nix`: H.264, HEVC/10-bit, VP9, and AV1 decoding plus
+declared in `homelab/media/default.nix`: H.264, HEVC/10-bit, VP9, and AV1 decoding plus
 H.264, HEVC, and AV1 encoding. Remove any unsupported profile from the Nix
 configuration and rebuild before continuing.
 

@@ -16,7 +16,7 @@
   # both will also schedule the report.
   runReport = hostRecord.longRunningAgents && lib.elem "homelab" hostRecord.profiles;
   reportDirectory = "${config.home.homeDirectory}/reports/morning";
-  # Mirrors nodeExporterTextfileDirectory in homelab/monitoring.nix and the
+  # Mirrors nodeExporterTextfileDirectory in homelab/monitoring/default.nix and the
   # file written by scripts/homelab/cliproxyapi-readiness-probe.sh; absence is "unknown".
   readinessFile = "/var/lib/prometheus-node-exporter-text-files/cliproxyapi-readiness.prom";
   morningReport = pkgs.writeShellApplication {

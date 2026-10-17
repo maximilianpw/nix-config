@@ -109,7 +109,7 @@ No new CI job or runtime daemon. No ESP usage or live boot test was performed.
 **Source:** srvos [default Prometheus alerts][srvos-alerts] covers inode
 exhaustion, OOM kills, rule-evaluation failures and Prometheus-to-Alertmanager
 connectivity.
-**Local evidence:** `homelab/monitoring.nix:182-216` already has extensive
+**Local evidence:** `homelab/monitoring/default.nix:182-216` already has extensive
 filesystem-byte, SMART, backup, unit and endpoint alerts, but not these cases.
 The existing scrape list includes Prometheus and Alertmanager at lines 310–316;
 node-exporter uses its default collectors plus textfile at lines 364–365.
@@ -128,7 +128,7 @@ disk or trigger a live OOM. This adds coverage; it does not establish that Kim
 currently suffers any of these problems. External alert delivery is already
 an unresolved item in `docs/homelab-backlog.md` and is not fixed by more rules.
 
-**Integration:** `homelab/monitoring.nix` and existing monitoring regression tests.
+**Integration:** `homelab/monitoring/default.nix` and existing monitoring regression tests.
 **Effort S–M; risk low; confidence high on the configuration gap.** A few rule
 expressions and lightweight tests; no Telegraf, Loki, extra host or full-build CI.
 

@@ -4,7 +4,7 @@
   pkgs,
   ...
 }: let
-  homelab = import ../lib/homelab.nix {inherit lib;};
+  homelab = import ../../lib/homelab.nix {inherit lib;};
   inherit (homelab) endpoints;
 
   bookmark = name: icon: href: {
@@ -35,7 +35,7 @@
   # presentation-only layout rather than encoding the order in fake group names.
   orderedSettings = pkgs.concatText "homepage-settings.yaml" [
     generatedSettings
-    ./homepage/layout.yaml
+    ./layout.yaml
   ];
 in {
   custom.backup.applicationVersions.homepage = config.services.homepage-dashboard.package.version;
@@ -56,7 +56,7 @@ in {
 
     settings = homepageSettings;
 
-    customCSS = builtins.readFile ./homepage/custom.css;
+    customCSS = builtins.readFile ./custom.css;
 
     bookmarks = [
       (bookmarkGroup "Everyday" [

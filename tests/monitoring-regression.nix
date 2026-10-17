@@ -13,7 +13,7 @@
   postgresql = config.services.postgresql;
   grafana = config.services.grafana;
   backupExcludes = config.services.borgbackup.jobs.main.exclude;
-  dashboard = builtins.fromJSON (builtins.readFile ../homelab/grafana/kim-overview.json);
+  dashboard = builtins.fromJSON (builtins.readFile ../homelab/monitoring/grafana/kim-overview.json);
 
   escapeRegex = lib.replaceStrings ["."] ["[.]"];
   expectedSystemdExpression = "^(${lib.concatMapStringsSep "|" escapeRegex homelab.importantSystemdUnits})$";
@@ -450,7 +450,7 @@ in
       ${lib.getExe pkgs.bash} ${../scripts}/tests/homelab-public-ingress-check-test.sh
       ${lib.getExe pkgs.bash} ${../scripts}/tests/homelab-media-smart-check-test.sh
       grep -F -- 'homelab-storage-kernel-metrics.py' ${lib.escapeShellArg storageKernelMetricsService.serviceConfig.ExecStart}
-      cmp ${lib.escapeShellArg homeDashboardPath} ${../homelab/grafana/kim-overview.json}
+      cmp ${lib.escapeShellArg homeDashboardPath} ${../homelab/monitoring/grafana/kim-overview.json}
       grep -F -- 'immich-server.service' ${lib.escapeShellArg systemdMetricsService.serviceConfig.ExecStart}
       # Narrow guards on the rendered artifacts: the probe wrapper pins the
       # loopback destination and the blackbox file gained no credential module.

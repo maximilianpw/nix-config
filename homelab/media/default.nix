@@ -2,10 +2,10 @@
   # Keep the media stack coupled through one stable import while each deployment
   # concern owns its host services, Tunarr, or downloader container settings.
   imports = [
-    ./media/host-services.nix
-    ./media/companions.nix
-    ./media/tunarr.nix
-    ./media/qbittorrent.nix
-    ./media/sabnzbd.nix
+    ./host-services.nix
+    ./companions.nix
+    ./tunarr.nix
+    ./qbittorrent.nix
+    ./sabnzbd.nix
   ];
 }
