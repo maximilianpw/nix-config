@@ -1,4 +1,4 @@
-.PHONY: help bootstrap chezmoi-bootstrap chezmoi-check chezmoi-preview chezmoi-apply rebuild rebuild-processes cleanup-rebuild check-nvim check-scripts check-linux lint update update-all update-packages update-nvim-plugins update-nextcloud-apps build generations rollback gc wsl info
+.PHONY: help bootstrap chezmoi-bootstrap chezmoi-check chezmoi-preview chezmoi-apply rebuild rebuild-processes cleanup-rebuild check-scripts check-linux lint update update-all update-packages update-nvim-plugins update-nextcloud-apps build generations rollback gc wsl info
 
 # Default target
 .DEFAULT_GOAL := help
@@ -76,9 +76,6 @@ update-nvim-plugins: ## Move Neovim's pinned Lua plugins to upstream HEAD (repla
 update-nextcloud-apps: ## Bump declaratively managed Nextcloud apps
 	@$(UPDATE_AUTH) nix run .#nix-update -- --flake nextcloud-calendar
 
-
-check-nvim: ## Verify every tool the Neovim config uses is on PATH
-	@$(SCRIPT_DIR)/check-nvim-tooling.sh
 
 check-scripts: ## Run shell syntax, ShellCheck, and safety regression tests
 	@command -v shellcheck >/dev/null || { echo "shellcheck not on PATH; run inside 'nix develop'" >&2; exit 1; }

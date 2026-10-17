@@ -34,7 +34,7 @@ Exactly one owner per destination, including parent directories: a linked direct
 - `users/maxpw/modules/xdg.nix` already deploys Yazi, Rectangle, Ghostty, Waybar, swaync, wlogout, Hyprland and generated integration files. It uses `lib/home-files.nix` for writable checkout-backed Hyprland links and generates host.lua and hypridle.conf.
 - Hyprland itself must continue to come from the existing flake input. Hjem does not replace its NixOS session/portal integration.
 - `.chezmoiignore` is templated for macOS Library paths. AWS/employer data, btop and various app-written files are excluded; Amp settings already belong to HM. Ignore rules are evidence to preserve, not permission to sweep the home directory into Git.
-- `make check-nvim` checks tool availability; it does not replace behavioral editor tests. `make check-linux` evaluates Linux checks; it does not execute built Linux tests.
+- `make check-linux` evaluates Linux checks; it does not execute built Linux tests.
 
 ## Phase 0 — Inventory, baseline, and migration contract
 
