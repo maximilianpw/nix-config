@@ -45,6 +45,7 @@
   cpuBusyQueries = builtins.filter (query: lib.hasInfix ''mode="idle"'' query) panelQueries;
   queryText = lib.concatStringsSep "\n" panelQueries;
   systemdMetricsService = config.systemd.services.homelab-systemd-metrics;
+  storageKernelMetricsService = config.systemd.services.homelab-storage-kernel-metrics;
   quotaService = config.systemd.services.cliproxyapi-quota;
   nixDaemon = config.systemd.services.nix-daemon.serviceConfig;
   metricsDirectoryRule = config.systemd.tmpfiles.settings."10-homelab-metrics"."/var/lib/prometheus-node-exporter-text-files".d;
@@ -93,6 +94,71 @@
           }
         ];
     }) ["healthy" "readonly" "device-error"];
+  };
+  storageAlertTests = (pkgs.formats.yaml {}).generate "storage-alert-tests.yaml" {
+    rule_files = prometheus.ruleFiles;
+    evaluation_interval = "1m";
+    tests =
+      map (scenario: {
+        name = "filesystem runway ${scenario}";
+        interval = "1m";
+        input_series = [
+          {
+            series = ''node_filesystem_size_bytes{mountpoint="/",fstype="ext4"}'';
+            values = "1000+0x1500";
+          }
+          {
+            series = ''node_filesystem_avail_bytes{mountpoint="/",fstype="ext4"}'';
+            values =
+              if scenario == "growing"
+              then "280-0.1x1500"
+              else if scenario == "recovering"
+              then "150+0.1x1500"
+              else "280+0x1500";
+          }
+        ];
+        alert_rule_test = [
+          {
+            alertname = "HomelabFilesystemFillingSoon";
+            eval_time = "24h";
+            exp_alerts = lib.optional (scenario == "growing") {
+              exp_labels = {
+                mountpoint = "/";
+                fstype = "ext4";
+                severity = "warning";
+              };
+              exp_annotations.summary = alerts.HomelabFilesystemFillingSoon.annotations.summary;
+            };
+          }
+        ];
+      }) ["healthy" "growing" "recovering"]
+      ++ map (fault: {
+        name = "kernel storage errors ${
+          if fault
+          then "present"
+          else "absent"
+        }";
+        interval = "1m";
+        input_series = [
+          {
+            series = ''homelab_storage_kernel_errors{kind="io_error"}'';
+            values =
+              if fault
+              then "1+0x3"
+              else "0+0x3";
+          }
+        ];
+        alert_rule_test = [
+          {
+            alertname = "HomelabStorageKernelErrors";
+            eval_time = "1m";
+            exp_alerts = lib.optional fault {
+              exp_labels.severity = "warning";
+              exp_annotations.summary = alerts.HomelabStorageKernelErrors.annotations.summary;
+            };
+          }
+        ];
+      }) [false true];
   };
 in
   assert lib.assertMsg (prometheus.listenAddress == "127.0.0.1")
@@ -216,6 +282,22 @@ in
     (metricsDirectoryRule.user == "root")
     (metricsDirectoryRule.group == "root")
     (metricsDirectoryRule.mode == "0755")
+  ];
+  assert expect.all "Storage kernel errors must be collected without network access or raw log exposure" [
+    (config.systemd.timers.homelab-storage-kernel-metrics.wantedBy == ["timers.target"])
+    (config.systemd.timers.homelab-storage-kernel-metrics.timerConfig.OnUnitActiveSec == "60s")
+    (storageKernelMetricsService.serviceConfig.Type == "oneshot")
+    storageKernelMetricsService.serviceConfig.PrivateNetwork
+    storageKernelMetricsService.serviceConfig.PrivateDevices
+    (storageKernelMetricsService.serviceConfig.CapabilityBoundingSet == [""])
+    (storageKernelMetricsService.serviceConfig.ReadWritePaths == ["/var/lib/prometheus-node-exporter-text-files"])
+    (builtins.elem "homelab-storage-kernel-metrics.service" homelab.importantSystemdUnits)
+    (builtins.elem "homelab-storage-kernel-metrics.timer" homelab.importantSystemdUnits)
+    (alerts.HomelabStorageKernelErrors."for" == "1m")
+    (lib.hasInfix "homelab-storage-kernel.prom" alerts.HomelabStorageKernelMetricsStale.expr)
+    (alerts.HomelabStorageKernelMetricsStale."for" == "3m")
+    (alerts.HomelabFilesystemFillingSoon."for" == "1h")
+    (lib.hasInfix "predict_linear" alerts.HomelabFilesystemFillingSoon.expr)
   ];
   assert expect.all "Alertmanager must receive alerts over loopback even before an external receiver is configured" [
     alertmanager.enable
@@ -357,8 +439,13 @@ in
     (!(nixDaemon ? CPUQuota))
     (!(nixDaemon ? MemoryMax))
   ];
-    pkgs.runCommand "monitoring-regression" {} ''
+    pkgs.runCommand "monitoring-regression" {
+      nativeBuildInputs = [pkgs.python3];
+    } ''
       ${lib.getExe' pkgs.prometheus.cli "promtool"} test rules ${filesystemAlertTests}
+      ${lib.getExe' pkgs.prometheus.cli "promtool"} test rules ${storageAlertTests}
+      ${lib.getExe pkgs.bash} ${../scripts}/tests/homelab-storage-kernel-metrics-test.sh
+      grep -F -- 'homelab-storage-kernel-metrics.py' ${lib.escapeShellArg storageKernelMetricsService.serviceConfig.ExecStart}
       cmp ${lib.escapeShellArg homeDashboardPath} ${../homelab/grafana/kim-overview.json}
       grep -F -- 'immich-server.service' ${lib.escapeShellArg systemdMetricsService.serviceConfig.ExecStart}
       # Narrow guards on the rendered artifacts: the probe wrapper pins the

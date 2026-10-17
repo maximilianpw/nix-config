@@ -43,6 +43,14 @@
       exec ${lib.getExe pkgs.bash} ${../scripts/homelab-systemd-metrics.sh} ${lib.escapeShellArgs importantSystemdUnits}
     '';
   };
+  storageKernelMetrics = pkgs.writeShellApplication {
+    name = "homelab-storage-kernel-metrics";
+    text = ''
+      export JOURNALCTL_BIN=${lib.getExe' pkgs.systemd "journalctl"}
+      export HOMELAB_METRICS_DIR=${lib.escapeShellArg nodeExporterTextfileDirectory}
+      exec ${lib.getExe pkgs.python3} ${../scripts/homelab-storage-kernel-metrics.py}
+    '';
+  };
   # The public /healthz is answered by nginx alone, so this authenticated
   # loopback probe is the only signal that CLIProxyAPI itself is serving.
   # /v1/models is served from the in-process model registry: it exercises the
@@ -190,6 +198,9 @@
         (alert "HomelabSrvAbsent" ''absent(node_filesystem_size_bytes{mountpoint="/srv",fstype!="rootfs"})'' "5m" "critical" "/srv is absent from node-exporter filesystem metrics")
         (alert "HomelabMediaSecondaryAbsent" ''absent(node_filesystem_size_bytes{mountpoint="/srv/media-secondary",fstype!="rootfs"})'' "15m" "warning" "The LaCie media disk is not mounted, so downloaders are stopped")
         (alert "HomelabFilesystemWarning" ''100 * (1 - node_filesystem_avail_bytes{mountpoint=~"/|/srv|/srv/media-secondary"} / node_filesystem_size_bytes{mountpoint=~"/|/srv|/srv/media-secondary"}) > 80'' "30m" "warning" "A primary filesystem is more than 80% full")
+        # Forecast the critical threshold, not literal disk exhaustion. The
+        # free-space gate and one-hour hold avoid low-use/short-burst noise.
+        (alert "HomelabFilesystemFillingSoon" ''node_filesystem_avail_bytes{mountpoint=~"/|/srv|/srv/media-secondary",fstype!="rootfs"} / node_filesystem_size_bytes < 0.3 and predict_linear(node_filesystem_avail_bytes{mountpoint=~"/|/srv|/srv/media-secondary",fstype!="rootfs"}[24h], 7 * 86400) < 0.1 * node_filesystem_size_bytes'' "1h" "warning" "A filesystem is projected to cross 90% utilization within seven days")
         (alert "HomelabFilesystemCritical" ''100 * (1 - node_filesystem_avail_bytes{mountpoint=~"/|/srv|/srv/media-secondary"} / node_filesystem_size_bytes{mountpoint=~"/|/srv|/srv/media-secondary"}) > 90'' "15m" "critical" "A primary filesystem is more than 90% full")
         (alert "HomelabFilesystemReadOnly" ''node_filesystem_readonly{mountpoint=~"/|/srv|/srv/media-secondary",fstype!="rootfs"} == 1'' "1m" "critical" "An operational filesystem has become read-only")
         (alert "HomelabFilesystemDeviceError" ''node_filesystem_device_error{mountpoint=~"/|/srv|/srv/media-secondary",fstype!="rootfs"} == 1'' "1m" "critical" "The node exporter cannot read an operational filesystem")
@@ -202,6 +213,8 @@
         (alert "HomelabStaleDockerContainers" ''homelab_docker_stale_containers > 0'' "1h" "warning" "One or more running Docker containers are older than three days without a keep label")
         (alert "HomelabDockerContainerUnhealthy" ''homelab_docker_unhealthy_containers > 0'' "10m" "warning" "One or more Docker containers report an unhealthy state")
         (alert "HomelabContainerAuditStale" ''absent(node_textfile_mtime_seconds{file="${nodeExporterTextfileDirectory}/homelab-docker-containers.prom"}) or time() - node_textfile_mtime_seconds{file="${nodeExporterTextfileDirectory}/homelab-docker-containers.prom"} > 900'' "10m" "warning" "The Docker container audit has not refreshed for more than 15 minutes")
+        (alert "HomelabStorageKernelErrors" ''sum(homelab_storage_kernel_errors) > 0'' "1m" "warning" "Retained kernel logs contain storage I/O, filesystem errors or journal aborts in the last 15 minutes")
+        (alert "HomelabStorageKernelMetricsStale" ''absent(node_textfile_mtime_seconds{file="${nodeExporterTextfileDirectory}/homelab-storage-kernel.prom"}) or time() - node_textfile_mtime_seconds{file="${nodeExporterTextfileDirectory}/homelab-storage-kernel.prom"} > 180'' "3m" "warning" "Storage kernel error metrics have not refreshed for more than three minutes")
         (alert "HomelabSystemdMetricsStale" ''absent(node_textfile_mtime_seconds{file="${nodeExporterTextfileDirectory}/homelab-systemd-resources.prom"}) or time() - node_textfile_mtime_seconds{file="${nodeExporterTextfileDirectory}/homelab-systemd-resources.prom"} > 180'' "3m" "warning" "Systemd resource metrics have not refreshed for more than three minutes")
       ];
     }
@@ -502,6 +515,15 @@ in {
       };
 
       timers = {
+        homelab-storage-kernel-metrics = {
+          description = "Refresh retained kernel storage error metrics for Prometheus";
+          wantedBy = ["timers.target"];
+          timerConfig = {
+            OnBootSec = "30s";
+            OnUnitActiveSec = "60s";
+            AccuracySec = "5s";
+          };
+        };
         homelab-systemd-metrics = {
           description = "Refresh systemd resource metrics for Prometheus";
           wantedBy = ["timers.target"];
@@ -535,6 +557,23 @@ in {
       };
 
       services = {
+        homelab-storage-kernel-metrics = {
+          description = "Export retained kernel storage errors for Prometheus";
+          serviceConfig = {
+            Type = "oneshot";
+            ExecStart = lib.getExe storageKernelMetrics;
+            TimeoutStartSec = "45s";
+            CapabilityBoundingSet = [""];
+            NoNewPrivileges = true;
+            PrivateDevices = true;
+            PrivateNetwork = true;
+            PrivateTmp = true;
+            ProtectHome = true;
+            ProtectSystem = "strict";
+            RestrictAddressFamilies = ["AF_UNIX"];
+            ReadWritePaths = [nodeExporterTextfileDirectory];
+          };
+        };
         homelab-systemd-metrics = {
           description = "Export systemd resource metrics for Prometheus";
           serviceConfig = {

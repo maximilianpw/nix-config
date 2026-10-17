@@ -24,6 +24,8 @@
       "alertmanager.service"
       "homelab-systemd-metrics.service"
       "homelab-systemd-metrics.timer"
+      "homelab-storage-kernel-metrics.service"
+      "homelab-storage-kernel-metrics.timer"
       "homelab-container-audit.service"
       "homelab-container-audit.timer"
     ];
