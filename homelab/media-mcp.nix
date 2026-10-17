@@ -1,11 +1,12 @@
 {
   config,
+  inputs,
   lib,
   pkgs,
   ...
 }: let
   homelab = import ../lib/homelab.nix {inherit lib;};
-  package = pkgs.callPackage ../packages/homelab-mcp.nix {};
+  package = inputs.homelab-mcp.packages.${pkgs.stdenv.hostPlatform.system}.homelab-mcp;
 in {
   custom.backup.applicationVersions.homelab-mcp = package.version;
 

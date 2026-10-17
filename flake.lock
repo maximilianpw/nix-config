@@ -489,6 +489,27 @@
         "type": "github"
       }
     },
+    "homelab-mcp": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1792229546,
+        "narHash": "sha256-8c3FNLEgUSP0GAgcPzLmJ1Bdg2QRxAylf065NWhHvE0=",
+        "ref": "refs/tags/v0.1.1",
+        "rev": "13b92d53e329ca00bdd58b1f098faa68e6b589ab",
+        "revCount": 5,
+        "type": "git",
+        "url": "ssh://git@github.com/maximilianpw/homelab-mcp"
+      },
+      "original": {
+        "ref": "refs/tags/v0.1.1",
+        "type": "git",
+        "url": "ssh://git@github.com/maximilianpw/homelab-mcp"
+      }
+    },
     "hyprcursor": {
       "inputs": {
         "hyprlang": [
@@ -1175,6 +1196,7 @@
         "git-hooks": "git-hooks",
         "hjem": "hjem",
         "home-manager": "home-manager",
+        "homelab-mcp": "homelab-mcp",
         "hyprland": "hyprland",
         "leerr": "leerr",
         "llm-agents": "llm-agents",

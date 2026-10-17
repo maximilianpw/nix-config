@@ -97,28 +97,48 @@ task after those checks. The package itself does not run a scheduler.
 
 ## Package provenance
 
-`packages/homelab-mcp/source.tar.gz` is commit `d43e983` ("Add Actual Budget
-tools") of `/home/maxpw/local/homelab-mcp`, made on 2026-10-16. It contains only
-`package.json`, `bun.lock`, `src/`, `drizzle/` and `patches/`.
-SHA-256: `8332b760879043592c07883d2ff9f2defaacfc6a9e1d1a145a8f77661039fb25`.
-Database migrations are unchanged from October 1.
+The `homelab-mcp` flake input pins upstream release
+[`v0.1.1`](https://github.com/maximilianpw/homelab-mcp/releases/tag/v0.1.1).
+`flake.lock` records its exact commit and source hash, and `homelab/media-mcp.nix`
+consumes the upstream `homelab-mcp` package. The source repository owns the Nix
+build recipe; this repository does not vendor a source archive or duplicate it.
+Database migrations and dependencies are unchanged from the previous snapshot.
+
+The repository is private, so the input uses Git over SSH, as the `superlocal`
+input does. Evaluation on a new machine requires a GitHub SSH identity with
+repository access. Authentication stays with the evaluating user, never in a
+Nix expression, URL credential, or the Nix store.
+
+The transaction-update fix uses a default import of `@actual-app/api` so Bun
+reads its live `internal` getter. A namespace import captures the initial
+`null` value and incorrectly reports "the Actual engine is not running" even
+when other budget tools work.
 The Nix package runs the TypeScript with Bun and installs production dependencies
 from the frozen lockfile in a fixed-output derivation. Bun applies the
 better-sqlite3 patch from `patches/` during that install; the package then
 compiles the patched addon with node-gyp, because the unpatched prebuilds crash
 Bun. It does not depend on the development checkout at runtime.
 
-To refresh the snapshot from the application checkout:
+For an upgrade, update and verify the source repository first, bump its
+application version, then publish a new release tag. The upstream README owns
+its verification and release instructions. Dependency changes also require
+updating the upstream dependency derivation's version and fixed-output hash.
+
+Then change the release tag in `flake.nix` and refresh only this input:
 
 ```sh
-bun run typecheck && bun run test
-git archive --format=tar HEAD package.json bun.lock src drizzle patches \
-  | gzip -n -9 > /home/maxpw/nix-config/packages/homelab-mcp/source.tar.gz
+nix flake update homelab-mcp
+nix build --impure --expr \
+  '(builtins.getFlake (toString ./.)).inputs.homelab-mcp.packages.x86_64-linux.homelab-mcp' \
+  --no-link
+nix flake check --no-build
 ```
 
-Update the provenance digest and package version. If dependencies change, update
-the dependency derivation's version and fixed-output hash, then rebuild and
-check authenticated MCP discovery before activation.
+Build the upstream package directly with
+`nix build 'git+ssh://git@github.com/maximilianpw/homelab-mcp?ref=refs/tags/v0.1.1#homelab-mcp'`
+if needed. After an explicitly authorized activation, check authenticated MCP
+discovery and read-only budget access. Configuration builds do not authorize
+live transaction edits.
 
 ## Recovery
 
