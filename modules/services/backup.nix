@@ -384,7 +384,7 @@ in {
         export HOMELAB_MANIFEST_PATH=${lib.escapeShellArg "${homelabBackupDir}/manifest.json"}
         export HOMELAB_BACKUP_COORDINATOR_BIN=${lib.getExe coordinator}
         ${lib.optionalString (cfg.healthcheckUrlFile != null) "export HOMELAB_HEARTBEAT_BIN=${lib.getExe healthcheckPing}"}
-        ${builtins.readFile ../../scripts/homelab/homelab-backup-pre-hook.sh}
+        ${builtins.readFile ../../scripts/homelab/homelab-backup-prehook.sh}
       '';
 
       # Recover file-backed services as soon as Borg has captured and finalized
