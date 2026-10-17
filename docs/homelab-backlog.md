@@ -17,7 +17,9 @@ decision or a measured acceptance gate.
 
 | Work | Owner or decision | Completion gate |
 | --- | --- | --- |
-| External heartbeat and alert destinations | Choose providers and supply their URLs through SOPS. | A deliberately withheld heartbeat and a test alert both reach the operator. |
+| External heartbeat and alert destinations | Choose providers and supply their URLs through SOPS. Explicitly deferred during the follow-up to the October 11 review. | A deliberately withheld heartbeat and a test alert both reach the operator. |
+| Secondary-media SMART coverage | Run the read-only `homelab-media-smart-check` with device-read privileges; do not enable unverified USB passthrough. | Verified SAT telemetry from the pinned LaCie disk, followed by exporter configuration and post-activation coverage checks. |
+| October 12 monitoring activation | Separately authorize a rebuild for disk-runway alerts, retained kernel-error telemetry and read-only preflight commands. | Loaded rules pass fixtures; the kernel collector refreshes its textfile; a disposable fault fixture fires and clears. |
 | Cloudflare and Tailscale policy ownership | Choose provider-managed configuration or a documented source of truth with read-only drift audits. | CI validates policy, drift is reported, and intended plus unauthorized identities are tested. |
 | Machine-level Tailscale Serve drift | Extend the audit beyond named services. | `homelab-check` fails on an undeclared machine-level handler. |
 | Authorization and network review | Decide Grafana default roles, Nextcloud's private-network egress exception, Syncthing's LAN versus tailnet policy, and the remaining Docker exposure and group access. | Each choice has a regression check or an explicit accepted-risk note. |
@@ -29,4 +31,6 @@ decision or a measured acceptance gate.
 | --- | --- | --- |
 | Homepage calendar agenda | Create a dedicated read-only Nextcloud iCal share and store its bearer URL in SOPS, never in Nix source or the store. | The agenda shows only the intended calendar and revoking the share affects only the agenda. |
 | Container retention policy | Classify long-running development containers with explicit labels. | Reports are trusted before any automation is considered; unlabeled or production containers remain report-only. |
+| Legacy Stocket database retirement | Confirm intermittent consumers and data-retention/export needs before separately authorizing removal of `stocket-dev-postgres-1`; preserve `stocket-dev_postgres-data-v18` initially. | The current native development stack works without the legacy container, and required data remains independently recoverable. |
+| Root capacity after scheduled cleanup | The October 12 timer succeeded and freed 10.3 GiB; root remains about 81% utilized. Review source snapshots, Docker caches and migration artifacts before authorizing selective cleanup. | Root free space recovers and remains stable after the Stocket Git-aware launcher is propagated; rollback and data retention are preserved. |
 | Shorter Uptime Kuma backup outage | Evaluate an online SQLite snapshot or a brief stop-and-copy artifact. | A staged restore retains monitors, history, and notification delivery before the current quiesce window changes. |

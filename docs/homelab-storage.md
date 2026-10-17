@@ -67,7 +67,22 @@ For September 28–October 4, 2026 (CEST):
   They cannot detect every short transport failure. SMART passthrough and
   persistent kernel-event monitoring remain unverified/follow-up work.
 
-See [the weekly monitoring review](monitoring-review-2026-10-07.md) for the
+The October 12 local remediation adds a one-minute retained-journal collector
+for storage I/O errors, filesystem errors and journal aborts over a rolling
+15-minute window, plus a collector-freshness alert. These changes await explicit
+activation; ordinary USB disconnects/resets are deliberately not treated as
+storage faults without supporting evidence.
+
+After activation, `homelab-media-smart-check` is a **read-only** SAT passthrough
+check against the pinned whole-disk identity. It requires device-read privileges,
+prints a limited health/temperature/sector-attribute summary, and never enables
+SMART, starts a self-test, repairs a filesystem or writes to the disk. A failed
+or unsupported read leaves health unknown. Obtain verified telemetry before
+adding this USB disk to the SMART exporter; a passing overall SMART status is
+not proof of filesystem integrity or transport reliability.
+
+See [the weekly monitoring review](monitoring-review-2026-10-07.md) and
+[October 11 investigation](monitoring-review-2026-10-11.md) for the
 related service incidents and follow-up priorities. Media is not covered by
 Borg; preserve an independent copy before undertaking repair or replacement.
 
