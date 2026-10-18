@@ -11,11 +11,16 @@
       "action": "provider.use",
       "resource": "cliproxyapi",
       "effect": "allow"
+    },
+    {
+      "action": "provider.use",
+      "resource": "opencode",
+      "effect": "allow"
     }
   ],
   "agents": {
     "title": {
-      "model": "cliproxyapi/zen/deepseek-v4.1-flash-free"
+      "model": "opencode/deepseek-v4.1-flash-free"
     }
   },
   "providers": {

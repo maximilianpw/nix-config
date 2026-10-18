@@ -60,22 +60,18 @@
         models = builtins.listToAttrs (
           map (model: {
             name = "${cliProxy.openCodeZen.prefix}/${model.id}";
-            value =
-              {
-                name = "${model.displayName} via OpenCode Zen";
-                capabilities = {
-                  tools = true;
-                  input = model.inputModalities;
-                  output = ["text"];
-                };
-                limit = {
-                  context = model.contextLength;
-                  output = model.outputLength;
-                };
-              }
-              // lib.optionalAttrs (model ? reasoningField) {
-                compatibility.reasoningField = model.reasoningField;
+            value = {
+              name = "${model.displayName} via OpenCode Zen";
+              capabilities = {
+                tools = true;
+                input = model.inputModalities;
+                output = ["text"];
               };
+              limit = {
+                context = model.contextLength;
+                output = model.outputLength;
+              };
+            };
           })
           cliProxy.openCodeZen.chatModels
         );

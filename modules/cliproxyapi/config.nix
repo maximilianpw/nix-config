@@ -3,16 +3,9 @@ let
     baseUrl = "https://opencode.ai/inference/openai/v1";
     prefix = "zen";
     # Token limits follow the OpenCode provider catalog at https://models.dev/api.json.
+    # OpenCode rejects its free tier through this proxy. Use the native
+    # OpenCode provider for free models; keep this upstream for paid models.
     chatModels = [
-      {
-        # Keep the upstream's exact -free ID: never alias this to a paid model.
-        id = "deepseek-v4.1-flash-free";
-        displayName = "DeepSeek V4.1 Flash Free";
-        contextLength = 200000;
-        outputLength = 32000;
-        inputModalities = ["text" "image"];
-        reasoningField = "reasoning_content";
-      }
       {
         id = "deepseek-v4-pro";
         displayName = "DeepSeek V4 Pro";

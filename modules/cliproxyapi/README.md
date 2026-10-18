@@ -25,20 +25,22 @@ The base configuration uses native v2 `providers`, ordered `permissions`,
 Shell permission rules keep the catch-all `ask` first, followed by the existing
 specific allows/denies. LSP and automatic formatting remain opt-in per project.
 
-OpenCode model inference is proxy-only: ordered `provider.use` policies deny
-all providers, then allow `cliproxyapi`. This filters direct providers even when
-credentials are saved locally; repository policy cannot relax the user-global
-policy in v2.0.32. The former managed `opencode-direct` bypass is removed on
-activation. Other clients' direct wrappers are unchanged. This is a model
-provider restriction, not a network firewall: MCP, tools, and quota lookups are
-separate from model inference.
+OpenCode allows two model providers: `cliproxyapi` for the normal proxy routes,
+and native `opencode` for OpenCode-hosted free models. Ordered `provider.use`
+policies deny every other provider, even when credentials are saved locally;
+repository policy cannot relax the user-global policy in v2.0.32. This is a
+provider-level exception: other native OpenCode models may appear too, so
+select the exact `-free` ID when free usage is intended. Astra remains the
+proxied default. The former `opencode-direct` wrapper stays removed; select
+models in the normal OpenCode client instead. Other clients' direct wrappers
+are unchanged. MCP, tools, and quota lookups are not model inference.
 
-Title generation explicitly selects
-`cliproxyapi/zen/deepseek-v4.1-flash-free`. Other built-in helpers retain their
-normal model inheritance, constrained by the same provider policy. OpenCode
-may retry a failed title with the session's primary model; for a free DeepSeek
-session that is the same free model, not a paid substitute. Saved sessions
-using a now-blocked direct provider must select a `cliproxyapi/...` model.
+Title generation explicitly selects `opencode/deepseek-v4.1-flash-free`, which
+also makes a direct OpenCode request when the main session uses the proxy.
+Other built-in helpers retain their normal model inheritance. OpenCode may
+retry a failed title with the session's primary model; for a free DeepSeek
+session that is the same free model, not a paid substitute. Sessions saved
+with `cliproxyapi/zen/deepseek-v4.1-flash-free` must switch to the native ID.
 
 Only `cc-safety-net` and `@slkiser/opencode-quota` remain in the configured
 server plugin list. The installed notify, direnv, smart-title, and Antigravity
@@ -125,37 +127,37 @@ Provider OAuth credentials remain mutable state in `~/.cli-proxy-api` on Kim. Th
 
 The `cliproxyapi-quota` systemd service comes from Fleet's `nixosModules.cliproxy-quota` and runs the pinned `cliproxy-quota` package as the same user as CLIProxyAPI, with a read-only home. It binds only `127.0.0.1:8318`, reads Kim's current provider credentials from `~/.cli-proxy-api`, and returns only the parsed quota summary; the contract is documented in Fleet's `services/cliproxy-quota/README.md`. Nginx exposes `/quota/v1/{codex,claude,xai}` to clients using the existing public API key; it strips that key before forwarding and never gives clients the management key. `cliproxyapi-util quota` comes from the same package and reads `quotaUrl` from `~/.config/cliproxyapi/client.json`: the loopback endpoint on Kim, the public one elsewhere. The Pi extension still reads the local provider state directly on Kim and uses the public endpoint on other hosts; it moves to `quotaUrl` in a later pi-config change. The dashboard remains at `https://cliproxy.maximilian.pw/management.html#/login`; Pi does not use its privileged login.
 
-### Free DeepSeek through the proxy
+### Free DeepSeek directly in OpenCode
 
-The Chat Completions upstream now uses
-`https://opencode.ai/inference/openai/v1`. The exact upstream model
-`deepseek-v4.1-flash-free` is exposed as `zen/deepseek-v4.1-flash-free` by
-CLIProxyAPI and as `cliproxyapi/zen/deepseek-v4.1-flash-free` in OpenCode. The
-catalog records 200,000 context tokens, 32,000 output tokens, text/image input,
-and interleaved `reasoning_content`. The upstream alias retains the `-free`
-suffix; no paid-model substitution is configured. The promotion is temporary,
-so an expired key or retired free model should be investigated rather than
-silently changing its alias to a paid model.
+The attempted `zen/deepseek-v4.1-flash-free` proxy route was rejected upstream:
+"OpenCode's free tier can only be used from within OpenCode." It is removed
+from the proxy and client catalogs rather than spoofing client identity or
+substituting a paid model. The supported selection is
+**`opencode/deepseek-v4.1-flash-free`**, using the native OpenCode provider.
+The five existing paid Zen models remain proxied through
+`https://opencode.ai/inference/openai/v1` and retain their SOPS-managed
+`opencode-zen-api-key`.
 
 Credential and rollout steps (operator-owned):
 
-1. Create a valid OpenCode Console API key. Edit `secrets/secrets.yaml` with
-   `sops` and replace **`opencode-zen-api-key`**. Do not change the public/local
-   CLIProxyAPI client tokens or put the Console key into a client JSON file.
-2. Activate Kim's configuration first so the refreshed runtime secret and
-   upstream/model list are available. This is a separate deployment action,
-   not part of local config verification.
-3. Activate the OpenCode client configuration on Joyce/other hosts, reopen
-   OpenCode, and select `cliproxyapi/zen/deepseek-v4.1-flash-free` in `/models`.
-4. Smoke-test a prompt, then streaming/tool use. Model discovery alone does not
-   prove the upstream key is valid. Confirm the request remains on the exact
-   free-model ID if investigating an error.
+1. Activate the client configuration on Joyce/other hosts to allow the native
+   OpenCode provider and update the title model. Reopen OpenCode and choose
+   `opencode/deepseek-v4.1-flash-free` in `/models`, including in existing
+   sessions that selected the removed proxy alias.
+2. If the direct provider reports an expired API key, create a replacement in
+   OpenCode Console and save it locally using `opencode auth login` for the
+   OpenCode provider. Updating SOPS on Kim does **not** update this local
+   credential. Do not put credentials into tracked JSON files or chat.
+3. Activate Kim's configuration to remove the stale free-tier proxy listing.
+   This cleanup is separate from enabling the direct client route.
+4. Smoke-test a prompt, then streaming/tool use. Catalog/config checks alone
+   do not establish free-tier eligibility or credential validity.
 
-No new SOPS secret name, Go subscription, or CLIProxyAPI OAuth auth file is
-needed. The expired direct OpenCode credential can remain locally stored but
-is no longer a model route allowed by this config.
+No Go subscription or new SOPS secret is needed for this direct route. The
+free promotion can change; retain the `-free` selection rather than silently
+switching to a paid model.
 
-Sources: [OpenCode endpoints and free models](https://opencode.ai/docs/zen/)
+Sources: the observed upstream rejection, [OpenCode free models](https://opencode.ai/docs/zen/),
 and the `opencode/deepseek-v4.1-flash-free` entry in
 [models.dev](https://models.dev/api.json).
 

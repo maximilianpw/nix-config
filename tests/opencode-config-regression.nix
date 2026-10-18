@@ -55,16 +55,15 @@ in
         [.[] | select(.type == "document") | .info] | first
         | .model.providerID == "cliproxyapi" and
           .update == "disable" and
-          (.providers.cliproxyapi.models | length == 10) and
+          (.providers.cliproxyapi.models | length == 9) and
           .policies == [
             {action: "provider.use", resource: "*", effect: "deny"},
-            {action: "provider.use", resource: "cliproxyapi", effect: "allow"}
+            {action: "provider.use", resource: "cliproxyapi", effect: "allow"},
+            {action: "provider.use", resource: "opencode", effect: "allow"}
           ] and
-          .agents.title.model.providerID == "cliproxyapi" and
-          .agents.title.model.model == "zen/deepseek-v4.1-flash-free" and
-          .providers.cliproxyapi.models["zen/deepseek-v4.1-flash-free"].limit == {context: 200000, output: 32000} and
-          .providers.cliproxyapi.models["zen/deepseek-v4.1-flash-free"].capabilities.input == ["text", "image"] and
-          .providers.cliproxyapi.models["zen/deepseek-v4.1-flash-free"].compatibility.reasoningField == "reasoning_content" and
+          .agents.title.model.providerID == "opencode" and
+          .agents.title.model.model == "deepseek-v4.1-flash-free" and
+          (.providers.cliproxyapi.models | has("zen/deepseek-v4.1-flash-free") | not) and
           .providers.cliproxyapi.package == "aisdk:@ai-sdk/openai-compatible" and
           .plugins == ["cc-safety-net", "@slkiser/opencode-quota"] and
           .permissions[0] == {action: "shell", resource: "*", effect: "ask"} and
@@ -79,8 +78,8 @@ in
           (.mcp.servers.executor.url == "https://executor.maximilian.pw/mcp")
       ' resolved.json
 
-      # Parse the rendered server configuration with fake keys only. Exact free
-      # aliases and forced prefixes must not route this selection to a paid model.
+      # The rejected free-tier route must be absent from the proxy. Existing
+      # paid models retain exact aliases and prefixes, using fake keys only.
       python3 - ${serverConfig} <<'PY'
       import sys
       import yaml
@@ -96,13 +95,10 @@ in
       assert zen["base-url"] == "https://opencode.ai/inference/openai/v1"
       assert zen["keys"] == [{"api-key": "fixture-zen-key"}]
       models = zen["models"]
-      assert len(models) == 6
+      assert len(models) == 5
       assert len({model["alias"] for model in models}) == len(models)
       assert all(model["name"] == model["alias"] for model in models)
-      free = [model for model in models if model["alias"] == "deepseek-v4.1-flash-free"]
-      assert len(free) == 1
-      assert free[0]["max-context-length"] == 200000
-      assert free[0]["input-modalities"] == ["text", "image"]
+      assert not any(model["name"].endswith("-free") or model["alias"].endswith("-free") for model in models)
       PY
 
       # Exercise actual provider filtering without downloading npm plugins,
@@ -124,10 +120,15 @@ in
       JSON
       # A project cannot relax the global provider policy, even with credentials.
       ${package}/bin/opencode models --standalone > models.txt
-      test "$(wc -l < models.txt)" -eq 10
-      grep -Fx 'cliproxyapi/zen/deepseek-v4.1-flash-free' models.txt
-      if grep -v '^cliproxyapi/' models.txt; then
-        echo 'OpenCode exposed a model outside CLIProxyAPI' >&2
+      test "$(grep -c '^cliproxyapi/' models.txt)" -eq 9
+      grep -Fx 'cliproxyapi/gpt-6-astra' models.txt
+      grep -Fx 'opencode/deepseek-v4.1-flash-free' models.txt
+      if grep -Fx 'cliproxyapi/zen/deepseek-v4.1-flash-free' models.txt; then
+        echo 'OpenCode exposed the rejected free-tier proxy route' >&2
+        exit 1
+      fi
+      if grep -vE '^(cliproxyapi|opencode)/' models.txt; then
+        echo 'OpenCode exposed a model outside CLIProxyAPI or native OpenCode' >&2
         exit 1
       fi
       cd "$HOME"
