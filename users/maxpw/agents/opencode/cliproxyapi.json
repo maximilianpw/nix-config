@@ -1,147 +1,375 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "provider": {
+  "update": "disable",
+  "policies": [
+    {
+      "action": "provider.use",
+      "resource": "*",
+      "effect": "deny"
+    },
+    {
+      "action": "provider.use",
+      "resource": "cliproxyapi",
+      "effect": "allow"
+    }
+  ],
+  "agents": {
+    "title": {
+      "model": "cliproxyapi/zen/deepseek-v4.1-flash-free"
+    }
+  },
+  "providers": {
     "cliproxyapi": {
-      "npm": "@ai-sdk/openai-compatible",
+      "package": "aisdk:@ai-sdk/openai-compatible",
       "name": "CLIProxyAPI",
-      "options": {
-        "setCacheKey": true
+      "compatibility": {
+        "supportsPromptCacheKey": true
       },
       "models": {
         "gpt-6-astra": {
           "name": "GPT-6 Astra via CLIProxyAPI",
-          "reasoning": true,
-          "tool_call": true,
-          "limit": {
-            "context": 272000
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text",
+              "image"
+            ],
+            "output": [
+              "text"
+            ]
           },
-          "modalities": {
-            "input": ["text", "image"],
-            "output": ["text"]
+          "limit": {
+            "context": 272000,
+            "output": 128000
           }
         },
         "gpt-5.6-sol": {
           "name": "GPT-5.6 Sol via CLIProxyAPI",
-          "reasoning": true,
-          "tool_call": true,
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text",
+              "image"
+            ],
+            "output": [
+              "text"
+            ]
+          },
           "limit": {
             "context": 272000,
             "output": 128000
-          },
-          "modalities": {
-            "input": ["text", "image"],
-            "output": ["text"]
           }
         },
         "gpt-5.6-luna": {
           "name": "GPT-5.6 Luna via CLIProxyAPI",
-          "reasoning": true,
-          "tool_call": true,
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text",
+              "image"
+            ],
+            "output": [
+              "text"
+            ]
+          },
           "limit": {
             "context": 272000,
             "output": 128000
-          },
-          "modalities": {
-            "input": ["text", "image"],
-            "output": ["text"]
           }
         },
         "gpt-5.6-terra": {
           "name": "GPT-5.6 Terra via CLIProxyAPI",
-          "reasoning": true,
-          "tool_call": true,
+          "capabilities": {
+            "tools": true,
+            "input": [
+              "text",
+              "image"
+            ],
+            "output": [
+              "text"
+            ]
+          },
           "limit": {
             "context": 272000,
             "output": 128000
-          },
-          "modalities": {
-            "input": ["text", "image"],
-            "output": ["text"]
           }
         }
       }
     }
   },
-  "plugin": [
+  "plugins": [
     "cc-safety-net",
-    "opencode-notify",
-    "@simonwjackson/opencode-direnv",
-    "@tarquinen/opencode-smart-title",
-    "@slkiser/opencode-quota",
-    "opencode-antigravity-auth@latest"
+    "@slkiser/opencode-quota"
   ],
-  "permission": {
-    "bash": {
-      "ls *": "allow",
-      "pwd": "allow",
-      "tree *": "allow",
-      "which *": "allow",
-      "file *": "allow",
-      "wc *": "allow",
-      "head *": "allow",
-      "tail *": "allow",
-      "cat *": "allow",
-      "echo *": "allow",
-      "rg *": "allow",
-      "grep *": "allow",
-      "find *": "allow",
-      "fd *": "allow",
-      "jq *": "allow",
-      "git status": "allow",
-      "git status *": "allow",
-      "git diff": "allow",
-      "git diff *": "allow",
-      "git log": "allow",
-      "git log *": "allow",
-      "git show *": "allow",
-      "git branch": "allow",
-      "git branch *": "allow",
-      "git remote *": "allow",
-      "git ls-files *": "allow",
-      "git stash list": "allow",
-      "jj log *": "allow",
-      "jj status": "allow",
-      "jj diff *": "allow",
-      "gh pr view *": "allow",
-      "gh pr list *": "allow",
-      "gh issue view *": "allow",
-      "gh issue list *": "allow",
-      "obsidian files": "allow",
-      "obsidian files *": "allow",
-      "obsidian file *": "allow",
-      "obsidian folders": "allow",
-      "obsidian folders *": "allow",
-      "obsidian folder *": "allow",
-      "obsidian backlinks *": "allow",
-      "obsidian links *": "allow",
-      "obsidian unresolved *": "allow",
-      "obsidian outline *": "allow",
-      "obsidian properties *": "allow",
-      "rm -rf *": "deny",
-      "sudo *": "deny",
-      "git push --force*": "deny",
-      "git reset --hard*": "deny",
-      "*": "ask"
+  "permissions": [
+    {
+      "action": "shell",
+      "resource": "*",
+      "effect": "ask"
     },
-    "edit": "ask",
-    "external_directory": {
-      "~/Documents/obsidian vault/**": "allow"
+    {
+      "action": "shell",
+      "resource": "cat *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "echo *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "fd *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "file *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "find *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "gh issue list *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "gh issue view *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "gh pr list *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "gh pr view *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "git branch",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "git branch *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "git diff",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "git diff *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "git log",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "git log *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "git ls-files *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "git push --force*",
+      "effect": "deny"
+    },
+    {
+      "action": "shell",
+      "resource": "git remote *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "git reset --hard*",
+      "effect": "deny"
+    },
+    {
+      "action": "shell",
+      "resource": "git show *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "git stash list",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "git status",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "git status *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "grep *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "head *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "jj diff *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "jj log *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "jj status",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "jq *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "ls *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "obsidian backlinks *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "obsidian file *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "obsidian files",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "obsidian files *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "obsidian folder *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "obsidian folders",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "obsidian folders *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "obsidian links *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "obsidian outline *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "obsidian properties *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "obsidian unresolved *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "pwd",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "rg *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "rm -rf *",
+      "effect": "deny"
+    },
+    {
+      "action": "shell",
+      "resource": "sudo *",
+      "effect": "deny"
+    },
+    {
+      "action": "shell",
+      "resource": "tail *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "tree *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "wc *",
+      "effect": "allow"
+    },
+    {
+      "action": "shell",
+      "resource": "which *",
+      "effect": "allow"
+    },
+    {
+      "action": "edit",
+      "resource": "*",
+      "effect": "ask"
+    },
+    {
+      "action": "external_directory",
+      "resource": "~/Documents/obsidian vault/**",
+      "effect": "allow"
     }
-  },
+  ],
   "mcp": {
-    "executor": {
-      "type": "remote",
-      "url": "https://executor.liger-shilling.ts.net/mcp",
-      "enabled": true
-    }
-  },
-  "experimental": {
-    "quotaToast": {
-      "enableToast": false,
-      "showSessionTokens": true,
-      "enabledProviders": "auto",
-      "formatStyle": "grouped",
-      "percentDisplayMode": "remaining"
+    "servers": {
+      "executor": {
+        "type": "remote",
+        "url": "https://executor.maximilian.pw/mcp",
+        "disabled": false
+      }
     }
   }
 }

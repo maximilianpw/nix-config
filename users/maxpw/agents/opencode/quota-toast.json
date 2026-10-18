@@ -1,0 +1,7 @@
+{
+  "enableToast": false,
+  "showSessionTokens": true,
+  "enabledProviders": "auto",
+  "formatStyle": "grouped",
+  "percentDisplayMode": "remaining"
+}

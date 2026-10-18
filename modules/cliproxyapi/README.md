@@ -5,12 +5,82 @@ This folder owns the CLIProxyAPI gateway on Kim and the agent clients that use i
 - `config.nix` is the shared endpoint, authentication, model, and server configuration.
 - `nixos.nix` runs the systemd server only on Kim and installs the public client token on every NixOS/WSL host.
 - `darwin.nix` installs only the public client token; Joyce no longer runs a local proxy.
-- `home-manager.nix` generates the Claude, Codex, Grok, Muse, and OpenCode client adapters, their direct-access commands, and `cliproxyapi-util`. Its caller supplies the user's agent-config directory explicitly.
+- `home-manager.nix` generates the Claude, Codex, Grok, Muse, and OpenCode client adapters, direct-access commands for clients other than OpenCode, and `cliproxyapi-util`. Its caller supplies the user's agent-config directory explicitly.
 
 Kim's clients continue to use `127.0.0.1:8317` and read their local API token at runtime from `/run/secrets/cliproxyapi-local-api-key`. Other hosts use `https://cliproxy.maximilian.pw` and read the public API token from `/run/secrets/cliproxyapi-public-api-key`. Both credentials remain in SOPS-managed runtime files rather than generated Nix-store files. Home Manager also exports the endpoint and token-file variables consumed by Pi's CLIProxyAPI extension in the separate `pi-config` repository; that extension fails closed when explicit endpoint or credential configuration is absent rather than silently selecting localhost. The Darwin module removes the obsolete Joyce LaunchAgent left by configurations from before the proxy was centralized and publishes the non-secret endpoint and token-file path to the user launchd environment for GUI-owned agent sessions. The OpenCode base configuration lives at `users/maxpw/agents/opencode/cliproxyapi.json`; Home Manager injects the host-specific endpoint and an environment-variable token reference when it generates the deployed `opencode.json`.
 
-The shared GPT default is `gpt-6-astra` for Codex and OpenCode, including their
-direct wrappers and `pi-direct`. Older GPT variants remain selectable.
+The shared GPT default is `gpt-6-astra` for Codex and OpenCode, as well as
+`codex-direct` and `pi-direct`. Older GPT variants remain selectable.
+
+### OpenCode 2
+
+The overlay selects `llm-agents.packages.<system>.opencode2` and adds an
+`opencode` executable alias for existing wrappers and service PATHs. Upstream's
+`opencode` package still selects v1. Updates are owned by the flake; in-app
+update checks are disabled rather than installing a second unmanaged copy.
+
+The base configuration uses native v2 `providers`, ordered `permissions`,
+`mcp.servers`, and `plugins`. The transport remains
+`aisdk:@ai-sdk/openai-compatible`; credentials are still read at runtime.
+Shell permission rules keep the catch-all `ask` first, followed by the existing
+specific allows/denies. LSP and automatic formatting remain opt-in per project.
+
+OpenCode model inference is proxy-only: ordered `provider.use` policies deny
+all providers, then allow `cliproxyapi`. This filters direct providers even when
+credentials are saved locally; repository policy cannot relax the user-global
+policy in v2.0.32. The former managed `opencode-direct` bypass is removed on
+activation. Other clients' direct wrappers are unchanged. This is a model
+provider restriction, not a network firewall: MCP, tools, and quota lookups are
+separate from model inference.
+
+Title generation explicitly selects
+`cliproxyapi/zen/deepseek-v4.1-flash-free`. Other built-in helpers retain their
+normal model inheritance, constrained by the same provider policy. OpenCode
+may retry a failed title with the session's primary model; for a free DeepSeek
+session that is the same free model, not a paid substitute. Saved sessions
+using a now-blocked direct provider must select a `cliproxyapi/...` model.
+
+Only `cc-safety-net` and `@slkiser/opencode-quota` remain in the configured
+server plugin list. The installed notify, direnv, smart-title, and Antigravity
+auth packages failed v2's plugin-definition contract. Notifications now use
+native CLI attention settings; titles use OpenCode's built-in generation.
+Antigravity authentication and plugin-based direnv injection are not provided
+by this configuration. Use a verified v2 integration before relying on either;
+shell-level direnv alone does not prove the shared server receives a project's
+environment. Existing local plugins outside this list are not removed.
+
+Terminal settings are **`cli.json` in v2.0.32**, not `tui.json(c)`. The source of
+truth for our declared preferences is `users/maxpw/agents/opencode/cli.json`.
+Home Manager activation merges those preferences into the writable
+`~/.config/opencode/cli.json`, preserving theme/session settings and local
+plugin entries (including Herdr). Notifications are enabled and sounds are
+disabled. Existing local disable directives remain after the quota plugin's
+default registration. Do not symlink this app-written file into the Nix store.
+Close OpenCode before activation to avoid concurrent config writes. The merge
+fails without changing malformed/JSONC files or replacing another manager's
+symlink; convert such a file to a regular strict-JSON document first. Legacy
+`tui.json(c)` files are not deleted or managed by this module.
+
+Quota preferences live at
+`~/.config/opencode/opencode-quota/quota-toast.json`, generated from the adjacent
+`quota-toast.json` source. Their previous behavior is preserved (no popup
+toasts, remaining quota, session token counts). No credential/account state is
+managed by these files. A manually created `quota-toast.jsonc` may take priority;
+resolve any such duplicate before expecting the managed JSON preferences.
+
+`opencode-config-regression` checks the packaged v2 binary, model limits,
+canonical config parsing, permission rules, the title-model override, rendered
+Zen upstream aliases, and real provider-catalog filtering (including a project
+attempt to re-enable direct providers). It also checks quota preferences and
+non-destructive/idempotent CLI preference merging in an isolated home. It does
+not verify third-party plugin execution, GUI notifications, or authenticated
+inference.
+
+Version-specific references:
+[CLI settings](https://github.com/anomalyco/opencode/blob/843a6c514e606b436a7fe713422ace0a93ad3d61/services/www/src/docs/content/cli/config.mdx),
+[CLI migration](https://github.com/anomalyco/opencode/blob/843a6c514e606b436a7fe713422ace0a93ad3d61/packages/cli/src/config/migrate.ts),
+and [config schema](https://opencode.ai/config.json). The older `/docs` examples
+can describe v1 names; do not use them to revert this v2 configuration.
 
 ### Muse Code
 

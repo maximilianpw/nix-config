@@ -135,7 +135,16 @@
       in {
         inherit (llm) claude-code;
         inherit (llm) codex;
-        inherit (llm) opencode;
+        # llm-agents keeps v1 as opencode and installs v2 as opencode2.
+        # Preserve the command name used by wrappers and service PATHs.
+        opencode = llm.opencode2.overrideAttrs (old: {
+          postInstall =
+            (old.postInstall or "")
+            + ''
+              ln -s opencode2 "$out/bin/opencode"
+            '';
+          meta = old.meta // {mainProgram = "opencode";};
+        });
         inherit (llm) grok;
         inherit (llm) muse-code;
         inherit (llm) herdr;

@@ -27,7 +27,12 @@
   jsonFormat = pkgs.formats.json {};
   kimiModel = "kimi-k3";
   grokModel = "grok-4.6";
-  directOpenCodeModel = "openai/${cliProxy.defaultModel}";
+  opencodeCliDefaults = agentConfigDirectory + "/opencode/cli.json";
+  configureOpenCodeCli = pkgs.writeShellApplication {
+    name = "opencode-configure-cli";
+    runtimeInputs = [pkgs.jq pkgs.coreutils];
+    text = builtins.readFile ../../scripts/user/opencode-configure-cli.sh;
+  };
   # Muse also needs the gateway's /muse-code/models compatibility route.
   # Kim stays on loopback, but uses the gateway rather than the raw backend.
   museGatewayPort = (import ../../lib/homelab.nix {inherit lib;}).publicEndpoints.cliproxy.port;
@@ -47,24 +52,30 @@
     (builtins.fromJSON (builtins.readFile (agentConfigDirectory + "/opencode/cliproxyapi.json")))
     {
       model = "cliproxyapi/${cliProxy.defaultModel}";
-      provider.cliproxyapi = {
-        options = {
+      providers.cliproxyapi = {
+        settings = {
           baseURL = "${proxyBaseUrl}/v1";
           apiKey = proxyApiKey;
         };
         models = builtins.listToAttrs (
           map (model: {
             name = "${cliProxy.openCodeZen.prefix}/${model.id}";
-            value = {
-              name = "${model.displayName} via OpenCode Zen";
-              reasoning = true;
-              tool_call = true;
-              limit.context = model.contextLength;
-              modalities = {
-                input = model.inputModalities;
-                output = ["text"];
+            value =
+              {
+                name = "${model.displayName} via OpenCode Zen";
+                capabilities = {
+                  tools = true;
+                  input = model.inputModalities;
+                  output = ["text"];
+                };
+                limit = {
+                  context = model.contextLength;
+                  output = model.outputLength;
+                };
+              }
+              // lib.optionalAttrs (model ? reasoningField) {
+                compatibility.reasoningField = model.reasoningField;
               };
-            };
           })
           cliProxy.openCodeZen.chatModels
         );
@@ -88,169 +99,171 @@
       context_window = 500000
     '';
 in {
-  home.sessionVariables = {
-    CLIPROXYAPI_ROOT_URL = proxyBaseUrl;
-    CLIPROXYAPI_API_KEY_FILE = proxyApiKeyPath;
-  };
+  home = {
+    sessionVariables = {
+      CLIPROXYAPI_ROOT_URL = proxyBaseUrl;
+      CLIPROXYAPI_API_KEY_FILE = proxyApiKeyPath;
+    };
 
-  home.file = {
-    ".config/cliproxyapi/client.json" = {
-      force = true;
-      source = jsonFormat.generate "cliproxyapi-client.json" {
-        rootUrl = proxyBaseUrl;
-        inherit quotaUrl;
-        apiKeyFile = proxyApiKeyPath;
+    # cli.json is also written by OpenCode and Herdr. Merge the declared keys
+    # during activation instead of replacing it with an immutable store symlink.
+    activation.configureOpenCodeCli = lib.hm.dag.entryAfter ["writeBoundary"] ''
+      run ${lib.getExe configureOpenCodeCli} ${opencodeCliDefaults} ${lib.escapeShellArg "${config.home.homeDirectory}/.config/opencode/cli.json"}
+    '';
+
+    file = {
+      ".config/cliproxyapi/client.json" = {
+        force = true;
+        source = jsonFormat.generate "cliproxyapi-client.json" {
+          rootUrl = proxyBaseUrl;
+          inherit quotaUrl;
+          apiKeyFile = proxyApiKeyPath;
+        };
       };
-    };
-    ".grok-cliproxyapi/config.toml".text = grokProxyConfig;
-    ".config/opencode/opencode.json".source = jsonFormat.generate "opencode.json" opencodeConfig;
+      ".grok-cliproxyapi/config.toml".text = grokProxyConfig;
+      ".config/opencode/opencode.json".source = jsonFormat.generate "opencode.json" opencodeConfig;
+      ".config/opencode/opencode-quota/quota-toast.json".source = agentConfigDirectory + "/opencode/quota-toast.json";
 
-    # Put proxy-default wrappers ahead of package binaries. The matching
-    # *-direct commands keep first-party access available for diagnosis.
-    ".local/bin/claude" = {
-      executable = true;
-      text = ''
-        #!${pkgs.bash}/bin/bash
-        ${exportProxyApiKey}
-        export ANTHROPIC_BASE_URL=${lib.escapeShellArg proxyBaseUrl}
-        export ANTHROPIC_AUTH_TOKEN="$CLIPROXYAPI_API_KEY"
-        export CLAUDE_CODE_MAX_CONTEXT_TOKENS=272000
-        exec ${lib.getExe pkgs.claude-code} "$@"
-      '';
-    };
-    ".local/bin/claude-direct" = {
-      executable = true;
-      text = ''
-        #!${pkgs.bash}/bin/bash
-        exec ${lib.getExe pkgs.claude-code} "$@"
-      '';
-    };
-    ".local/bin/climi" = {
-      executable = true;
-      text = ''
-        #!${pkgs.bash}/bin/bash
-        ${exportProxyApiKey}
-        export ANTHROPIC_BASE_URL=${lib.escapeShellArg proxyBaseUrl}
-        export ANTHROPIC_AUTH_TOKEN="$CLIPROXYAPI_API_KEY"
-        export ANTHROPIC_DEFAULT_OPUS_MODEL=${kimiModel} ANTHROPIC_DEFAULT_SONNET_MODEL=${kimiModel} ANTHROPIC_DEFAULT_HAIKU_MODEL=${kimiModel}
-        export CLAUDE_CODE_SUBAGENT_MODEL=${kimiModel} CLAUDE_CODE_ALWAYS_ENABLE_EFFORT=1
-        export CLAUDE_CODE_MAX_TOOL_USE_CONCURRENCY=3 ENABLE_TOOL_SEARCH=false
-        exec ${lib.getExe pkgs.claude-code} --model ${kimiModel} --effort max "$@"
-      '';
-    };
-    ".local/bin/codex" = {
-      executable = true;
-      text = ''
-        #!${pkgs.bash}/bin/bash
-        ${exportProxyApiKey}
+      # Put proxy-default wrappers ahead of package binaries. The matching
+      # *-direct commands keep first-party access available for diagnosis.
+      ".local/bin/claude" = {
+        executable = true;
+        text = ''
+          #!${pkgs.bash}/bin/bash
+          ${exportProxyApiKey}
+          export ANTHROPIC_BASE_URL=${lib.escapeShellArg proxyBaseUrl}
+          export ANTHROPIC_AUTH_TOKEN="$CLIPROXYAPI_API_KEY"
+          export CLAUDE_CODE_MAX_CONTEXT_TOKENS=272000
+          exec ${lib.getExe pkgs.claude-code} "$@"
+        '';
+      };
+      ".local/bin/claude-direct" = {
+        executable = true;
+        text = ''
+          #!${pkgs.bash}/bin/bash
+          exec ${lib.getExe pkgs.claude-code} "$@"
+        '';
+      };
+      ".local/bin/climi" = {
+        executable = true;
+        text = ''
+          #!${pkgs.bash}/bin/bash
+          ${exportProxyApiKey}
+          export ANTHROPIC_BASE_URL=${lib.escapeShellArg proxyBaseUrl}
+          export ANTHROPIC_AUTH_TOKEN="$CLIPROXYAPI_API_KEY"
+          export ANTHROPIC_DEFAULT_OPUS_MODEL=${kimiModel} ANTHROPIC_DEFAULT_SONNET_MODEL=${kimiModel} ANTHROPIC_DEFAULT_HAIKU_MODEL=${kimiModel}
+          export CLAUDE_CODE_SUBAGENT_MODEL=${kimiModel} CLAUDE_CODE_ALWAYS_ENABLE_EFFORT=1
+          export CLAUDE_CODE_MAX_TOOL_USE_CONCURRENCY=3 ENABLE_TOOL_SEARCH=false
+          exec ${lib.getExe pkgs.claude-code} --model ${kimiModel} --effort max "$@"
+        '';
+      };
+      ".local/bin/codex" = {
+        executable = true;
+        text = ''
+          #!${pkgs.bash}/bin/bash
+          ${exportProxyApiKey}
 
-        # Command-line overrides keep proxy routing declarative while leaving
-        # ~/.codex/config.toml as Codex's writable persistence target.
-        exec ${lib.getExe pkgs.codex} \
-          -c ${lib.escapeShellArg "model=${builtins.toJSON cliProxy.defaultModel}"} \
-          -c ${lib.escapeShellArg "model_provider=\"cliproxyapi\""} \
-          -c ${lib.escapeShellArg "cli_auth_credentials_store=\"file\""} \
-          -c ${lib.escapeShellArg "mcp_oauth_credentials_store=\"file\""} \
-          -c ${lib.escapeShellArg "model_providers.cliproxyapi.name=\"CLIProxyAPI\""} \
-          -c ${lib.escapeShellArg "model_providers.cliproxyapi.base_url=${builtins.toJSON "${proxyBaseUrl}/v1"}"} \
-          -c ${lib.escapeShellArg "model_providers.cliproxyapi.env_key=\"CLIPROXYAPI_API_KEY\""} \
-          -c ${lib.escapeShellArg "model_providers.cliproxyapi.wire_api=\"responses\""} \
-          "$@"
-      '';
-    };
-    ".local/bin/codex-direct" = {
-      executable = true;
-      text = ''
-        #!${pkgs.bash}/bin/bash
-        exec ${lib.getExe pkgs.codex} \
-          -c ${lib.escapeShellArg "model=${builtins.toJSON cliProxy.defaultModel}"} \
-          -c cli_auth_credentials_store=file -c mcp_oauth_credentials_store=file "$@"
-      '';
-    };
-    ".local/bin/muse" = {
-      executable = true;
-      text = ''
-        #!${pkgs.bash}/bin/bash
-        set -euo pipefail
-        # Do not pass the proxy token to first-party account/auxiliary commands.
-        case "''${1:-}" in
-          config|export|trace|model-profile|skills|voice|plugins|sandbox|schema|session-message|mcp|auth|login|logout|init)
-            exec ${lib.getExe pkgs.muse-code} "$@"
-            ;;
-        esac
+          # Command-line overrides keep proxy routing declarative while leaving
+          # ~/.codex/config.toml as Codex's writable persistence target.
+          exec ${lib.getExe pkgs.codex} \
+            -c ${lib.escapeShellArg "model=${builtins.toJSON cliProxy.defaultModel}"} \
+            -c ${lib.escapeShellArg "model_provider=\"cliproxyapi\""} \
+            -c ${lib.escapeShellArg "cli_auth_credentials_store=\"file\""} \
+            -c ${lib.escapeShellArg "mcp_oauth_credentials_store=\"file\""} \
+            -c ${lib.escapeShellArg "model_providers.cliproxyapi.name=\"CLIProxyAPI\""} \
+            -c ${lib.escapeShellArg "model_providers.cliproxyapi.base_url=${builtins.toJSON "${proxyBaseUrl}/v1"}"} \
+            -c ${lib.escapeShellArg "model_providers.cliproxyapi.env_key=\"CLIPROXYAPI_API_KEY\""} \
+            -c ${lib.escapeShellArg "model_providers.cliproxyapi.wire_api=\"responses\""} \
+            "$@"
+        '';
+      };
+      ".local/bin/codex-direct" = {
+        executable = true;
+        text = ''
+          #!${pkgs.bash}/bin/bash
+          exec ${lib.getExe pkgs.codex} \
+            -c ${lib.escapeShellArg "model=${builtins.toJSON cliProxy.defaultModel}"} \
+            -c cli_auth_credentials_store=file -c mcp_oauth_credentials_store=file "$@"
+        '';
+      };
+      ".local/bin/muse" = {
+        executable = true;
+        text = ''
+          #!${pkgs.bash}/bin/bash
+          set -euo pipefail
+          # Do not pass the proxy token to first-party account/auxiliary commands.
+          case "''${1:-}" in
+            config|export|trace|model-profile|skills|voice|plugins|sandbox|schema|session-message|mcp|auth|login|logout|init)
+              exec ${lib.getExe pkgs.muse-code} "$@"
+              ;;
+          esac
 
-        # Both gateway entry points authenticate with the public client token.
-        META_API_KEY="$(${pkgs.coreutils}/bin/cat ${lib.escapeShellArg cliProxy.publicApiKeyPath})"
-        test -n "$META_API_KEY"
-        export META_API_KEY
-        export MUSE_MODEL="''${MUSE_MODEL:-muse-wonder-1.0}"
+          # Both gateway entry points authenticate with the public client token.
+          META_API_KEY="$(${pkgs.coreutils}/bin/cat ${lib.escapeShellArg cliProxy.publicApiKeyPath})"
+          test -n "$META_API_KEY"
+          export META_API_KEY
+          export MUSE_MODEL="''${MUSE_MODEL:-muse-wonder-1.0}"
 
-        # Muse parses exec/serve separately from its interactive root flags.
-        case "''${1:-}" in
-          exec|serve)
-            subcommand="$1"
-            shift
-            set -- "$subcommand" ${museProxyOverrides} "$@"
-            ;;
-          *)
-            set -- ${museProxyOverrides} "$@"
-            ;;
-        esac
-        exec ${lib.getExe pkgs.muse-code} "$@"
-      '';
-    };
-    ".local/bin/muse-direct" = {
-      executable = true;
-      text = ''
-        #!${pkgs.bash}/bin/bash
-        export MUSE_MODEL="''${MUSE_MODEL:-muse-wonder-1.0}"
-        exec ${lib.getExe pkgs.muse-code} "$@"
-      '';
-    };
-    ".local/bin/grok" = {
-      executable = true;
-      text = ''
-        #!${pkgs.bash}/bin/bash
-        ${exportProxyApiKey}
-        export GROK_HOME=${lib.escapeShellArg "${config.home.homeDirectory}/.grok-cliproxyapi"}
-        exec ${lib.getExe pkgs.grok} "$@"
-      '';
-    };
-    ".local/bin/grok-direct" = {
-      executable = true;
-      text = ''
-        #!${pkgs.bash}/bin/bash
-        exec ${lib.getExe pkgs.grok} --model ${grokModel} "$@"
-      '';
-    };
-    ".local/bin/cliproxyapi-util" = {
-      executable = true;
-      text = ''
-        #!${pkgs.bash}/bin/bash
-        exec ${lib.getExe' quotaPackage "cliproxyapi-util"} "$@"
-      '';
-    };
-    ".local/bin/pi-direct" = {
-      executable = true;
-      text = ''
-        #!${pkgs.bash}/bin/bash
-        exec ${lib.getExe pkgs.pi} --provider openai-codex --model ${lib.escapeShellArg cliProxy.defaultModel} "$@"
-      '';
-    };
-    ".local/bin/opencode" = {
-      executable = true;
-      text = ''
-        #!${pkgs.bash}/bin/bash
-        ${exportProxyApiKey}
-        exec ${lib.getExe pkgs.opencode} "$@"
-      '';
-    };
-    ".local/bin/opencode-direct" = {
-      executable = true;
-      text = ''
-        #!${pkgs.bash}/bin/bash
-        exec ${lib.getExe pkgs.opencode} --model ${directOpenCodeModel} "$@"
-      '';
+          # Muse parses exec/serve separately from its interactive root flags.
+          case "''${1:-}" in
+            exec|serve)
+              subcommand="$1"
+              shift
+              set -- "$subcommand" ${museProxyOverrides} "$@"
+              ;;
+            *)
+              set -- ${museProxyOverrides} "$@"
+              ;;
+          esac
+          exec ${lib.getExe pkgs.muse-code} "$@"
+        '';
+      };
+      ".local/bin/muse-direct" = {
+        executable = true;
+        text = ''
+          #!${pkgs.bash}/bin/bash
+          export MUSE_MODEL="''${MUSE_MODEL:-muse-wonder-1.0}"
+          exec ${lib.getExe pkgs.muse-code} "$@"
+        '';
+      };
+      ".local/bin/grok" = {
+        executable = true;
+        text = ''
+          #!${pkgs.bash}/bin/bash
+          ${exportProxyApiKey}
+          export GROK_HOME=${lib.escapeShellArg "${config.home.homeDirectory}/.grok-cliproxyapi"}
+          exec ${lib.getExe pkgs.grok} "$@"
+        '';
+      };
+      ".local/bin/grok-direct" = {
+        executable = true;
+        text = ''
+          #!${pkgs.bash}/bin/bash
+          exec ${lib.getExe pkgs.grok} --model ${grokModel} "$@"
+        '';
+      };
+      ".local/bin/cliproxyapi-util" = {
+        executable = true;
+        text = ''
+          #!${pkgs.bash}/bin/bash
+          exec ${lib.getExe' quotaPackage "cliproxyapi-util"} "$@"
+        '';
+      };
+      ".local/bin/pi-direct" = {
+        executable = true;
+        text = ''
+          #!${pkgs.bash}/bin/bash
+          exec ${lib.getExe pkgs.pi} --provider openai-codex --model ${lib.escapeShellArg cliProxy.defaultModel} "$@"
+        '';
+      };
+      ".local/bin/opencode" = {
+        executable = true;
+        text = ''
+          #!${pkgs.bash}/bin/bash
+          ${exportProxyApiKey}
+          exec ${lib.getExe pkgs.opencode} "$@"
+        '';
+      };
     };
   };
 }
