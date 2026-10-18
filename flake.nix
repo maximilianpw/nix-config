@@ -185,6 +185,25 @@
         # Keep Jellyfin's server, web client, and patched FFmpeg together on the
         # locked unstable package set so upgrades move them as one unit.
         inherit (unstable) jellyfin jellyfin-web jellyfin-ffmpeg;
+        # Pin only Plex's upstream binary until nixpkgs catches up; keep the
+        # existing wrapper and dependencies without updating either input.
+        plexRaw = prev.plexRaw.overrideAttrs (_: let
+          version = "1.43.4.10903-e5521bd8c";
+          isArm = prev.stdenv.hostPlatform.system == "aarch64-linux";
+          arch =
+            if isArm
+            then "arm64"
+            else "amd64";
+        in {
+          inherit version;
+          src = prev.fetchurl {
+            url = "https://downloads.plex.tv/plex-media-server-new/${version}/debian/plexmediaserver_${version}_${arch}.deb";
+            sha256 =
+              if isArm
+              then "1az511cpn0gc5diphpc9yqvb74hqx73fmfv9a4mljqaga788cpll"
+              else "1nry7dffb5lv30mqmcb6d9pssjw8951r79ji07rf2yfp6s1iqskg";
+          };
+        });
         t3code = final.callPackage ./packages/t3code.nix {};
         obsidian = final.callPackage ./packages/obsidian.nix {};
         cliproxyapi = final.callPackage ./packages/cliproxyapi.nix {};
