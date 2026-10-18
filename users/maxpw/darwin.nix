@@ -20,6 +20,7 @@ in {
     enable = true;
 
     taps = [
+      "anomalyco/tap"
       "maximilianpw/tap"
     ];
 
@@ -34,6 +35,7 @@ in {
     ];
 
     casks = [
+      "anomalyco/tap/hex"
       "colemak-dh"
       "bitwarden"
       "1password"
@@ -66,6 +68,8 @@ in {
       "nextcloud"
       "plex"
       "tldraw"
+      "grok-bot"
+      "kitlangton-hex"
     ];
 
     onActivation = {
