@@ -55,6 +55,40 @@ Provider OAuth credentials remain mutable state in `~/.cli-proxy-api` on Kim. Th
 
 The `cliproxyapi-quota` systemd service comes from Fleet's `nixosModules.cliproxy-quota` and runs the pinned `cliproxy-quota` package as the same user as CLIProxyAPI, with a read-only home. It binds only `127.0.0.1:8318`, reads Kim's current provider credentials from `~/.cli-proxy-api`, and returns only the parsed quota summary; the contract is documented in Fleet's `services/cliproxy-quota/README.md`. Nginx exposes `/quota/v1/{codex,claude,xai}` to clients using the existing public API key; it strips that key before forwarding and never gives clients the management key. `cliproxyapi-util quota` comes from the same package and reads `quotaUrl` from `~/.config/cliproxyapi/client.json`: the loopback endpoint on Kim, the public one elsewhere. The Pi extension still reads the local provider state directly on Kim and uses the public endpoint on other hosts; it moves to `quotaUrl` in a later pi-config change. The dashboard remains at `https://cliproxy.maximilian.pw/management.html#/login`; Pi does not use its privileged login.
 
+### Free DeepSeek through the proxy
+
+The Chat Completions upstream now uses
+`https://opencode.ai/inference/openai/v1`. The exact upstream model
+`deepseek-v4.1-flash-free` is exposed as `zen/deepseek-v4.1-flash-free` by
+CLIProxyAPI and as `cliproxyapi/zen/deepseek-v4.1-flash-free` in OpenCode. The
+catalog records 200,000 context tokens, 32,000 output tokens, text/image input,
+and interleaved `reasoning_content`. The upstream alias retains the `-free`
+suffix; no paid-model substitution is configured. The promotion is temporary,
+so an expired key or retired free model should be investigated rather than
+silently changing its alias to a paid model.
+
+Credential and rollout steps (operator-owned):
+
+1. Create a valid OpenCode Console API key. Edit `secrets/secrets.yaml` with
+   `sops` and replace **`opencode-zen-api-key`**. Do not change the public/local
+   CLIProxyAPI client tokens or put the Console key into a client JSON file.
+2. Activate Kim's configuration first so the refreshed runtime secret and
+   upstream/model list are available. This is a separate deployment action,
+   not part of local config verification.
+3. Activate the OpenCode client configuration on Joyce/other hosts, reopen
+   OpenCode, and select `cliproxyapi/zen/deepseek-v4.1-flash-free` in `/models`.
+4. Smoke-test a prompt, then streaming/tool use. Model discovery alone does not
+   prove the upstream key is valid. Confirm the request remains on the exact
+   free-model ID if investigating an error.
+
+No new SOPS secret name, Go subscription, or CLIProxyAPI OAuth auth file is
+needed. The expired direct OpenCode credential can remain locally stored but
+is no longer a model route allowed by this config.
+
+Sources: [OpenCode endpoints and free models](https://opencode.ai/docs/zen/)
+and the `opencode/deepseek-v4.1-flash-free` entry in
+[models.dev](https://models.dev/api.json).
+
 ### Quota service failure contract
 
 `cliproxyapi-quota.service` runs Fleet's pinned `cliproxy-quota` package, so it no longer depends on a mutable checkout; Fleet owns the implementation and it must not be copied into nix-config. The unit restarts on transient failures but is start-limited to five attempts per 300 seconds, so a broken package or immediately failing start reaches the `failed` state after startup instead of restart-looping. The unit is listed in `lib/homelab-services.nix`, so `HomelabImportantUnitFailed` and `HomelabRepeatedServiceRestarts` alert on it. A server that stays running while serving incompatible responses is not detected by this mechanism; the HTTP contract is covered by Fleet's tests. Recover by fixing the cause (or rolling back the generation) and running `systemctl reset-failed cliproxyapi-quota.service` followed by `systemctl start cliproxyapi-quota.service`.

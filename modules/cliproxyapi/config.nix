@@ -1,36 +1,51 @@
 let
   openCodeZen = {
-    baseUrl = "https://opencode.ai/zen/v1";
+    baseUrl = "https://opencode.ai/inference/openai/v1";
     prefix = "zen";
+    # Token limits follow the OpenCode provider catalog at https://models.dev/api.json.
     chatModels = [
+      {
+        # Keep the upstream's exact -free ID: never alias this to a paid model.
+        id = "deepseek-v4.1-flash-free";
+        displayName = "DeepSeek V4.1 Flash Free";
+        contextLength = 200000;
+        outputLength = 32000;
+        inputModalities = ["text" "image"];
+        reasoningField = "reasoning_content";
+      }
       {
         id = "deepseek-v4-pro";
         displayName = "DeepSeek V4 Pro";
         contextLength = 1000000;
+        outputLength = 384000;
         inputModalities = ["text"];
       }
       {
         id = "deepseek-v4-flash";
         displayName = "DeepSeek V4 Flash";
         contextLength = 1000000;
+        outputLength = 384000;
         inputModalities = ["text"];
       }
       {
         id = "glm-5.2";
         displayName = "GLM-5.2";
         contextLength = 1000000;
+        outputLength = 131072;
         inputModalities = ["text"];
       }
       {
         id = "minimax-m3";
         displayName = "MiniMax-M3";
         contextLength = 512000;
+        outputLength = 128000;
         inputModalities = ["text" "image"];
       }
       {
         id = "kimi-k3";
         displayName = "Kimi K3";
         contextLength = 1048576;
+        outputLength = 131072;
         inputModalities = ["text" "image"];
       }
     ];
@@ -93,7 +108,7 @@ in
         session-affinity: true
         session-affinity-ttl: "1h"
         # Zen reuses model IDs served by the OAuth providers. Require its `zen/`
-        # prefix so adding this fallback cannot change existing model routing.
+        # prefix so this upstream cannot change existing model routing.
         force-model-prefix: true
 
       requests:
