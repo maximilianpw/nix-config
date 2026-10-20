@@ -5,12 +5,20 @@
 - Follow the project's package manager and lockfile; use pnpm only when neither exists.
 - For greenfield frontends, prefer StyleX, TypeScript, Bun, React, Clerk, Cloudflare, and TanStack.
 - For greenfield personal backends, prefer Effect and Drizzle; otherwise follow the repository.
-- Before adding TypeScript type escapes such as `any`, casts, or non-null assertions, load `typescript-standards`.
+- Load `coding-standards` for non-trivial implementation, refactoring, or code review, and before adding type escapes or moving code. Read only its references matching the changed behavior and stack.
+
+## Engineering judgment
+
+- Before adding logic, identify the data model, valid states, and transitions. Prefer making invalid states unrepresentable over adding scattered guards.
+- Look for redundant state, obsolete behavior, and unnecessary layers before adding code. Keep cleanup within the requested change.
+- When two fixes relying on the same assumption fail, state and test that assumption before trying another.
+- Keep related decisions together and mutable state narrowly scoped. Abstractions must hide meaningful complexity, not just relocate code.
+- Make repeated edits and measurements reproducible with a small script or check when that is simpler and safer than doing them manually.
 
 ## Execution
 
 - Carry implementation requests through relevant verification and fixes for failures caused by the change. Local edits, tests, builds, and development servers needed for the task do not require separate approval; respect repository-specific safety limits.
-- Choose checks proportional to the change, not a full suite by default. Completion includes checking the affected behavior and reporting any remaining blocker or unverified result.
+- Run proportionate existing checks while working and every gate the repository requires before completion. Exercise changed UI, API, or CLI behavior through its real surface as well as tests. Add verification tooling only when needed; report failures with output and unverified behavior with its blocker or reason.
 - Ask when missing information prevents a correct result or a decision would be costly to reverse; make routine, reversible decisions directly. Plan-only requests stop at the plan.
 - Require explicit authorization before publishing or pushing, deploying, changing shared infrastructure or live data, or performing destructive operations. Authorization for local verification does not authorize those actions.
 - Use `grill-me` for explicitly requested planning interviews or unresolved product/design decisions that need user input. Load `domain-modeling` when that interview should update `CONTEXT.md` or record an ADR. Neither is mandatory for implementation.
