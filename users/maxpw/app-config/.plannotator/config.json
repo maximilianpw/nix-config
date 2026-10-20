@@ -8,7 +8,7 @@
     "maximilianpw@github"
   ],
   "diffOptions": {
-    "diffStyle": "split",
+    "diffStyle": "unified",
     "defaultDiffType": "since-base",
     "hideWhitespace": false,
     "diffIndicators": "bars",
@@ -24,5 +24,14 @@
   "reviewAnalysis": {
     "semanticDiff": true,
     "callFlow": false
+  },
+  "agentTool": true,
+  "inboxSound": {
+    "dialogShownFor": "0.28.23"
+  },
+  "inboxNotifications": {
+    "allowedOrigin": "http://localhost:54613",
+    "enabled": true,
+    "dismissed": false
   }
 }
