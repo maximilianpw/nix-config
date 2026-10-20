@@ -14,7 +14,8 @@ $golang\
 $nix_shell\
 $aws\
 $kubernetes\
-$docker_context
+$docker_context\
+$hostname
 $character"""
 
 [fill]
@@ -97,6 +98,12 @@ modified = "!${count}"
 staged = "+${count}"
 renamed = "»${count}"
 deleted = "✘${count}"
+
+[hostname]
+ssh_only = true
+ssh_symbol = ""
+style = "overlay1"
+format = "[  $hostname]($style)"
 
 [cmd_duration]
 style = "overlay1"

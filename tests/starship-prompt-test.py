@@ -128,6 +128,13 @@ class StarshipPromptTests(unittest.TestCase):
         self.assertIn("38;2;250;179;135", status)
         self.assertEqual(self.module("custom.jj_status", self.root), "")
 
+    def test_hostname_only_over_ssh(self):
+        self.assertEqual(self.module("hostname"), "")
+        self.env["SSH_CONNECTION"] = "192.0.2.1 12345 192.0.2.2 22"
+        hostname = self.module("hostname").strip()
+        self.assertTrue(hostname)
+        self.assertIn(hostname, self.run_command("starship", "prompt"))
+
 
 if __name__ == "__main__":
     unittest.main()
