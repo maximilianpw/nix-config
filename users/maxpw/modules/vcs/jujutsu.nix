@@ -82,7 +82,7 @@
       };
 
       git = {
-        abandon-unreachable-commits = false;
+        abandon-unreachable-commits = true;
         sign-on-push = true;
       };
 
