@@ -23,7 +23,7 @@ in
         .providers.cliproxyapi.package == "aisdk:@ai-sdk/openai-compatible" and
         .providers.cliproxyapi.settings.apiKey == "{env:CLIPROXYAPI_API_KEY}" and
         .providers.cliproxyapi.compatibility.supportsPromptCacheKey == true and
-        .plugins == ["cc-safety-net", "@slkiser/opencode-quota"] and
+        .plugins == [{package: "@plannotator/opencode@0.28.23"}, "cc-safety-net", "@slkiser/opencode-quota"] and
         .permissions[0] == {action: "shell", resource: "*", effect: "ask"}
       ' ${configFile}
       jq -e '
@@ -65,7 +65,7 @@ in
           .agents.title.model.model == "deepseek-v4.1-flash-free" and
           (.providers.cliproxyapi.models | has("zen/deepseek-v4.1-flash-free") | not) and
           .providers.cliproxyapi.package == "aisdk:@ai-sdk/openai-compatible" and
-          .plugins == ["cc-safety-net", "@slkiser/opencode-quota"] and
+          .plugins == [{package: "@plannotator/opencode@0.28.23"}, "cc-safety-net", "@slkiser/opencode-quota"] and
           .permissions[0] == {action: "shell", resource: "*", effect: "ask"} and
           (.permissions | any(.action == "shell" and .resource == "sudo *" and .effect == "deny")) and
           (.permissions | any(.action == "shell" and .resource == "rm -rf *" and .effect == "deny")) and

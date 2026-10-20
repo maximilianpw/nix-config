@@ -1,5 +1,12 @@
 {
   "displayName": "max",
+  "inboxTool": {
+    "pi": true,
+    "opencode": true
+  },
+  "inboxTailscaleAllow": [
+    "maximilianpw@github"
+  ],
   "diffOptions": {
     "diffStyle": "split",
     "defaultDiffType": "since-base",

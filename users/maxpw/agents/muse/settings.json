@@ -8,6 +8,11 @@
     "foreign_personal_skills": true
   },
   "mcpServers": {
+    "plannotator-inbox": {
+      "command": "plannotator",
+      "args": ["inbox", "mcp"],
+      "mode": "optional"
+    },
     "executor": {
       "mode": "optional",
       "url": "https://executor.liger-shilling.ts.net/mcp"

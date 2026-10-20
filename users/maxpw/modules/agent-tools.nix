@@ -15,6 +15,8 @@
   isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
   cuaDriverApp = "${pkgs.cua-driver}/Applications/CuaDriver.app";
 in {
+  imports = [./plannotator.nix];
+
   home = {
     packages = [
       pkgs.claude-code

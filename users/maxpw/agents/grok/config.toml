@@ -63,6 +63,11 @@ ask = [
   "Bash(* deploy*)",
 ]
 
+[mcp_servers.plannotator-inbox]
+type = "stdio"
+command = "plannotator"
+args = ["inbox", "mcp"]
+
 [marketplace]
 default_skills_installs_purged = true
 official_marketplace_auto_installed = true
