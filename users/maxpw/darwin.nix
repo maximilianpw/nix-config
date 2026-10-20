@@ -32,6 +32,7 @@ in {
       "pinentry-mac"
       "zsh"
       "mole"
+      "pscale"
     ];
 
     casks = [
