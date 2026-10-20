@@ -80,6 +80,7 @@
   "preferredNotifChannel": "ghostty",
   "agentPushNotifEnabled": true,
   "skipAutoPermissionPrompt": true,
+  "skipWorkflowUsageWarning": true,
   "autoMode": {
     "environment": [
       "### Org-wide",
