@@ -60,6 +60,7 @@ in
       # Imported here because homelab modules receive inputs through
       # _module.args, which cannot feed `imports`.
       ++ lib.optional (hostRecord.role == "nixos-homelab") inputs.superlocal.nixosModules.default
+      ++ lib.optional (hostRecord.role == "nixos-homelab") inputs.portfolio-tracker.nixosModules.default
       ++ lib.optionals hostRecord.hjem [
         (
           if darwin

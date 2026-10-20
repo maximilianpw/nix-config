@@ -43,6 +43,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Own Trade Republic tracker; consume its package and NixOS module.
+    portfolio-tracker = {
+      url = "github:maximilianpw/portfolio-tracker/v0.2.0";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     nix-darwin.url = "github:nix-darwin/nix-darwin/nix-darwin-26.05";
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
 

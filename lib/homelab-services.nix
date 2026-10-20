@@ -101,6 +101,50 @@
     };
   };
 
+  portfolio-tracker = {
+    # Reached only through Executor (host networking), which holds the bearer token.
+    endpoint = {
+      authorizationOwner = "application";
+      exposure = "local";
+      port = 19014;
+      monitorPath = "/health";
+    };
+    state.paths = ["/var/lib/portfolio-tracker"];
+    backup.quiesce = [
+      {
+        unit = "portfolio-tracker-sync.timer";
+        until = "archive";
+      }
+      {
+        unit = "portfolio-tracker-sync.service";
+        until = "archive";
+      }
+      {
+        unit = "portfolio-tracker-api.service";
+        until = "archive";
+      }
+    ];
+    operations.units = [
+      "portfolio-tracker-api.service"
+      "portfolio-tracker-sync.service"
+      "portfolio-tracker-sync.timer"
+    ];
+    recovery = {
+      order = 95;
+      versionPolicy = "restore-archived-version-first";
+      runbook = "docs/portfolio-tracker.md#recovery";
+      acceptance = [
+        "sync-reconciles-both-accounts"
+        "get-summary-through-executor-succeeds"
+      ];
+      secretOwners = [
+        "sops:portfolio-tracker-token"
+        "sops:portfolio-tracker-corrections"
+        "mutable-state:/var/lib/portfolio-tracker/.pytr"
+      ];
+    };
+  };
+
   recyclarr = {
     state.paths = ["/var/lib/recyclarr"];
     backup.quiesce = [

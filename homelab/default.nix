@@ -18,6 +18,7 @@
     ./monitoring
     ./nextcloud.nix
     ./paperless.nix
+    ./portfolio-tracker.nix
     ./storage.nix
     ./superlocal.nix
     ./syncthing.nix
