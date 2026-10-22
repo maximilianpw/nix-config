@@ -1172,25 +1172,6 @@
     };
   };
 
-  # This endpoint is only a stateless redirect to the owner-guarded Inbox.
-  # Inbox history remains user data, not state owned by this redirect service.
-  plannotator = {
-    endpoint = {
-      authorizationOwner = "tailscale-and-plannotator-owner-allowlist";
-      exposure = "tailnet";
-      port = 19013;
-      monitorPath = "/health";
-    };
-    operations.monitorException = "Inbox and redirect are user services; endpoint monitoring checks the live Inbox and its Tailscale publication.";
-    presentation = {
-      group = "operations";
-      title = "Plannotator";
-      icon = "mdi-inbox-arrow-down";
-      description = "Questions and reviews from coding agents";
-      order = 35;
-    };
-  };
-
   superlocal = {
     endpoint = {
       authorizationOwner = "tailscale";

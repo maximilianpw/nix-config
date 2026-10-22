@@ -19,7 +19,6 @@
     plannotator-config-regression = import ../tests/plannotator-config-regression.nix {
       inherit lib;
       pkgs = nixpkgs.legacyPackages.x86_64-linux;
-      codex = self.nixosConfigurations.kim.pkgs.codex;
       version = self.nixosConfigurations.kim.pkgs.plannotator.version;
       kim = self.nixosConfigurations.kim.config.home-manager.users.maxpw;
       joyce = self.darwinConfigurations.joyce.config.home-manager.users.max-vev;

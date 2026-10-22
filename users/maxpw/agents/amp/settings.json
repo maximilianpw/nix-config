@@ -26,11 +26,5 @@
       "action": "ask"
     }
   ],
-  "amp.mcpServers": {
-    "plannotator-inbox": {
-      "command": "plannotator",
-      "args": ["inbox", "mcp"]
-    }
-  },
   "amp.dangerouslyAllowAll": true
 }

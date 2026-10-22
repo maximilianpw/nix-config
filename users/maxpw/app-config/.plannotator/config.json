@@ -1,12 +1,8 @@
 {
   "displayName": "max",
-  "inboxTool": {
-    "pi": true,
-    "opencode": true
-  },
-  "inboxTailscaleAllow": [
-    "maximilianpw@github"
-  ],
+  "inboxTool": false,
+  "inboxReminder": false,
+  "inboxTailscale": false,
   "diffOptions": {
     "diffStyle": "unified",
     "defaultDiffType": "since-base",
@@ -25,13 +21,5 @@
     "semanticDiff": true,
     "callFlow": false
   },
-  "agentTool": true,
-  "inboxSound": {
-    "dialogShownFor": "0.28.23"
-  },
-  "inboxNotifications": {
-    "allowedOrigin": "http://localhost:54613",
-    "enabled": true,
-    "dismissed": false
-  }
+  "agentTool": true
 }
