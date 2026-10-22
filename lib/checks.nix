@@ -34,6 +34,11 @@
       pkgs = nixpkgs.legacyPackages.x86_64-linux;
       home = self.nixosConfigurations.kim.config.home-manager.users.maxpw;
     };
+    jujutsu-workflow-regression = import ../tests/jujutsu-workflow-regression.nix {
+      pkgs = nixpkgs.legacyPackages.x86_64-linux;
+      home = self.nixosConfigurations.kim.config.home-manager.users.maxpw;
+      stackPackage = self.packages.x86_64-linux.jj-stack;
+    };
     # Upstream runs tests in the package build and memory-heavy lint separately.
     leerr-package = inputs.leerr.packages.x86_64-linux.default;
     leerr-lint = inputs.leerr.checks.x86_64-linux.lint;
@@ -181,6 +186,11 @@
       inherit lib;
       pkgs = nixpkgs.legacyPackages.aarch64-darwin;
       home = self.darwinConfigurations.joyce.config.home-manager.users.max-vev;
+    };
+    jujutsu-workflow-regression = import ../tests/jujutsu-workflow-regression.nix {
+      pkgs = nixpkgs.legacyPackages.aarch64-darwin;
+      home = self.darwinConfigurations.joyce.config.home-manager.users.max-vev;
+      stackPackage = self.packages.aarch64-darwin.jj-stack;
     };
     t3code-package = import ../tests/t3code-package-check.nix {
       pkgs = nixpkgs.legacyPackages.aarch64-darwin;

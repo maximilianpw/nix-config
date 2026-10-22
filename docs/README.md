@@ -11,6 +11,7 @@ completed plans and superseded research.
 - [Nixvim and Hjem](nixvim-hjem.md)
 - [Fleet and remote development](../modules/fleet/README.md)
 - [Git merging and dependency-update CI](git-and-ci-workflow.md)
+- [Jujutsu, agent workspaces, and stacked PRs](jj-workflow-recommendations.md)
 
 ## Recovery and storage
 

@@ -1,4 +1,14 @@
-{config, ...}: {
+{
+  config,
+  inputs,
+  lib,
+  pkgs,
+  ...
+}: let
+  jjStack = inputs.jj-stack.packages.${pkgs.stdenv.hostPlatform.system}.jj-stack;
+in {
+  home.packages = [jjStack];
+
   programs.jujutsu = {
     enable = true;
     settings = {
@@ -29,6 +39,16 @@
             diff-formatter = ":git";
           };
         }
+        {
+          "--when".environments = ["JJ_AGENT=1"];
+          ui = {
+            paginate = "never";
+            color = "never";
+            editor = ["false"];
+            diff-formatter = ":git";
+            conflict-marker-style = "snapshot";
+          };
+        }
       ];
 
       aliases = {
@@ -43,19 +63,13 @@
         n = ["new"];
         p = ["git" "push"];
         s = ["status"];
-        # Move the closest bookmark to the current commit. This is useful when
-        # working on a named branch, creating a bunch of commits, and then
-        # needing to update the bookmark before pushing.
-        tug = ["bookmark" "move" "--from" "closest_bookmark(@-)" "--to" "@-"];
+        tug = ["bookmark" "advance" "--to" "@-"];
         # Rebase the current branch onto the trunk.
         retrunk = ["rebase" "-d" "trunk()"];
-        # Tidy up the current branch, removing commits from dead branches.
-        tidy = [
-          "abandon"
-          "mine() & ~bookmarks() & ~(bookmarks()::) & ~::@ & ~trunk() & mutable()"
-        ];
-        # Tidy up all commits that have been merged into trunk.
-        tidy-all = ["abandon" "~bookmarks() & ~::@ & ~trunk() & mutable()"];
+        stack = ["util" "exec" "--" (lib.getExe jjStack)];
+        # Explicit: sync can update PRs and delete obsolete remote branches.
+        sync = ["stack" "sync" "--all"];
+        check-stack = ["run" "--ignore-changes" "--revision" "mutable() & ::@ & ~empty()" "--"];
         a = ["absorb"];
         el = ["evolog" "-p"];
         sp = ["split"];
@@ -84,17 +98,18 @@
       git = {
         abandon-unreachable-commits = true;
         sign-on-push = true;
+        private-commits = "description(glob:'wip:*') | description(glob:'private:*')";
       };
 
       remotes.origin.auto-track-bookmarks = "glob:main";
 
       templates = {
         git_push_bookmark = ''"maximilianpw/push-" ++ change_id.short()'';
-        private-commits = "description(glob:'wip:*') | description(glob:'private:*')";
       };
 
+      revsets.bookmark-advance-from = "heads(::to & bookmarks() & mutable())";
+
       revset-aliases = {
-        "closest_bookmark(to)" = "heads(::to & bookmarks())";
         "fork_history(to, from)" = "fork_point(to | from)..@";
       };
 
