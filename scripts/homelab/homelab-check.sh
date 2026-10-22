@@ -99,7 +99,12 @@ fi
 
 printf '%s\n' '== Prometheus targets =='
 if targets=$($CURL_BIN --fail --silent --show-error "${HOMELAB_PROMETHEUS_URL:-http://127.0.0.1:9090}/api/v1/targets" 2>/dev/null); then
-  unhealthy=$(printf '%s' "$targets" | $JQ_BIN -r '.data.activeTargets[]? | select(.health != "up") | [.labels.job, .scrapeUrl, .lastError] | @tsv')
+  pending=$(printf '%s' "$targets" | $JQ_BIN -r '.data.activeTargets[]? | select(.health == "unknown") | [.labels.job, .scrapeUrl] | @tsv')
+  if [[ -n $pending ]]; then
+    fail "Prometheus targets are awaiting their first scrape; retry after the scrape interval (up to 5 minutes for public ingress)"
+    printf '%s\n' "$pending" >&2
+  fi
+  unhealthy=$(printf '%s' "$targets" | $JQ_BIN -r '.data.activeTargets[]? | select(.health != "up" and .health != "unknown") | [.labels.job, .scrapeUrl, .lastError] | @tsv')
   if [[ -n $unhealthy ]]; then
     fail "one or more Prometheus targets are unhealthy"
     printf '%s\n' "$unhealthy" >&2

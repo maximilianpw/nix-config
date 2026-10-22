@@ -39,7 +39,11 @@ printf '%s\n' '{"Services":{"svc:grafana":{},"svc:kuma":{}},"TCP":{},"Web":{}}'
 EOF
 cat > "$tmp/curl" <<'EOF'
 #!/usr/bin/env bash
-printf '%s\n' '{"data":{"activeTargets":[{"health":"up","labels":{"job":"node"}}]}}'
+if [[ -n ${TEST_PROMETHEUS_TARGETS:-} ]]; then
+  printf '%s\n' "$TEST_PROMETHEUS_TARGETS"
+else
+  printf '%s\n' '{"data":{"activeTargets":[{"health":"up","labels":{"job":"node"}}]}}'
+fi
 EOF
 cat > "$tmp/inspect" <<'EOF'
 #!/usr/bin/env bash
@@ -98,6 +102,23 @@ if HOMELAB_LOOPBACK_PORTS='19004' HOMELAB_HOST_PORTS='19001 8096' \
   exit 1
 fi
 grep -Fq 'declared host-bound port 19001 has no non-loopback listener' "$tmp/loopback-as-host.err"
+
+if TEST_PROMETHEUS_TARGETS='{"data":{"activeTargets":[{"health":"unknown","labels":{"job":"public-ingress"},"scrapeUrl":"http://probe/pending","lastError":""}]}}' \
+  bash "$check_script" > "$tmp/pending.out" 2> "$tmp/pending.err"; then
+  echo "pending Prometheus targets unexpectedly passed" >&2
+  exit 1
+fi
+grep -Fq 'Prometheus targets are awaiting their first scrape' "$tmp/pending.err"
+! grep -Fq 'targets are unhealthy' "$tmp/pending.err"
+grep -Fq 'public-ingress' "$tmp/pending.err"
+
+if TEST_PROMETHEUS_TARGETS='{"data":{"activeTargets":[{"health":"down","labels":{"job":"local-backends"},"scrapeUrl":"http://probe/down","lastError":"connection refused"}]}}' \
+  bash "$check_script" > "$tmp/down.out" 2> "$tmp/down.err"; then
+  echo "failed Prometheus targets unexpectedly passed" >&2
+  exit 1
+fi
+grep -Fq 'one or more Prometheus targets are unhealthy' "$tmp/down.err"
+grep -Fq 'connection refused' "$tmp/down.err"
 
 HOMELAB_CHECK_ARCHIVE=1 bash "$check_script" > "$tmp/archive.out"
 grep -Fq 'Archive inspection passed; no files were restored' "$tmp/archive.out"

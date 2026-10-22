@@ -5,7 +5,8 @@ set -euo pipefail
 : "${HOMELAB_CHECK_BIN:=homelab-check}"
 : "${SLEEP_BIN:=sleep}"
 : "${READLINK_BIN:=readlink}"
-: "${HOMELAB_CHECK_ATTEMPTS:=15}"
+# Allow the five-minute public-ingress scrape interval plus startup margin.
+: "${HOMELAB_CHECK_ATTEMPTS:=36}"
 : "${HOMELAB_CHECK_RETRY_SECONDS:=10}"
 : "${CURRENT_SYSTEM_LINK:=/run/current-system}"
 

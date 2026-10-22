@@ -44,4 +44,14 @@ if ATTEMPT_FILE="$attempt_file" SLEEP_FILE="$sleep_file" SUCCEED_ON_ATTEMPT=99 \
 fi
 test "$(< "$attempt_file")" = 2
 
+# Public-ingress probes may wait five minutes for their first scrape after
+# Prometheus starts. The default retry budget must cover that interval.
+rm -f "$attempt_file" "$sleep_file"
+ATTEMPT_FILE="$attempt_file" SLEEP_FILE="$sleep_file" SUCCEED_ON_ATTEMPT=32 \
+  HOMELAB_CHECK_BIN="$fake_check" SLEEP_BIN="$fake_sleep" \
+  "$script_dir/rebuild/post-switch-homelab-check.sh" /nix/store/previous >/dev/null
+test "$(< "$attempt_file")" = 32
+[[ $(wc -l < "$sleep_file") -eq 31 ]]
+test "$(head -n 1 "$sleep_file")" = 10
+
 echo "post-switch homelab check tests passed"
