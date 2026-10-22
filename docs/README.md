@@ -21,6 +21,7 @@ completed plans and superseded research.
 
 ## Service runbooks
 
+- [Amp self-hosted orbs](amp-orbs.md)
 - [Atuin](atuin.md)
 - [Forgejo](forgejo.md)
 - [Immich](immich.md)

@@ -13,6 +13,8 @@
       inherit lib nixpkgs;
       pkgs = nixpkgs.legacyPackages.x86_64-linux;
       package = self.nixosConfigurations.kim.pkgs.amp-cli;
+      kim = self.nixosConfigurations.kim.config;
+      cuno = self.nixosConfigurations.cuno.config;
     };
     plannotator-config-regression = import ../tests/plannotator-config-regression.nix {
       inherit lib;

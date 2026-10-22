@@ -3,6 +3,8 @@
   nixpkgs,
   pkgs,
   package,
+  kim,
+  cuno,
 }: let
   evaluate = extra:
     (nixpkgs.lib.nixosSystem {
@@ -39,6 +41,23 @@
     };
   };
 in
+  assert lib.assertMsg (
+    kim.services.amp-orb-provider.enable
+    && kim.services.amp-orb-provider.package == package
+    && kim.virtualisation.docker.package.pname == "docker"
+    && kim.systemd.services.amp-orb-provider.unitConfig.ConditionPathExists == "/run/secrets/amp-orb-provider-token"
+    && !(cuno.systemd.services ? amp-orb-provider)
+  )
+  "Amp orb provider must be configured on Kim only and wait for its runtime token";
+  assert lib.assertMsg (
+    (kim.sops.secrets ? amp-orb-provider-token)
+    == builtins.pathExists ../secrets/amp-orb-provider.yaml
+    && (!(kim.sops.secrets ? amp-orb-provider-token)
+      || (kim.sops.secrets.amp-orb-provider-token.path
+        == kim.services.amp-orb-provider.tokenFile
+        && kim.sops.secrets.amp-orb-provider-token.restartUnits == ["amp-orb-provider.service"]))
+  )
+  "Kim must decrypt and reload the provider token when its encrypted SOPS file is provisioned";
   assert lib.assertMsg (!(disabled.systemd.services ? amp-orb-provider) && !disabled.virtualisation.docker.enable)
   "Amp orb provider must remain opt-in without enabling Docker implicitly";
   assert lib.assertMsg (enabled.virtualisation.docker.enable && lib.all (entry: entry.assertion) enabled.assertions)
