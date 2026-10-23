@@ -43,6 +43,11 @@ def fake_docker(args):
         else:
             print(str(container["owner"]).lower())
     elif command == ["container", "run"]:
+        # NixOS defaults to journald, which rejects file rotation options.
+        log_driver = option("--log-driver") if "--log-driver" in args else "journald"
+        if log_driver == "journald" and "--log-opt" in args:
+            print("docker: Error response from daemon: unknown log opt 'max-file' for journald log driver", file=sys.stderr)
+            return 1
         name = option("--name")
         assert name not in containers, "attempted to replace an existing disk"
         containers[name] = {"owner": True, "running": True, "image": args[-3]}
@@ -126,8 +131,11 @@ def run_tests():
         job("spawn", AMP_URL="https://amp.example.test")
         run = calls(["container", "run"])[0]
         for flag, value in (("--platform", "linux/amd64"), ("--cpus", "4"),
-                            ("--memory", "8g"), ("--memory-swap", "8g"), ("--pids-limit", "2048")):
+                            ("--memory", "8g"), ("--memory-swap", "8g"), ("--pids-limit", "2048"),
+                            ("--log-driver", "json-file")):
             assert run[run.index(flag) + 1] == value
+        log_options = [run[index + 1] for index, arg in enumerate(run) if arg == "--log-opt"]
+        assert sorted(log_options) == ["max-file=3", "max-size=10m"]
         assert "--privileged" not in run and "--volume" not in run and "--publish" not in run
         assert "--env" not in run and "--network=host" not in run
         assert "AMP_URL" in calls(["container", "exec"])[0]

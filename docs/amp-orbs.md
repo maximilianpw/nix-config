@@ -113,9 +113,11 @@ interactive `amp login` is needed for the provider service.
   280-second timeout plus a 5-second kill grace. Slow image pulls or large
   snapshots can exceed this budget and need operator investigation.
 - Each orb has CPU, memory, PID and log limits, applied when it is created;
-  changing these settings does not rewrite existing containers. Swap is disabled
-  for the orb. Docker restart policy is `no`, so sleeping orbs do not wake at host reboot.
-  The provider resumes them on subsequent spawn jobs.
+  changing these settings does not rewrite existing containers. Orb logs explicitly
+  use Docker's `json-file` driver with `max-size=10m` and `max-file=3`, independent
+  of the daemon's default (`journald` on NixOS, which rejects these options).
+  Swap is disabled for the orb. Docker restart policy is `no`, so sleeping orbs do
+  not wake at host reboot. The provider resumes them on subsequent spawn jobs.
 - The default limit allows four simultaneous orbs (up to 16 CPUs / 32 GiB), not
   unlimited resource use. Stopped disks and snapshot images **are not size- or
   count-bounded**. Monitor Docker's filesystem usage. `homelab.keep=true` marks
@@ -161,7 +163,8 @@ nix build .#checks.x86_64-linux.amp-orb-provider-regression --no-link
 
 The regression uses a disposable Docker fixture, not the host daemon. It covers
 create/repeat/resume/pause/delete, snapshot reuse and fallback, capacity limits,
-ownership and ID validation, token forwarding, and failed Docker operations.
+ownership and ID validation, token forwarding, log-driver compatibility with a
+`journald` daemon default, and failed Docker operations.
 The Nix check evaluates opt-in behavior, credential loading and service wiring,
 and builds the generated shell wrappers. A real Amp connection and container
 bootstrap still require the operator smoke test above.

@@ -75,7 +75,7 @@ case "$ORB_OPERATION" in
           --name "$name" --label "$owner_label=true" --label homelab.keep=true \
           --restart=no --cpus "$ORB_CPUS" --memory "$ORB_MEMORY" \
           --memory-swap "$ORB_MEMORY" --pids-limit "$ORB_PIDS_LIMIT" \
-          --log-opt max-size=10m --log-opt max-file=3 \
+          --log-driver json-file --log-opt max-size=10m --log-opt max-file=3 \
           -- "$image" sleep infinity >/dev/null
       fi
     fi
