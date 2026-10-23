@@ -128,13 +128,13 @@ description = "Navigate right (Vim/Herdr)"
 key = "prefix+shift+t"
 type = "plugin_action"
 command = "personal.herdr-jj.create"
-description = "Create jj workspace"
+description = "Create workspace (JJ or Git)"
 
 [[keys.command]]
 key = "prefix+t"
 type = "plugin_action"
 command = "personal.herdr-jj.open"
-description = "Open jj workspace"
+description = "Open workspace (JJ or Git)"
 
 [[keys.command]]
 key = "prefix+alt+t"
@@ -256,8 +256,8 @@ agent_panel_sort = "spaces"
 [ui.sidebar.spaces]
 # Leave a blank row between workspaces for clearer visual separation.
 row_gap = 1
-# Preserve Git compatibility status; add the plugin's last-snapshot jj status.
-rows = [["state_icon", "workspace"], ["branch", "git_status"], ["$jj_status", "$jj_bookmark"]]
+# Prefer JJ; the plugin reports Git status only for Git-only repositories.
+rows = [["state_icon", "workspace"], ["$vcs_status", "$vcs_bookmark"]]
 
 [ui.toast]
 delivery = "herdr"

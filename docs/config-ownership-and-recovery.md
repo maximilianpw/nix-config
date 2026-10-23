@@ -30,6 +30,36 @@ Chezmoi's `private_` filename prefix sets restrictive file permissions. It does
 **not** encrypt file contents. Secrets belong in sops, a password manager, or a
 chezmoi encrypted source file; plaintext credentials must never be committed.
 
+## Herdr workspace plugin
+
+`herdr-jj` is a release-tagged flake input from
+[`maximilianpw/herdr-jj`](https://github.com/maximilianpw/herdr-jj). Its package
+follows `nixpkgs-unstable` for Bun >= 1.3.14 and JJ >= 0.46. Home Manager installs
+it and runs `herdr plugin link <store-package>/share/herdr-jj` during activation.
+There is no activation-time fetch/build or dependency on a local source checkout.
+
+- Hjem owns the static `users/maxpw/hjem/files/.config/herdr/config.toml`, including
+  workspace shortcuts and the JJ-first sidebar.
+- Herdr owns its mutable plugin registry and plugin state. The existing
+  `personal.herdr-jj` ID is retained; registration does not remove journals,
+  checkouts, or archives. Do not declare the registry as a static Hjem/HM file.
+- A manual development link overrides the packaged path only until the next
+  Home Manager activation. Activating an earlier Nix configuration registers
+  that version again; it does not roll back workspace data or journals.
+
+For an upgrade, change the `herdr-jj` tag in `flake.nix`, then:
+
+```sh
+nix flake update herdr-jj
+nix build .#herdr-jj --no-link
+make lint
+nix flake check --no-build
+make check-linux
+```
+
+Review `flake.lock` and activate through the normal, explicitly authorized
+system-rebuild workflow. Tags are immutable; new releases get new version tags.
+
 ## Homelab state classes
 
 Every service state artifact has exactly one owner:
