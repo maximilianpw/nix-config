@@ -5,6 +5,9 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-26.05";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
 
+    # Nix packaging was added after v0.1.7; keep its Python 3.14 package set.
+    jj-stack.url = "github:bos/jj-stack/2524ab09ee01b4fa2f43e829b20e45a9a68bc1fa";
+
     vite-plus = {
       url = "github:ryoppippi/nix-vite-plus";
       inputs.nixpkgs.follows = "nixpkgs-unstable";
@@ -24,6 +27,12 @@
     loggle = {
       url = "github:maximilianpw/loggle/v0.2.0";
       inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    # Release-pinned Herdr plugin; Bun >= 1.3.14 and JJ >= 0.46 need unstable.
+    herdr-jj = {
+      url = "github:maximilianpw/herdr-jj/v0.1.0";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
     # Own email client, built from source for Kim's homelab. Private repository,
@@ -154,6 +163,7 @@
         inherit (llm) grok;
         inherit (llm) muse-code;
         inherit (llm) herdr;
+        herdr-jj = inputs.herdr-jj.packages.${prev.stdenv.hostPlatform.system}.default;
         inherit (llm) executor;
         amp-cli = llm.amp;
         inherit pi;
@@ -316,14 +326,16 @@
       in
         editorPackages "x86_64-linux"
         // {
-          inherit (pkgs) helium obsidian skills cliproxyapi cua-driver nextcloud-calendar hunkdiff nix-update tunarr jellyfin jellyfin-web jellyfin-ffmpeg vite-plus t3code;
+          inherit (pkgs) helium obsidian skills cliproxyapi cua-driver nextcloud-calendar hunkdiff nix-update tunarr jellyfin jellyfin-web jellyfin-ffmpeg vite-plus t3code herdr-jj;
+          inherit (inputs.jj-stack.packages.x86_64-linux) jj-stack;
         };
       aarch64-darwin = let
         pkgs = mkPkgs "aarch64-darwin";
       in
         editorPackages "aarch64-darwin"
         // {
-          inherit (pkgs) cua-driver skills nextcloud-calendar hunkdiff nix-update obsidian vite-plus t3code;
+          inherit (pkgs) cua-driver skills nextcloud-calendar hunkdiff nix-update obsidian vite-plus t3code herdr-jj;
+          inherit (inputs.jj-stack.packages.aarch64-darwin) jj-stack;
         };
     };
 
