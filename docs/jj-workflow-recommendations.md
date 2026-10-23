@@ -10,7 +10,7 @@ rebuild workflow. Building or testing this flake does not activate them.
 | Command | Behavior |
 | --- | --- |
 | `jj f` | Fetch Git refs. No extra GitHub cleanup hook. |
-| `jj tug <bookmark>` | Advance the named bookmark to `@-`. Without a name, select the nearest mutable bookmark, never trunk by default. |
+| `jj tug <bookmark>` | Advance the named bookmark to `@-`. Without a name, select the closest ancestor bookmark, including `main`. |
 | `jj check-stack <command> [args...]` | Check nonempty mutable ancestors of `@` without saving changes made by the command. |
 | `jj stack <command>` | Run the pinned `bos/jj-stack` CLI. |
 | `jj sync` | Run `jj-stack sync --all` for this repository's tracked stacks. |

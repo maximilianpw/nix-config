@@ -103,20 +103,30 @@ class JujutsuWorkflowTest(unittest.TestCase):
         self.jj("check-stack", "sh", "-c", "exit 7", success=False)
         self.assertEqual(self.revision(revset), before)
 
-    def test_tug_does_not_advance_trunk(self):
+    def test_tug_advances_trunk_when_it_is_the_closest_bookmark(self):
         original = self.revision("main")
         self.jj("new", "main", "-m", "unbookmarked work")
         (self.repo / "feature.txt").write_text("work\n")
         self.jj("new")
         self.jj("tug")
-        self.assertEqual(self.revision("main"), original)
-        self.jj("bookmark", "create", "feature", "-r", "@-")
-        self.jj("describe", "-m", "follow-up")
+        self.assertEqual(self.revision("main"), self.revision("@-"))
+        self.assertNotEqual(self.revision("main"), original)
+        self.assertEqual(self.revision("main@origin"), original)
+
+    def test_tug_advances_only_the_closest_bookmark_unless_named(self):
+        original = self.revision("main")
+        self.jj("new", "main", "-m", "feature")
+        (self.repo / "feature.txt").write_text("work\n")
+        self.jj("bookmark", "create", "feature")
+        self.jj("new", "-m", "follow-up")
         (self.repo / "feature.txt").write_text("follow-up\n")
         self.jj("new")
-        self.jj("tug", "feature")
+        self.jj("tug")
         self.assertEqual(self.revision("feature"), self.revision("@-"))
         self.assertEqual(self.revision("main"), original)
+        self.jj("tug", "main")
+        self.assertEqual(self.revision("main"), self.revision("@-"))
+        self.assertEqual(self.revision("main@origin"), original)
 
     def test_fetch_removes_unchanged_tracking_bookmark_after_squash_merge(self):
         self.feature()

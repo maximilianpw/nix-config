@@ -107,8 +107,6 @@ in {
         git_push_bookmark = ''"maximilianpw/push-" ++ change_id.short()'';
       };
 
-      revsets.bookmark-advance-from = "heads(::to & bookmarks() & mutable())";
-
       revset-aliases = {
         "fork_history(to, from)" = "fork_point(to | from)..@";
       };

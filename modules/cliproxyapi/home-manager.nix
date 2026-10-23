@@ -122,6 +122,8 @@ in {
 
       # Put proxy-default wrappers ahead of package binaries. The matching
       # *-direct commands keep first-party access available for diagnosis.
+      # Restore Claude's bundled + system CA default before the Nix package's
+      # system-only fallback; macOS's system store alone can miss public roots.
       ".local/bin/claude" = {
         executable = true;
         text = ''
@@ -130,6 +132,7 @@ in {
           export ANTHROPIC_BASE_URL=${lib.escapeShellArg proxyBaseUrl}
           export ANTHROPIC_AUTH_TOKEN="$CLIPROXYAPI_API_KEY"
           export CLAUDE_CODE_MAX_CONTEXT_TOKENS=272000
+          export CLAUDE_CODE_CERT_STORE="''${CLAUDE_CODE_CERT_STORE-bundled,system}"
           exec ${lib.getExe pkgs.claude-code} "$@"
         '';
       };
@@ -137,6 +140,7 @@ in {
         executable = true;
         text = ''
           #!${pkgs.bash}/bin/bash
+          export CLAUDE_CODE_CERT_STORE="''${CLAUDE_CODE_CERT_STORE-bundled,system}"
           exec ${lib.getExe pkgs.claude-code} "$@"
         '';
       };
@@ -150,6 +154,7 @@ in {
           export ANTHROPIC_DEFAULT_OPUS_MODEL=${kimiModel} ANTHROPIC_DEFAULT_SONNET_MODEL=${kimiModel} ANTHROPIC_DEFAULT_HAIKU_MODEL=${kimiModel}
           export CLAUDE_CODE_SUBAGENT_MODEL=${kimiModel} CLAUDE_CODE_ALWAYS_ENABLE_EFFORT=1
           export CLAUDE_CODE_MAX_TOOL_USE_CONCURRENCY=3 ENABLE_TOOL_SEARCH=false
+          export CLAUDE_CODE_CERT_STORE="''${CLAUDE_CODE_CERT_STORE-bundled,system}"
           exec ${lib.getExe pkgs.claude-code} --model ${kimiModel} --effort max "$@"
         '';
       };
