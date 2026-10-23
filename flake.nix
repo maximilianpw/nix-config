@@ -31,7 +31,7 @@
 
     # Release-pinned Herdr plugin; Bun >= 1.3.14 and JJ >= 0.46 need unstable.
     herdr-jj = {
-      url = "github:maximilianpw/herdr-jj/v0.1.0";
+      url = "github:maximilianpw/herdr-jj/v0.1.1";
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
