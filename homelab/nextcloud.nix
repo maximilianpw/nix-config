@@ -62,7 +62,6 @@ in {
     # Keep existing app-store apps available alongside immutable packaged apps.
     appstoreEnable = true;
     extraApps = {
-      calendar = pkgs.nextcloud-calendar;
       integration_paperless =
         pkgs.nextcloud34Packages.apps.integration_paperless;
     };

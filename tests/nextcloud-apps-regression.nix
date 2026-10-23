@@ -9,7 +9,6 @@
 in
   assert lib.assertMsg (builtins.attrNames nextcloud.extraApps
     == [
-      "calendar"
       "integration_paperless"
     ])
   "Nextcloud declarative app ownership must remain complete and explicit";
