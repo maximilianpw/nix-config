@@ -347,23 +347,25 @@
       pkgs = nixpkgs.legacyPackages.${system};
     in {
       default = pkgs.mkShell {
-        buildInputs = with pkgs; [
-          actionlint
-          alejandra
-          bashInteractive
-          curl
-          deadnix
-          git
-          gnumake
-          gh
-          jq
-          nix
-          nodejs
-          python3
-          rsync
-          shellcheck
-          statix
-        ];
+        buildInputs = with pkgs;
+          [
+            actionlint
+            alejandra
+            bashInteractive
+            curl
+            deadnix
+            git
+            gnumake
+            gh
+            jq
+            nodejs
+            python3
+            rsync
+            shellcheck
+            statix
+          ]
+          # On macOS, use the host's Determinate Nix instead of shadowing it.
+          ++ lib.optionals stdenv.isLinux [nix];
         shellHook = ''
           # Child terminals need completion/readline support, not stdenv's minimal Bash.
           export SHELL=${pkgs.bashInteractive}/bin/bash

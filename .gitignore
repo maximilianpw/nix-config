@@ -30,6 +30,9 @@ Thumbs.db
 *.tmp
 *.temp
 
+# Local tool caches can be root-owned after privileged commands.
+/.cache/
+
 # Hyprland creates this stub even when hyprland.lua is the active config.
 users/maxpw/hyprland/hyprland.conf
 
