@@ -1,14 +1,15 @@
 # Tailscale policy: review-only lockdown candidate
 
 [`policies/tailscale.hujson`](../policies/tailscale.hujson) is a complete candidate,
-not the applied policy. It is deliberately strict JSON (also valid HuJSON).
+not the applied policy. HuJSON comments classify the evidence for each grant.
 Nothing in the flake, activation, or CI uploads it. Opening or merging its PR
-does not apply it. **Do not apply before the Kim inventory below is reviewed.**
+does not apply it. **Do not apply before the remaining gates below are resolved.**
 
 ## Baseline and identity
 
-Read-only API snapshot: 2026-10-25, approximately 11:12 UTC (12:12 Europe/Paris).
-The exact ACL response ETag was:
+Initial device snapshot: 2026-10-25, approximately 11:12 UTC (12:12 Europe/Paris).
+The ACL was fetched again at **2026-10-25 13:06:38 UTC (14:06:38 Europe/Paris)**;
+its unrestricted grant and ETag were unchanged:
 
 ```text
 "a1ad08cc6cfcc000e41dffaba041e9510a4e0fd0001c0b82868c2be2f888d616"
@@ -47,48 +48,74 @@ approved exit-node default routes were visible. The candidate grants no subnet
 or exit-node access. Direct internet egress is outside these tailnet grants.
 
 Funnel is permitted for `autogroup:member` by the baseline `nodeAttrs`, preserved
-unchanged. Actual active Funnel listeners are **unknown**, not absent. The
-available Policy File read and Devices Core read scopes do not enumerate
-Services (`services:read` is separate) or establish host-local Serve/Funnel state.
+unchanged. The later host capture's Serve and Funnel JSON contain the same 23
+private Services and no `AllowFunnel` or machine-level handlers
+([L1083–1827](kim-tailscale-inventory.txt#L1083-L1827)). This shows no enabled
+Funnel handler in that snapshot, not a tailnet-wide public-ingress audit.
+The available read scopes still cannot enumerate the control-plane Service
+catalog; the host status now supplies Service/VIP evidence below.
 
-## Tags and ports
+## Verified observations versus provisional grants
+
+Evidence is the complete 2,078-line [Kim host capture](kim-tailscale-inventory.txt)
+at [commit 590d38e](https://github.com/maximilianpw/nix-config/commit/590d38ef2e6b0bdb2648aeb702f15252852a1f02),
+captured 2026-10-25 around 13:52 Europe/Paris (12:52 UTC). All inventory line
+citations and policy comments refer to that immutable version. Unlike the
+earlier isolated-orb scan, it shows the actual host interfaces
+([L1–17](kim-tailscale-inventory.txt#L1-L17)). No new host commands were run here.
+
+**Verified** below means a captured listener, configuration or connection—not
+an end-to-end application test. **Provisional** grants retain repository-backed
+requirements whose clients, direction or live usage are not established by this
+single snapshot. Personal grants remain user-based; observing Joyce does not
+prove every device owned by Max uses each allowed port.
 
 Host destinations use separate IPv4/IPv6 aliases, independent of destination
 tagging order. Service destinations use `svc:` identities, not Kim's host IP or
 loopback backend ports. Responses to permitted connections need no reverse grant.
 
-All port grants below are **repository-derived proposals, not verified host
-dependencies**. The isolated homelab orb cannot observe Kim's host network.
-No grant for an unknown listener is inferred from an empty container scan.
+| Source | Destination | Protocol/port | Purpose | Evidence | Grant decision |
+| --- | --- | --- | --- | --- | --- |
+| Max's untagged devices (Joyce observed) | Kim | TCP 22 | OpenSSH / Fleet | Listeners [L114,147](kim-tailscale-inventory.txt#L114-L147); Joyce sessions [L161–171](kim-tailscale-inventory.txt#L161-L171); `RunSSH=false` [L1830](kim-tailscale-inventory.txt#L1830) | Keep; verified IPv4 flow and both-family listeners. Other clients/IPv6 flow not observed. |
+| Max's untagged devices | 23 Kim-hosted `svc:` endpoints | TCP 443 | Private HTTPS apps | VIP map [L423–518](kim-tailscale-inventory.txt#L423-L518), Serve [L1083–1454](kim-tailscale-inventory.txt#L1083-L1454) | Keep; hosting verified, per-client use not measured. No raw backend grants. |
+| `tag:homelab` (Kim) | `svc:git` | TCP 443 | Forgejo runner → Forgejo | Connection [L172](kim-tailscale-inventory.txt#L172), VIP [L437–440](kim-tailscale-inventory.txt#L437-L440), proxy [L1133–1148](kim-tailscale-inventory.txt#L1133-L1148) | Add; verified dependency missing from initial draft. |
+| Max's untagged devices | `svc:leerr`, `svc:plannotator` | TCP 443 | Preserve existing Service access | Catalog definitions/VIPs [L615–626](kim-tailscale-inventory.txt#L615-L626), [L675–686](kim-tailscale-inventory.txt#L675-L686); absent from hosted map/Serve | Add explicit preservation grants; definitions verified, current host/use provisional. Do not delete or auto-approve them. |
+| Max's untagged devices | Kim | TCP/UDP 22000 | Syncthing | Listeners [L81,151](kim-tailscale-inventory.txt#L81-L151); firewall [L1929–1933](kim-tailscale-inventory.txt#L1929-L1933) | Keep; listener verified, direct tailnet peer use provisional. |
+| Max's untagged devices | Kim, Cuno | UDP 60000–61000 | mosh | Kim range [L1936](kim-tailscale-inventory.txt#L1936), [L2041](kim-tailscale-inventory.txt#L2041); no mosh socket in [L18–213](kim-tailscale-inventory.txt#L18-L213); `modules/fleet/nixos.nix` | Keep provisional; firewall allowance is not proof of a session. Cuno offline [L892](kim-tailscale-inventory.txt#L892). |
+| Max's untagged devices; `tag:homelab` | Joyce, Cuno | TCP 22 | Fleet | `modules/fleet/ssh-access.nix`; no matching outbound Kim flow [L152–213](kim-tailscale-inventory.txt#L152-L213) | Keep provisional; incoming Joyce→Kim SSH does not prove the reverse direction. |
+| `tag:homelab` | Cuno | UDP 60000–61000 | Outbound mosh | `modules/fleet/nixos.nix`; offline peer [L867–905](kim-tailscale-inventory.txt#L867-L905) | Keep provisional; no live listener/session evidence. |
+| `tag:homelab` | Joyce | TCP/UDP 22000 | Syncthing reverse initiation | `users/maxpw/modules/syncthing.nix`; [L163](kim-tailscale-inventory.txt#L163) instead shows public-IP TCP 22067, consistent with a relay | Keep provisional; no captured direct peering, identity or folder confirmation. |
+| LAN clients | Kim | TCP 8096 / 32400 | Jellyfin / Plex | Wildcard listeners [L115,140](kim-tailscale-inventory.txt#L115-L140); LAN-specific accepts [L1930–1942](kim-tailscale-inventory.txt#L1930-L1942) | No tailnet grant; explicit deny tests. See firewall caveat below. |
 
-| Source | Destination | Allowed initiation | Evidence / caveat |
-| --- | --- | --- | --- |
-| Max's untagged devices | Kim, Joyce, Cuno | TCP 22 | `modules/fleet/ssh-access.nix`; ordinary OpenSSH, not a new Tailscale SSH authorization |
-| Max's untagged devices | Kim, Cuno | UDP 60000–61000 | `modules/fleet/nixos.nix`, mosh range |
-| Max's untagged devices | Kim | TCP/UDP 22000 | Syncthing standard transfer ports; verify live overrides/pairing |
-| Max's untagged devices | 23 named Services in the policy | TCP 443 | `lib/homelab-services.nix` and `homelab/tailscale-serve.nix` |
-| `tag:homelab` | Joyce, Cuno | TCP 22 | Existing Fleet trust permits Kim as an SSH client |
-| `tag:homelab` | Cuno | UDP 60000–61000 | Existing NixOS Fleet/mosh configuration |
-| `tag:homelab` | Joyce | TCP/UDP 22000 | `users/maxpw/modules/syncthing.nix` declares the Mac peer; pairing remains mutable |
+The 23 hosted names exactly match `lib/homelab-services.nix`. The status also
+defines `leerr` and `plannotator`, so the earlier 23-name list was not the entire
+known catalog. The runner flow to `100.125.229.20:443` maps specifically to
+`svc:git`, not Kim's host-IP HTTPS port or every Service. Existing seven Service
+approval entries and the Tailscale SSH section remain unchanged.
 
-Everything else lacks a grant. In particular, Kim cannot initiate arbitrary
-connections to personal devices; only the Fleet and Syncthing exceptions above
-remain. The phone, tablet and Windows host receive no incoming grants. Windows
-RDP, Joyce mosh, direct host HTTPS, raw application backends, LAN discovery,
-and Kim-initiated Service access are not assumed necessary. Confirm those
-omissions against usage before applying; this is not proof they are unused.
-Jellyfin TCP 8096 and Plex TCP 32400 are declared in the repository, but actual
-host exposure and tailnet consumers are unverified: no grants are invented for
-them here. Tailscale ACLs do **not** restrict direct LAN access to those ports.
+Kim's preferences verify `tag:homelab`, `RunSSH=false`, no advertised subnet
+routes, `RouteAll=false` and no selected exit node
+([L1828–1838](kim-tailscale-inventory.txt#L1828-L1838)). Its Service VIP
+`PrimaryRoutes` ([L290–337](kim-tailscale-inventory.txt#L290-L337)) are not
+evidence of a LAN subnet router or exit node. No subnet/internet grant is added.
 
-All 23 repository-declared Service names are enumerated and tested at TCP 443,
-including the seven in the baseline's approval map. No Service is created,
-deleted, renamed, or newly auto-approved. Actual advertisements, extra live
-Services, machine-level Serve handlers and any host-originated Service consumers
-remain an inventory gate. API policy validation alone cannot prove completeness
-or application availability. Existing Tailscale SSH check-mode rules are
-preserved, but network grants still constrain reachability; verify Kim's
-`RunSSH` setting before relying on ordinary OpenSSH behavior.
+### LAN-only intent is not verified tailnet isolation
+
+Jellyfin/Plex have explicit **LAN-interface-only NixOS accept rules**, but their
+listeners bind `0.0.0.0`, not just `192.168.1.99`. More importantly, `INPUT`
+jumps to `ts-input` before `nixos-fw`
+([L1886–1887](kim-tailscale-inventory.txt#L1886-L1887)), and `ts-input` accepts
+all `tailscale0` input ([L1953](kim-tailscale-inventory.txt#L1953)). IPv6 has
+the same ordering ([L2023–2024](kim-tailscale-inventory.txt#L2023-L2024),
+[L2055](kim-tailscale-inventory.txt#L2055)). Thus those LAN-specific rules do
+**not prove the media ports are unreachable through Tailscale** under the live
+allow-all policy. No reachability probe was performed. The candidate denies
+tailnet access to both ports, while direct LAN access is outside Tailscale ACL
+control. Confirm whether any existing tailnet media clients would be affected.
+
+Other omissions remain intentional review decisions: Windows RDP, Joyce mosh,
+host-IP HTTPS, raw application backends, LAN discovery and arbitrary Kim→Service
+access. Do not infer unused services from absent traffic in a single sample.
 
 ## Validation and review
 
@@ -112,79 +139,49 @@ the Nix store. No policy-write or device-write scope is needed for this review.
    forbidden subnet access. They are examples of denied traffic, not an
    exhaustive scan or proof that a service is listening.
 
-The candidate's four test cases (149 assertions) returned **HTTP 200 `{}`** on
-2026-10-25. Temporary mutations restoring allow-all, widening the mosh range,
-allowing UDP SSH, and removing T3 Code access each produced test failures.
-The live ACL bytes and ETag remained unchanged afterward. Live connectivity is
-intentionally untested. Run `jq empty policies/tailscale.hujson` and
-`git diff --check` for local syntax/whitespace checks; no Nix module changed.
-
-## Kim inventory still required (read-only, host-authorized session)
-
-The reported homelab orb is Docker container `20cfba550999` at `172.17.0.3`.
-It cannot see `tailscale0`, `enp194s0`, host mounts/sockets, the tailscaled socket,
-or host listeners. Its empty 100.x scan is **not host evidence**. Do not bypass
-that isolation; use an explicitly authorized host session or have the operator
-collect output. API-reported tags/routes above are control-plane observations,
-not verification of Kim's running preferences, routing or Service VIPs.
-
-The minimum initial host collection is:
+The updated candidate's four test cases (**163 assertions**) returned **HTTP 200
+`{}`** on 2026-10-25. The previous draft fails the three new Service acceptance
+assertions. Mutations using the host IP instead of the git VIP, allowing UDP
+for the runner, or adding media-port grants also fail. Baseline SSH, tags,
+Funnel and auto-approval sections match structurally, and a final read confirmed
+the live ACL bytes and ETag were unchanged. No live connectivity probe was run.
+For the current file's full-line-comment-only format, the local syntax check is:
 
 ```sh
-ip -brief address show
-sudo ss -lntup
-sudo ss -ntup
-sudo sshd -T | grep -E '^(port|listenaddress|allowusers|authenticationmethods) '
-tailscale status --json
-tailscale serve status --json
-tailscale funnel status --json
-sudo tailscale debug prefs | jq '{RunSSH, AdvertiseTags, AdvertiseRoutes, RouteAll, ExitNodeID, ExitNodeIP}'
+sed '/^[[:space:]]*\/\//d' policies/tailscale.hujson | jq empty
+git diff --check
 ```
 
-Return interface identity, listener bind IP/protocol/port/process, observed
-tailnet connections and their purpose, selected SSH/preferences fields, and
-all Service/VIP/Serve/Funnel mappings actually exposed by these commands.
-Redact unrelated peer information and any credential-bearing backend URLs.
-If a command or field is unavailable, record that limitation instead of treating
-it as an empty inventory. Capture host firewall rules via the active backend
-(`sudo nft list ruleset` or `sudo iptables-save` plus `sudo ip6tables-save`),
-and report the relevant `tailscale0`/LAN rules for SSH, mosh, Syncthing,
-Jellyfin 8096 and Plex 32400. No commands here were run on Kim by this thread.
+This removes only whole-line comments, not arbitrary HuJSON syntax. Submit the
+resulting JSON object to the read-only validator. No Nix module changed.
 
-Return a sanitized table of **source identity/IP → destination IP/Service →
-protocol/port → purpose → evidence**, distinguishing observations from inferred
-requirements. Do not restart anything, change Serve/Funnel, or probe denied
-access before a separately authorized rollout.
+## Remaining evidence before rollout
 
-- List TCP and UDP listeners with process/unit names and bind addresses:
-  `sudo ss -lntup`. Inspect established sockets with `sudo ss -ntup`; retain
-  tailnet IPv4 (`100.64.0.0/10`), tailnet IPv6 (`fd7a:115c:a1e0::/48`), and any
-  routed peers. Sample during normal Fleet, sync and service use; one idle
-  snapshot cannot establish that outbound dependencies do not exist.
-- Collect `tailscale status --json`, `tailscale serve status --json`, and
-  `tailscale funnel status --json`. Account for every `Services` entry, endpoint,
-  backend and machine-level handler; inspect `AllowFunnel` where exposed. Do not
-  substitute this for the control-plane Service catalog if host output omits
-  inactive or other-host Services. An administrator can supply that catalog.
-- Extract only relevant fields from `tailscale debug prefs`: `RunSSH`,
-  `AdvertiseTags`, `AdvertiseRoutes`, `RouteAll`, `ExitNodeID` and `ExitNodeIP`.
-  Never publish the full preferences/persisted identity or authentication data.
-- Confirm actual OpenSSH ports and listen addresses, mosh range, firewall
-  interface rules, container/network-namespace listeners and published ports.
-  Inspect only network fields, not full container environment/inspect output.
-- Identify Syncthing peer names/addresses, listen addresses and connection
-  protocols without API keys. Verify Kim↔Joyce TCP/UDP 22000 and any other peers,
-  custom ports, relay dependency or discovery requirement.
-- Search deployed configuration/scripts for tailnet IPs, MagicDNS names and
-  `svc:` destinations. Return redacted references and required connections,
-  especially Kim→Joyce/Cuno Fleet, Kim→Services, monitoring, agents, backups and
-  container traffic. Do not dump secret-bearing configuration or runtime env.
-- Inventory public ingress paths and their backend dependencies, including
-  Cloudflare and any actual Funnel use. Record existing availability checks and
-  an independent console/recovery path before proposing network changes.
-
-No commands on Joyce or Cuno are required for this phase. Their configured roles
-come from this repository; live reachability remains explicitly unverified.
+- **Effective sshd configuration was not captured.** `=== sshd ===` is immediately
+  followed by the next section ([L214–215](kim-tailscale-inventory.txt#L214-L215)).
+  There is no captured command, stderr or exit status explaining why; do not
+  infer a missing daemon, disabled SSH, or verified authentication settings.
+  Listeners and sessions independently prove ordinary SSH is running. In an
+  authorized host session, inspect `systemctl show sshd.service -p ExecStart`,
+  then run that binary/configuration with `-T` (and representative `-C` context
+  if Match rules apply), retaining stderr and exit status. Return only port,
+  listenaddress, allowusers, authenticationmethods, passwordauthentication,
+  kbdinteractiveauthentication and permitrootlogin values. Do not hide a failed
+  command behind a filtering pipeline.
+- Confirm direct Syncthing peers/addresses/folders and initiation direction
+  without API keys. The observed public-IP TCP 22067 session is consistent with
+  a relay; it does not establish direct Kim↔Joyce traffic or require an exit-node
+  grant. Keep proposed direct transfer grants provisional until confirmed.
+- Confirm intended mosh use and Kim→Joyce/Cuno Fleet access from operator usage
+  or a representative host observation. Do not require commands on Joyce/Cuno
+  for this phase; their service configuration remains repository-derived.
+- Resolve the host/usage of `svc:leerr` and `svc:plannotator`, any additional
+  catalog entries, and existing tailnet Jellyfin/Plex clients. The capture's
+  missing handlers do not authorize deleting Services or withdrawing access.
+- Sample normal agent, backup, sync and monitoring workloads for additional
+  outbound dependencies; inspect relevant deployed references with secrets
+  redacted. Confirm public ingress availability checks and independent console
+  recovery. The earlier isolated-orb scan remains unusable as host evidence.
 
 ## Later rollout requires separate authorization
 
