@@ -40,6 +40,11 @@
     # nixpkgs: it needs Bun >= 1.4, which nixos-26.05 does not ship.
     superlocal.url = "git+ssh://git@github.com/maximilianpw/superlocal";
 
+    food-tracker-src = {
+      url = "git+https://github.com/maximilianpw/food-tracker?rev=832f5bac6e21fc19bb12e158647188464cb3bc39";
+      flake = false;
+    };
+
     # Private homelab MCP; pin an upstream release and consume its package.
     homelab-mcp = {
       url = "git+ssh://git@github.com/maximilianpw/homelab-mcp?ref=refs/tags/v0.1.1";

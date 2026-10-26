@@ -7,6 +7,7 @@
     ./cliproxyapi.nix
     ./container-hygiene.nix
     ./executor.nix
+    ./food-tracker.nix
     ./forgejo.nix
     ./home-assistant.nix
     ./homepage
