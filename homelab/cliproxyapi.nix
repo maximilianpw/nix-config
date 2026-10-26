@@ -21,6 +21,11 @@
     '';
   };
 in {
+  services.cliproxyapi-quota.history = {
+    prometheusUrl = homelab.loopbackUrl homelab.services.prometheus.endpoint.port;
+    managementUrl = cliProxy.baseUrl;
+  };
+
   sops = {
     secrets.cliproxyapi-public-api-key = {};
     templates = {
@@ -77,6 +82,12 @@ in {
         };
         "/v0/management/" = managementLocation;
         "/v8/management/" = managementLocation;
+        "/v8/management/observability/quota/" = {
+          proxyPass = "${cliProxy.quotaBaseUrl}/observability/quota/";
+          extraConfig = ''
+            add_header Cache-Control "no-store" always;
+          '';
+        };
         "/quota/v1/" = {
           proxyPass = cliProxy.quotaBaseUrl;
           extraConfig = ''
