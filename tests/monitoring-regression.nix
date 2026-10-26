@@ -220,6 +220,17 @@ in
         }
       ])
   ];
+  assert expect.all "Prometheus must collect per-account quota from the loopback quota sidecar without hammering provider APIs" [
+    ((builtins.head (builtins.filter (job: job.job_name == "cliproxy-quota") prometheus.scrapeConfigs)).static_configs
+      == [
+        {
+          targets = ["127.0.0.1:${toString cliProxyBackend.quotaPort}"];
+          labels = {};
+        }
+      ])
+    ((builtins.head (builtins.filter (job: job.job_name == "cliproxy-quota") prometheus.scrapeConfigs)).scrape_interval == "2m")
+    (lib.all (panel: panel.datasource.uid == "prometheus") (builtins.fromJSON (builtins.readFile ../homelab/monitoring/grafana/cliproxy-quota.json)).panels)
+  ];
   assert lib.assertMsg (builtins.elem "alertmanager" scrapeJobNames)
   "Prometheus must scrape its local Alertmanager";
   assert lib.assertMsg (builtins.elem "public-ingress" scrapeJobNames && exporters.blackbox.enable)
