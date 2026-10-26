@@ -103,6 +103,11 @@
       inherit lib;
       pkgs = nixpkgs.legacyPackages.x86_64-linux;
     };
+    cliproxy-statistics-regression = import ../tests/cliproxy-statistics-regression.nix {
+      kim = self.nixosConfigurations.kim;
+      inherit lib;
+      pkgs = nixpkgs.legacyPackages.x86_64-linux;
+    };
     homelab-inventory-regression = import ../tests/homelab-inventory-regression.nix {
       config = self.nixosConfigurations.kim.config;
       inherit lib;

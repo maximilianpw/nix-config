@@ -74,6 +74,7 @@ in
       homeDirectory,
       localApiKey,
       openCodeZenApiKey,
+      pinnedPanel ? false,
     }: ''
       # CLIProxyAPI v8 layout. A present v8 field wins over its legacy spelling,
       # so do not reintroduce legacy top-level keys alongside these.
@@ -85,7 +86,11 @@ in
 
       management:
         allow-remote: true
-        secret-key: "${cliProxy.managementKeyHash}"
+      ${
+        if pinnedPanel
+        then "  disable-auto-update-panel: true\n"
+        else ""
+      }  secret-key: "${cliProxy.managementKeyHash}"
 
       access:
         api-keys:
