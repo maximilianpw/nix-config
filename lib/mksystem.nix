@@ -57,6 +57,7 @@ in
       ++ lib.optional (!darwin) inputs.sops-nix.nixosModules.sops
       ++ lib.optional wsl inputs.nixos-wsl.nixosModules.wsl
       ++ lib.optional (!darwin) inputs.fleet.nixosModules.cliproxy-quota
+      ++ lib.optional (!darwin) inputs.fleet.nixosModules.cliproxyapi
       # Imported here because homelab modules receive inputs through
       # _module.args, which cannot feed `imports`.
       ++ lib.optional (hostRecord.role == "nixos-homelab") inputs.superlocal.nixosModules.default
