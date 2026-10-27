@@ -19,6 +19,7 @@ in {
 
   home = {
     packages = [
+      pkgs.autolith
       pkgs.claude-code
       pkgs.cloudflared
       pkgs.codex

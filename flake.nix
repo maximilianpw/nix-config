@@ -79,6 +79,9 @@
 
     llm-agents.url = "github:numtide/llm-agents.nix";
 
+    # Keep upstream nixpkgs: Autolith pins SBCL and its matching Lisp package set.
+    autolith.url = "github:lambda-symbolics/autolith";
+
     disko.url = "github:nix-community/disko";
     disko.inputs.nixpkgs.follows = "nixpkgs";
 
@@ -150,6 +153,7 @@
       in {
         inherit (llm) claude-code;
         inherit (llm) codex;
+        autolith = inputs.autolith.packages.${prev.stdenv.hostPlatform.system}.default;
         # llm-agents keeps v1 as opencode and installs v2 as opencode2.
         # Preserve the command name used by wrappers and service PATHs.
         opencode = llm.opencode2.overrideAttrs (old: {
