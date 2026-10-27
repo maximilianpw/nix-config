@@ -25,6 +25,12 @@
     && !settings.PasswordAuthentication
     && !settings.KbdInteractiveAuthentication
     && settings.PermitRootLogin == "no";
+  tailscalePolicyMatches = entry:
+    builtins.elem "--ssh=false" entry.config.services.tailscale.extraSetFlags
+    && !(builtins.elem "--ssh" entry.config.services.tailscale.extraSetFlags)
+    && !(builtins.elem "--ssh=true" entry.config.services.tailscale.extraSetFlags)
+    && entry.config.systemd.services.tailscaled.environment.TS_SSH_DISABLE_FORWARDING == "1"
+    && lib.hasInfix "--ssh=false" entry.config.systemd.services.tailscaled-set.script;
   darwinPolicyMatches = entry: let
     config = entry.config.services.openssh.extraConfig;
   in
@@ -48,6 +54,8 @@ in
     else linuxPolicyMatches entry)
   configs)
   "Every Fleet server must enforce key-only tailnet-source SSH policy";
+  assert lib.assertMsg (lib.all tailscalePolicyMatches (builtins.filter (entry: !entry.isDarwin) configs))
+  "Every NixOS Fleet server must disable embedded Tailscale SSH and its forwarding without restricting OpenSSH";
     pkgs.runCommand "fleet-trust-regression" {} ''
       touch "$out"
     ''

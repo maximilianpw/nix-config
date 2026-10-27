@@ -10,7 +10,13 @@
     enable = lib.mkDefault true;
     openFirewall = lib.mkDefault true;
     useRoutingFeatures = lib.mkDefault "client";
+    # Fleet authenticates through OpenSSH, not tailscaled's embedded server.
+    extraSetFlags = ["--ssh=false"];
   };
+
+  # Defense in depth if embedded SSH is enabled outside the configuration.
+  # This does not restrict OpenSSH forwarding used by Fleet tunnels.
+  systemd.services.tailscaled.environment.TS_SSH_DISABLE_FORWARDING = "1";
 
   # Keep administrative services reachable from the tailnet without exposing
   # them on the host's physical interfaces. Tailscale's own UDP listener still

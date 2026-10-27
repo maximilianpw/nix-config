@@ -55,6 +55,15 @@
     && lib.hasInfix "stale_services=" applyScript
     && lib.hasInfix "expected *.$expected_domain:443" applyScript;
   hasValidAndLayout = !lib.hasInfix "\n &&" applyScript;
+  hasOnlyLoopbackHttpBackends =
+    lib.all (service: builtins.match "http://127\\.0\\.0\\.1:[0-9]+" (homelab.loopbackUrl service.port) != null)
+    (builtins.attrValues homelab.privateServices)
+    && lib.all (unsafe: !lib.hasInfix unsafe applyScript) [
+      "unix:"
+      "--tcp"
+      "--tls-terminated-tcp"
+      "AcceptAppCaps"
+    ];
 in
   assert lib.assertMsg (homelab.privateServices.forgejo.tailscaleServiceName == "svc:git")
   "Forgejo must use the git Tailscale service name";
@@ -70,6 +79,8 @@ in
   "tailscale-serve must advertise desired service hosts after rebuilding their endpoint configuration";
   assert lib.assertMsg validatesTailnetDomain
   "tailscale-serve must reapply and validate named services after a tailnet domain rename";
+  assert lib.assertMsg hasOnlyLoopbackHttpBackends
+  "tailscale-serve must use loopback HTTP backends without Unix sockets, raw TCP forwards, or capability-header authorization";
   assert lib.assertMsg hasValidAndLayout
   "tailscale-serve commands must keep && on the preceding command line";
     pkgs.runCommand "tailscale-serve-regression" {} ''
