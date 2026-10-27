@@ -70,7 +70,7 @@ in
   assert lib.assertMsg (homelab.privateServices.food-tracker.tailscaleServiceName
     == "svc:food-tracker"
     && homelab.endpoints.food-tracker.url == "https://food-tracker.liger-shilling.ts.net")
-  "Miette must use its dedicated tailnet HTTPS origin";
+  "Foodlog must use its dedicated tailnet HTTPS origin";
   assert lib.assertMsg hasExpectedCommands
   "tailscale-serve must terminate HTTPS on port 443 and proxy to each HTTP loopback backend";
   assert lib.assertMsg (!lib.hasInfix "serve set-config" applyScript)

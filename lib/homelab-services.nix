@@ -377,7 +377,7 @@
     operations.units = ["nginx.service"];
     presentation = {
       group = "applications";
-      title = "Miette";
+      title = "Foodlog";
       icon = "mdi-food-apple-outline";
       description = "Food journal";
       order = 46;

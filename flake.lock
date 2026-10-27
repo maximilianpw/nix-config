@@ -476,16 +476,16 @@
     "food-tracker-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1793051436,
-        "narHash": "sha256-xF0SMeLVENCOkQR6up0hQy9tt04g9SVMUWoylCNeasU=",
+        "lastModified": 1793091035,
+        "narHash": "sha256-kNvXeOb1Q06oaDVEzKvdEHHg7WJoUxtyF3Bm4cMbDq8=",
         "ref": "refs/heads/main",
-        "rev": "832f5bac6e21fc19bb12e158647188464cb3bc39",
-        "revCount": 5,
+        "rev": "f9d598deb732b516b369f9e0bab473ba4f8fdd94",
+        "revCount": 6,
         "type": "git",
         "url": "https://github.com/maximilianpw/food-tracker"
       },
       "original": {
-        "rev": "832f5bac6e21fc19bb12e158647188464cb3bc39",
+        "rev": "f9d598deb732b516b369f9e0bab473ba4f8fdd94",
         "type": "git",
         "url": "https://github.com/maximilianpw/food-tracker"
       }

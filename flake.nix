@@ -41,7 +41,7 @@
     superlocal.url = "git+ssh://git@github.com/maximilianpw/superlocal";
 
     food-tracker-src = {
-      url = "git+https://github.com/maximilianpw/food-tracker?rev=832f5bac6e21fc19bb12e158647188464cb3bc39";
+      url = "git+https://github.com/maximilianpw/food-tracker?rev=f9d598deb732b516b369f9e0bab473ba4f8fdd94";
       flake = false;
     };
 

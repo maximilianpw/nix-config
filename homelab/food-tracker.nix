@@ -23,6 +23,17 @@ in {
       locations = {
         "/".tryFiles = "$uri $uri/ /index.html";
         "= /index.html".extraConfig = "add_header Cache-Control \"no-cache\";";
+        "= /sw.js" = {
+          tryFiles = "$uri =404";
+          extraConfig = "add_header Cache-Control \"no-cache\";";
+        };
+        "= /manifest.webmanifest" = {
+          tryFiles = "$uri =404";
+          extraConfig = ''
+            default_type application/manifest+json;
+            add_header Cache-Control "no-cache";
+          '';
+        };
         "/assets/".extraConfig = "add_header Cache-Control \"public, max-age=31536000, immutable\";";
       };
     };
