@@ -6,7 +6,7 @@ tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 cd "$tmp"
 cat > flake.lock <<'EOF'
-{"root":"custom-root","nodes":{"custom-root":{"inputs":{"nixpkgs":"nixpkgs","home-manager":"home-manager","llm-agents":"llm-agents","superlocal":"superlocal"}}}}
+{"root":"custom-root","nodes":{"custom-root":{"inputs":{"nixpkgs":"nixpkgs","home-manager":"home-manager","llm-agents":"llm-agents","superlocal":"superlocal","homelab-mcp":"homelab-mcp","food-tracker-src":"food-tracker-src"}}}}
 EOF
 selector=$repo_root/scripts/ci/select-flake-inputs.sh
 printf '%s\n' home-manager llm-agents nixpkgs > expected
@@ -18,7 +18,7 @@ printf '%s\n' llm-agents nixpkgs > expected
 FLAKE_INPUTS=$'nixpkgs\tllm-agents\nnixpkgs' bash "$selector" > actual
 diff -u expected actual
 
-for invalid in superlocal unknown --override-input 'nixpkgs/something' 'nixpkgs;touch injected' '$(touch injected)' '*'; do
+for invalid in superlocal homelab-mcp food-tracker-src unknown --override-input 'nixpkgs/something' 'nixpkgs;touch injected' '$(touch injected)' '*'; do
   if FLAKE_INPUTS="nixpkgs $invalid" bash "$selector" > actual 2> error; then
     echo "Invalid selection unexpectedly accepted: $invalid" >&2
     exit 1

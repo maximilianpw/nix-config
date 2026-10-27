@@ -31,7 +31,7 @@ jobs:
         with:
           cache: 'true'
 
-      - name: Use the public Superlocal stub
+      - name: Use public private-application stubs
         run: scripts/ci/use-superlocal-stub.sh
 
       - name: Run nix-update for each package
@@ -40,8 +40,8 @@ jobs:
           PACKAGES: ${{ github.event.inputs.packages }}
         run: |
           scripts/ci/update-packages.sh
-          # The stub relock is CI-local; never propose it in the package PR.
-          git checkout -- flake.lock
+          # Both substitutions are CI-local; never propose them in the PR.
+          git restore -- flake.lock packages/food-tracker.nix
 
       - name: Check for changes
         id: diff
