@@ -224,14 +224,14 @@
   "rustaceanvim": {
     "owner": "mrcjkb",
     "repo": "rustaceanvim",
-    "rev": "f95bb9aa3bbb73fe26ffe3482836545d217ad049",
-    "hash": "sha256-b2In02ouv3t09OLmozVgF4HO0VEo1uK9t8pxkMsPCn8="
+    "rev": "7adf1b8cd8acbdda4e89e15334481c1608987f00",
+    "hash": "sha256-+JBSTvI+pn36m4V62048tx7tCLqu+6givOrZarkgmi4="
   },
   "schemastore.nvim": {
     "owner": "b0o",
     "repo": "SchemaStore.nvim",
-    "rev": "067b472f6dbc04520982acc9ab14f27c68195c70",
-    "hash": "sha256-zn7tBNFfALHaECJBzqoCpyWTdKAj7tMaO1PRq2sO3J0="
+    "rev": "fa093b1323f7cb379f47fc6704b38864f1cb97bf",
+    "hash": "sha256-1lz7cZusrweu5ZnEpCWK/eEWD+nNY1LQhKMt5eNgkNk="
   },
   "snacks.nvim": {
     "owner": "folke",

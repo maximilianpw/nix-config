@@ -186,6 +186,20 @@
             urls = map (builtins.replaceStrings ["https://bin.equinox.io/"] ["https://bin.ngrok.com/"]) src.urls;
           });
         });
+        # cloudflared needs Go 1.27 from unstable; pin the requested release
+        # for both the tunnel service and the user CLI without moving inputs.
+        cloudflared = unstable.cloudflared.overrideAttrs (_: let
+          version = "2026.10.4";
+        in {
+          inherit version;
+          src = prev.fetchFromGitHub {
+            owner = "cloudflare";
+            repo = "cloudflared";
+            tag = version;
+            hash = "sha256-HuKjytbGutwjUMepozeUmeeHczm4qI7vMvS+hgLsaZ0=";
+          };
+          vendorHash = "sha256-WtGk5HE6PxAWqwvj8mAAzobuoSw+y6BqBEEB0hRQafk=";
+        });
         # direnv 2.37.1 fish tests get killed during build on macOS (sandbox/OOM)
         direnv = prev.direnv.overrideAttrs (_: {doCheck = false;});
         # Home Assistant integrations move on a monthly cadence, so keep Core
