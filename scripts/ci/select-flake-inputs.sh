@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Read the lock directly: discovering names must not fetch the private input.
+# Read the lock directly: discovering names must not fetch private inputs.
 # Empty/whitespace-only FLAKE_INPUTS means every public root input.
-available=$(jq -er '.nodes[.root].inputs | keys | map(select(. != "superlocal")) | if length == 0 then error("no public inputs") else .[] end' flake.lock)
+available=$(jq -er '.nodes[.root].inputs | keys | map(select(. != "superlocal" and . != "homelab-mcp" and . != "food-tracker-src")) | if length == 0 then error("no public inputs") else .[] end' flake.lock)
 requested=$(printf '%s' "${FLAKE_INPUTS:-}" | tr '[:space:]' '\n')
 inputs=()
 while IFS= read -r input; do

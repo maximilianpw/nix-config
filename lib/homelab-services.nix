@@ -368,6 +368,22 @@
     };
   };
 
+  food-tracker = {
+    endpoint = {
+      authorizationOwner = "tailscale";
+      exposure = "tailnet";
+      port = 19015;
+    };
+    operations.units = ["nginx.service"];
+    presentation = {
+      group = "applications";
+      title = "Foodlog";
+      icon = "mdi-food-apple-outline";
+      description = "Food journal";
+      order = 46;
+    };
+  };
+
   forgejo = {
     endpoint = {
       authorizationOwner = "tailscale";

@@ -109,6 +109,11 @@ input does. Evaluation on a new machine requires a GitHub SSH identity with
 repository access. Authentication stays with the evaluating user, never in a
 Nix expression, URL credential, or the Nix store.
 
+Public CI instead uses `scripts/ci/use-superlocal-stub.sh` to replace private
+applications with inert fixtures. The real service configuration is still
+evaluated, but private source is never fetched or uploaded to the public cache.
+Never commit the helper's lockfile or package substitutions.
+
 The transaction-update fix uses a default import of `@actual-app/api` so Bun
 reads its live `internal` getter. A namespace import captures the initial
 `null` value and incorrectly reports "the Actual engine is not running" even

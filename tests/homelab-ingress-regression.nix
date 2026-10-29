@@ -28,6 +28,25 @@ in
   "every public origin must use loopback and its exact public Host header";
   assert lib.assertMsg (tunnel.default == "http_status:404")
   "undeclared Cloudflare hostnames must reach the 404 fallback";
+  assert expect.all "Foodlog must serve compiled files only on its loopback tailnet backend" [
+    (homelab.services.food-tracker.endpoint.authorizationOwner == "tailscale")
+    (homelab.services.food-tracker.state.kind == "none")
+    (config.services.nginx.virtualHosts.${homelab.endpoints.food-tracker.host}.listen
+      == [
+        {
+          addr = "127.0.0.1";
+          port = 19015;
+          ssl = false;
+          proxyProtocol = false;
+          extraParameters = [];
+        }
+      ])
+    (config.services.nginx.virtualHosts.${homelab.endpoints.food-tracker.host}.locations."/".tryFiles == "$uri $uri/ /index.html")
+    (config.services.nginx.virtualHosts.${homelab.endpoints.food-tracker.host}.locations."= /sw.js".tryFiles == "$uri =404")
+    (lib.hasInfix "Cache-Control \"no-cache\"" config.services.nginx.virtualHosts.${homelab.endpoints.food-tracker.host}.locations."= /sw.js".extraConfig)
+    (!(builtins.elem 19015 config.networking.firewall.allowedTCPPorts))
+    (!(builtins.hasAttr homelab.endpoints.food-tracker.host tunnel.ingress))
+  ];
   assert lib.assertMsg (
     builtins.length nextcloudListen
     == 1

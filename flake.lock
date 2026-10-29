@@ -529,6 +529,23 @@
         "type": "github"
       }
     },
+    "food-tracker-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1793091035,
+        "narHash": "sha256-kNvXeOb1Q06oaDVEzKvdEHHg7WJoUxtyF3Bm4cMbDq8=",
+        "ref": "refs/heads/main",
+        "rev": "f9d598deb732b516b369f9e0bab473ba4f8fdd94",
+        "revCount": 6,
+        "type": "git",
+        "url": "https://github.com/maximilianpw/food-tracker"
+      },
+      "original": {
+        "rev": "f9d598deb732b516b369f9e0bab473ba4f8fdd94",
+        "type": "git",
+        "url": "https://github.com/maximilianpw/food-tracker"
+      }
+    },
     "fromYaml": {
       "flake": false,
       "locked": {
@@ -1426,6 +1443,7 @@
         "disko": "disko",
         "fenix": "fenix",
         "fleet": "fleet",
+        "food-tracker-src": "food-tracker-src",
         "git-hooks": "git-hooks",
         "herdr-jj": "herdr-jj",
         "hjem": "hjem",
