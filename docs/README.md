@@ -12,6 +12,8 @@ completed plans and superseded research.
 - [Fleet and remote development](../modules/fleet/README.md)
 - [Git merging and dependency-update CI](git-and-ci-workflow.md)
 - [Jujutsu, agent workspaces, and stacked PRs](jj-workflow-recommendations.md)
+- [Production QA and release playbook](production-qa-playbook.md) (reusable
+  in other repositories)
 
 ## Recovery and storage
 
