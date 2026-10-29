@@ -98,12 +98,16 @@ to these workflows take effect on GitHub only after they are pushed.
 ## Shared Nix setup and health policy
 
 `.github/actions/nix-setup/action.yml` owns the pinned Determinate installer,
-the `cache.numtide.com` substituter for `llm-agents` tools (without it
-regression-checks builds them from source and times out), and optional Magic
-Nix Cache. Cache is enabled for the lint, shell, regression,
-evaluation, Darwin-build and update jobs. Kim/Cuno build jobs keep Cachix
-without adding another cache, and flake-health needs no build cache. CI timing
-benefits are unmeasured until these workflows run on GitHub.
+the hosts' extra substituters (`maximilianpw.cachix.org` and
+`cache.numtide.com`, without which every `llm-agents` tool builds from source
+and jobs time out), and optional Magic Nix Cache. Magic Nix Cache is enabled
+for the lint, shell, regression, evaluation and update jobs.
+- Kim/Cuno build jobs push to Cachix with `skipAddingSubstituter`, because
+  `cachix use` writes a user-level `substituters` that replaces the shared
+  list.
+- The Darwin build skips Magic Nix Cache: its macOS binary fails to load on
+  `macos-14` and the action waits until the job times out.
+- flake-health needs no build cache.
 
 Flake Checker explicitly checks both `nixpkgs` and `nixpkgs-unstable`, fails on
 reported policy violations, and rejects a missing lockfile. Its default owner,

@@ -101,6 +101,9 @@ jobs:
         with:
           name: maximilianpw
           authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+          # `cachix use` writes a user-level `substituters` that replaces the
+          # caches nix-setup configures; nix-setup already reads this cache.
+          skipAddingSubstituter: 'true'
       - run: nix build .#nixosConfigurations.kim.config.system.build.toplevel --no-link
 
   build-cuno-image:
@@ -117,6 +120,9 @@ jobs:
         with:
           name: maximilianpw
           authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+          # `cachix use` writes a user-level `substituters` that replaces the
+          # caches nix-setup configures; nix-setup already reads this cache.
+          skipAddingSubstituter: 'true'
       - name: Build and execute WSL image builder
         run: |
           nix build .#nixosConfigurations.cuno.config.system.build.tarballBuilder --out-link result-wsl-builder
@@ -130,9 +136,9 @@ jobs:
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # No Magic Nix Cache: its macOS binary fails to load on macos-14
+      # (missing libc++ symbol) and the action then waits until the timeout.
       - uses: ./.github/actions/nix-setup
-        with:
-          cache: 'true'
       - name: Stub private flake inputs
         run: scripts/ci/use-private-input-stubs.sh
       - run: nix build .#darwinConfigurations.joyce.system --no-link
