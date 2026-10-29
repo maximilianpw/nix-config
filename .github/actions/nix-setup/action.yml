@@ -9,6 +9,12 @@ runs:
   using: composite
   steps:
     - uses: DeterminateSystems/determinate-nix-action@8d87e8d5e5b8a8309d4281094560f127d9a265f1 # v3
+      with:
+        # llm-agents' cache; without it every llm-agents tool builds from source
+        # and regression-checks exceeds its timeout. Mirrors the hosts' setting.
+        extra-conf: |
+          extra-substituters = https://cache.numtide.com
+          extra-trusted-public-keys = niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g=
     - uses: DeterminateSystems/magic-nix-cache-action@84c0677f58dcedf3b91f8223ce36a9ea5b3c84b7 # v15
       if: inputs.cache == 'true'
       with:

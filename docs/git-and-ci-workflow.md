@@ -97,8 +97,10 @@ to these workflows take effect on GitHub only after they are pushed.
 
 ## Shared Nix setup and health policy
 
-`.github/actions/nix-setup/action.yml` owns the pinned Determinate installer
-and optional Magic Nix Cache. Cache is enabled for the lint, shell, regression,
+`.github/actions/nix-setup/action.yml` owns the pinned Determinate installer,
+the `cache.numtide.com` substituter for `llm-agents` tools (without it
+regression-checks builds them from source and times out), and optional Magic
+Nix Cache. Cache is enabled for the lint, shell, regression,
 evaluation, Darwin-build and update jobs. Kim/Cuno build jobs keep Cachix
 without adding another cache, and flake-health needs no build cache. CI timing
 benefits are unmeasured until these workflows run on GitHub.
