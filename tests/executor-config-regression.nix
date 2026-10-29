@@ -7,7 +7,7 @@
   endpoint = homelab.publicEndpoints.executor;
   ingress = config.services.cloudflared.tunnels.${homelab.infrastructure.cloudflare.tunnelId}.ingress;
   container = config.virtualisation.oci-containers.containers.executor;
-  image = "ghcr.io/usefulsoftwareco/executor-selfhost@sha256:200315d519a8c19685de05e88aa9a3cf1e1cb9869a2b0aecf604f6ebf47c6ea1";
+  image = "ghcr.io/usefulsoftwareco/executor-selfhost@sha256:df242f0242f4aa75ae091e39c8d1a9f0ad29c32e9b9d603122048f9106cf97e2";
 in
   assert lib.assertMsg (
     homelab.services.executor.endpoint.exposure
@@ -31,30 +31,44 @@ in
     container.ports
     == []
     && builtins.elem "--network=host" container.extraOptions
-    && container.environment.EXECUTOR_HOST == "127.0.0.1"
+    && container.environment.HOST == "127.0.0.1"
     && container.environment.PORT == toString endpoint.port
   )
   "Executor must only publish its HTTP endpoint on loopback";
-  assert lib.assertMsg (builtins.elem
-    ''--health-cmd=bun -e "fetch('http://127.0.0.1:${toString endpoint.port}/api/health').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"''
-    container.extraOptions)
-  "Executor must override the image healthcheck to use its configured loopback port";
-  assert lib.assertMsg (container.volumes
-    == [
-      "/var/lib/executor:/data"
-      "${pkgs.pkgsStatic.busybox}/bin/busybox:/bin/sh:ro"
-    ])
-  "Executor must persist state and provide a read-only static shell for Docker's CMD-SHELL healthcheck";
   assert lib.assertMsg (
-    container.environment.EXECUTOR_WEB_BASE_URL
-    == endpoint.url
-    && container.environment.EXECUTOR_ALLOW_LOCAL_NETWORK == "true"
+    container.extraOptions
+    == ["--network=host" "--init"]
+    && container.volumes == ["/var/lib/executor-v2:/app/data"]
+    && container.environment.EXECUTOR_DATA_DIR == "/app/data"
+    && config.systemd.tmpfiles.settings."10-executor"."/var/lib/executor-v2".d.mode == "0700"
   )
-  "Executor must use its exact public URL and allow the local homelab MCP";
+  "Executor v2 must use separate persistent state, init, and its native image healthcheck without a shell override";
+  assert lib.assertMsg (
+    lib.hasInfix "test -s /var/lib/executor-v2/auth-secret.key" config.systemd.services.docker-executor.preStart
+    && lib.hasInfix "test -s /var/lib/executor-v2/encryption.key" config.systemd.services.docker-executor.preStart
+  )
+  "Executor startup must reject missing key files instead of creating a fresh public owner";
+  assert lib.assertMsg (
+    container.environment.BETTER_AUTH_URL
+    == endpoint.url
+    && container.environment.EXECUTOR_APPS_ALLOW_PRIVATE_FETCH == "true"
+    && builtins.fromJSON container.environment.EXECUTOR_URL_ALLOW_HTTP_ORIGINS
+    == [
+      "http://127.0.0.1:19200"
+      "http://127.0.0.1:19014"
+    ]
+    && !(builtins.hasAttr "EXECUTOR_WEB_BASE_URL" container.environment)
+    && !(builtins.hasAttr "EXECUTOR_ALLOW_LOCAL_NETWORK" container.environment)
+  )
+  "Executor v2 must use its public auth origin and separate private app-fetch and host-side MCP controls";
+  assert lib.assertMsg (
+    (container.environment.EXECUTOR_OAUTH_CLIENT_METADATA_URL or null) == "${endpoint.url}/oauth/client-metadata.json"
+  )
+  "Executor must publish its HTTPS client metadata document for OAuth providers such as Amp that support CIMD instead of dynamic registration";
   assert lib.assertMsg (
     builtins.elem "docker-executor.service" homelab.backup.archiveUnits
     && builtins.elem "/var/lib" config.services.borgbackup.jobs.main.paths
-    && builtins.elem "/var/lib/executor" config.custom.backup.manifestMetadata.expectedPrimaryStatePaths
+    && builtins.elem "/var/lib/executor-v2" config.custom.backup.manifestMetadata.expectedPrimaryStatePaths
   )
   "Executor state must be quiesced and archived";
   assert lib.assertMsg (

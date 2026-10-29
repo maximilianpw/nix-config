@@ -348,7 +348,7 @@
       hostname = "executor.maximilian.pw";
       port = 19005;
     };
-    state.paths = ["/var/lib/executor"];
+    state.paths = ["/var/lib/executor-v2"];
     backup.quiesce = [
       {
         unit = "docker-executor.service";
@@ -364,7 +364,7 @@
         "owner-can-sign-in"
         "configured-integration-tool-call-succeeds"
       ];
-      secretOwners = ["mutable-state:/var/lib/executor"];
+      secretOwners = ["mutable-state:/var/lib/executor-v2"];
     };
   };
 
