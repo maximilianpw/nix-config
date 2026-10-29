@@ -35,7 +35,7 @@ rolls back the code. It does not undo SQLite migrations; see Recovery.
 This repository's CI can't fetch the private input, and it must not build the
 real application: Kim's CI builds are pushed to the public `maximilianpw` Cachix
 cache. Every CI job that runs `nix` first runs
-`scripts/ci/use-superlocal-stub.sh`, which relocks its checkout onto the inert
+`scripts/ci/use-private-input-stubs.sh`, which relocks its checkout onto the inert
 public stub in `tests/stubs/superlocal`.
 - CI therefore checks Kim's wiring, not the app. The app is tested in its own
   repository and built on Kim at rebuild.

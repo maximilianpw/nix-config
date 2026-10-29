@@ -9,11 +9,16 @@
     ../modules/amp-orb-provider
   ];
 
-  networking.hostName = "kim";
+  networking = {
+    hostName = "kim";
 
-  # Wake-on-LAN on the Realtek RTL8125, so the box can be powered back up
-  # remotely after a manual shutdown.
-  networking.interfaces.enp194s0.wakeOnLan.enable = true;
+    # Wake-on-LAN on the Realtek RTL8125, so the box can be powered back up
+    # remotely after a manual shutdown.
+    interfaces.enp194s0.wakeOnLan.enable = true;
+
+    # services.rex.loginServer's tailnet listener.
+    firewall.interfaces.tailscale0.allowedTCPPorts = [7297];
+  };
 
   # schedutil idles low under amd_pstate=guided but still clocks up for nix
   # builds and long-running agents; powersave would pin the box to min freq.
@@ -89,6 +94,15 @@
 
     # Keep the Tailscale/MagicDNS identity aligned with the system hostname.
     tailscale.extraSetFlags = ["--hostname=kim"];
+
+    # Rex for Mac reaches this as http://kim.<tailnet>:7297 and runs as maxpw.
+    # A direct tailnet listener rather than Serve: homelab/tailscale-serve.nix
+    # owns this host's Serve configuration and only proxies loopback HTTP.
+    rex.loginServer = {
+      enable = true;
+      accounts.maxpw.principals = ["tailscale:maximilianpw@github"];
+      extraListen = ["tailnet://:7297"];
+    };
 
     # Firmware updates are still useful on a headless box.
     fwupd.enable = true;

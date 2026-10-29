@@ -52,6 +52,13 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Prebuilt Rex. Until its first release the package host needs a netrc
+    # token on every evaluating machine (docs/rex.md); CI uses tests/stubs/rex.
+    rex = {
+      url = "https://pkgs.superlogical.com/rex/nix/preview.tar.gz";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # Own Trade Republic tracker; consume its package and NixOS module.
     portfolio-tracker = {
       url = "github:maximilianpw/portfolio-tracker/v0.2.0";

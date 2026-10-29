@@ -32,7 +32,7 @@ jobs:
         with:
           cache: 'true'
 
-      # superlocal stays local-only. Capture selection before reading the array
+      # superlocal and rex stay local-only. Capture selection before reading the array
       # so validation failures cannot turn into an unscoped `nix flake update`.
       - name: Update selected public flake inputs
         id: selection
@@ -53,7 +53,7 @@ jobs:
           echo "branch=$branch" >> "$GITHUB_OUTPUT"
 
       - name: Evaluate the updated flake before opening a PR
-        run: nix flake check --no-build --no-write-lock-file --override-input superlocal path:./tests/stubs/superlocal
+        run: nix flake check --no-build --no-write-lock-file --override-input superlocal path:./tests/stubs/superlocal --override-input rex path:./tests/stubs/rex
 
       - name: Open pull request
         id: create-pull-request

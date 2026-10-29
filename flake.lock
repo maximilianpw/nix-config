@@ -1420,6 +1420,23 @@
         "type": "github"
       }
     },
+    "rex": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1793195882,
+        "narHash": "sha256-SDXPh3lrzEaXUeyDE/BmoHvU/g8dxQ00i6TCVdrx3DI=",
+        "type": "tarball",
+        "url": "https://pkgs.superlogical.com/rex/nix/preview/0.1.0-preview.10.tar.gz"
+      },
+      "original": {
+        "type": "tarball",
+        "url": "https://pkgs.superlogical.com/rex/nix/preview.tar.gz"
+      }
+    },
     "root": {
       "inputs": {
         "autolith": "autolith",
@@ -1445,6 +1462,7 @@
         "nixpkgs-unstable": "nixpkgs-unstable",
         "nixvim": "nixvim",
         "portfolio-tracker": "portfolio-tracker",
+        "rex": "rex",
         "sops-nix": "sops-nix",
         "stylix": "stylix",
         "superlocal": "superlocal",

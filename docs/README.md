@@ -37,6 +37,7 @@ completed plans and superseded research.
 ## Platform setup and packaging
 
 - [Cuno NixOS-WSL setup](wsl-setup.md)
+- [Rex](rex.md)
 - [T3 Code packaging and updates](t3code.md)
 - [Vite+ packaging](vite-plus.md)
 
