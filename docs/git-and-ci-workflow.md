@@ -46,11 +46,12 @@ supply space-separated public root input names, such as `hyprland` or
 - Empty or whitespace-only selection updates every public root input, as does
   the weekly scheduled run.
 - `scripts/ci/select-flake-inputs.sh` reads names from `flake.lock` without
-  fetching dependencies. Unknown names, options, nested input paths and the
-  token-gated `rex` input are rejected before any update.
+  fetching dependencies. Unknown names, options, nested input paths, the
+  private `homelab-mcp` input and the token-gated `rex` input are rejected
+  before any update.
 - Names are sorted and deduplicated. Targeted selections use stable hashed PR
   branches separate from the weekly all-public-input branch.
-- Evaluation with the public Rex stub still gates PR creation;
+- Evaluation with the public homelab-mcp and Rex stubs still gates PR creation;
   lightweight CI is dispatched afterward with `full_builds=false`. Merge and
   host activation remain manual.
 

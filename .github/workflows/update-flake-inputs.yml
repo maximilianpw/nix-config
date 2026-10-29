@@ -32,7 +32,7 @@ jobs:
         with:
           cache: 'true'
 
-      # rex stays local-only. Capture selection before reading the array
+      # homelab-mcp and rex stay local-only. Capture selection before reading the array
       # so validation failures cannot turn into an unscoped `nix flake update`.
       - name: Update selected public flake inputs
         id: selection
@@ -53,7 +53,7 @@ jobs:
           echo "branch=$branch" >> "$GITHUB_OUTPUT"
 
       - name: Evaluate the updated flake before opening a PR
-        run: nix flake check --no-build --no-write-lock-file --override-input rex path:./tests/stubs/rex
+        run: nix flake check --no-build --no-write-lock-file --override-input homelab-mcp path:./tests/stubs/homelab-mcp --override-input rex path:./tests/stubs/rex
 
       - name: Open pull request
         id: create-pull-request

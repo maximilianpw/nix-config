@@ -108,7 +108,9 @@ Database migrations and dependencies are unchanged from the previous snapshot.
 The repository is private, so the input uses Git over SSH. Evaluation on a new
 machine requires a GitHub SSH identity with repository access. Authentication
 stays with the evaluating user, never in a Nix expression, URL credential, or
-the Nix store.
+the Nix store. CI has no such identity and relocks onto the inert stub in
+`tests/stubs/homelab-mcp`; mirror the package outputs this repository consumes
+there when they change.
 
 The transaction-update fix uses a default import of `@actual-app/api` so Bun
 reads its live `internal` getter. A namespace import captures the initial
