@@ -31,7 +31,6 @@ completed plans and superseded research.
 - [Homelab MCP through Executor](media-mcp.md)
 - [Nextcloud Calendar](nextcloud-calendar.md)
 - [Paperless](paperless.md)
-- [Superlocal](superlocal.md)
 - [CLIProxyAPI gateway](../modules/cliproxyapi/README.md)
 
 ## Platform setup and packaging

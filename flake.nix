@@ -35,11 +35,6 @@
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
-    # Own email client, built from source for Kim's homelab. Private repository,
-    # fetched with the evaluating user's GitHub SSH key. It keeps its own
-    # nixpkgs: it needs Bun >= 1.4, which nixos-26.05 does not ship.
-    superlocal.url = "git+ssh://git@github.com/maximilianpw/superlocal";
-
     # Private homelab MCP; pin an upstream release and consume its package.
     homelab-mcp = {
       url = "git+ssh://git@github.com/maximilianpw/homelab-mcp?ref=refs/tags/v0.1.1";

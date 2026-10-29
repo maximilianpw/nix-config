@@ -6,7 +6,7 @@ tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 cd "$tmp"
 cat > flake.lock <<'EOF'
-{"root":"custom-root","nodes":{"custom-root":{"inputs":{"nixpkgs":"nixpkgs","home-manager":"home-manager","llm-agents":"llm-agents","rex":"rex","superlocal":"superlocal"}}}}
+{"root":"custom-root","nodes":{"custom-root":{"inputs":{"nixpkgs":"nixpkgs","home-manager":"home-manager","llm-agents":"llm-agents","rex":"rex"}}}}
 EOF
 selector=$repo_root/scripts/ci/select-flake-inputs.sh
 printf '%s\n' home-manager llm-agents nixpkgs > expected
@@ -18,7 +18,7 @@ printf '%s\n' llm-agents nixpkgs > expected
 FLAKE_INPUTS=$'nixpkgs\tllm-agents\nnixpkgs' bash "$selector" > actual
 diff -u expected actual
 
-for invalid in superlocal rex unknown --override-input 'nixpkgs/something' 'nixpkgs;touch injected' '$(touch injected)' '*'; do
+for invalid in rex unknown --override-input 'nixpkgs/something' 'nixpkgs;touch injected' '$(touch injected)' '*'; do
   if FLAKE_INPUTS="nixpkgs $invalid" bash "$selector" > actual 2> error; then
     echo "Invalid selection unexpectedly accepted: $invalid" >&2
     exit 1
@@ -28,7 +28,7 @@ for invalid in superlocal rex unknown --override-input 'nixpkgs/something' 'nixp
 done
 [[ ! -e injected ]]
 
-for broken in '{}' '{"root":"root","nodes":{"root":{"inputs":{"superlocal":"private"}}}}' 'not json'; do
+for broken in '{}' '{"root":"root","nodes":{"root":{"inputs":{"rex":"private"}}}}' 'not json'; do
   printf '%s\n' "$broken" > flake.lock
   if FLAKE_INPUTS='' bash "$selector" > actual 2> error; then
     echo "Broken or empty public input inventory unexpectedly accepted" >&2

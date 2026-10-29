@@ -20,7 +20,6 @@
     ./paperless.nix
     ./portfolio-tracker.nix
     ./storage.nix
-    ./superlocal.nix
     ./syncthing.nix
     ./tailscale-serve.nix
     ./uptime-kuma.nix

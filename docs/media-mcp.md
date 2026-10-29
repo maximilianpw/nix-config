@@ -104,10 +104,10 @@ consumes the upstream `homelab-mcp` package. The source repository owns the Nix
 build recipe; this repository does not vendor a source archive or duplicate it.
 Database migrations and dependencies are unchanged from the previous snapshot.
 
-The repository is private, so the input uses Git over SSH, as the `superlocal`
-input does. Evaluation on a new machine requires a GitHub SSH identity with
-repository access. Authentication stays with the evaluating user, never in a
-Nix expression, URL credential, or the Nix store.
+The repository is private, so the input uses Git over SSH. Evaluation on a new
+machine requires a GitHub SSH identity with repository access. Authentication
+stays with the evaluating user, never in a Nix expression, URL credential, or
+the Nix store.
 
 The transaction-update fix uses a default import of `@actual-app/api` so Bun
 reads its live `internal` getter. A namespace import captures the initial

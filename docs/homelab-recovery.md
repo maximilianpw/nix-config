@@ -63,7 +63,7 @@ sudo systemctl mask --runtime \
   phpfpm-nextcloud.service paperless-consumer.service \
   paperless-exporter.service paperless-scheduler.service \
   paperless-task-queue.service paperless-web.service miniflux.service \
-  immich-machine-learning.service immich-server.service leerr.service superlocal.service \
+  immich-machine-learning.service immich-server.service leerr.service \
   bazarr.service jellyfin.service lidarr.service plex.service prowlarr.service \
   radarr.service seerr.service sonarr.service tunarr.service \
   container@qbt.service container@sab.service \
@@ -101,7 +101,7 @@ sudo borg-restore-main <archive> /var/tmp/homelab-state \
   var/lib/nixos-containers/sab var/lib/plex \
   var/lib/private/jellyseerr var/lib/private/prowlarr \
   var/lib/private/uptime-kuma var/lib/radarr/.config/Radarr \
-  var/lib/sabnzbd var/lib/sonarr/.config/NzbDrone var/lib/superlocal var/lib/tunarr \
+  var/lib/sabnzbd var/lib/sonarr/.config/NzbDrone var/lib/tunarr \
   home/maxpw/.config/syncthing home/maxpw/Sync
 sudo homelab-backup-inspect <archive>
 ```
@@ -375,14 +375,6 @@ integrity, account login and per-user Jellyfin library access in an isolated
 instance; do not expose the service before they pass. A generation rollback
 does not undo a SQLite migration: restore the matching pre-upgrade database if
 the older application cannot read the new schema.
-
-### Superlocal
-
-Keep `superlocal.service` stopped and restore the complete staged
-`/var/lib/superlocal` tree, configuration, databases and `runtime-secrets.json`
-together, with the archived version. Follow the maintained
-[Superlocal recovery procedure](superlocal.md#recovery) for ownership, SQLite
-and mailbox acceptance checks; do not expose the service before they pass.
 
 ### Grafana and Prometheus
 

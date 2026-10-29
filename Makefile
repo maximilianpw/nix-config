@@ -8,7 +8,7 @@ SCRIPT_DIR := scripts
 CONFIG_DIR := $(shell pwd)
 # Inputs bumped by `make update`; the rest move only with `make update-all`.
 # nixvim follows nixpkgs-unstable, so it must move in lockstep with it.
-CORE_INPUTS := nixpkgs nixpkgs-unstable home-manager nix-darwin fenix llm-agents autolith superlocal rex nixvim hjem
+CORE_INPUTS := nixpkgs nixpkgs-unstable home-manager nix-darwin fenix llm-agents autolith rex nixvim hjem
 # Only update commands inherit temporary GitHub credentials.
 UPDATE_AUTH := $(SCRIPT_DIR)/dev/with-github-auth.sh
 SHELL_SCRIPTS = $(SCRIPT_DIR)/*/*.sh $(SCRIPT_DIR)/rebuild/lib/*.sh tests/*.sh packages/scripts/*.sh
