@@ -357,9 +357,7 @@ else
     echo "     sudo nixos-rebuild switch --flake $CONFIG_DIR#$HOSTNAME"
 fi
 echo "  3. After the first rebuild, follow the post-install checklist in BOOTSTRAP.md"
-echo "     Start with 'make chezmoi-bootstrap' then 'make chezmoi-preview'."
-echo "     Applying dotfiles is deliberately separate: 'make chezmoi-apply'."
-echo "     Then finish 1Password, Tailscale, Syncthing, and the git remote."
+echo "     Finish 1Password, Tailscale, Syncthing, and the git remote."
 echo ""
 
 if [[ "$DRY_RUN" == "false" ]]; then

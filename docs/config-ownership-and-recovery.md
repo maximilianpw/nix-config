@@ -2,8 +2,8 @@
 
 ## Ownership boundary
 
-Nix/Home Manager and chezmoi are intentionally separate. Do not declare the
-same destination in both systems.
+Each destination has exactly one owner. Do not declare the same destination in
+two systems.
 
 | Concern | Owner | Review/apply path |
 | --- | --- | --- |
@@ -13,23 +13,16 @@ same destination in both systems.
 | Migrated static app content | Hjem in `users/maxpw/hjem/` | system rebuild |
 | Migrated app-written settings | Home Manager links to `users/maxpw/app-config/` | checkout edits; recovery from Git |
 | Cursor settings, keybindings, `~/.cursor/*.json` | Cursor account sync | sign in to Cursor |
-| Remaining legacy app content | chezmoi source | `make chezmoi-preview`, then `make chezmoi-apply` |
 | Encrypted machine/application secrets | sops-nix in this repo | edit with `sops`; system rebuild |
 
 Kim, Cuno and Joyce enable Nixvim and Hjem together through the host
-inventory's `hjem` flag. Home Manager installs the editor packages; chezmoi
-must exclude the editor, packaged helpers and migrated app files before a
-host's cutover. Cuno's live cutover is still pending. See
+inventory's `hjem` flag. Home Manager installs the editor packages. Cuno's live
+cutover is still pending. See
 [Nixvim and Hjem](nixvim-hjem.md) for the editing workflow, per-host cutover
 and rollback, and Hjem's known hazards.
 
-`scripts/dev/chezmoi.sh` formalizes initialization, no-write validation, preview,
-and interactive apply for paths that remain owned by chezmoi. Do not run an
-apply with stale migration exclusions.
-
-Chezmoi's `private_` filename prefix sets restrictive file permissions. It does
-**not** encrypt file contents. Secrets belong in sops, a password manager, or a
-chezmoi encrypted source file; plaintext credentials must never be committed.
+Secrets belong in sops or a password manager; plaintext credentials must never
+be committed.
 
 ## Herdr workspace plugin
 

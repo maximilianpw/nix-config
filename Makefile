@@ -1,4 +1,4 @@
-.PHONY: help bootstrap chezmoi-bootstrap chezmoi-check chezmoi-preview chezmoi-apply rebuild rebuild-processes cleanup-rebuild check-scripts check-linux lint update update-all update-packages update-nvim-plugins update-nextcloud-apps build generations rollback gc wsl info
+.PHONY: help bootstrap rebuild rebuild-processes cleanup-rebuild check-scripts check-linux lint update update-all update-packages update-nvim-plugins update-nextcloud-apps build generations rollback gc wsl info
 
 # Default target
 .DEFAULT_GOAL := help
@@ -24,18 +24,6 @@ help: ## Show this help message
 bootstrap: ## Bootstrap a new system (initial setup)
 	@echo "Starting bootstrap process..."
 	@$(SCRIPT_DIR)/rebuild/bootstrap.sh
-
-chezmoi-bootstrap: ## Clone dotfiles source without applying it
-	@$(SCRIPT_DIR)/dev/chezmoi.sh bootstrap
-
-chezmoi-check: ## Validate chezmoi source with a no-write dry run
-	@$(SCRIPT_DIR)/dev/chezmoi.sh check
-
-chezmoi-preview: ## Show changes chezmoi would apply
-	@$(SCRIPT_DIR)/dev/chezmoi.sh preview
-
-chezmoi-apply: ## Review and interactively apply chezmoi dotfiles
-	@$(SCRIPT_DIR)/dev/chezmoi.sh apply
 
 rebuild: ## Build and switch this checkout's configuration (NixOS/Darwin)
 	@$(SCRIPT_DIR)/rebuild/nixos-rebuild.sh "$(CONFIG_DIR)"

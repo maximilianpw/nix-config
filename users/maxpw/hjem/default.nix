@@ -2,9 +2,8 @@
 #
 # Sources live under ./files at their $HOME-relative path. Hjem owns individual
 # files, never whole directories: several of these apps write state, logs or
-# sockets beside their config (e.g. ~/.config/herdr). Each path deployed here
-# must also be in the host's .chezmoiignore block, so exactly one tool owns it. See
-# docs/nixvim-hjem.md for the handoff and recovery procedure.
+# sockets beside their config (e.g. ~/.config/herdr). See docs/nixvim-hjem.md
+# for the handoff and recovery procedure.
 {
   config,
   currentSystemUser,

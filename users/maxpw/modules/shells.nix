@@ -51,9 +51,6 @@
     dcb = "docker compose build";
     dcbc = "docker compose build --no-cache";
 
-    chcd = "cd ~/.local/share/chezmoi";
-    chap = "chezmoi apply";
-
     tm = "tmux";
     tma = "tmux attach";
     tml = "tmux list-sessions";

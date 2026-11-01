@@ -30,8 +30,7 @@ while its command remains `fleet`.
   check registration live in `flake.nix` and `lib/checks.nix`.
 
 Nix and Home Manager own systems, packages, shells, and executables. Nixvim
-owns Neovim and Hjem owns static application files; the separate chezmoi
-repository keeps only remaining legacy application content. The external
+owns Neovim and Hjem owns static application files. The external
 `pi-config` repository owns Pi settings, prompts, extensions, and themes. The
 pinned Fleet input owns the installed runtime CLI and tunnel supervision.
 This repository owns the personal Fleet inventory, SSH policy, trust, aliases,
@@ -47,9 +46,7 @@ Bootstrap a new machine with [BOOTSTRAP.md](BOOTSTRAP.md). For an existing
 checkout, choose checks that match the change as listed in
 [AGENTS.md](AGENTS.md#local-workflow-and-checks).
 
-`make help` lists the other supported targets. `make chezmoi-bootstrap` clones
-the dotfiles source without applying it. Review changes with
-`make chezmoi-preview` before an interactive `make chezmoi-apply`.
+`make help` lists the other supported targets.
 
 ## Safety boundaries
 
