@@ -42,6 +42,7 @@ in {
       ./modules/gpg.nix
       ./modules/himalaya.nix
       ./modules/xdg.nix
+      ./hyprland
       ./modules/app-config.nix
       ./modules/linux-services.nix
       ./modules/tmux.nix
