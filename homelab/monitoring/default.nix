@@ -121,30 +121,39 @@
     labels = {inherit severity;};
     annotations = {inherit summary;};
   };
+  blackboxHttp2xx = {
+    prober = "http";
+    timeout = "10s";
+    http = {
+      preferred_ip_protocol = "ip4";
+      follow_redirects = true;
+      headers.User-Agent = "maximilian-homelab-monitor/1";
+      # Tunarr's health endpoint returns HTTP 200 even when a component is
+      # unhealthy. Treat its compact JSON error marker as a failed probe.
+      fail_if_body_matches_regexp = [
+        ''"type":"error"''
+        ''"installed":false''
+        ''"maintenance":true''
+        ''"needsDbUpgrade":true''
+      ];
+    };
+  };
   blackboxConfig = (pkgs.formats.yaml {}).generate "homelab-blackbox.yaml" {
-    modules.http_2xx = {
-      prober = "http";
-      timeout = "10s";
-      http = {
-        preferred_ip_protocol = "ip4";
-        follow_redirects = true;
-        headers.User-Agent = "maximilian-homelab-monitor/1";
-        # Tunarr's health endpoint returns HTTP 200 even when a component is
-        # unhealthy. Treat its compact JSON error marker as a failed probe.
-        fail_if_body_matches_regexp = [
-          ''"type":"error"''
-          ''"installed":false''
-          ''"maintenance":true''
-          ''"needsDbUpgrade":true''
-        ];
-      };
+    modules = {
+      http_2xx = blackboxHttp2xx;
+      # Public probes hairpin through Kim's ISP to Cloudflare and back down the
+      # tunnel. That path regularly stalls healthy requests for 10-12s, so a
+      # loopback-sized timeout reports reachable endpoints as down.
+      public_http_2xx = blackboxHttp2xx // {timeout = "25s";};
     };
   };
   publicIngressScrape = {
     job_name = "public-ingress";
     scrape_interval = "5m";
+    # Blackbox caps its probe at the scrape timeout Prometheus advertises.
+    scrape_timeout = "30s";
     metrics_path = "/probe";
-    params.module = ["http_2xx"];
+    params.module = ["public_http_2xx"];
     static_configs = [
       {targets = map (endpoint: endpoint.publicMonitorUrl) (builtins.attrValues homelab.publicEndpoints);}
     ];
