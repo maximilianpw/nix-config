@@ -13,7 +13,6 @@
   config,
   currentSystemUserDir,
   hostRecord,
-  isDarwin,
   lib,
   ...
 }: let
@@ -22,18 +21,12 @@
     inherit (config.lib.file) mkOutOfStoreSymlink;
   };
 
-  shared = [
-    ".cursor/permissions.json"
-    ".cursor/sandbox.json"
+  paths = [
     ".plannotator/config.json"
-  ];
-  darwinOnly = [
-    "Library/Application Support/Cursor/User/keybindings.json"
-    "Library/Application Support/Cursor/User/settings.json"
   ];
 in
   lib.mkIf hostRecord.hjem {
-    home.file = lib.genAttrs (shared ++ lib.optionals isDarwin darwinOnly) (path: {
+    home.file = lib.genAttrs paths (path: {
       source = homeFiles.mkRepoSource config.home.homeDirectory "users/${currentSystemUserDir}/app-config/${path}";
     });
   }

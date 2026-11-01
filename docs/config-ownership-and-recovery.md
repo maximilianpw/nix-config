@@ -12,6 +12,7 @@ same destination in both systems.
 | Neovim Lua and plugin configuration | Nixvim in `users/maxpw/neovim/` | candidate checks, then system rebuild |
 | Migrated static app content | Hjem in `users/maxpw/hjem/` | system rebuild |
 | Migrated app-written settings | Home Manager links to `users/maxpw/app-config/` | checkout edits; recovery from Git |
+| Cursor settings, keybindings, `~/.cursor/*.json` | Cursor account sync | sign in to Cursor |
 | Remaining legacy app content | chezmoi source | `make chezmoi-preview`, then `make chezmoi-apply` |
 | Encrypted machine/application secrets | sops-nix in this repo | edit with `sops`; system rebuild |
 

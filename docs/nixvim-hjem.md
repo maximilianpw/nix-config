@@ -93,10 +93,12 @@ Home Manager's `linkApps`/`copyApps` off.
 
 ## App-written files
 
-`users/maxpw/modules/app-config.nix` links app-written files (Cursor settings
-and keybindings, `.cursor/{permissions,sandbox}.json`,
-`.plannotator/config.json`) straight to `users/maxpw/app-config/` with
+`users/maxpw/modules/app-config.nix` links app-written files
+(`.plannotator/config.json`) straight to `users/maxpw/app-config/` with
 `mkOutOfStoreSymlink`. Apps write through the link, `git diff` shows their
 changes, and recovery is from Git. A file whose app replaces the link instead
 of writing through it must leave this list. `users/maxpw/hjem/default.nix`
 asserts that no Home Manager file shares a path with a Hjem file.
+
+Cursor's settings, keybindings, and `~/.cursor/{permissions,sandbox}.json` are
+not managed here; Cursor syncs them through its account login.
