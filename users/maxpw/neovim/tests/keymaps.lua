@@ -78,8 +78,7 @@ end
 -- Keys with a chosen owner, identified by the description that owner sets.
 local owned = {
   { "n", "-", "Open Parent Directory (oil)" },
-  -- vim-tmux-navigator's own plugin file remaps it without a description.
-  { "n", "<C-l>", ":<C-U>TmuxNavigateRight<cr>" },
+  { "n", "<C-l>", "Navigate right (tmux/Rex/nvim)" },
   { "n", "cx", "Exchange" },
   { "n", "cr", "Replace" },
   { "n", "]t", "Next TODO Comment" },

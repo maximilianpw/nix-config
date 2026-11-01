@@ -6,7 +6,8 @@ prebuilt flake on the `preview` channel (`inputs.rex`).
 - **Kim** runs the NixOS login server (`machines/kim.nix`). It listens on
   Kim's tailnet addresses at port 7297, and only `tailscale0` has that port
   open. Rex identifies callers through Kim's tailscaled. The only account is
-  `maxpw`, for the Tailscale login `maximilianpw@github`.
+  `maxpw`, for the Tailscale login `maximilianpw@github`. The Serve
+  configuration in `homelab/tailscale-serve.nix` is left alone.
 - **Joyce** runs the server in Rex Beta.app. Home Manager's `programs.rex`
   adds the CLI, the `xterm-rex` terminfo and the ssh guard.
 - **CI** uses the inert stub in `tests/stubs/rex`. When the real module's
@@ -42,6 +43,14 @@ unset token
 Without the netrc, any evaluation that includes `rex` fails with HTTP 401.
 
 ## Connecting
+
+The tailnet policy, which lives in the Tailscale admin console and not in this
+repository, must allow your login to reach Kim on TCP 7297. Kim's NixOS
+firewall rule is not enough on its own:
+
+```json
+{"src": ["maximilianpw@github"], "dst": ["tag:homelab"], "ip": ["tcp:7297"]}
+```
 
 In Rex for Mac, choose **Add Remote Host…** and enter
 `kim.liger-shilling.ts.net`. Plain HTTP on 7297 is expected; Tailscale
