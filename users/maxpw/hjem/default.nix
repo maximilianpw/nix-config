@@ -41,7 +41,14 @@ in {
     files =
       lib.genAttrs paths (
         path:
-          {source = ./files + "/${path}";}
+          {
+            # Preserve sibling paths after symlink resolution: Bun resolves the
+            # Herdr backend's relative imports and executable bridge in the store.
+            source =
+              if lib.hasPrefix ".config/herdr-app/" path
+              then "${./files/.config/herdr-app}/${lib.removePrefix ".config/herdr-app/" path}"
+              else ./files + "/${path}";
+          }
           // lib.optionalAttrs (isCopied path) {
             type = "copy";
             permissions = "644";

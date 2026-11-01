@@ -45,7 +45,6 @@ in
         editor.nvim-vscode
         viAliases
         pkgs.lazygit-nvim-edit
-        pkgs.herdr-shell
       ];
       home.shellAliases.vimdiff = "nvim -d";
       # EDITOR/VISUAL are set in home-manager.nix for every host.

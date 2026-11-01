@@ -1,0 +1,9 @@
+#!/usr/bin/env bun
+import { bridge } from "./bridge-lib.mjs";
+try {
+  const result = bridge(process.argv.slice(2));
+  process.stdout.write(result.raw !== undefined ? `${result.raw}\n` : `${JSON.stringify(result)}\n`);
+} catch (error) {
+  console.error(JSON.stringify({ error: { code: error.code || "bridge_failed", message: error.message } }));
+  process.exitCode = 1;
+}

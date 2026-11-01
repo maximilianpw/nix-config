@@ -171,7 +171,6 @@
         };
         inherit (llm) grok;
         inherit (llm) muse-code;
-        inherit (llm) herdr;
         herdr-jj = inputs.herdr-jj.packages.${prev.stdenv.hostPlatform.system}.default;
         inherit (llm) executor;
         amp-cli = llm.amp;
@@ -248,6 +247,7 @@
         obsidian = final.callPackage ./packages/obsidian.nix {};
         cliproxyapi = final.callPackage ./packages/cliproxyapi.nix {};
         cua-driver = final.callPackage ./packages/cua-driver.nix {};
+        herdr-core = final.callPackage ./packages/herdr-core.nix {};
         nextcloud-calendar = final.callPackage ./packages/nextcloud-calendar.nix {};
         lazygit-nvim-edit = final.callPackage ./packages/lazygit-nvim-edit.nix {};
         herdr-shell = final.callPackage ./packages/herdr-shell.nix {};
@@ -349,7 +349,7 @@
       in
         editorPackages "x86_64-linux"
         // {
-          inherit (pkgs) helium obsidian skills cliproxyapi cua-driver nextcloud-calendar hunkdiff nix-update tunarr jellyfin jellyfin-web jellyfin-ffmpeg vite-plus t3code herdr-jj;
+          inherit (pkgs) helium obsidian skills cliproxyapi cua-driver nextcloud-calendar hunkdiff nix-update tunarr jellyfin jellyfin-web jellyfin-ffmpeg vite-plus t3code herdr-core herdr-jj;
           inherit (inputs.jj-stack.packages.x86_64-linux) jj-stack;
         };
       aarch64-darwin = let
@@ -357,7 +357,7 @@
       in
         editorPackages "aarch64-darwin"
         // {
-          inherit (pkgs) cua-driver skills nextcloud-calendar hunkdiff nix-update obsidian vite-plus t3code herdr-jj;
+          inherit (pkgs) cua-driver skills nextcloud-calendar hunkdiff nix-update obsidian vite-plus t3code herdr-core herdr-jj;
           inherit (inputs.jj-stack.packages.aarch64-darwin) jj-stack;
         };
     };

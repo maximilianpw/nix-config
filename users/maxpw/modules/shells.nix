@@ -13,7 +13,10 @@
   agentAliases = {
     c = "codex --yolo";
     ccc = "DISABLE_ZOXIDE=1 claude --dangerously-skip-permissions";
-    h = "herdr";
+    h =
+      if isDarwin
+      then "/usr/bin/open -a Herdr"
+      else "hc";
     claudex = "CLAUDE_CODE_ALWAYS_ENABLE_EFFORT=1 CLAUDE_CODE_MAX_TOOL_USE_CONCURRENCY=3 ENABLE_TOOL_SEARCH=false claude";
     oc = "opencode";
     p = "pi";
