@@ -137,6 +137,18 @@ in
     (!(builtins.elem "docker" config.users.users.forgejo-runner.extraGroups))
     (!(builtins.elem homelab.privateServices.forgejo.port config.networking.firewall.allowedTCPPorts))
   ];
+  assert expect.all "Syncthing must accept peers only on the LAN and tailnet and never request a router port forward" [
+    (!config.services.syncthing.openDefaultPorts)
+    (!config.services.syncthing.settings.options.natEnabled)
+    (!(builtins.elem 22000 config.networking.firewall.allowedTCPPorts))
+    (!(builtins.elem 22000 config.networking.firewall.allowedUDPPorts))
+    (!(builtins.elem 21027 config.networking.firewall.allowedUDPPorts))
+    (lib.all
+      (interface:
+        builtins.elem 22000 config.networking.firewall.interfaces.${interface}.allowedTCPPorts
+        && lib.all (port: builtins.elem port config.networking.firewall.interfaces.${interface}.allowedUDPPorts) [22000 21027])
+      ["enp194s0" "tailscale0"])
+  ];
     pkgs.runCommand "homelab-ingress-regression" {} ''
       touch "$out"
     ''

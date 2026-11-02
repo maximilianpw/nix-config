@@ -1,11 +1,11 @@
 {
-  "version": "0.1.6-nightly.20261030.3917",
+  "version": "0.1.7-nightly.20261102.4066",
   "sources": {
     "aarch64-darwin": {
-      "hash": "sha256-VnD2njLB2RXNfHHttE+w+9VqBnAcQSgCjYGQISdMOKw="
+      "hash": "sha256-+HlnxjHxeICUIvOe9UpEsWbuXgAxXOJ61HcmqhQjwAU="
     },
     "x86_64-linux": {
-      "hash": "sha256-5OKXOohRi52ANQsv39Gwo2UujiGSDFWiaNnfDxDnfSM="
+      "hash": "sha256-OlfBuS5s5j8iGB3R7dnfiTvfq2jRaPG9Y6fhrRM8cQw="
     }
   }
 }

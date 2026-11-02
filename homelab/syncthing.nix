@@ -10,6 +10,11 @@
 in {
   custom.backup.applicationVersions.syncthing = config.services.syncthing.package.version;
 
+  networking.firewall.interfaces = lib.genAttrs ["enp194s0" "tailscale0"] (_: {
+    allowedTCPPorts = [22000];
+    allowedUDPPorts = [22000 21027];
+  });
+
   sops.secrets.syncthing-gui-password = {
     owner = currentSystemUser;
     restartUnits = ["syncthing-init.service"];
@@ -23,7 +28,6 @@ in {
     configDir = "${home}/.config/syncthing";
     guiAddress = "127.0.0.1:${toString syncthing.port}";
     guiPasswordFile = config.sops.secrets.syncthing-gui-password.path;
-    openDefaultPorts = true;
     overrideDevices = false;
     overrideFolders = false;
     settings = {
@@ -36,6 +40,8 @@ in {
       };
       options = {
         localAnnounceEnabled = true;
+        # Keep Syncthing from asking the router for a UPnP/NAT-PMP port forward.
+        natEnabled = false;
         relaysEnabled = true;
         urAccepted = -1;
       };
