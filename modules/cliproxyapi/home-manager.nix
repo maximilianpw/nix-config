@@ -99,6 +99,9 @@ in {
     sessionVariables = {
       CLIPROXYAPI_ROOT_URL = proxyBaseUrl;
       CLIPROXYAPI_API_KEY_FILE = proxyApiKeyPath;
+      # pi-claude-code injects its own relay as ANTHROPIC_BASE_URL; the
+      # proxy-default `claude` wrapper would overwrite it.
+      PI_CLAUDE_CODE_COMMAND = "${config.home.homeDirectory}/.local/bin/claude-direct";
     };
 
     # cli.json is also written by OpenCode and Herdr. Merge the declared keys

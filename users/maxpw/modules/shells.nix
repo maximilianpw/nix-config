@@ -47,9 +47,9 @@
 
     dcu = "docker compose up";
     dcdn = "docker compose down";
-    dcub = "docker compose up --build";
-    dcb = "docker compose build";
-    dcbc = "docker compose build --no-cache";
+    dcub = "dcompose up --build";
+    dcb = "dcompose build";
+    dcbc = "dcompose build --no-cache";
 
     tm = "tmux";
     tma = "tmux attach";

@@ -21,5 +21,10 @@
     "semanticDiff": true,
     "callFlow": false
   },
-  "agentTool": true
+  "agentTool": true,
+  "reviewDefaults": {
+    "jj": {
+      "defaultDiffType": "jj-line"
+    }
+  }
 }
