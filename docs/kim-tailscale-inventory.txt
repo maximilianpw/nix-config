@@ -1,0 +1,2078 @@
+=== ip ===
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+enp194s0         UP             192.168.1.99/24 fd51:b4e2:6c95:4b42:2af5:b9bf:4e0a:7a17/64 fd51:b4e2:6c95:4b42:d224:5998:dccc:ae25/64 fd51:b4e2:6c95:4b42:5d01:f129:8c6c:a27b/64 fd51:b4e2:6c95:4b42:2a23:5ae4:119e:9bf5/64 fd51:b4e2:6c95:4b42:c37b:31cc:9b94:694/64 fd51:b4e2:6c95:4b42:ed48:4508:fcda:201a/64 fd51:b4e2:6c95:4b42:dc1b:2fa5:32b7:a20/64 fe80::cca6:f5cf:8331:dfa8/64 
+tailscale0       UNKNOWN        100.76.56.97/32 fd7a:115c:a1e0::2a01:3881/128 fe80::4a0:eab7:bd05:55c1/64 
+br-82a38b6338ef  UP             172.22.0.1/16 fe80::d4b5:fff:fec8:ce6d/64 
+br-b24862fabb22  DOWN           172.18.0.1/16 
+br-e36578ad9bf5  DOWN           172.19.0.1/16 
+br-e949d881a780  DOWN           172.21.0.1/16 
+docker0          UP             172.17.0.1/16 fe80::6012:23ff:fe9b:6184/64 
+br-0831856b96a9  DOWN           172.20.0.1/16 
+br-146344d4ad95  DOWN           172.23.0.1/16 
+vethab86be0@if2  UP             fe80::bc23:63ff:fe45:eb88/64 
+veth25875eb@if2  UP             fe80::e86e:6ff:fe85:eebf/64 
+veth045fd09@if2  UP             fe80::40f3:fdff:fea1:e0d7/64 
+ve-qbt@if2       UP             10.89.0.3/32 fe80::2441:f6ff:fe38:ba2c/64 
+ve-sab@if2       UP             10.89.1.3/32 fe80::34e5:b4ff:fe65:3af/64 
+veth5d14528@if2  UP             fe80::18a8:46ff:fe29:78b8/64 
+=== listen ===
+Netid State  Recv-Q Send-Q                             Local Address:Port  Peer Address:PortProcess
+udp   UNCONN 0      0                                        0.0.0.0:32410      0.0.0.0:*    users:(("Plex Media Serv",pid=3906630,fd=72))
+udp   UNCONN 0      0                                        0.0.0.0:32412      0.0.0.0:*    users:(("Plex Media Serv",pid=3906630,fd=73))
+udp   UNCONN 0      0                                        0.0.0.0:32413      0.0.0.0:*    users:(("Plex Media Serv",pid=3906630,fd=65))
+udp   UNCONN 0      0                                        0.0.0.0:32414      0.0.0.0:*    users:(("Plex Media Serv",pid=3906630,fd=71))
+udp   UNCONN 0      0                                     127.0.0.54:53         0.0.0.0:*    users:(("systemd-resolve",pid=880,fd=22))
+udp   UNCONN 0      0                                  127.0.0.53%lo:53         0.0.0.0:*    users:(("systemd-resolve",pid=880,fd=20))
+udp   UNCONN 0      0                                     172.20.0.1:33301      0.0.0.0:*    users:(("Plex Media Serv",pid=3906630,fd=91))
+udp   UNCONN 0      0                                      10.89.0.3:34205      0.0.0.0:*    users:(("Plex Media Serv",pid=3906630,fd=129))
+udp   UNCONN 0      0                                     172.20.0.1:34414      0.0.0.0:*    users:(("Plex Media Serv",pid=3906630,fd=100))
+udp   UNCONN 0      0                                        0.0.0.0:1900       0.0.0.0:*    users:(("tunarr",pid=3907982,fd=84))
+udp   UNCONN 0      0                                        0.0.0.0:1900       0.0.0.0:*    users:(("tunarr",pid=3907982,fd=83))
+udp   UNCONN 0      0                                        0.0.0.0:1900       0.0.0.0:*    users:(("tunarr",pid=3907982,fd=82))
+udp   UNCONN 0      0                                        0.0.0.0:1900       0.0.0.0:*    users:(("tunarr",pid=3907982,fd=81))
+udp   UNCONN 0      0                                        0.0.0.0:1900       0.0.0.0:*    users:(("tunarr",pid=3907982,fd=80))
+udp   UNCONN 0      0                                        0.0.0.0:1900       0.0.0.0:*    users:(("tunarr",pid=3907982,fd=79))
+udp   UNCONN 0      0                                        0.0.0.0:1901       0.0.0.0:*    users:(("Plex Media Serv",pid=3906630,fd=93))
+udp   UNCONN 0      0                                     172.17.0.1:34977      0.0.0.0:*    users:(("Plex Media Serv",pid=3906630,fd=99))
+udp   UNCONN 0      0                                   192.168.1.99:5353       0.0.0.0:*    users:((".hass-wrapped",pid=3904196,fd=10))
+udp   UNCONN 0      0                                        0.0.0.0:5353       0.0.0.0:*    users:(("systemd-resolve",pid=880,fd=15))
+udp   UNCONN 0      0                                        0.0.0.0:5355       0.0.0.0:*    users:(("systemd-resolve",pid=880,fd=11))
+udp   UNCONN 0      0                                     172.19.0.1:38415      0.0.0.0:*    users:(("Plex Media Serv",pid=3906630,fd=79))
+udp   UNCONN 0      0                                      10.89.0.3:38837      0.0.0.0:*    users:(("Plex Media Serv",pid=3906630,fd=131))
+udp   UNCONN 0      0                                     172.19.0.1:38906      0.0.0.0:*    users:(("Plex Media Serv",pid=3906630,fd=88))
+udp   UNCONN 0      0                                      127.0.0.1:39205      0.0.0.0:*    users:(("Plex Media Serv",pid=3906630,fd=84))
+udp   UNCONN 0      0                                      10.89.0.3:39673      0.0.0.0:*    users:(("Plex Media Serv",pid=3906630,fd=128))
+udp   UNCONN 0      0                                        0.0.0.0:7359       0.0.0.0:*    users:(("jellyfin",pid=3906157,fd=470))
+udp   UNCONN 0      0                                     172.21.0.1:40691      0.0.0.0:*    users:(("Plex Media Serv",pid=3906630,fd=80))
+udp   UNCONN 0      0                                     172.23.0.1:41118      0.0.0.0:*    users:(("Plex Media Serv",pid=3906630,fd=83))
+udp   UNCONN 0      0                                     172.22.0.1:41307      0.0.0.0:*    users:(("Plex Media Serv",pid=3906630,fd=95))
+udp   UNCONN 0      0                                        0.0.0.0:41641      0.0.0.0:*    users:((".tailscaled-wra",pid=2910,fd=19))
+udp   UNCONN 0      0                                     172.18.0.1:41808      0.0.0.0:*    users:(("Plex Media Serv",pid=3906630,fd=96))
+udp   UNCONN 0      0                                   192.168.1.99:44618      0.0.0.0:*    users:(("Plex Media Serv",pid=3906630,fd=75))
+udp   UNCONN 0      0                                     172.23.0.1:45318      0.0.0.0:*    users:(("Plex Media Serv",pid=3906630,fd=92))
+udp   UNCONN 0      0                                     172.21.0.1:45372      0.0.0.0:*    users:(("Plex Media Serv",pid=3906630,fd=98))
+udp   UNCONN 0      0                                     172.18.0.1:45784      0.0.0.0:*    users:(("Plex Media Serv",pid=3906630,fd=78))
+udp   UNCONN 0      0                                     172.20.0.1:45851      0.0.0.0:*    users:(("Plex Media Serv",pid=3906630,fd=82))
+udp   UNCONN 0      0                                     172.21.0.1:48280      0.0.0.0:*    users:(("Plex Media Serv",pid=3906630,fd=89))
+udp   UNCONN 0      0                                     172.22.0.1:50446      0.0.0.0:*    users:(("Plex Media Serv",pid=3906630,fd=76))
+udp   UNCONN 0      0                                     172.23.0.1:52085      0.0.0.0:*    users:(("Plex Media Serv",pid=3906630,fd=101))
+udp   UNCONN 0      0                                      10.89.1.3:52406      0.0.0.0:*    users:(("Plex Media Serv",pid=3906630,fd=140))
+udp   UNCONN 0      0                                     172.17.0.1:53652      0.0.0.0:*    users:(("Plex Media Serv",pid=3906630,fd=81))
+udp   UNCONN 0      0                                        0.0.0.0:21027      0.0.0.0:*    users:(("syncthing",pid=3907936,fd=18))
+udp   UNCONN 0      0                                   192.168.1.99:53863      0.0.0.0:*    users:(("Plex Media Serv",pid=3906630,fd=94))
+udp   UNCONN 0      0                                      10.89.1.3:53892      0.0.0.0:*    users:(("Plex Media Serv",pid=3906630,fd=141))
+udp   UNCONN 0      0                                      127.0.0.1:54947      0.0.0.0:*    users:(("Plex Media Serv",pid=3906630,fd=74))
+udp   UNCONN 0      0                                        0.0.0.0:56511      0.0.0.0:*    users:(("syncthing",pid=3907936,fd=17))
+udp   UNCONN 0      0                                     172.17.0.1:58260      0.0.0.0:*    users:(("Plex Media Serv",pid=3906630,fd=90))
+udp   UNCONN 0      0                                     172.22.0.1:58619      0.0.0.0:*    users:(("Plex Media Serv",pid=3906630,fd=86))
+udp   UNCONN 0      0                                     172.18.0.1:59011      0.0.0.0:*    users:(("Plex Media Serv",pid=3906630,fd=87))
+udp   UNCONN 0      0                                   192.168.1.99:59161      0.0.0.0:*    users:(("Plex Media Serv",pid=3906630,fd=85))
+udp   UNCONN 0      0                                     172.19.0.1:59483      0.0.0.0:*    users:(("Plex Media Serv",pid=3906630,fd=97))
+udp   UNCONN 0      0                                      10.89.1.3:59485      0.0.0.0:*    users:(("Plex Media Serv",pid=3906630,fd=142))
+udp   UNCONN 0      0                                           [::]:5353          [::]:*    users:(("systemd-resolve",pid=880,fd=16))
+udp   UNCONN 0      0                                              *:5353             *:*    users:((".hass-wrapped",pid=3904196,fd=13))
+udp   UNCONN 0      0      [fd51:b4e2:6c95:4b42:2af5:b9bf:4e0a:7a17]:5353          [::]:*    users:((".hass-wrapped",pid=3904196,fd=15))
+udp   UNCONN 0      0                                           [::]:5355          [::]:*    users:(("systemd-resolve",pid=880,fd=13))
+udp   UNCONN 0      0                                           [::]:41641         [::]:*    users:((".tailscaled-wra",pid=2910,fd=18))
+udp   UNCONN 0      0                                              *:41691            *:*    users:(("cloudflared",pid=377978,fd=11))
+udp   UNCONN 0      0                                              *:9094             *:*    users:(("alertmanager",pid=515513,fd=6))
+udp   UNCONN 0      0                                              *:51847            *:*    users:(("cloudflared",pid=377978,fd=18))
+udp   UNCONN 0      0                                           [::]:21027         [::]:*    users:(("syncthing",pid=3907936,fd=30))
+udp   UNCONN 0      0                                              *:22000            *:*    users:(("syncthing",pid=3907936,fd=14))
+udp   UNCONN 0      0                                              *:56891            *:*    users:(("cloudflared",pid=377978,fd=6))
+udp   UNCONN 0      0                                              *:59012            *:*    users:(("cloudflared",pid=377978,fd=10))
+udp   UNCONN 0      0                                           [::]:60741         [::]:*    users:(("syncthing",pid=3907936,fd=29))
+tcp   LISTEN 0      4096                                   127.0.0.1:3000       0.0.0.0:*    users:((".gotenberg-wrap",pid=3880520,fd=3))
+tcp   LISTEN 0      2048                                   127.0.0.1:3003       0.0.0.0:*    users:((".gunicorn-wrapp",pid=3650734,fd=4),(".gunicorn-wrapp",pid=1020351,fd=4))
+tcp   LISTEN 0      128                                    127.0.0.1:35173      0.0.0.0:*    users:(("nvim",pid=2923447,fd=25))
+tcp   LISTEN 0      511                                    127.0.0.1:2468       0.0.0.0:*    users:(("node",pid=3905768,fd=29))
+tcp   LISTEN 0      512                                    127.0.0.1:35315      0.0.0.0:*    users:((".claude-wrapped",pid=926550,fd=20))
+tcp   LISTEN 0      128                                    127.0.0.1:34987      0.0.0.0:*    users:(("Plex Script Hos",pid=3906676,fd=4))
+tcp   LISTEN 0      511                                    127.0.0.1:2283       0.0.0.0:*    users:(("immich-api",pid=3906476,fd=47))
+tcp   LISTEN 0      4096                                100.76.56.97:49283      0.0.0.0:*    users:((".tailscaled-wra",pid=2910,fd=31))
+tcp   LISTEN 0      511                                    127.0.0.1:5055       0.0.0.0:*    users:(("node",pid=3907870,fd=27))
+tcp   LISTEN 0      511                                    127.0.0.1:8000       0.0.0.0:*    users:(("tunarr",pid=3907982,fd=78))
+tcp   LISTEN 0      512                                    127.0.0.1:7878       0.0.0.0:*    users:(("Radarr",pid=3907387,fd=349))
+tcp   LISTEN 0      4096                                   127.0.0.1:7474       0.0.0.0:*    users:(("autobrr",pid=3905730,fd=9))
+tcp   LISTEN 0      1024                                   127.0.0.1:40075      0.0.0.0:*    users:(("meilisearch",pid=3908621,fd=16))
+tcp   LISTEN 0      1024                                   127.0.0.1:6767       0.0.0.0:*    users:(("python3.13",pid=3905772,fd=7))
+tcp   LISTEN 0      511                                    127.0.0.1:6246       0.0.0.0:*    users:(("node-MainThread",pid=3906412,fd=21))
+tcp   LISTEN 0      4096                                   127.0.0.1:9558       0.0.0.0:*    users:(("systemd_exporte",pid=1323878,fd=3))
+tcp   LISTEN 0      128                                    127.0.0.1:9633       0.0.0.0:*    users:(("smartctl_export",pid=1476,fd=3))
+tcp   LISTEN 0      512                                    127.0.0.1:9696       0.0.0.0:*    users:(("Prowlarr",pid=3906626,fd=339))
+tcp   LISTEN 0      512                                    127.0.0.1:8989       0.0.0.0:*    users:(("Sonarr",pid=3907875,fd=331))
+tcp   LISTEN 0      4096                                   127.0.0.1:9115       0.0.0.0:*    users:(("blackbox_export",pid=1466,fd=3))
+tcp   LISTEN 0      128                                    127.0.0.1:9093       0.0.0.0:*    users:(("alertmanager",pid=515513,fd=7))
+tcp   LISTEN 0      4096                                   127.0.0.1:9090       0.0.0.0:*    users:(("prometheus",pid=3880548,fd=6))
+tcp   LISTEN 0      4096                                   127.0.0.1:9100       0.0.0.0:*    users:(("node_exporter",pid=1473,fd=4))
+tcp   LISTEN 0      4096                                   127.0.0.1:9187       0.0.0.0:*    users:(("postgres_export",pid=3547,fd=3))
+tcp   LISTEN 0      512                                    127.0.0.1:8686       0.0.0.0:*    users:(("Lidarr",pid=3906257,fd=319))
+tcp   LISTEN 0      511                                    127.0.0.1:41023      0.0.0.0:*    users:(("immich",pid=3906137,fd=96))
+tcp   LISTEN 0      4096                                   127.0.0.1:8317       0.0.0.0:*    users:(("cli-proxy-api",pid=1020334,fd=10))
+tcp   LISTEN 0      512                                    127.0.0.1:8318       0.0.0.0:*    users:(("bun",pid=2902,fd=11))
+tcp   LISTEN 0      4096                                   127.0.0.1:8265       0.0.0.0:*    users:(("docker-proxy",pid=3908135,fd=8))
+tcp   LISTEN 0      128                                      0.0.0.0:22         0.0.0.0:*    users:(("sshd",pid=1535,fd=6))
+tcp   LISTEN 0      512                                      0.0.0.0:8096       0.0.0.0:*    users:(("jellyfin",pid=3906157,fd=491))
+tcp   LISTEN 0      4096                                     0.0.0.0:5355       0.0.0.0:*    users:(("systemd-resolve",pid=880,fd=12))
+tcp   LISTEN 0      511                                    127.0.0.1:51000      0.0.0.0:*    users:(("t3code",pid=1020150,fd=29))
+tcp   LISTEN 0      4096                                   127.0.0.1:18080      0.0.0.0:*    users:(("systemd-socket-",pid=3907719,fd=3),("systemd",pid=1,fd=894))
+tcp   LISTEN 0      4096                                   127.0.0.1:18081      0.0.0.0:*    users:(("systemd-socket-",pid=3907869,fd=3),("systemd",pid=1,fd=906))
+tcp   LISTEN 0      4096                                  127.0.0.54:53         0.0.0.0:*    users:(("systemd-resolve",pid=880,fd=23))
+tcp   LISTEN 0      4096                                   127.0.0.1:20241      0.0.0.0:*    users:(("cloudflared",pid=377978,fd=8))
+tcp   LISTEN 0      512                                    127.0.0.1:19200      0.0.0.0:*    users:(("bun",pid=3906101,fd=15))
+tcp   LISTEN 0      4096                                   127.0.0.1:19384      0.0.0.0:*    users:(("syncthing",pid=3907936,fd=31))
+tcp   LISTEN 0      4096                                   127.0.0.1:19004      0.0.0.0:*    users:(("grafana",pid=3880915,fd=19))
+tcp   LISTEN 0      512                                    127.0.0.1:19005      0.0.0.0:*    users:(("bun",pid=3905868,fd=19))
+tcp   LISTEN 0      511                                    127.0.0.1:19006      0.0.0.0:*    users:(("MainThread",pid=3905726,fd=21))
+tcp   LISTEN 0      4096                                   127.0.0.1:19007      0.0.0.0:*    users:(("atuin-server",pid=3904155,fd=9))
+tcp   LISTEN 0      511                                    127.0.0.1:19001      0.0.0.0:*    users:(("uptime-kuma",pid=3906251,fd=24))
+tcp   LISTEN 0      128                                    127.0.0.1:19002      0.0.0.0:*    users:(("miniflux",pid=3904209,fd=6))
+tcp   LISTEN 0      128                                    127.0.0.1:19003      0.0.0.0:*    users:(("vaultwarden",pid=3907988,fd=17))
+tcp   LISTEN 0      512                                    127.0.0.1:19012      0.0.0.0:*    users:(("bun",pid=3907887,fd=14))
+tcp   LISTEN 0      128                                    127.0.0.1:19014      0.0.0.0:*    users:(("portfolio-track",pid=3906550,fd=12))
+tcp   LISTEN 0      511                                    127.0.0.1:19008      0.0.0.0:*    users:(("MainThread",pid=3906253,fd=23))
+tcp   LISTEN 0      511                                    127.0.0.1:19009      0.0.0.0:*    users:(("nginx",pid=1019689,fd=5),("nginx",pid=1019637,fd=5))
+tcp   LISTEN 0      128                                    127.0.0.1:19010      0.0.0.0:*    users:((".forgejo-wrappe",pid=3905986,fd=10))
+tcp   LISTEN 0      512                                    127.0.0.1:19011      0.0.0.0:*    users:(("bun",pid=3908506,fd=10))
+tcp   LISTEN 0      128                                    127.0.0.1:19123      0.0.0.0:*    users:((".hass-wrapped",pid=3904196,fd=11))
+tcp   LISTEN 0      511                                    127.0.0.1:19080      0.0.0.0:*    users:(("nginx",pid=1019689,fd=6),("nginx",pid=1019637,fd=6))
+tcp   LISTEN 0      511                                    127.0.0.1:19082      0.0.0.0:*    users:(("next-server (v1",pid=1705,fd=21))
+tcp   LISTEN 0      1024                                     0.0.0.0:32400      0.0.0.0:*    users:(("Plex Media Serv",pid=3906630,fd=51))
+tcp   LISTEN 0      1024                                   127.0.0.1:28981      0.0.0.0:*    users:(("granian asginl ",pid=3906662,fd=3),("granian asginl ",pid=3906529,fd=3))
+tcp   LISTEN 0      128                                    127.0.0.1:32600      0.0.0.0:*    users:(("Plex Tuner Serv",pid=3906885,fd=10))
+tcp   LISTEN 0      4096                               127.0.0.53%lo:53         0.0.0.0:*    users:(("systemd-resolve",pid=880,fd=21))
+tcp   LISTEN 0      1024                                   127.0.0.1:32401      0.0.0.0:*    users:(("Plex Media Serv",pid=3906630,fd=52))
+tcp   LISTEN 0      128                                            *:9094             *:*    users:(("alertmanager",pid=515513,fd=3))
+tcp   LISTEN 0      50                            [::ffff:127.0.0.1]:9998             *:*    users:(("java",pid=2470,fd=7))
+tcp   LISTEN 0      128                                         [::]:22            [::]:*    users:(("sshd",pid=1535,fd=7))
+tcp   LISTEN 0      4096                                        [::]:5355          [::]:*    users:(("systemd-resolve",pid=880,fd=14))
+tcp   LISTEN 0      1024                                       [::1]:40075         [::]:*    users:(("meilisearch",pid=3908621,fd=15))
+tcp   LISTEN 0      4096                 [fd7a:115c:a1e0::2a01:3881]:48232         [::]:*    users:((".tailscaled-wra",pid=2910,fd=32))
+tcp   LISTEN 0      4096                                           *:22000            *:*    users:(("syncthing",pid=3907936,fd=15))
+=== established ===
+Netid State      Recv-Q Send-Q         Local Address:Port             Peer Address:Port Process
+udp   ESTAB      0      0      192.168.1.99%enp194s0:68                192.168.1.1:67    users:(("NetworkManager",pid=1155,fd=27))
+tcp   ESTAB      0      0                  127.0.0.1:9558                127.0.0.1:33716 users:(("systemd_exporte",pid=1323878,fd=6))
+tcp   ESTAB      0      0                  127.0.0.1:33716               127.0.0.1:9558  users:(("prometheus",pid=3880548,fd=53))
+tcp   ESTAB      0      0                  127.0.0.1:19005               127.0.0.1:50554 users:(("bun",pid=3905868,fd=15))
+tcp   ESTAB      0      0                  127.0.0.1:9093                127.0.0.1:52790 users:(("alertmanager",pid=515513,fd=9))
+tcp   ESTAB      0      0                  127.0.0.1:33428               127.0.0.1:19080 users:(("cloudflared",pid=377978,fd=14))
+tcp   ESTAB      0      0                  127.0.0.1:35766               127.0.0.1:8317  users:((".claude-wrapped",pid=926550,fd=21))
+tcp   ESTAB      0      0               100.76.56.97:22               100.82.28.19:64543 users:(("sshd-session",pid=197611,fd=7),("sshd-session",pid=197531,fd=7))
+tcp   ESTAB      0      0                  127.0.0.1:51804               127.0.0.1:19080 users:(("cloudflared",pid=377978,fd=15))
+tcp   ESTAB      0      0               192.168.1.99:42578         191.217.203.162:22067 users:(("syncthing",pid=3907936,fd=27))
+tcp   ESTAB      0      0               100.76.56.97:22               100.82.28.19:64544 users:(("sshd-session",pid=197672,fd=7),("sshd-session",pid=197540,fd=7))
+tcp   ESTAB      0      0                  127.0.0.1:9633                127.0.0.1:55092 users:(("smartctl_export",pid=1476,fd=6))
+tcp   ESTAB      0      0                  127.0.0.1:9093                127.0.0.1:34594 users:(("alertmanager",pid=515513,fd=8))
+tcp   ESTAB      0      0                  127.0.0.1:7878                127.0.0.1:42560 users:(("Radarr",pid=3907387,fd=389))
+tcp   ESTAB      0      0                  127.0.0.1:19080               127.0.0.1:33428 users:(("nginx",pid=1019689,fd=12))
+tcp   ESTAB      0      0                  127.0.0.1:54040               127.0.0.1:19123 users:(("cloudflared",pid=377978,fd=7))
+tcp   ESTAB      0      0               192.168.1.99:57098          139.162.219.82:443   users:(("EasyAudioEncode",pid=3915727,fd=130),("Plex Media Serv",pid=3906630,fd=130))
+tcp   ESTAB      0      0               100.76.56.97:22               100.82.28.19:64547 users:(("sshd-session",pid=197678,fd=7),("sshd-session",pid=197612,fd=7))
+tcp   ESTAB      0      0               100.76.56.97:56342          100.125.229.20:443   users:((".forgejo-runner",pid=3906098,fd=3))
+tcp   ESTAB      0      0                  127.0.0.1:45054               127.0.0.1:19009 users:(("cloudflared",pid=377978,fd=9))
+tcp   CLOSE-WAIT 39     0               192.168.1.99:38856          172.64.151.205:443   users:(("Plex Media Serv",pid=3906630,fd=60))
+tcp   CLOSE-WAIT 39     0               192.168.1.99:38862          172.64.151.205:443   users:(("Plex Media Serv",pid=3906630,fd=119))
+tcp   ESTAB      0      0                  127.0.0.1:19123               127.0.0.1:54040 users:((".hass-wrapped",pid=3904196,fd=19))
+tcp   ESTAB      0      0                  127.0.0.1:44656               127.0.0.1:19010 users:((".tailscaled-wra",pid=2910,fd=20))
+tcp   ESTAB      0      0               192.168.1.99:45864           34.149.66.165:443   users:((".claude-wrapped",pid=926550,fd=16))
+tcp   ESTAB      0      0                  127.0.0.1:55092               127.0.0.1:9633  users:(("prometheus",pid=3880548,fd=58))
+tcp   ESTAB      0      0                  127.0.0.1:9187                127.0.0.1:57926 users:(("postgres_export",pid=3547,fd=6))
+tcp   ESTAB      0      0                  127.0.0.1:57926               127.0.0.1:9187  users:(("prometheus",pid=3880548,fd=51))
+tcp   ESTAB      0      0                  127.0.0.1:19010               127.0.0.1:44656 users:((".forgejo-wrappe",pid=3905986,fd=12))
+tcp   ESTAB      0      0                  127.0.0.1:34594               127.0.0.1:9093  users:(("prometheus",pid=3880548,fd=52))
+tcp   ESTAB      0      0                  127.0.0.1:42128               127.0.0.1:9696  users:(("Lidarr",pid=3906257,fd=361))
+tcp   ESTAB      0      0                  127.0.0.1:42136               127.0.0.1:9696  users:(("Lidarr",pid=3906257,fd=395))
+tcp   ESTAB      0      0                  127.0.0.1:52206               127.0.0.1:9090  users:(("prometheus",pid=3880548,fd=54))
+tcp   ESTAB      0      0                  127.0.0.1:9100                127.0.0.1:47798 users:(("node_exporter",pid=1473,fd=7))
+tcp   ESTAB      0      0                  127.0.0.1:52790               127.0.0.1:9093  users:(("prometheus",pid=3880548,fd=59))
+tcp   ESTAB      0      0                  127.0.0.1:8317                127.0.0.1:35766 users:(("cli-proxy-api",pid=1020334,fd=4))
+tcp   ESTAB      0      0               192.168.1.99:60648           176.58.90.104:443   users:((".tailscaled-wra",pid=2910,fd=29))
+tcp   ESTAB      0      0                  127.0.0.1:47798               127.0.0.1:9100  users:(("prometheus",pid=3880548,fd=56))
+tcp   ESTAB      0      0                  127.0.0.1:19080               127.0.0.1:51804 users:(("nginx",pid=1019689,fd=13))
+tcp   ESTAB      0      0               192.168.1.99:55232           192.200.0.104:80    users:((".tailscaled-wra",pid=2910,fd=28))
+tcp   ESTAB      0      0                  127.0.0.1:9090                127.0.0.1:52206 users:(("prometheus",pid=3880548,fd=55))
+tcp   ESTAB      0      0               192.168.1.99:57674           34.54.147.251:443   users:((".amp-wrapped",pid=1021989,fd=10))
+tcp   ESTAB      0      0                  127.0.0.1:7878                127.0.0.1:38030 users:(("Radarr",pid=3907387,fd=378))
+tcp   ESTAB      0      0                  127.0.0.1:38030               127.0.0.1:7878  users:(("python3.13",pid=3905772,fd=12))
+tcp   ESTAB      0      0                  127.0.0.1:54636               127.0.0.1:9115  users:(("prometheus",pid=3880548,fd=57))
+tcp   ESTAB      0      0                  127.0.0.1:42560               127.0.0.1:7878  users:(("unpackerr",pid=3907984,fd=7))
+tcp   ESTAB      0      0                  127.0.0.1:56178               127.0.0.1:9115  users:(("prometheus",pid=3880548,fd=50))
+tcp   ESTAB      0      0                  127.0.0.1:48078               127.0.0.1:8989  users:(("python3.13",pid=3905772,fd=11))
+tcp   ESTAB      0      0                  127.0.0.1:9696                127.0.0.1:42136 users:(("Prowlarr",pid=3906626,fd=366))
+tcp   ESTAB      0      0                  127.0.0.1:9115                127.0.0.1:56178 users:(("blackbox_export",pid=1466,fd=6))
+tcp   ESTAB      0      0                  127.0.0.1:9696                127.0.0.1:42128 users:(("Prowlarr",pid=3906626,fd=344))
+tcp   CLOSE-WAIT 1      0                  127.0.0.1:52058               127.0.0.1:34987 users:(("Plex Tuner Serv",pid=3906885,fd=63))
+tcp   ESTAB      0      0                  127.0.0.1:8989                127.0.0.1:48078 users:(("Sonarr",pid=3907875,fd=385))
+tcp   ESTAB      0      0               192.168.1.99:48426           160.79.104.10:443   users:((".claude-wrapped",pid=926550,fd=19))
+tcp   ESTAB      0      0                  127.0.0.1:19009               127.0.0.1:45054 users:(("nginx",pid=1019689,fd=4))
+tcp   ESTAB      0      0                  127.0.0.1:9115                127.0.0.1:54636 users:(("blackbox_export",pid=1466,fd=7))
+tcp   ESTAB      0      0                  127.0.0.1:50554               127.0.0.1:19005 users:(("cloudflared",pid=377978,fd=12))
+tcp   ESTAB      0      0               192.168.1.99:52798         199.165.136.101:443   users:((".tailscaled-wra",pid=2910,fd=27))
+tcp   ESTAB      0      0      [::ffff:192.168.1.99]:44560  [::ffff:104.20.33.250]:443   users:(("Prowlarr",pid=3906626,fd=391))
+tcp   ESTAB      0      0      [::ffff:192.168.1.99]:43654 [::ffff:172.67.137.143]:443   users:(("Prowlarr",pid=3906626,fd=387))
+=== sshd ===
+=== tailscale status ===
+{
+  "Version": "1.98.10",
+  "TUN": true,
+  "BackendState": "Running",
+  "HaveNodeKey": true,
+  "AuthURL": "",
+  "TailscaleIPs": [
+    "100.76.56.97",
+    "fd7a:115c:a1e0::2a01:3881"
+  ],
+  "Self": {
+    "ID": "nEE2UXJx6F11CNTRL",
+    "PublicKey": "nodekey:813ed360aa68e82bc16b5a1b4736f0c680ac0d648b33cf6e35830896721b9d21",
+    "HostName": "kim",
+    "DNSName": "kim.liger-shilling.ts.net.",
+    "OS": "linux",
+    "UserID": 1806028345811995,
+    "TailscaleIPs": [
+      "100.76.56.97",
+      "fd7a:115c:a1e0::2a01:3881"
+    ],
+    "AllowedIPs": [
+      "100.76.56.97/32",
+      "fd7a:115c:a1e0::2a01:3881/128",
+      "100.74.230.25/32",
+      "fd7a:115c:a1e0::f937:e61a/128",
+      "100.74.40.157/32",
+      "fd7a:115c:a1e0::2437:289e/128",
+      "100.111.85.163/32",
+      "fd7a:115c:a1e0::c329:55a4/128",
+      "100.83.140.36/32",
+      "fd7a:115c:a1e0::2e29:8c25/128",
+      "100.69.88.74/32",
+      "fd7a:115c:a1e0::ed37:584b/128",
+      "100.71.129.83/32",
+      "fd7a:115c:a1e0::8b29:8154/128",
+      "100.118.218.27/32",
+      "fd7a:115c:a1e0::fe37:da1c/128",
+      "100.70.193.7/32",
+      "fd7a:115c:a1e0::8e29:c108/128",
+      "100.123.230.82/32",
+      "fd7a:115c:a1e0::d237:e653/128",
+      "100.122.120.254/32",
+      "fd7a:115c:a1e0::6f37:7901/128",
+      "100.111.180.183/32",
+      "fd7a:115c:a1e0::c837:b4b8/128",
+      "100.109.22.136/32",
+      "fd7a:115c:a1e0::c829:1689/128",
+      "100.66.139.82/32",
+      "fd7a:115c:a1e0::5f37:8b53/128",
+      "100.105.251.172/32",
+      "fd7a:115c:a1e0::5b37:fbad/128",
+      "100.113.30.25/32",
+      "fd7a:115c:a1e0::437:1e1a/128",
+      "100.109.184.9/32",
+      "fd7a:115c:a1e0::4637:b80a/128",
+      "100.89.68.108/32",
+      "fd7a:115c:a1e0::da37:446d/128",
+      "100.97.108.108/32",
+      "fd7a:115c:a1e0::9937:6c6d/128",
+      "100.64.39.132/32",
+      "fd7a:115c:a1e0::e037:2785/128",
+      "100.89.45.49/32",
+      "fd7a:115c:a1e0::4537:2d32/128",
+      "100.90.172.42/32",
+      "fd7a:115c:a1e0::5b37:ac2b/128",
+      "100.125.229.20/32",
+      "fd7a:115c:a1e0::6129:e515/128",
+      "100.90.198.233/32",
+      "fd7a:115c:a1e0::f537:c6ea/128"
+    ],
+    "Tags": [
+      "tag:homelab"
+    ],
+    "PrimaryRoutes": [
+      "100.64.39.132/32",
+      "100.66.139.82/32",
+      "100.69.88.74/32",
+      "100.70.193.7/32",
+      "100.71.129.83/32",
+      "100.74.40.157/32",
+      "100.74.230.25/32",
+      "100.83.140.36/32",
+      "100.89.45.49/32",
+      "100.89.68.108/32",
+      "100.90.172.42/32",
+      "100.90.198.233/32",
+      "100.97.108.108/32",
+      "100.105.251.172/32",
+      "100.109.22.136/32",
+      "100.109.184.9/32",
+      "100.111.85.163/32",
+      "100.111.180.183/32",
+      "100.113.30.25/32",
+      "100.118.218.27/32",
+      "100.122.120.254/32",
+      "100.123.230.82/32",
+      "100.125.229.20/32",
+      "fd7a:115c:a1e0::437:1e1a/128",
+      "fd7a:115c:a1e0::2437:289e/128",
+      "fd7a:115c:a1e0::2e29:8c25/128",
+      "fd7a:115c:a1e0::4537:2d32/128",
+      "fd7a:115c:a1e0::4637:b80a/128",
+      "fd7a:115c:a1e0::5b37:ac2b/128",
+      "fd7a:115c:a1e0::5b37:fbad/128",
+      "fd7a:115c:a1e0::5f37:8b53/128",
+      "fd7a:115c:a1e0::6129:e515/128",
+      "fd7a:115c:a1e0::6f37:7901/128",
+      "fd7a:115c:a1e0::8b29:8154/128",
+      "fd7a:115c:a1e0::8e29:c108/128",
+      "fd7a:115c:a1e0::9937:6c6d/128",
+      "fd7a:115c:a1e0::c329:55a4/128",
+      "fd7a:115c:a1e0::c829:1689/128",
+      "fd7a:115c:a1e0::c837:b4b8/128",
+      "fd7a:115c:a1e0::d237:e653/128",
+      "fd7a:115c:a1e0::da37:446d/128",
+      "fd7a:115c:a1e0::e037:2785/128",
+      "fd7a:115c:a1e0::ed37:584b/128",
+      "fd7a:115c:a1e0::f537:c6ea/128",
+      "fd7a:115c:a1e0::f937:e61a/128",
+      "fd7a:115c:a1e0::fe37:da1c/128"
+    ],
+    "Addrs": [
+      "109.18.26.14:9639",
+      "109.18.26.14:41641",
+      "10.89.0.3:41641",
+      "10.89.1.3:41641",
+      "172.17.0.1:41641",
+      "172.18.0.1:41641",
+      "172.19.0.1:41641",
+      "172.20.0.1:41641",
+      "172.21.0.1:41641",
+      "172.22.0.1:41641",
+      "172.23.0.1:41641",
+      "192.168.1.99:41641"
+    ],
+    "CurAddr": "",
+    "Relay": "par",
+    "PeerRelay": "",
+    "RxBytes": 0,
+    "TxBytes": 0,
+    "Created": "2025-12-30T17:33:32.800637144Z",
+    "LastWrite": "0001-01-01T00:00:00Z",
+    "LastSeen": "0001-01-01T00:00:00Z",
+    "LastHandshake": "0001-01-01T00:00:00Z",
+    "Online": true,
+    "ExitNode": false,
+    "ExitNodeOption": false,
+    "Active": false,
+    "PeerAPIURL": [
+      "http://100.76.56.97:49283",
+      "http://[fd7a:115c:a1e0::2a01:3881]:48232"
+    ],
+    "TaildropTarget": 0,
+    "NoFileSharingReason": "",
+    "Capabilities": [
+      "HTTPS://TAILSCALE.COM/s/DEPRECATED-NODE-CAPS#see-https://github.com/tailscale/tailscale/issues/11508",
+      "default-auto-update",
+      "https",
+      "https://tailscale.com/cap/file-sharing",
+      "https://tailscale.com/cap/is-owner",
+      "https://tailscale.com/cap/mac-ui-v2",
+      "https://tailscale.com/cap/ssh",
+      "https://tailscale.com/cap/tailnet-lock",
+      "probe-udp-lifetime",
+      "service-host",
+      "services/atuin",
+      "services/autobrr",
+      "services/bazarr",
+      "services/git",
+      "services/grafana",
+      "services/homelab",
+      "services/immich",
+      "services/kuma",
+      "services/leerr",
+      "services/lidarr",
+      "services/maintainerr",
+      "services/miniflux",
+      "services/paperless",
+      "services/plannotator",
+      "services/prowlarr",
+      "services/qbittorrent",
+      "services/radarr",
+      "services/sabnzbd",
+      "services/sonarr",
+      "services/superlocal",
+      "services/syncthing",
+      "services/t3code",
+      "services/tdarr",
+      "services/tunarr",
+      "services/vaultwarden",
+      "ssh-behavior-v1",
+      "ssh-env-vars",
+      "store-appc-routes",
+      "tailnet-display-name"
+    ],
+    "CapMap": {
+      "default-auto-update": [
+        true
+      ],
+      "https": null,
+      "https://tailscale.com/cap/file-sharing": null,
+      "https://tailscale.com/cap/is-owner": null,
+      "https://tailscale.com/cap/mac-ui-v2": null,
+      "https://tailscale.com/cap/ssh": null,
+      "https://tailscale.com/cap/tailnet-lock": null,
+      "probe-udp-lifetime": null,
+      "service-host": [
+        {
+          "svc:atuin": [
+            "100.70.193.7",
+            "fd7a:115c:a1e0::8e29:c108"
+          ],
+          "svc:autobrr": [
+            "100.111.85.163",
+            "fd7a:115c:a1e0::c329:55a4"
+          ],
+          "svc:bazarr": [
+            "100.122.120.254",
+            "fd7a:115c:a1e0::6f37:7901"
+          ],
+          "svc:git": [
+            "100.125.229.20",
+            "fd7a:115c:a1e0::6129:e515"
+          ],
+          "svc:grafana": [
+            "100.89.68.108",
+            "fd7a:115c:a1e0::da37:446d"
+          ],
+          "svc:homelab": [
+            "100.66.139.82",
+            "fd7a:115c:a1e0::5f37:8b53"
+          ],
+          "svc:immich": [
+            "100.74.230.25",
+            "fd7a:115c:a1e0::f937:e61a"
+          ],
+          "svc:kuma": [
+            "100.105.251.172",
+            "fd7a:115c:a1e0::5b37:fbad"
+          ],
+          "svc:lidarr": [
+            "100.123.230.82",
+            "fd7a:115c:a1e0::d237:e653"
+          ],
+          "svc:maintainerr": [
+            "100.83.140.36",
+            "fd7a:115c:a1e0::2e29:8c25"
+          ],
+          "svc:miniflux": [
+            "100.69.88.74",
+            "fd7a:115c:a1e0::ed37:584b"
+          ],
+          "svc:paperless": [
+            "100.111.180.183",
+            "fd7a:115c:a1e0::c837:b4b8"
+          ],
+          "svc:prowlarr": [
+            "100.113.30.25",
+            "fd7a:115c:a1e0::437:1e1a"
+          ],
+          "svc:qbittorrent": [
+            "100.97.108.108",
+            "fd7a:115c:a1e0::9937:6c6d"
+          ],
+          "svc:radarr": [
+            "100.64.39.132",
+            "fd7a:115c:a1e0::e037:2785"
+          ],
+          "svc:sabnzbd": [
+            "100.118.218.27",
+            "fd7a:115c:a1e0::fe37:da1c"
+          ],
+          "svc:sonarr": [
+            "100.89.45.49",
+            "fd7a:115c:a1e0::4537:2d32"
+          ],
+          "svc:superlocal": [
+            "100.109.22.136",
+            "fd7a:115c:a1e0::c829:1689"
+          ],
+          "svc:syncthing": [
+            "100.90.198.233",
+            "fd7a:115c:a1e0::f537:c6ea"
+          ],
+          "svc:t3code": [
+            "100.90.172.42",
+            "fd7a:115c:a1e0::5b37:ac2b"
+          ],
+          "svc:tdarr": [
+            "100.71.129.83",
+            "fd7a:115c:a1e0::8b29:8154"
+          ],
+          "svc:tunarr": [
+            "100.74.40.157",
+            "fd7a:115c:a1e0::2437:289e"
+          ],
+          "svc:vaultwarden": [
+            "100.109.184.9",
+            "fd7a:115c:a1e0::4637:b80a"
+          ]
+        }
+      ],
+      "services/atuin": [
+        {
+          "Name": "svc:atuin",
+          "Addrs": [
+            "100.70.193.7",
+            "fd7a:115c:a1e0::8e29:c108"
+          ],
+          "Ports": [
+            "tcp:443"
+          ]
+        }
+      ],
+      "services/autobrr": [
+        {
+          "Name": "svc:autobrr",
+          "Addrs": [
+            "100.111.85.163",
+            "fd7a:115c:a1e0::c329:55a4"
+          ],
+          "Ports": [
+            "tcp:443"
+          ]
+        }
+      ],
+      "services/bazarr": [
+        {
+          "Name": "svc:bazarr",
+          "Addrs": [
+            "100.122.120.254",
+            "fd7a:115c:a1e0::6f37:7901"
+          ],
+          "Ports": [
+            "tcp:443"
+          ]
+        }
+      ],
+      "services/git": [
+        {
+          "Name": "svc:git",
+          "Addrs": [
+            "100.125.229.20",
+            "fd7a:115c:a1e0::6129:e515"
+          ],
+          "Ports": [
+            "tcp:443"
+          ]
+        }
+      ],
+      "services/grafana": [
+        {
+          "Name": "svc:grafana",
+          "Addrs": [
+            "100.89.68.108",
+            "fd7a:115c:a1e0::da37:446d"
+          ],
+          "Ports": [
+            "tcp:443"
+          ]
+        }
+      ],
+      "services/homelab": [
+        {
+          "Name": "svc:homelab",
+          "Addrs": [
+            "100.66.139.82",
+            "fd7a:115c:a1e0::5f37:8b53"
+          ],
+          "Ports": [
+            "tcp:443"
+          ]
+        }
+      ],
+      "services/immich": [
+        {
+          "Name": "svc:immich",
+          "Addrs": [
+            "100.74.230.25",
+            "fd7a:115c:a1e0::f937:e61a"
+          ],
+          "Ports": [
+            "tcp:443"
+          ]
+        }
+      ],
+      "services/kuma": [
+        {
+          "Name": "svc:kuma",
+          "Addrs": [
+            "100.105.251.172",
+            "fd7a:115c:a1e0::5b37:fbad"
+          ],
+          "Ports": [
+            "tcp:443"
+          ]
+        }
+      ],
+      "services/leerr": [
+        {
+          "Name": "svc:leerr",
+          "Addrs": [
+            "100.113.134.234",
+            "fd7a:115c:a1e0::b929:86eb"
+          ],
+          "Ports": [
+            "tcp:443"
+          ]
+        }
+      ],
+      "services/lidarr": [
+        {
+          "Name": "svc:lidarr",
+          "Addrs": [
+            "100.123.230.82",
+            "fd7a:115c:a1e0::d237:e653"
+          ],
+          "Ports": [
+            "tcp:443"
+          ]
+        }
+      ],
+      "services/maintainerr": [
+        {
+          "Name": "svc:maintainerr",
+          "Addrs": [
+            "100.83.140.36",
+            "fd7a:115c:a1e0::2e29:8c25"
+          ],
+          "Ports": [
+            "tcp:443"
+          ]
+        }
+      ],
+      "services/miniflux": [
+        {
+          "Name": "svc:miniflux",
+          "Addrs": [
+            "100.69.88.74",
+            "fd7a:115c:a1e0::ed37:584b"
+          ],
+          "Ports": [
+            "tcp:443"
+          ]
+        }
+      ],
+      "services/paperless": [
+        {
+          "Name": "svc:paperless",
+          "Addrs": [
+            "100.111.180.183",
+            "fd7a:115c:a1e0::c837:b4b8"
+          ],
+          "Ports": [
+            "tcp:443"
+          ]
+        }
+      ],
+      "services/plannotator": [
+        {
+          "Name": "svc:plannotator",
+          "Addrs": [
+            "100.80.129.40",
+            "fd7a:115c:a1e0::5629:8129"
+          ],
+          "Ports": [
+            "tcp:443"
+          ]
+        }
+      ],
+      "services/prowlarr": [
+        {
+          "Name": "svc:prowlarr",
+          "Addrs": [
+            "100.113.30.25",
+            "fd7a:115c:a1e0::437:1e1a"
+          ],
+          "Ports": [
+            "tcp:443"
+          ]
+        }
+      ],
+      "services/qbittorrent": [
+        {
+          "Name": "svc:qbittorrent",
+          "Addrs": [
+            "100.97.108.108",
+            "fd7a:115c:a1e0::9937:6c6d"
+          ],
+          "Ports": [
+            "tcp:443"
+          ]
+        }
+      ],
+      "services/radarr": [
+        {
+          "Name": "svc:radarr",
+          "Addrs": [
+            "100.64.39.132",
+            "fd7a:115c:a1e0::e037:2785"
+          ],
+          "Ports": [
+            "tcp:443"
+          ]
+        }
+      ],
+      "services/sabnzbd": [
+        {
+          "Name": "svc:sabnzbd",
+          "Addrs": [
+            "100.118.218.27",
+            "fd7a:115c:a1e0::fe37:da1c"
+          ],
+          "Ports": [
+            "tcp:443"
+          ]
+        }
+      ],
+      "services/sonarr": [
+        {
+          "Name": "svc:sonarr",
+          "Addrs": [
+            "100.89.45.49",
+            "fd7a:115c:a1e0::4537:2d32"
+          ],
+          "Ports": [
+            "tcp:443"
+          ]
+        }
+      ],
+      "services/superlocal": [
+        {
+          "Name": "svc:superlocal",
+          "Addrs": [
+            "100.109.22.136",
+            "fd7a:115c:a1e0::c829:1689"
+          ],
+          "Ports": [
+            "tcp:443"
+          ]
+        }
+      ],
+      "services/syncthing": [
+        {
+          "Name": "svc:syncthing",
+          "Addrs": [
+            "100.90.198.233",
+            "fd7a:115c:a1e0::f537:c6ea"
+          ],
+          "Ports": [
+            "tcp:443"
+          ]
+        }
+      ],
+      "services/t3code": [
+        {
+          "Name": "svc:t3code",
+          "Addrs": [
+            "100.90.172.42",
+            "fd7a:115c:a1e0::5b37:ac2b"
+          ],
+          "Ports": [
+            "tcp:443"
+          ]
+        }
+      ],
+      "services/tdarr": [
+        {
+          "Name": "svc:tdarr",
+          "Addrs": [
+            "100.71.129.83",
+            "fd7a:115c:a1e0::8b29:8154"
+          ],
+          "Ports": [
+            "tcp:443"
+          ]
+        }
+      ],
+      "services/tunarr": [
+        {
+          "Name": "svc:tunarr",
+          "Addrs": [
+            "100.74.40.157",
+            "fd7a:115c:a1e0::2437:289e"
+          ],
+          "Ports": [
+            "tcp:443"
+          ]
+        }
+      ],
+      "services/vaultwarden": [
+        {
+          "Name": "svc:vaultwarden",
+          "Addrs": [
+            "100.109.184.9",
+            "fd7a:115c:a1e0::4637:b80a"
+          ],
+          "Ports": [
+            "tcp:443"
+          ]
+        }
+      ],
+      "ssh-behavior-v1": null,
+      "ssh-env-vars": null,
+      "store-appc-routes": null,
+      "tailnet-display-name": [
+        "maximilianpw.github"
+      ]
+    },
+    "InNetworkMap": true,
+    "InMagicSock": false,
+    "InEngine": false,
+    "KeyExpiry": "2027-01-01T20:57:32Z"
+  },
+  "Health": [],
+  "MagicDNSSuffix": "liger-shilling.ts.net",
+  "CurrentTailnet": {
+    "Name": "maximilianpw.github",
+    "MagicDNSSuffix": "liger-shilling.ts.net",
+    "MagicDNSEnabled": true
+  },
+  "CertDomains": [
+    "kim.liger-shilling.ts.net",
+    "immich.liger-shilling.ts.net",
+    "leerr.liger-shilling.ts.net",
+    "tunarr.liger-shilling.ts.net",
+    "autobrr.liger-shilling.ts.net",
+    "maintainerr.liger-shilling.ts.net",
+    "miniflux.liger-shilling.ts.net",
+    "tdarr.liger-shilling.ts.net",
+    "sabnzbd.liger-shilling.ts.net",
+    "atuin.liger-shilling.ts.net",
+    "lidarr.liger-shilling.ts.net",
+    "bazarr.liger-shilling.ts.net",
+    "paperless.liger-shilling.ts.net",
+    "superlocal.liger-shilling.ts.net",
+    "homelab.liger-shilling.ts.net",
+    "kuma.liger-shilling.ts.net",
+    "prowlarr.liger-shilling.ts.net",
+    "vaultwarden.liger-shilling.ts.net",
+    "grafana.liger-shilling.ts.net",
+    "qbittorrent.liger-shilling.ts.net",
+    "radarr.liger-shilling.ts.net",
+    "sonarr.liger-shilling.ts.net",
+    "t3code.liger-shilling.ts.net",
+    "plannotator.liger-shilling.ts.net",
+    "git.liger-shilling.ts.net",
+    "syncthing.liger-shilling.ts.net"
+  ],
+  "Peer": {
+    "nodekey:1b8db78b0d317a2402112a66d1abbd3409640b5cd70a5bca279d75872d9b5b32": {
+      "ID": "nqieRFGDdu11CNTRL",
+      "PublicKey": "nodekey:1b8db78b0d317a2402112a66d1abbd3409640b5cd70a5bca279d75872d9b5b32",
+      "HostName": "cuno",
+      "DNSName": "cuno.liger-shilling.ts.net.",
+      "OS": "linux",
+      "UserID": 335941738785176,
+      "TailscaleIPs": [
+        "100.91.91.50",
+        "fd7a:115c:a1e0::2d29:5b33"
+      ],
+      "AllowedIPs": [
+        "100.91.91.50/32",
+        "fd7a:115c:a1e0::2d29:5b33/128"
+      ],
+      "Addrs": null,
+      "CurAddr": "",
+      "Relay": "par",
+      "PeerRelay": "",
+      "RxBytes": 0,
+      "TxBytes": 0,
+      "Created": "2026-09-20T16:05:25.858399324Z",
+      "LastWrite": "0001-01-01T00:00:00Z",
+      "LastSeen": "2026-09-25T15:00:07.1Z",
+      "LastHandshake": "0001-01-01T00:00:00Z",
+      "Online": false,
+      "ExitNode": false,
+      "ExitNodeOption": false,
+      "Active": false,
+      "PeerAPIURL": [
+        "http://100.91.91.50:52572",
+        "http://[fd7a:115c:a1e0::2d29:5b33]:49652"
+      ],
+      "TaildropTarget": 5,
+      "NoFileSharingReason": "",
+      "InNetworkMap": true,
+      "InMagicSock": true,
+      "InEngine": false,
+      "KeyExpiry": "2027-03-19T16:05:25Z"
+    },
+    "nodekey:221a0831ffbdc09e17eaa93b8a31ad3d866bf4645a0043f9cfc64fcd60cd755c": {
+      "ID": "nutXQEEcpB21CNTRL",
+      "PublicKey": "nodekey:221a0831ffbdc09e17eaa93b8a31ad3d866bf4645a0043f9cfc64fcd60cd755c",
+      "HostName": "joyce",
+      "DNSName": "joyce.liger-shilling.ts.net.",
+      "OS": "macOS",
+      "UserID": 335941738785176,
+      "TailscaleIPs": [
+        "100.82.28.19",
+        "fd7a:115c:a1e0::de01:1c2b"
+      ],
+      "AllowedIPs": [
+        "100.82.28.19/32",
+        "fd7a:115c:a1e0::de01:1c2b/128"
+      ],
+      "Addrs": null,
+      "CurAddr": "93.7.216.30:41641",
+      "Relay": "par",
+      "PeerRelay": "",
+      "RxBytes": 2327932,
+      "TxBytes": 3546524,
+      "Created": "2025-12-31T08:26:58.777972939Z",
+      "LastWrite": "2026-10-25T13:52:17.470492535+01:00",
+      "LastSeen": "0001-01-01T00:00:00Z",
+      "LastHandshake": "2026-10-25T13:50:19.899235747+01:00",
+      "Online": true,
+      "ExitNode": false,
+      "ExitNodeOption": false,
+      "Active": true,
+      "PeerAPIURL": [
+        "http://100.82.28.19:48975",
+        "http://[fd7a:115c:a1e0::de01:1c2b]:38712"
+      ],
+      "TaildropTarget": 9,
+      "NoFileSharingReason": "",
+      "InNetworkMap": true,
+      "InMagicSock": true,
+      "InEngine": true,
+      "KeyExpiry": "2026-12-30T10:54:57Z"
+    },
+    "nodekey:485c54b7157703409b0ec507c9e6044f8c3c4d9ebc35fc5bf4796be9d4b5672c": {
+      "ID": "nbQz1Yi4kk11CNTRL",
+      "PublicKey": "nodekey:485c54b7157703409b0ec507c9e6044f8c3c4d9ebc35fc5bf4796be9d4b5672c",
+      "HostName": "localhost",
+      "DNSName": "ipad153.liger-shilling.ts.net.",
+      "OS": "iOS",
+      "UserID": 335941738785176,
+      "TailscaleIPs": [
+        "100.117.103.44",
+        "fd7a:115c:a1e0::d437:672d"
+      ],
+      "AllowedIPs": [
+        "100.117.103.44/32",
+        "fd7a:115c:a1e0::d437:672d/128"
+      ],
+      "Addrs": null,
+      "CurAddr": "",
+      "Relay": "par",
+      "PeerRelay": "",
+      "RxBytes": 0,
+      "TxBytes": 0,
+      "Created": "2026-08-10T18:50:32.308458879Z",
+      "LastWrite": "0001-01-01T00:00:00Z",
+      "LastSeen": "2026-09-26T17:01:11.1Z",
+      "LastHandshake": "0001-01-01T00:00:00Z",
+      "Online": false,
+      "ExitNode": false,
+      "ExitNodeOption": false,
+      "Active": false,
+      "PeerAPIURL": [
+        "http://100.117.103.44:57898",
+        "http://[fd7a:115c:a1e0::d437:672d]:35602"
+      ],
+      "TaildropTarget": 5,
+      "NoFileSharingReason": "",
+      "InNetworkMap": true,
+      "InMagicSock": true,
+      "InEngine": false,
+      "KeyExpiry": "2027-02-06T18:50:32Z"
+    },
+    "nodekey:976849734981c363816358e48bfc6a63a33be18bf7ea278f3d6dd41fbb7fb460": {
+      "ID": "nXo3x5Jg1Z11CNTRL",
+      "PublicKey": "nodekey:976849734981c363816358e48bfc6a63a33be18bf7ea278f3d6dd41fbb7fb460",
+      "HostName": "BIG-MAX-PC",
+      "DNSName": "big-max-pc.liger-shilling.ts.net.",
+      "OS": "windows",
+      "UserID": 335941738785176,
+      "TailscaleIPs": [
+        "100.110.168.84",
+        "fd7a:115c:a1e0::e901:a88c"
+      ],
+      "AllowedIPs": [
+        "100.110.168.84/32",
+        "fd7a:115c:a1e0::e901:a88c/128"
+      ],
+      "Addrs": null,
+      "CurAddr": "",
+      "Relay": "par",
+      "PeerRelay": "",
+      "RxBytes": 0,
+      "TxBytes": 0,
+      "Created": "2026-01-01T14:50:33.141368685Z",
+      "LastWrite": "0001-01-01T00:00:00Z",
+      "LastSeen": "2026-09-20T16:06:13.1Z",
+      "LastHandshake": "0001-01-01T00:00:00Z",
+      "Online": false,
+      "ExitNode": false,
+      "ExitNodeOption": false,
+      "Active": false,
+      "PeerAPIURL": [
+        "http://100.110.168.84:39988",
+        "http://[fd7a:115c:a1e0::e901:a88c]:51919"
+      ],
+      "TaildropTarget": 5,
+      "NoFileSharingReason": "",
+      "InNetworkMap": true,
+      "InMagicSock": true,
+      "InEngine": false,
+      "KeyExpiry": "2027-01-04T18:08:40Z"
+    },
+    "nodekey:ff085b41750713ebec270b8c6aa77c64c6356a78bc65a478cf321e4b6db62e2a": {
+      "ID": "n8YhzhLuAW11CNTRL",
+      "PublicKey": "nodekey:ff085b41750713ebec270b8c6aa77c64c6356a78bc65a478cf321e4b6db62e2a",
+      "HostName": "localhost",
+      "DNSName": "iphone172.liger-shilling.ts.net.",
+      "OS": "iOS",
+      "UserID": 335941738785176,
+      "TailscaleIPs": [
+        "100.99.94.79",
+        "fd7a:115c:a1e0::fc01:5e4f"
+      ],
+      "AllowedIPs": [
+        "100.99.94.79/32",
+        "fd7a:115c:a1e0::fc01:5e4f/128"
+      ],
+      "Addrs": null,
+      "CurAddr": "",
+      "Relay": "par",
+      "PeerRelay": "",
+      "RxBytes": 0,
+      "TxBytes": 0,
+      "Created": "2025-12-30T17:28:23.080374567Z",
+      "LastWrite": "2026-10-25T09:21:35.155437079+01:00",
+      "LastSeen": "0001-01-01T00:00:00Z",
+      "LastHandshake": "0001-01-01T00:00:00Z",
+      "Online": true,
+      "ExitNode": false,
+      "ExitNodeOption": false,
+      "Active": false,
+      "PeerAPIURL": [
+        "http://100.99.94.79:32944",
+        "http://[fd7a:115c:a1e0::fc01:5e4f]:40958"
+      ],
+      "TaildropTarget": 9,
+      "NoFileSharingReason": "",
+      "InNetworkMap": true,
+      "InMagicSock": true,
+      "InEngine": false,
+      "KeyExpiry": "2026-12-30T22:13:28Z"
+    }
+  },
+  "User": {
+    "1806028345811995": {
+      "ID": 1806028345811995,
+      "LoginName": "kim.liger-shilling.ts.net",
+      "DisplayName": "kim"
+    },
+    "335941738785176": {
+      "ID": 335941738785176,
+      "LoginName": "maximilianpw@github",
+      "DisplayName": "Maximilian",
+      "ProfilePicURL": "https://avatars.githubusercontent.com/u/61150071?v=4"
+    }
+  },
+  "ClientVersion": null
+}=== serve ===
+{
+  "Services": {
+    "svc:atuin": {
+      "TCP": {
+        "443": {
+          "HTTPS": true
+        }
+      },
+      "Web": {
+        "atuin.liger-shilling.ts.net:443": {
+          "Handlers": {
+            "/": {
+              "Proxy": "http://127.0.0.1:19007"
+            }
+          }
+        }
+      }
+    },
+    "svc:autobrr": {
+      "TCP": {
+        "443": {
+          "HTTPS": true
+        }
+      },
+      "Web": {
+        "autobrr.liger-shilling.ts.net:443": {
+          "Handlers": {
+            "/": {
+              "Proxy": "http://127.0.0.1:7474"
+            }
+          }
+        }
+      }
+    },
+    "svc:bazarr": {
+      "TCP": {
+        "443": {
+          "HTTPS": true
+        }
+      },
+      "Web": {
+        "bazarr.liger-shilling.ts.net:443": {
+          "Handlers": {
+            "/": {
+              "Proxy": "http://127.0.0.1:6767"
+            }
+          }
+        }
+      }
+    },
+    "svc:git": {
+      "TCP": {
+        "443": {
+          "HTTPS": true
+        }
+      },
+      "Web": {
+        "git.liger-shilling.ts.net:443": {
+          "Handlers": {
+            "/": {
+              "Proxy": "http://127.0.0.1:19010"
+            }
+          }
+        }
+      }
+    },
+    "svc:grafana": {
+      "TCP": {
+        "443": {
+          "HTTPS": true
+        }
+      },
+      "Web": {
+        "grafana.liger-shilling.ts.net:443": {
+          "Handlers": {
+            "/": {
+              "Proxy": "http://127.0.0.1:19004"
+            }
+          }
+        }
+      }
+    },
+    "svc:homelab": {
+      "TCP": {
+        "443": {
+          "HTTPS": true
+        }
+      },
+      "Web": {
+        "homelab.liger-shilling.ts.net:443": {
+          "Handlers": {
+            "/": {
+              "Proxy": "http://127.0.0.1:19082"
+            }
+          }
+        }
+      }
+    },
+    "svc:immich": {
+      "TCP": {
+        "443": {
+          "HTTPS": true
+        }
+      },
+      "Web": {
+        "immich.liger-shilling.ts.net:443": {
+          "Handlers": {
+            "/": {
+              "Proxy": "http://127.0.0.1:2283"
+            }
+          }
+        }
+      }
+    },
+    "svc:kuma": {
+      "TCP": {
+        "443": {
+          "HTTPS": true
+        }
+      },
+      "Web": {
+        "kuma.liger-shilling.ts.net:443": {
+          "Handlers": {
+            "/": {
+              "Proxy": "http://127.0.0.1:19001"
+            }
+          }
+        }
+      }
+    },
+    "svc:lidarr": {
+      "TCP": {
+        "443": {
+          "HTTPS": true
+        }
+      },
+      "Web": {
+        "lidarr.liger-shilling.ts.net:443": {
+          "Handlers": {
+            "/": {
+              "Proxy": "http://127.0.0.1:8686"
+            }
+          }
+        }
+      }
+    },
+    "svc:maintainerr": {
+      "TCP": {
+        "443": {
+          "HTTPS": true
+        }
+      },
+      "Web": {
+        "maintainerr.liger-shilling.ts.net:443": {
+          "Handlers": {
+            "/": {
+              "Proxy": "http://127.0.0.1:6246"
+            }
+          }
+        }
+      }
+    },
+    "svc:miniflux": {
+      "TCP": {
+        "443": {
+          "HTTPS": true
+        }
+      },
+      "Web": {
+        "miniflux.liger-shilling.ts.net:443": {
+          "Handlers": {
+            "/": {
+              "Proxy": "http://127.0.0.1:19002"
+            }
+          }
+        }
+      }
+    },
+    "svc:paperless": {
+      "TCP": {
+        "443": {
+          "HTTPS": true
+        }
+      },
+      "Web": {
+        "paperless.liger-shilling.ts.net:443": {
+          "Handlers": {
+            "/": {
+              "Proxy": "http://127.0.0.1:28981"
+            }
+          }
+        }
+      }
+    },
+    "svc:prowlarr": {
+      "TCP": {
+        "443": {
+          "HTTPS": true
+        }
+      },
+      "Web": {
+        "prowlarr.liger-shilling.ts.net:443": {
+          "Handlers": {
+            "/": {
+              "Proxy": "http://127.0.0.1:9696"
+            }
+          }
+        }
+      }
+    },
+    "svc:qbittorrent": {
+      "TCP": {
+        "443": {
+          "HTTPS": true
+        }
+      },
+      "Web": {
+        "qbittorrent.liger-shilling.ts.net:443": {
+          "Handlers": {
+            "/": {
+              "Proxy": "http://127.0.0.1:18080"
+            }
+          }
+        }
+      }
+    },
+    "svc:radarr": {
+      "TCP": {
+        "443": {
+          "HTTPS": true
+        }
+      },
+      "Web": {
+        "radarr.liger-shilling.ts.net:443": {
+          "Handlers": {
+            "/": {
+              "Proxy": "http://127.0.0.1:7878"
+            }
+          }
+        }
+      }
+    },
+    "svc:sabnzbd": {
+      "TCP": {
+        "443": {
+          "HTTPS": true
+        }
+      },
+      "Web": {
+        "sabnzbd.liger-shilling.ts.net:443": {
+          "Handlers": {
+            "/": {
+              "Proxy": "http://127.0.0.1:18081"
+            }
+          }
+        }
+      }
+    },
+    "svc:sonarr": {
+      "TCP": {
+        "443": {
+          "HTTPS": true
+        }
+      },
+      "Web": {
+        "sonarr.liger-shilling.ts.net:443": {
+          "Handlers": {
+            "/": {
+              "Proxy": "http://127.0.0.1:8989"
+            }
+          }
+        }
+      }
+    },
+    "svc:superlocal": {
+      "TCP": {
+        "443": {
+          "HTTPS": true
+        }
+      },
+      "Web": {
+        "superlocal.liger-shilling.ts.net:443": {
+          "Handlers": {
+            "/": {
+              "Proxy": "http://127.0.0.1:19011"
+            }
+          }
+        }
+      }
+    },
+    "svc:syncthing": {
+      "TCP": {
+        "443": {
+          "HTTPS": true
+        }
+      },
+      "Web": {
+        "syncthing.liger-shilling.ts.net:443": {
+          "Handlers": {
+            "/": {
+              "Proxy": "http://127.0.0.1:19384"
+            }
+          }
+        }
+      }
+    },
+    "svc:t3code": {
+      "TCP": {
+        "443": {
+          "HTTPS": true
+        }
+      },
+      "Web": {
+        "t3code.liger-shilling.ts.net:443": {
+          "Handlers": {
+            "/": {
+              "Proxy": "http://127.0.0.1:51000"
+            }
+          }
+        }
+      }
+    },
+    "svc:tdarr": {
+      "TCP": {
+        "443": {
+          "HTTPS": true
+        }
+      },
+      "Web": {
+        "tdarr.liger-shilling.ts.net:443": {
+          "Handlers": {
+            "/": {
+              "Proxy": "http://127.0.0.1:8265"
+            }
+          }
+        }
+      }
+    },
+    "svc:tunarr": {
+      "TCP": {
+        "443": {
+          "HTTPS": true
+        }
+      },
+      "Web": {
+        "tunarr.liger-shilling.ts.net:443": {
+          "Handlers": {
+            "/": {
+              "Proxy": "http://127.0.0.1:8000"
+            }
+          }
+        }
+      }
+    },
+    "svc:vaultwarden": {
+      "TCP": {
+        "443": {
+          "HTTPS": true
+        }
+      },
+      "Web": {
+        "vaultwarden.liger-shilling.ts.net:443": {
+          "Handlers": {
+            "/": {
+              "Proxy": "http://127.0.0.1:19003"
+            }
+          }
+        }
+      }
+    }
+  }
+}
+=== funnel ===
+{
+  "Services": {
+    "svc:atuin": {
+      "TCP": {
+        "443": {
+          "HTTPS": true
+        }
+      },
+      "Web": {
+        "atuin.liger-shilling.ts.net:443": {
+          "Handlers": {
+            "/": {
+              "Proxy": "http://127.0.0.1:19007"
+            }
+          }
+        }
+      }
+    },
+    "svc:autobrr": {
+      "TCP": {
+        "443": {
+          "HTTPS": true
+        }
+      },
+      "Web": {
+        "autobrr.liger-shilling.ts.net:443": {
+          "Handlers": {
+            "/": {
+              "Proxy": "http://127.0.0.1:7474"
+            }
+          }
+        }
+      }
+    },
+    "svc:bazarr": {
+      "TCP": {
+        "443": {
+          "HTTPS": true
+        }
+      },
+      "Web": {
+        "bazarr.liger-shilling.ts.net:443": {
+          "Handlers": {
+            "/": {
+              "Proxy": "http://127.0.0.1:6767"
+            }
+          }
+        }
+      }
+    },
+    "svc:git": {
+      "TCP": {
+        "443": {
+          "HTTPS": true
+        }
+      },
+      "Web": {
+        "git.liger-shilling.ts.net:443": {
+          "Handlers": {
+            "/": {
+              "Proxy": "http://127.0.0.1:19010"
+            }
+          }
+        }
+      }
+    },
+    "svc:grafana": {
+      "TCP": {
+        "443": {
+          "HTTPS": true
+        }
+      },
+      "Web": {
+        "grafana.liger-shilling.ts.net:443": {
+          "Handlers": {
+            "/": {
+              "Proxy": "http://127.0.0.1:19004"
+            }
+          }
+        }
+      }
+    },
+    "svc:homelab": {
+      "TCP": {
+        "443": {
+          "HTTPS": true
+        }
+      },
+      "Web": {
+        "homelab.liger-shilling.ts.net:443": {
+          "Handlers": {
+            "/": {
+              "Proxy": "http://127.0.0.1:19082"
+            }
+          }
+        }
+      }
+    },
+    "svc:immich": {
+      "TCP": {
+        "443": {
+          "HTTPS": true
+        }
+      },
+      "Web": {
+        "immich.liger-shilling.ts.net:443": {
+          "Handlers": {
+            "/": {
+              "Proxy": "http://127.0.0.1:2283"
+            }
+          }
+        }
+      }
+    },
+    "svc:kuma": {
+      "TCP": {
+        "443": {
+          "HTTPS": true
+        }
+      },
+      "Web": {
+        "kuma.liger-shilling.ts.net:443": {
+          "Handlers": {
+            "/": {
+              "Proxy": "http://127.0.0.1:19001"
+            }
+          }
+        }
+      }
+    },
+    "svc:lidarr": {
+      "TCP": {
+        "443": {
+          "HTTPS": true
+        }
+      },
+      "Web": {
+        "lidarr.liger-shilling.ts.net:443": {
+          "Handlers": {
+            "/": {
+              "Proxy": "http://127.0.0.1:8686"
+            }
+          }
+        }
+      }
+    },
+    "svc:maintainerr": {
+      "TCP": {
+        "443": {
+          "HTTPS": true
+        }
+      },
+      "Web": {
+        "maintainerr.liger-shilling.ts.net:443": {
+          "Handlers": {
+            "/": {
+              "Proxy": "http://127.0.0.1:6246"
+            }
+          }
+        }
+      }
+    },
+    "svc:miniflux": {
+      "TCP": {
+        "443": {
+          "HTTPS": true
+        }
+      },
+      "Web": {
+        "miniflux.liger-shilling.ts.net:443": {
+          "Handlers": {
+            "/": {
+              "Proxy": "http://127.0.0.1:19002"
+            }
+          }
+        }
+      }
+    },
+    "svc:paperless": {
+      "TCP": {
+        "443": {
+          "HTTPS": true
+        }
+      },
+      "Web": {
+        "paperless.liger-shilling.ts.net:443": {
+          "Handlers": {
+            "/": {
+              "Proxy": "http://127.0.0.1:28981"
+            }
+          }
+        }
+      }
+    },
+    "svc:prowlarr": {
+      "TCP": {
+        "443": {
+          "HTTPS": true
+        }
+      },
+      "Web": {
+        "prowlarr.liger-shilling.ts.net:443": {
+          "Handlers": {
+            "/": {
+              "Proxy": "http://127.0.0.1:9696"
+            }
+          }
+        }
+      }
+    },
+    "svc:qbittorrent": {
+      "TCP": {
+        "443": {
+          "HTTPS": true
+        }
+      },
+      "Web": {
+        "qbittorrent.liger-shilling.ts.net:443": {
+          "Handlers": {
+            "/": {
+              "Proxy": "http://127.0.0.1:18080"
+            }
+          }
+        }
+      }
+    },
+    "svc:radarr": {
+      "TCP": {
+        "443": {
+          "HTTPS": true
+        }
+      },
+      "Web": {
+        "radarr.liger-shilling.ts.net:443": {
+          "Handlers": {
+            "/": {
+              "Proxy": "http://127.0.0.1:7878"
+            }
+          }
+        }
+      }
+    },
+    "svc:sabnzbd": {
+      "TCP": {
+        "443": {
+          "HTTPS": true
+        }
+      },
+      "Web": {
+        "sabnzbd.liger-shilling.ts.net:443": {
+          "Handlers": {
+            "/": {
+              "Proxy": "http://127.0.0.1:18081"
+            }
+          }
+        }
+      }
+    },
+    "svc:sonarr": {
+      "TCP": {
+        "443": {
+          "HTTPS": true
+        }
+      },
+      "Web": {
+        "sonarr.liger-shilling.ts.net:443": {
+          "Handlers": {
+            "/": {
+              "Proxy": "http://127.0.0.1:8989"
+            }
+          }
+        }
+      }
+    },
+    "svc:superlocal": {
+      "TCP": {
+        "443": {
+          "HTTPS": true
+        }
+      },
+      "Web": {
+        "superlocal.liger-shilling.ts.net:443": {
+          "Handlers": {
+            "/": {
+              "Proxy": "http://127.0.0.1:19011"
+            }
+          }
+        }
+      }
+    },
+    "svc:syncthing": {
+      "TCP": {
+        "443": {
+          "HTTPS": true
+        }
+      },
+      "Web": {
+        "syncthing.liger-shilling.ts.net:443": {
+          "Handlers": {
+            "/": {
+              "Proxy": "http://127.0.0.1:19384"
+            }
+          }
+        }
+      }
+    },
+    "svc:t3code": {
+      "TCP": {
+        "443": {
+          "HTTPS": true
+        }
+      },
+      "Web": {
+        "t3code.liger-shilling.ts.net:443": {
+          "Handlers": {
+            "/": {
+              "Proxy": "http://127.0.0.1:51000"
+            }
+          }
+        }
+      }
+    },
+    "svc:tdarr": {
+      "TCP": {
+        "443": {
+          "HTTPS": true
+        }
+      },
+      "Web": {
+        "tdarr.liger-shilling.ts.net:443": {
+          "Handlers": {
+            "/": {
+              "Proxy": "http://127.0.0.1:8265"
+            }
+          }
+        }
+      }
+    },
+    "svc:tunarr": {
+      "TCP": {
+        "443": {
+          "HTTPS": true
+        }
+      },
+      "Web": {
+        "tunarr.liger-shilling.ts.net:443": {
+          "Handlers": {
+            "/": {
+              "Proxy": "http://127.0.0.1:8000"
+            }
+          }
+        }
+      }
+    },
+    "svc:vaultwarden": {
+      "TCP": {
+        "443": {
+          "HTTPS": true
+        }
+      },
+      "Web": {
+        "vaultwarden.liger-shilling.ts.net:443": {
+          "Handlers": {
+            "/": {
+              "Proxy": "http://127.0.0.1:19003"
+            }
+          }
+        }
+      }
+    }
+  }
+}
+=== prefs ===
+{
+  "RunSSH": false,
+  "AdvertiseTags": [
+    "tag:homelab"
+  ],
+  "AdvertiseRoutes": null,
+  "RouteAll": false,
+  "ExitNodeID": "",
+  "ExitNodeIP": ""
+}
+=== firewall ===
+# Generated by iptables-save v1.8.13 (nf_tables) on Sun Oct 25 13:52:17 2026
+*mangle
+:PREROUTING ACCEPT [230781292:322522049088]
+:INPUT ACCEPT [0:0]
+:FORWARD ACCEPT [0:0]
+:OUTPUT ACCEPT [58094843:149877471684]
+:POSTROUTING ACCEPT [0:0]
+:nixos-fw-rpfilter - [0:0]
+-A PREROUTING -m conntrack --ctstate RELATED,ESTABLISHED -j CONNMARK --restore-mark --nfmask 0xff0000 --ctmask 0xff0000
+-A PREROUTING -j nixos-fw-rpfilter
+-A OUTPUT -m conntrack --ctstate NEW -m mark ! --mark 0x0/0xff0000 -j CONNMARK --save-mark --nfmask 0xff0000 --ctmask 0xff0000
+-A nixos-fw-rpfilter -m rpfilter --loose --validmark -j RETURN
+-A nixos-fw-rpfilter -p udp -m udp --sport 67 --dport 68 -j RETURN
+-A nixos-fw-rpfilter -s 0.0.0.0/32 -d 255.255.255.255/32 -p udp -m udp --sport 68 --dport 67 -j RETURN
+-A nixos-fw-rpfilter -j DROP
+COMMIT
+# Completed on Sun Oct 25 13:52:17 2026
+# Generated by iptables-save v1.8.13 (nf_tables) on Sun Oct 25 13:52:17 2026
+*raw
+:PREROUTING ACCEPT [230780722:322521895635]
+:OUTPUT ACCEPT [0:0]
+-A PREROUTING -d 172.22.0.2/32 ! -i br-82a38b6338ef -j DROP
+-A PREROUTING -d 172.22.0.3/32 ! -i br-82a38b6338ef -j DROP
+-A PREROUTING -d 172.22.0.4/32 ! -i br-82a38b6338ef -j DROP
+-A PREROUTING -d 172.17.0.2/32 ! -i docker0 -j DROP
+-A PREROUTING -d 127.0.0.1/32 ! -i lo -p tcp -m tcp --dport 8265 -j DROP
+COMMIT
+# Completed on Sun Oct 25 13:52:17 2026
+# Generated by iptables-save v1.8.13 (nf_tables) on Sun Oct 25 13:52:17 2026
+*filter
+:INPUT ACCEPT [0:0]
+:FORWARD ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+:DOCKER - [0:0]
+:DOCKER-BRIDGE - [0:0]
+:DOCKER-CT - [0:0]
+:DOCKER-FORWARD - [0:0]
+:DOCKER-INTERNAL - [0:0]
+:DOCKER-USER - [0:0]
+:nixos-filter-forward - [0:0]
+:nixos-fw - [0:0]
+:nixos-fw-accept - [0:0]
+:nixos-fw-log-refuse - [0:0]
+:nixos-fw-refuse - [0:0]
+:ts-forward - [0:0]
+:ts-input - [0:0]
+-A INPUT -j ts-input
+-A INPUT -j nixos-fw
+-A FORWARD -j DOCKER-USER
+-A FORWARD -j DOCKER-FORWARD
+-A FORWARD -j ts-forward
+-A FORWARD -j nixos-filter-forward
+-A DOCKER -d 172.17.0.2/32 ! -i docker0 -o docker0 -p tcp -m tcp --dport 8265 -j ACCEPT
+-A DOCKER ! -i br-e949d881a780 -o br-e949d881a780 -j DROP
+-A DOCKER ! -i br-0831856b96a9 -o br-0831856b96a9 -j DROP
+-A DOCKER ! -i br-146344d4ad95 -o br-146344d4ad95 -j DROP
+-A DOCKER ! -i docker0 -o docker0 -j DROP
+-A DOCKER ! -i br-82a38b6338ef -o br-82a38b6338ef -j DROP
+-A DOCKER ! -i br-b24862fabb22 -o br-b24862fabb22 -j DROP
+-A DOCKER ! -i br-e36578ad9bf5 -o br-e36578ad9bf5 -j DROP
+-A DOCKER-BRIDGE -o br-e949d881a780 -j DOCKER
+-A DOCKER-BRIDGE -o br-0831856b96a9 -j DOCKER
+-A DOCKER-BRIDGE -o br-146344d4ad95 -j DOCKER
+-A DOCKER-BRIDGE -o docker0 -j DOCKER
+-A DOCKER-BRIDGE -o br-82a38b6338ef -j DOCKER
+-A DOCKER-BRIDGE -o br-b24862fabb22 -j DOCKER
+-A DOCKER-BRIDGE -o br-e36578ad9bf5 -j DOCKER
+-A DOCKER-CT -o br-e949d881a780 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+-A DOCKER-CT -o br-0831856b96a9 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+-A DOCKER-CT -o br-146344d4ad95 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+-A DOCKER-CT -o docker0 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+-A DOCKER-CT -o br-82a38b6338ef -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+-A DOCKER-CT -o br-b24862fabb22 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+-A DOCKER-CT -o br-e36578ad9bf5 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+-A DOCKER-FORWARD -j DOCKER-CT
+-A DOCKER-FORWARD -j DOCKER-INTERNAL
+-A DOCKER-FORWARD -j DOCKER-BRIDGE
+-A DOCKER-FORWARD -i br-e949d881a780 -j ACCEPT
+-A DOCKER-FORWARD -i br-0831856b96a9 -j ACCEPT
+-A DOCKER-FORWARD -i br-146344d4ad95 -j ACCEPT
+-A DOCKER-FORWARD -i docker0 -j ACCEPT
+-A DOCKER-FORWARD -i br-82a38b6338ef -j ACCEPT
+-A DOCKER-FORWARD -i br-b24862fabb22 -j ACCEPT
+-A DOCKER-FORWARD -i br-e36578ad9bf5 -j ACCEPT
+-A nixos-filter-forward -i ve-qbt -o enp194s0 -j ACCEPT
+-A nixos-filter-forward -i ve-sab -o enp194s0 -j ACCEPT
+-A nixos-filter-forward -m state --state RELATED,ESTABLISHED -j ACCEPT
+-A nixos-fw -i lo -j nixos-fw-accept
+-A nixos-fw -m conntrack --ctstate RELATED,ESTABLISHED -j nixos-fw-accept
+-A nixos-fw -p tcp -m tcp --dport 22000 -j nixos-fw-accept
+-A nixos-fw -i enp194s0 -p tcp -m tcp --dport 8096 -j nixos-fw-accept
+-A nixos-fw -i tailscale0 -p tcp -m tcp --dport 22 -j nixos-fw-accept
+-A nixos-fw -p udp -m udp --dport 21027 -j nixos-fw-accept
+-A nixos-fw -p udp -m udp --dport 22000 -j nixos-fw-accept
+-A nixos-fw -p udp -m udp --dport 41641 -j nixos-fw-accept
+-A nixos-fw -i enp194s0 -p udp -m udp --dport 7359 -j nixos-fw-accept
+-A nixos-fw -i tailscale0 -p udp -m udp --dport 60000:61000 -j nixos-fw-accept
+-A nixos-fw -p icmp -m icmp --icmp-type 8 -j nixos-fw-accept
+-A nixos-fw -i enp194s0 -p tcp -m tcp --dport 32400 -j nixos-fw-accept
+-A nixos-fw -s 192.168.1.0/24 -i enp194s0 -p udp -m udp --dport 32410 -j nixos-fw-accept
+-A nixos-fw -s 192.168.1.0/24 -i enp194s0 -p udp -m udp --dport 32412 -j nixos-fw-accept
+-A nixos-fw -s 192.168.1.0/24 -i enp194s0 -p udp -m udp --dport 32413 -j nixos-fw-accept
+-A nixos-fw -s 192.168.1.0/24 -i enp194s0 -p udp -m udp --dport 32414 -j nixos-fw-accept
+-A nixos-fw -j nixos-fw-log-refuse
+-A nixos-fw-accept -j ACCEPT
+-A nixos-fw-log-refuse -m pkttype ! --pkt-type unicast -j nixos-fw-refuse
+-A nixos-fw-log-refuse -j nixos-fw-refuse
+-A nixos-fw-refuse -j DROP
+-A ts-forward -i tailscale0 -j MARK --set-xmark 0x40000/0xff0000
+-A ts-forward -m mark --mark 0x40000/0xff0000 -j ACCEPT
+-A ts-forward -s 100.64.0.0/10 -o tailscale0 -j DROP
+-A ts-forward -o tailscale0 -j ACCEPT
+-A ts-input -s 100.76.56.97/32 -i lo -j ACCEPT
+-A ts-input -i tailscale0 -j ACCEPT
+-A ts-input -p udp -m udp --dport 41641 -j ACCEPT
+-A ts-input -s 100.115.92.0/23 ! -i tailscale0 -j RETURN
+-A ts-input -s 100.64.0.0/10 ! -i tailscale0 -j DROP
+COMMIT
+# Completed on Sun Oct 25 13:52:17 2026
+# Generated by iptables-save v1.8.13 (nf_tables) on Sun Oct 25 13:52:17 2026
+*nat
+:PREROUTING ACCEPT [1106857:845709598]
+:INPUT ACCEPT [0:0]
+:OUTPUT ACCEPT [1466210:150714108]
+:POSTROUTING ACCEPT [1466073:150705888]
+:DOCKER - [0:0]
+:nixos-nat-out - [0:0]
+:nixos-nat-post - [0:0]
+:nixos-nat-pre - [0:0]
+:ts-postrouting - [0:0]
+-A PREROUTING -j nixos-nat-pre
+-A PREROUTING -m addrtype --dst-type LOCAL -j DOCKER
+-A OUTPUT -j nixos-nat-out
+-A OUTPUT ! -d 127.0.0.0/8 -m addrtype --dst-type LOCAL -j DOCKER
+-A POSTROUTING -j ts-postrouting
+-A POSTROUTING -s 172.17.0.0/16 ! -o docker0 -j MASQUERADE
+-A POSTROUTING -s 172.23.0.0/16 ! -o br-146344d4ad95 -j MASQUERADE
+-A POSTROUTING -s 172.20.0.0/16 ! -o br-0831856b96a9 -j MASQUERADE
+-A POSTROUTING -s 172.21.0.0/16 ! -o br-e949d881a780 -j MASQUERADE
+-A POSTROUTING -s 172.19.0.0/16 ! -o br-e36578ad9bf5 -j MASQUERADE
+-A POSTROUTING -s 172.18.0.0/16 ! -o br-b24862fabb22 -j MASQUERADE
+-A POSTROUTING -s 172.22.0.0/16 ! -o br-82a38b6338ef -j MASQUERADE
+-A POSTROUTING -j nixos-nat-post
+-A DOCKER -d 127.0.0.1/32 ! -i docker0 -p tcp -m tcp --dport 8265 -j DNAT --to-destination 172.17.0.2:8265
+-A nixos-nat-post -o enp194s0 -m mark --mark 0x1 -j MASQUERADE
+-A nixos-nat-pre -i ve-qbt -j MARK --set-xmark 0x1/0xffffffff
+-A nixos-nat-pre -i ve-sab -j MARK --set-xmark 0x1/0xffffffff
+-A ts-postrouting -m mark --mark 0x40000/0xff0000 -j MASQUERADE
+COMMIT
+# Completed on Sun Oct 25 13:52:17 2026
+# Generated by ip6tables-save v1.8.13 (nf_tables) on Sun Oct 25 13:52:17 2026
+*mangle
+:PREROUTING ACCEPT [463003:545817661]
+:INPUT ACCEPT [0:0]
+:FORWARD ACCEPT [0:0]
+:OUTPUT ACCEPT [413279:205264089]
+:POSTROUTING ACCEPT [0:0]
+:nixos-fw-rpfilter - [0:0]
+-A PREROUTING -m conntrack --ctstate RELATED,ESTABLISHED -j CONNMARK --restore-mark --nfmask 0xff0000 --ctmask 0xff0000
+-A PREROUTING -j nixos-fw-rpfilter
+-A OUTPUT -m conntrack --ctstate NEW -m mark ! --mark 0x0/0xff0000 -j CONNMARK --save-mark --nfmask 0xff0000 --ctmask 0xff0000
+-A nixos-fw-rpfilter -m rpfilter --loose --validmark -j RETURN
+-A nixos-fw-rpfilter -j DROP
+COMMIT
+# Completed on Sun Oct 25 13:52:17 2026
+# Generated by ip6tables-save v1.8.13 (nf_tables) on Sun Oct 25 13:52:17 2026
+*filter
+:INPUT ACCEPT [0:0]
+:FORWARD ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+:DOCKER - [0:0]
+:DOCKER-BRIDGE - [0:0]
+:DOCKER-CT - [0:0]
+:DOCKER-FORWARD - [0:0]
+:DOCKER-INTERNAL - [0:0]
+:DOCKER-USER - [0:0]
+:nixos-filter-forward - [0:0]
+:nixos-fw - [0:0]
+:nixos-fw-accept - [0:0]
+:nixos-fw-log-refuse - [0:0]
+:nixos-fw-refuse - [0:0]
+:ts-forward - [0:0]
+:ts-input - [0:0]
+-A INPUT -j ts-input
+-A INPUT -j nixos-fw
+-A FORWARD -j DOCKER-USER
+-A FORWARD -j DOCKER-FORWARD
+-A FORWARD -j ts-forward
+-A FORWARD -j nixos-filter-forward
+-A DOCKER-FORWARD -j DOCKER-CT
+-A DOCKER-FORWARD -j DOCKER-INTERNAL
+-A DOCKER-FORWARD -j DOCKER-BRIDGE
+-A nixos-fw -i lo -j nixos-fw-accept
+-A nixos-fw -m conntrack --ctstate RELATED,ESTABLISHED -j nixos-fw-accept
+-A nixos-fw -p tcp -m tcp --dport 22000 -j nixos-fw-accept
+-A nixos-fw -i enp194s0 -p tcp -m tcp --dport 8096 -j nixos-fw-accept
+-A nixos-fw -i tailscale0 -p tcp -m tcp --dport 22 -j nixos-fw-accept
+-A nixos-fw -p udp -m udp --dport 21027 -j nixos-fw-accept
+-A nixos-fw -p udp -m udp --dport 22000 -j nixos-fw-accept
+-A nixos-fw -p udp -m udp --dport 41641 -j nixos-fw-accept
+-A nixos-fw -i enp194s0 -p udp -m udp --dport 7359 -j nixos-fw-accept
+-A nixos-fw -i tailscale0 -p udp -m udp --dport 60000:61000 -j nixos-fw-accept
+-A nixos-fw -p ipv6-icmp -m icmp6 --icmpv6-type 137 -j DROP
+-A nixos-fw -p ipv6-icmp -m icmp6 --icmpv6-type 139 -j DROP
+-A nixos-fw -p ipv6-icmp -j nixos-fw-accept
+-A nixos-fw -d fe80::/64 -p udp -m udp --dport 546 -j nixos-fw-accept
+-A nixos-fw -j nixos-fw-log-refuse
+-A nixos-fw-accept -j ACCEPT
+-A nixos-fw-log-refuse -m pkttype ! --pkt-type unicast -j nixos-fw-refuse
+-A nixos-fw-log-refuse -j nixos-fw-refuse
+-A nixos-fw-refuse -j DROP
+-A ts-forward -i tailscale0 -j MARK --set-xmark 0x40000/0xff0000
+-A ts-forward -m mark --mark 0x40000/0xff0000 -j ACCEPT
+-A ts-forward -o tailscale0 -j ACCEPT
+-A ts-input -s fd7a:115c:a1e0::2a01:3881/128 -i lo -j ACCEPT
+-A ts-input -i tailscale0 -j ACCEPT
+-A ts-input -p udp -m udp --dport 41641 -j ACCEPT
+COMMIT
+# Completed on Sun Oct 25 13:52:17 2026
+# Generated by ip6tables-save v1.8.13 (nf_tables) on Sun Oct 25 13:52:17 2026
+*nat
+:PREROUTING ACCEPT [54028:17523153]
+:INPUT ACCEPT [0:0]
+:OUTPUT ACCEPT [162635:107370064]
+:POSTROUTING ACCEPT [162635:107370064]
+:DOCKER - [0:0]
+:nixos-nat-out - [0:0]
+:nixos-nat-post - [0:0]
+:nixos-nat-pre - [0:0]
+:ts-postrouting - [0:0]
+-A PREROUTING -j nixos-nat-pre
+-A PREROUTING -m addrtype --dst-type LOCAL -j DOCKER
+-A OUTPUT -j nixos-nat-out
+-A OUTPUT ! -d ::1/128 -m addrtype --dst-type LOCAL -j DOCKER
+-A POSTROUTING -j ts-postrouting
+-A POSTROUTING -j nixos-nat-post
+-A ts-postrouting -m mark --mark 0x40000/0xff0000 -j MASQUERADE
+COMMIT
+# Completed on Sun Oct 25 13:52:17 2026

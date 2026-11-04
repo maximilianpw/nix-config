@@ -1,0 +1,199 @@
+{
+  // Review-only candidate. Evidence: docs/kim-tailscale-inventory.txt at
+  // 590d38ef2e6b0bdb2648aeb702f15252852a1f02; line numbers below refer to that file.
+  // Verified means captured configuration/traffic, not end-to-end rollout proof.
+  "hosts": {
+    "kim": "100.76.56.97",
+    "kim-v6": "fd7a:115c:a1e0::2a01:3881",
+    "joyce": "100.82.28.19",
+    "joyce-v6": "fd7a:115c:a1e0::de01:1c2b",
+    "cuno": "100.91.91.50",
+    "cuno-v6": "fd7a:115c:a1e0::2d29:5b33",
+    "big-max-pc": "100.110.168.84",
+    "big-max-pc-v6": "fd7a:115c:a1e0::e901:a88c",
+    "ipad": "100.117.103.44",
+    "ipad-v6": "fd7a:115c:a1e0::d437:672d",
+    "iphone": "100.99.94.79",
+    "iphone-v6": "fd7a:115c:a1e0::fc01:5e4f"
+  },
+  "tagOwners": {
+    "tag:homelab": ["autogroup:admin"]
+  },
+  "grants": [
+    // Kim sshd listens on both families (L114,147); Joyce->Kim observed
+    // (L161,164,171), RunSSH=false (L1830). Other clients and Joyce/Cuno
+    // destinations remain provisional; the sshd settings capture is empty.
+    {
+      "src": ["maximilianpw@github"],
+      "dst": ["kim", "kim-v6", "joyce", "joyce-v6", "cuno", "cuno-v6"],
+      "ip": ["tcp:22"]
+    },
+    // Provisional mosh use: Kim range configured (L1936,2041), no session
+    // observed. Cuno is repository-only and offline in the capture (L892).
+    {
+      "src": ["maximilianpw@github"],
+      "dst": ["kim", "kim-v6", "cuno", "cuno-v6"],
+      "ip": ["udp:60000-61000"]
+    },
+    // Kim Syncthing listeners verified (L81,151); direct tailnet pairing is
+    // provisional. Public-IP TCP 22067 in L163 is consistent with a relay,
+    // not evidence of direct Joyce peering.
+    {
+      "src": ["maximilianpw@github"],
+      "dst": ["kim", "kim-v6"],
+      "ip": ["tcp:22000", "udp:22000"]
+    },
+    // Verified 23 hosted Services: VIPs L423-518, HTTPS handlers L1083-1454.
+    // Keep Service destinations distinct from host IPs and loopback backends.
+    {
+      "src": ["maximilianpw@github"],
+      "dst": [
+        "svc:atuin", "svc:autobrr", "svc:bazarr", "svc:git", "svc:grafana",
+        "svc:homelab", "svc:immich", "svc:kuma", "svc:lidarr", "svc:maintainerr",
+        "svc:miniflux", "svc:paperless", "svc:prowlarr", "svc:qbittorrent",
+        "svc:radarr", "svc:sabnzbd", "svc:sonarr", "svc:superlocal",
+        "svc:syncthing", "svc:t3code", "svc:tdarr", "svc:tunarr", "svc:vaultwarden"
+      ],
+      "ip": ["tcp:443"]
+    },
+    // Catalog endpoints verified (L615-626,675-686), but absent from Kim's
+    // hosted map/Serve handlers. Preserve user access; host/use is provisional.
+    {
+      "src": ["maximilianpw@github"],
+      "dst": ["svc:leerr", "svc:plannotator"],
+      "ip": ["tcp:443"]
+    },
+    // Verified outbound dependency: Forgejo runner L172 -> git VIP L437-440;
+    // HTTPS maps to loopback 19010 (L1133-1148), matching L177,182.
+    {
+      "src": ["tag:homelab"],
+      "dst": ["svc:git"],
+      "ip": ["tcp:443"]
+    },
+    // Provisional outbound Fleet: no Kim->Joyce/Cuno SSH flow in L152-213.
+    {
+      "src": ["tag:homelab"],
+      "dst": ["joyce", "joyce-v6", "cuno", "cuno-v6"],
+      "ip": ["tcp:22"]
+    },
+    // Provisional outbound mosh; Cuno has no live listener evidence here.
+    {
+      "src": ["tag:homelab"],
+      "dst": ["cuno", "cuno-v6"],
+      "ip": ["udp:60000-61000"]
+    },
+    // Provisional reverse Syncthing initiation: declared Mac peer, not an
+    // observed connection. Kim's public-IP session L163 does not prove this path.
+    {
+      "src": ["tag:homelab"],
+      "dst": ["joyce", "joyce-v6"],
+      "ip": ["tcp:22000", "udp:22000"]
+    }
+  ],
+  "ssh": [
+    {
+      "action": "check",
+      "src": ["autogroup:member"],
+      "dst": ["autogroup:self"],
+      "users": ["autogroup:nonroot", "root"]
+    }
+  ],
+  "nodeAttrs": [
+    {
+      "target": ["autogroup:member"],
+      "attr": ["funnel"]
+    }
+  ],
+  "autoApprovers": {
+    "services": {
+      "svc:homelab": ["tag:homelab"],
+      "svc:paperless": ["tag:homelab"],
+      "svc:miniflux": ["tag:homelab"],
+      "svc:syncthing": ["tag:homelab"],
+      "svc:kuma": ["tag:homelab"],
+      "svc:vaultwarden": ["tag:homelab"],
+      "svc:immich": ["tag:homelab"]
+    }
+  },
+  "tests": [
+    {
+      "src": "maximilianpw@github",
+      "proto": "tcp",
+      "accept": [
+        "kim:22", "kim-v6:22", "joyce:22", "joyce-v6:22", "cuno:22", "cuno-v6:22",
+        "kim:22000", "kim-v6:22000",
+        "svc:atuin:443", "svc:autobrr:443", "svc:bazarr:443", "svc:git:443",
+        "svc:grafana:443", "svc:homelab:443", "svc:immich:443", "svc:kuma:443",
+        "svc:lidarr:443", "svc:maintainerr:443", "svc:miniflux:443", "svc:paperless:443",
+        "svc:prowlarr:443", "svc:qbittorrent:443", "svc:radarr:443", "svc:sabnzbd:443",
+        "svc:sonarr:443", "svc:superlocal:443", "svc:syncthing:443", "svc:t3code:443",
+        "svc:tdarr:443", "svc:tunarr:443", "svc:vaultwarden:443",
+        "svc:leerr:443", "svc:plannotator:443"
+      ],
+      "deny": [
+        "kim:23", "kim-v6:23", "kim:443", "kim-v6:443",
+        "kim:8096", "kim-v6:8096", "kim:32400", "kim-v6:32400",
+        "kim:51000", "kim-v6:51000", "kim:19384", "kim-v6:19384",
+        "kim:60000", "kim-v6:61000", "cuno:60000", "cuno-v6:61000",
+        "joyce:443", "joyce-v6:443", "cuno:443", "cuno-v6:443",
+        "iphone:22", "iphone-v6:22", "ipad:22", "ipad-v6:22",
+        "big-max-pc:3389", "big-max-pc-v6:3389",
+        "192.168.0.1:22", "svc:homelab:80", "svc:t3code:51000"
+      ]
+    },
+    {
+      "src": "maximilianpw@github",
+      "proto": "udp",
+      "accept": [
+        "kim:60000", "kim:60500", "kim:61000",
+        "kim-v6:60000", "kim-v6:60500", "kim-v6:61000",
+        "cuno:60000", "cuno:60500", "cuno:61000",
+        "cuno-v6:60000", "cuno-v6:60500", "cuno-v6:61000",
+        "kim:22000", "kim-v6:22000"
+      ],
+      "deny": [
+        "kim:59999", "kim:61001", "kim-v6:59999", "kim-v6:61001",
+        "cuno:59999", "cuno:61001", "cuno-v6:59999", "cuno-v6:61001",
+        "kim:22", "kim-v6:22", "joyce:60000", "joyce-v6:60000",
+        "iphone:22000", "iphone-v6:22000", "ipad:22000", "ipad-v6:22000",
+        "big-max-pc:22000", "big-max-pc-v6:22000", "svc:homelab:443"
+      ]
+    },
+    {
+      "src": "tag:homelab",
+      "proto": "tcp",
+      "accept": [
+        "joyce:22", "joyce-v6:22", "cuno:22", "cuno-v6:22",
+        "joyce:22000", "joyce-v6:22000", "svc:git:443"
+      ],
+      "deny": [
+        "joyce:23", "joyce-v6:23", "joyce:443", "joyce-v6:443",
+        "cuno:23", "cuno-v6:23", "cuno:22000", "cuno-v6:22000",
+        "cuno:60000", "cuno-v6:61000",
+        "iphone:22", "iphone-v6:22", "iphone:443", "iphone-v6:443",
+        "ipad:22", "ipad-v6:22", "ipad:443", "ipad-v6:443",
+        "big-max-pc:22", "big-max-pc-v6:22", "big-max-pc:3389", "big-max-pc-v6:3389",
+        "kim:22", "kim-v6:22", "192.168.0.1:22",
+        "kim:8096", "kim-v6:8096", "kim:32400", "kim-v6:32400",
+        "svc:git:80", "svc:git:444",
+        "svc:homelab:443", "svc:vaultwarden:443"
+      ]
+    },
+    {
+      "src": "tag:homelab",
+      "proto": "udp",
+      "accept": [
+        "cuno:60000", "cuno:60500", "cuno:61000",
+        "cuno-v6:60000", "cuno-v6:60500", "cuno-v6:61000",
+        "joyce:22000", "joyce-v6:22000"
+      ],
+      "deny": [
+        "cuno:59999", "cuno:61001", "cuno-v6:59999", "cuno-v6:61001",
+        "cuno:22", "cuno-v6:22", "joyce:22", "joyce-v6:22",
+        "joyce:60000", "joyce-v6:60000", "kim:22000", "kim-v6:22000",
+        "iphone:22000", "iphone-v6:22000", "ipad:22000", "ipad-v6:22000",
+        "big-max-pc:22000", "big-max-pc-v6:22000", "svc:homelab:443", "svc:git:443"
+      ]
+    }
+  ]
+}
