@@ -70,7 +70,8 @@ rules below and summarized in [Lessons that shaped these rules](#lessons-that-sh
 | Release owner | 1 (often the integration owner) | Tag/deploy, smoke test, rollback decision | Release without explicit authorization |
 
 Each child thread receives: the goal, the target URL or commit, its account (by
-reference, never a password in the prompt if a secret store exists), the
+reference, never a password in the prompt; arrange secure provisioning if no
+secret store exists), the
 guard rules from this document, where to save evidence, and the exact reply
 route back to the orchestrator.
 
@@ -157,9 +158,10 @@ exit condition holds:
 
 1. No writes to production data without a pre-approved, written exception
    naming the account, the action, and the cleanup.
-2. No access attempts on other users' or tenants' data beyond URL-guessing
-   with your own session to confirm a 403/404. No auth bypass, credential
-   stuffing, fuzzing at volume, or denial-of-service testing.
+2. Cross-tenant probes require explicit scope and IDs of fictional fixtures
+   owned by a second test tenant; expect a 403/404 using your own session.
+   Do not guess real customer IDs. No auth bypass, credential stuffing,
+   fuzzing at volume, or denial-of-service testing.
 3. No automated load: keep request rates human-like; no parallel crawlers
    against production.
 4. No changes to shared infrastructure (DNS, CDN, WAF, zone settings, identity
@@ -174,15 +176,24 @@ Layer the guards; prompts alone are not enough.
 
 1. **Prompt rule.** Each QA prompt lists the forbidden actions: create, edit,
    delete, submit, pay, invite, react, comment, send email, change settings.
-   Allowed: navigate, open forms, type into fields, trigger client-side
-   validation, cancel, download existing documents.
+   Allowed only on known read-only paths: navigate, open forms, cancel,
+   download existing synthetic documents. Typing, blur, and validation can
+   autosave; exercise them locally or in staging unless proven read-only.
 2. **Browser guard.** Inject a script that blocks same-origin non-GET requests
-   before the app loads. Third-party analytics beacons may still appear; list
-   them separately in the report.
+   before the app loads. Inventory separate API origins and apply equivalent
+   browser-driver request interception there. Unreviewed cross-origin traffic
+   must be blocked, not assumed to be analytics.
 3. **Network log check.** At the end of the session, export the request log and
-   confirm zero same-origin `POST`/`PUT`/`PATCH`/`DELETE` requests. Report the
-   count.
+   confirm zero unapproved non-safe requests across all application origins.
+   Report allowed authentication requests separately from blocked attempts;
+   sanitize the log before saving or sharing it.
 4. **Signed-out probes.** Use `GET`/`HEAD` with no cookies (`curl -sI`).
+
+Sign-in, token refresh, and sign-out commonly need writes. Obtain explicit
+approval for those test-account actions during Prepare, then narrowly allow
+only the reviewed endpoints in the browser driver. Do not disable the guard
+globally to make authentication work. A blocked login is a coverage gap, not
+a reason to claim the authenticated journeys passed.
 
 Example browser guard (adapt to your browser driver; inject as an init script
 so it runs before application code):
@@ -192,22 +203,23 @@ so it runs before application code):
 (() => {
   const SAFE = new Set(["GET", "HEAD", "OPTIONS"]);
   const sameOrigin = (url) => new URL(url, location.href).origin === location.origin;
-  const blocked = (method, url) => {
-    console.warn(`[qa-guard] blocked ${method} ${url}`);
+  const blocked = (method) => {
+    // URLs may contain credentials, private IDs, or magic-link tokens.
+    console.warn(`[qa-guard] blocked ${method}`);
     return new Error(`qa-guard: ${method} blocked`);
   };
 
   const origFetch = window.fetch;
   window.fetch = function (input, init = {}) {
-    const url = typeof input === "string" ? input : input.url;
-    const method = (init.method || (input instanceof Request ? input.method : "GET")).toUpperCase();
-    if (!SAFE.has(method) && sameOrigin(url)) return Promise.reject(blocked(method, url));
+    const url = input instanceof Request ? input.url : String(input);
+    const method = String(init?.method ?? (input instanceof Request ? input.method : "GET")).toUpperCase();
+    if (!SAFE.has(method) && sameOrigin(url)) return Promise.reject(blocked(method));
     return origFetch.apply(this, arguments);
   };
 
   const origOpen = XMLHttpRequest.prototype.open;
   XMLHttpRequest.prototype.open = function (method, url) {
-    if (!SAFE.has(String(method).toUpperCase()) && sameOrigin(url)) throw blocked(method, url);
+    if (!SAFE.has(String(method).toUpperCase()) && sameOrigin(url)) throw blocked(String(method).toUpperCase());
     return origOpen.apply(this, arguments);
   };
 
@@ -217,20 +229,25 @@ so it runs before application code):
     if (!SAFE.has(method) && sameOrigin(form.action || location.href)) {
       event.preventDefault();
       event.stopImmediatePropagation();
-      console.warn(`[qa-guard] blocked form ${method} ${form.action}`);
+      blocked(`form ${method}`);
     }
   }, true);
 
   const origBeacon = navigator.sendBeacon?.bind(navigator);
   if (origBeacon) {
     navigator.sendBeacon = (url, data) =>
-      sameOrigin(url) ? (console.warn(`[qa-guard] blocked beacon ${url}`), false) : origBeacon(url, data);
+      sameOrigin(url) ? (blocked("beacon"), false) : origBeacon(url, data);
   }
 })();
 ```
 
-The guard does not cover every write path (WebSockets, server actions using
-GET, service workers). It is a safety net, not permission to click "Save".
+The guard does not cover every write path (WebSockets, mutating GETs,
+service workers, direct `form.submit()`, other frames or execution contexts,
+cross-origin APIs). Validate it against a disposable fixture with request
+logging before production use, and add browser-driver interception or
+server-enforced read-only permissions for the app's actual paths. A zero
+same-origin write count is not proof of no side effects. This is a safety net,
+not permission to click "Save".
 
 **What read-only costs.** Some fixes (invitation callbacks, post-submit focus,
 confirmation emails) cannot be verified in production read-only. Verify them in
@@ -252,7 +269,7 @@ press Back after sign-out.
 |---|---|---|---|
 | Speed-runner | The fastest path to each goal; impatience | Time to first useful screen, double-clicks, Back/forward, deep links, dead ends after errors, perceived latency (note rough timings, not benchmarks) | Error states with no recovery link, slow loaders, missing status values |
 | Meticulous auditor | Correctness and consistency | Validation messages, empty/boundary inputs, units and formatting, titles, 404/405 pages, HTTP methods on endpoints, copy consistency | Bare error pages, wrong status codes, validation hidden behind sticky headers |
-| Skeptical adversary (non-destructive) | Trust boundaries without attacking | Tampered query parameters, invalid IDs, other tenants' IDs with own session, script-like input (inert, not submitted), signed-out API access, security headers, cookies flags, leaks in page source | Raw error/schema text exposed, misleading error states, missing headers |
+| Skeptical adversary (non-destructive) | Trust boundaries without attacking | Tampered query parameters, invalid IDs, explicitly scoped second-test-tenant fixture IDs with own session, script-like input (local/staging only), signed-out API access, security headers, cookies flags, leaks in page source | Raw error/schema text exposed, misleading error states, missing headers |
 | Confused newcomer | First-use comprehension | Labels, navigation names, empty states, onboarding copy, search affordances, jargon | Features hidden under unexpected names, empty pages with no guidance, search that only works on Enter |
 | Accessibility and polish | WCAG 2.2 AA and finish | Keyboard-only paths, focus order and return, Escape/outside-click on popovers, live regions, contrast, names for controls, headings/landmarks, zoom 200 %, reduced motion | Focus dropped to `body`, low-contrast errors, menus that ignore Escape |
 
@@ -267,7 +284,8 @@ no rate beyond a person clicking. Observing and reporting is the job.
 - [ ] Core journeys done at desktop width
 - [ ] Persona focus done
 - [ ] Narrow-width pass done (see next section)
-- [ ] Network log: same-origin non-GET count recorded
+- [ ] Network log: unapproved non-safe requests across application origins,
+      approved auth requests, and blocked attempts counted separately
 - [ ] Every finding has steps, expected, actual, evidence, severity, status
 - [ ] Coverage gaps and blockers listed separately from findings
 - [ ] Evidence reviewed for secrets and private data
@@ -359,7 +377,9 @@ and say that no tracker issues were created.
 - When two agents need the same dependency or file, the orchestrator names who
   adds it; the other rebases on it or leaves it out.
 - Root causes involving external systems (third-party APIs, data providers)
-  must be confirmed with captured raw values, not inferred from UI symptoms.
+  must be confirmed with relevant response values, not inferred from UI
+  symptoms. Capture only the minimum needed and redact secrets and private
+  customer details before saving or sharing evidence.
 
 ## Integration ownership
 
@@ -368,7 +388,8 @@ One integration owner, in one thread, with one branch (`integrate/<run-id>`):
 1. Fetch each fix commit (push to a shared remote branch, or transfer
    unpushed work between workspaces) and confirm the SHA matches the report.
 2. Merge areas one at a time in a stated order. After **each** merge, run the
-   full local gate; a failure is attributed to the last merge.
+   full local gate; investigate a failure against the previous green base
+   rather than assuming the last merge caused it.
 3. Resolve conflicts itself, then tell the affected fix agent what changed.
 4. Push the integration branch and open a PR only when asked to (or when the
    repo's policy says so). The PR description lists every issue ID, every
@@ -397,6 +418,10 @@ behind one command so every agent runs the same thing.
       plan showing what will change)
 - [ ] Rendered UI check of changed screens (screenshots inspected), using
       synthetic auth keys and fictional seeded data when real keys are absent
+
+Synthetic keys or locally signed sessions must use the app's supported test
+auth mode in an isolated local/test environment. Never weaken production
+authentication or reuse production signing keys to enable a preview.
 
 Rules:
 
@@ -469,8 +494,9 @@ for the same checks just before releasing, so the report can show changes.
 - [ ] Core journeys load without errors at desktop and 390 px
 - [ ] Each fixed issue: PASS / PARTIAL / NOT VERIFIABLE LIVE (with the reason,
       for example "needs a second tenant" or "needs a write")
-- [ ] Browser console: no new errors; network: no failed requests, zero
-      same-origin writes
+- [ ] Browser console: no new errors; network: no unexpected failed requests,
+      zero unapproved writes across application origins; approved auth and
+      blocked attempts reported separately
 - [ ] Spot timings for key pages compared with the baseline (note, do not
       benchmark)
 
@@ -543,7 +569,8 @@ standing permission for rollbacks.
 Target: <URL> (resolved from <config file>) · Build: <version/commit>
 Account: <qa-bot-N> (<role>, <tenant>) · Date: <YYYY-MM-DD>
 Browser: <engine/version> · Viewports: 1280×720, 390×844, 320×568 @2×
-Guard: read-only script on · Same-origin non-GET requests: <0>
+Guard: <script + driver interception/permissions; limitations>
+Network: unapproved non-safe requests <0> · Approved auth <n> · Blocked attempts <n>
 
 ## Summary
 <two or three sentences: worst finding, overall impression>
@@ -668,7 +695,7 @@ Add only what the project needs; names are suggestions.
 
 Example signed-out smoke script:
 
-```sh
+```bash
 #!/usr/bin/env bash
 # qa/smoke/signed-out.sh — read-only checks; no cookies, GET/HEAD only.
 set -euo pipefail
@@ -678,12 +705,17 @@ fail=0
 check() { # name, expected status, curl args...
   local name=$1 want=$2; shift 2
   local got
-  got=$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 "$@") || true  # 000 on network failure
+  # -q must be first: ignore ~/.curlrc (cookies, redirects, credentials, etc.).
+  if ! got=$(curl -q -s -o /dev/null -w '%{http_code}' --max-time 15 "$@"); then
+    echo "FAIL $name (transport error)"; fail=1; return
+  fi
   if [[ $got == "$want" ]]; then echo "PASS $name ($got)"; else echo "FAIL $name (want $want, got $got)"; fail=1; fi
 }
 header() { # name, header regex, url
   local headers
-  headers=$(curl -sI --max-time 15 "$3") || true
+  if ! headers=$(curl -q -sI --max-time 15 "$3"); then
+    echo "FAIL $1 (transport error)"; fail=1; return
+  fi
   if grep -qiE "$2" <<<"$headers"; then echo "PASS $1"; else echo "FAIL $1"; fail=1; fi
 }
 
@@ -701,6 +733,15 @@ exit $fail
 
 `-I` sends `HEAD`; for a 405 check, make sure the endpoint rejects `HEAD` the
 same way it rejects `GET`, or use `-X GET` with a body-less request.
+
+Replace the endpoint placeholders and expected statuses with the documented
+application contract before running. Use a trusted, credential-free HTTPS
+`BASE_URL` without a query, fragment, or trailing slash. The script deliberately
+does not follow redirects or send cookies, and it does not verify redirect
+destinations, header policy values, response bodies, or the deployed version.
+Header presence alone does not establish an effective CSP, HSTS, or framing
+policy; validate their values separately. Use only known non-mutating routes
+and validate the script against a disposable local fixture first.
 
 ## Adopting this in a new repository
 
