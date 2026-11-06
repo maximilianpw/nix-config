@@ -1,46 +1,43 @@
-{
-  lib,
-  pkgs,
-  ...
-}: let
+{lib, ...}: let
   homelab = import ../lib/homelab.nix {inherit lib;};
   inherit (homelab.publicEndpoints) executor;
-  image = "ghcr.io/usefulsoftwareco/executor-selfhost@sha256:200315d519a8c19685de05e88aa9a3cf1e1cb9869a2b0aecf604f6ebf47c6ea1";
+  image = "ghcr.io/usefulsoftwareco/executor-selfhost@sha256:df242f0242f4aa75ae091e39c8d1a9f0ad29c32e9b9d603122048f9106cf97e2";
 in {
   custom.backup.applicationVersions.executor = image;
 
   virtualisation.oci-containers = {
     backend = "docker";
     containers.executor = {
-      # v1.6.8, pinned to the reviewed multi-platform image index.
-      # UsefulSoftwareCo is the canonical upstream namespace after the org move.
+      # v2.0.0-beta.32.
       inherit image;
-      # Host networking gives the container access to the loopback-only homelab MCP.
-      extraOptions = [
-        "--network=host"
-        # The image checks its default port (4788), but we configure PORT below.
-        # Keep the inherited healthcheck timings and check the actual listener.
-        ''--health-cmd=bun -e "fetch('http://127.0.0.1:${toString executor.port}/api/health').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"''
-      ];
-      volumes = [
-        "/var/lib/executor:/data"
-        # Docker's --health-cmd uses CMD-SHELL even though this image has no sh.
-        # A static shell needs no host libraries; mount only that binary read-only.
-        "${pkgs.pkgsStatic.busybox}/bin/busybox:/bin/sh:ro"
-      ];
+      # The homelab MCP and portfolio API listen only on host loopback.
+      extraOptions = ["--network=host" "--init"];
+      volumes = ["/var/lib/executor-v2:/app/data"];
       environment = {
         PORT = toString executor.port;
-        EXECUTOR_HOST = "127.0.0.1";
-        EXECUTOR_DATA_DIR = "/data";
-        EXECUTOR_WEB_BASE_URL = executor.url;
-        EXECUTOR_ALLOW_LOCAL_NETWORK = "true";
+        HOST = "127.0.0.1";
+        EXECUTOR_DATA_DIR = "/app/data";
+        BETTER_AUTH_URL = executor.url;
+        # Amp supports client-ID metadata documents, not dynamic registration.
+        EXECUTOR_OAUTH_CLIENT_METADATA_URL = "${executor.url}/oauth/client-metadata.json";
+        EXECUTOR_APPS_ALLOW_PRIVATE_FETCH = "true";
+        EXECUTOR_URL_ALLOW_HTTP_ORIGINS = builtins.toJSON [
+          "http://127.0.0.1:19200"
+          "http://127.0.0.1:19014"
+        ];
       };
     };
   };
 
-  systemd.tmpfiles.settings."10-executor"."/var/lib/executor".d = {
-    user = "root";
-    group = "root";
+  # Never expose a fresh first-admin setup at the production hostname.
+  systemd.services.docker-executor.preStart = lib.mkBefore ''
+    test -s /var/lib/executor-v2/auth-secret.key
+    test -s /var/lib/executor-v2/encryption.key
+  '';
+
+  systemd.tmpfiles.settings."10-executor"."/var/lib/executor-v2".d = {
+    user = "1000";
+    group = "1000";
     mode = "0700";
   };
 }

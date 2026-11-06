@@ -1,0 +1,332 @@
+{
+  "custom/distro": {
+    "format": "",
+    "tooltip": false
+  },
+
+  // Powerline dividers
+  "custom/left_div#1": {
+    "format": "",
+    "tooltip": false
+  },
+  "custom/left_div#2": {
+    "format": "",
+    "tooltip": false
+  },
+  "custom/left_div#3": {
+    "format": "",
+    "tooltip": false
+  },
+  "custom/left_div#4": {
+    "format": "",
+    "tooltip": false
+  },
+  "custom/left_div#5": {
+    "format": "",
+    "tooltip": false
+  },
+  "custom/left_div#6": {
+    "format": "",
+    "tooltip": false
+  },
+  "custom/left_div#7": {
+    "format": "",
+    "tooltip": false
+  },
+  "custom/left_div#8": {
+    "format": "",
+    "tooltip": false
+  },
+  "custom/left_inv#1": {
+    "format": "",
+    "tooltip": false
+  },
+  "custom/left_inv#2": {
+    "format": "",
+    "tooltip": false
+  },
+  "custom/right_div#1": {
+    "format": "",
+    "tooltip": false
+  },
+  "custom/right_div#2": {
+    "format": "",
+    "tooltip": false
+  },
+  "custom/right_div#3": {
+    "format": "",
+    "tooltip": false
+  },
+  "custom/right_div#4": {
+    "format": "",
+    "tooltip": false
+  },
+  "custom/right_div#5": {
+    "format": "",
+    "tooltip": false
+  },
+  // Workspaces. These are custom modules because this Hyprland build uses
+  // Lua dispatcher objects, while Waybar's built-in Hyprland workspace click
+  // handler sends the legacy string dispatch command.
+  "custom/workspace_1": {
+    "exec": "/home/maxpw/nix-config/users/maxpw/hyprland/waybar/scripts/workspace-button 1",
+    "return-type": "json",
+    "interval": 1,
+    "format": "{text}",
+    "tooltip": false,
+    "on-click": "hyprctl eval 'hl.dispatch(hl.dsp.focus({ workspace = 1 }))'"
+  },
+  "custom/workspace_2": {
+    "exec": "/home/maxpw/nix-config/users/maxpw/hyprland/waybar/scripts/workspace-button 2",
+    "return-type": "json",
+    "interval": 1,
+    "format": "{text}",
+    "tooltip": false,
+    "on-click": "hyprctl eval 'hl.dispatch(hl.dsp.focus({ workspace = 2 }))'"
+  },
+  "custom/workspace_3": {
+    "exec": "/home/maxpw/nix-config/users/maxpw/hyprland/waybar/scripts/workspace-button 3",
+    "return-type": "json",
+    "interval": 1,
+    "format": "{text}",
+    "tooltip": false,
+    "on-click": "hyprctl eval 'hl.dispatch(hl.dsp.focus({ workspace = 3 }))'"
+  },
+  "custom/workspace_4": {
+    "exec": "/home/maxpw/nix-config/users/maxpw/hyprland/waybar/scripts/workspace-button 4",
+    "return-type": "json",
+    "interval": 1,
+    "format": "{text}",
+    "tooltip": false,
+    "on-click": "hyprctl eval 'hl.dispatch(hl.dsp.focus({ workspace = 4 }))'"
+  },
+  "custom/workspace_5": {
+    "exec": "/home/maxpw/nix-config/users/maxpw/hyprland/waybar/scripts/workspace-button 5",
+    "return-type": "json",
+    "interval": 1,
+    "format": "{text}",
+    "tooltip": false,
+    "on-click": "hyprctl eval 'hl.dispatch(hl.dsp.focus({ workspace = 5 }))'"
+  },
+  "custom/workspace_6": {
+    "exec": "/home/maxpw/nix-config/users/maxpw/hyprland/waybar/scripts/workspace-button 6",
+    "return-type": "json",
+    "interval": 1,
+    "format": "{text}",
+    "tooltip": false,
+    "on-click": "hyprctl eval 'hl.dispatch(hl.dsp.focus({ workspace = 6 }))'"
+  },
+  "custom/workspace_7": {
+    "exec": "/home/maxpw/nix-config/users/maxpw/hyprland/waybar/scripts/workspace-button 7",
+    "return-type": "json",
+    "interval": 1,
+    "format": "{text}",
+    "tooltip": false,
+    "on-click": "hyprctl eval 'hl.dispatch(hl.dsp.focus({ workspace = 7 }))'"
+  },
+  "custom/workspace_8": {
+    "exec": "/home/maxpw/nix-config/users/maxpw/hyprland/waybar/scripts/workspace-button 8",
+    "return-type": "json",
+    "interval": 1,
+    "format": "{text}",
+    "tooltip": false,
+    "on-click": "hyprctl eval 'hl.dispatch(hl.dsp.focus({ workspace = 8 }))'"
+  },
+  "custom/workspace_9": {
+    "exec": "/home/maxpw/nix-config/users/maxpw/hyprland/waybar/scripts/workspace-button 9",
+    "return-type": "json",
+    "interval": 1,
+    "format": "{text}",
+    "tooltip": false,
+    "on-click": "hyprctl eval 'hl.dispatch(hl.dsp.focus({ workspace = 9 }))'"
+  },
+
+  // Window title
+  "hyprland/window": {
+    "format": "{}",
+    "max-length": 55,
+    "separate-outputs": true
+  },
+
+  // System stats
+  "memory": {
+    "interval": 10,
+    "format": "󰘚 {percentage}%",
+    "format-warning": "󰀧 {percentage}%",
+    "format-critical": "󰀧 {percentage}%",
+    "states": {
+      "warning": 75,
+      "critical": 90
+    },
+    "min-length": 7,
+    "max-length": 7,
+    "tooltip-format": "Memory: {used:0.1f}/{total:0.1f} GiB"
+  },
+
+  "cpu": {
+    "interval": 10,
+    "format": "󰍛 {usage}%",
+    "format-warning": "󰀨 {usage}%",
+    "format-critical": "󰀨 {usage}%",
+    "states": {
+      "warning": 75,
+      "critical": 90
+    },
+    "min-length": 7,
+    "max-length": 7,
+    "tooltip": false
+  },
+
+  "idle_inhibitor": {
+    "format": "{icon}",
+    "format-icons": {
+      "activated": "󰈈",
+      "deactivated": "󰈉"
+    },
+    "min-length": 3,
+    "max-length": 3,
+    "tooltip-format-activated": "Idle inhibitor: activated",
+    "tooltip-format-deactivated": "Idle inhibitor: deactivated",
+    "start-activated": false
+  },
+
+  // Clock
+  "clock#time": {
+    "format": "{:%H:%M}",
+    "min-length": 5,
+    "max-length": 5,
+    "tooltip-format": "{:%I:%M %p}"
+  },
+
+  "clock#date": {
+    "format": "󰸗 {:%d-%m}",
+    "min-length": 8,
+    "max-length": 8,
+    "tooltip-format": "<tt><small>{calendar}</small></tt>",
+    "calendar": {
+      "mode": "month",
+      "mode-mon-col": 3,
+      "weeks-pos": "right",
+      "format": {
+        "months": "<span color='#fab387'><b>{}</b></span>",
+        "days": "<span color='#cdd6f4'>{}</span>",
+        "weeks": "<span color='#94e2d5'><b>W{}</b></span>",
+        "weekdays": "<span color='#f9e2af'><b>{}</b></span>",
+        "today": "<span color='#f38ba8'><b><u>{}</u></b></span>"
+      }
+    },
+    "actions": {
+      "on-click": "mode"
+    }
+  },
+
+  // Audio
+  "group/pulseaudio": {
+    "orientation": "horizontal",
+    "modules": ["pulseaudio#output", "pulseaudio#input"],
+    "drawer": {
+      "transition-left-to-right": false
+    }
+  },
+
+  "pulseaudio#output": {
+    "scroll-step": 2,
+    "format": "{icon} {volume}%",
+    "format-muted": "󰝟 {volume}%",
+    "format-icons": {
+      "headphone": "󰋋",
+      "headset": "󰋎",
+      "default": ["󰕿", "󰖀", "󰕾"]
+    },
+    "min-length": 7,
+    "max-length": 7,
+    "on-click": "pavucontrol",
+    "on-scroll-up": "wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 2%+",
+    "on-scroll-down": "wpctl set-volume @DEFAULT_AUDIO_SINK@ 2%-",
+    "tooltip-format": "{desc}"
+  },
+
+  "pulseaudio#input": {
+    "format": "{format_source}",
+    "format-source": "󰍬 {volume}%",
+    "format-source-muted": "󰍭 {volume}%",
+    "min-length": 7,
+    "max-length": 7,
+    "on-click": "pavucontrol",
+    "on-scroll-up": "wpctl set-volume @DEFAULT_AUDIO_SOURCE@ 2%+",
+    "on-scroll-down": "wpctl set-volume @DEFAULT_AUDIO_SOURCE@ 2%-",
+    "tooltip-format": "{desc}"
+  },
+
+  // Network
+  "custom/network": {
+    "exec": "$HOME/.config/waybar/scripts/network status",
+    "return-type": "json",
+    "interval": 5,
+    "signal": 9,
+    "format": "{text}",
+    "escape": true,
+    "min-length": 2,
+    "max-length": 2,
+    "on-click": "$HOME/.config/waybar/scripts/network menu",
+    "on-click-right": "$HOME/.config/waybar/scripts/network editor",
+    "on-click-middle": "$HOME/.config/waybar/scripts/network refresh"
+  },
+
+  // Tailscale
+  "custom/tailscale": {
+    "exec": "$HOME/.config/waybar/scripts/tailscale status",
+    "return-type": "json",
+    "interval": 30,
+    "signal": 8,
+    "format": "{text}",
+    "escape": true,
+    "on-click": "$HOME/.config/waybar/scripts/tailscale menu",
+    "on-click-right": "$HOME/.config/waybar/scripts/tailscale toggle",
+    "on-click-middle": "$HOME/.config/waybar/scripts/tailscale refresh"
+  },
+
+  // Media
+  "mpris": {
+    "format": "{player_icon} {artist} - {title}",
+    "format-paused": "{status_icon} {artist} - {title}",
+    "player-icons": {
+      "default": "󰐊"
+    },
+    "status-icons": {
+      "paused": "󰏤"
+    },
+    "max-length": 42,
+    "tooltip-format": "{player}: {title} - {artist}",
+    "tooltip-format-paused": "{player}: paused"
+  },
+
+  // Notifications
+  "custom/notification": {
+    "tooltip": false,
+    "format": "{icon}",
+    "format-icons": {
+      "notification": "󰂚",
+      "none": "󰂜",
+      "dnd-notification": "󰂛",
+      "dnd-none": "󰪑",
+      "inhibited-notification": "󰂚",
+      "inhibited-none": "󰂜",
+      "dnd-inhibited-notification": "󰂛",
+      "dnd-inhibited-none": "󰪑"
+    },
+    "return-type": "json",
+    "exec-if": "which swaync-client",
+    "exec": "swaync-client -swb",
+    "on-click": "swaync-client -t -sw",
+    "on-click-right": "swaync-client -d -sw",
+    "escape": true
+  },
+
+  // Power
+  "custom/power": {
+    "format": "󰤄",
+    "tooltip-format": "Power menu",
+    "on-click": "wlogout -p layer-shell"
+  }
+}

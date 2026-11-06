@@ -34,7 +34,7 @@ Thumbs.db
 /.cache/
 
 # Hyprland creates this stub even when hyprland.lua is the active config.
-users/maxpw/hyprland/hyprland.conf
+users/maxpw/hyprland/hypr/hyprland.conf
 
 # Home Manager materializes these Claude command links from tracked shared prompts.
 users/maxpw/agents/claude/commands/nix-config-health.md
@@ -60,3 +60,6 @@ age-keys.txt
 
 # Local research/review artifacts, not part of the flake
 plans/
+
+# Wrangler/Cloudflare CLI account cache.
+/.cloudflare/

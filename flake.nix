@@ -35,11 +35,6 @@
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
-    # Own email client, built from source for Kim's homelab. Private repository,
-    # fetched with the evaluating user's GitHub SSH key. It keeps its own
-    # nixpkgs: it needs Bun >= 1.4, which nixos-26.05 does not ship.
-    superlocal.url = "git+ssh://git@github.com/maximilianpw/superlocal";
-
     # Private homelab MCP; pin an upstream release and consume its package.
     homelab-mcp = {
       url = "git+ssh://git@github.com/maximilianpw/homelab-mcp?ref=refs/tags/v0.1.1";
@@ -49,6 +44,13 @@
     # Own music server; consume its package rather than vendoring its source.
     leerr = {
       url = "github:maximilianpw/leerr";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    # Prebuilt Rex. Until its first release the package host needs a netrc
+    # token on every evaluating machine (docs/rex.md); CI uses tests/stubs/rex.
+    rex = {
+      url = "https://pkgs.superlogical.com/rex/nix/preview.tar.gz";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -156,17 +158,19 @@
         autolith = inputs.autolith.packages.${prev.stdenv.hostPlatform.system}.default;
         # llm-agents keeps v1 as opencode and installs v2 as opencode2.
         # Preserve the command name used by wrappers and service PATHs.
-        opencode = llm.opencode2.overrideAttrs (old: {
-          postInstall =
-            (old.postInstall or "")
-            + ''
-              ln -s opencode2 "$out/bin/opencode"
-            '';
-          meta = old.meta // {mainProgram = "opencode";};
-        });
+        # Wrap rather than overrideAttrs, which would rebuild it from source
+        # instead of substituting llm-agents' cached build.
+        opencode = prev.symlinkJoin {
+          name = "opencode-${llm.opencode2.version}";
+          inherit (llm.opencode2) version;
+          paths = [llm.opencode2];
+          postBuild = ''
+            ln -s opencode2 "$out/bin/opencode"
+          '';
+          meta = llm.opencode2.meta // {mainProgram = "opencode";};
+        };
         inherit (llm) grok;
         inherit (llm) muse-code;
-        inherit (llm) herdr;
         herdr-jj = inputs.herdr-jj.packages.${prev.stdenv.hostPlatform.system}.default;
         inherit (llm) executor;
         amp-cli = llm.amp;
@@ -243,6 +247,7 @@
         obsidian = final.callPackage ./packages/obsidian.nix {};
         cliproxyapi = final.callPackage ./packages/cliproxyapi.nix {};
         cua-driver = final.callPackage ./packages/cua-driver.nix {};
+        herdr-core = final.callPackage ./packages/herdr-core.nix {};
         nextcloud-calendar = final.callPackage ./packages/nextcloud-calendar.nix {};
         lazygit-nvim-edit = final.callPackage ./packages/lazygit-nvim-edit.nix {};
         herdr-shell = final.callPackage ./packages/herdr-shell.nix {};
@@ -344,7 +349,7 @@
       in
         editorPackages "x86_64-linux"
         // {
-          inherit (pkgs) helium obsidian skills cliproxyapi cua-driver nextcloud-calendar hunkdiff nix-update tunarr jellyfin jellyfin-web jellyfin-ffmpeg vite-plus t3code herdr-jj;
+          inherit (pkgs) helium obsidian skills cliproxyapi cua-driver nextcloud-calendar hunkdiff nix-update tunarr jellyfin jellyfin-web jellyfin-ffmpeg vite-plus t3code herdr-core herdr-jj;
           inherit (inputs.jj-stack.packages.x86_64-linux) jj-stack;
         };
       aarch64-darwin = let
@@ -352,7 +357,7 @@
       in
         editorPackages "aarch64-darwin"
         // {
-          inherit (pkgs) cua-driver skills nextcloud-calendar hunkdiff nix-update obsidian vite-plus t3code herdr-jj;
+          inherit (pkgs) cua-driver skills nextcloud-calendar hunkdiff nix-update obsidian vite-plus t3code herdr-core herdr-jj;
           inherit (inputs.jj-stack.packages.aarch64-darwin) jj-stack;
         };
     };

@@ -322,7 +322,7 @@
     },
     {
       "datasource": {"type": "prometheus", "uid": "prometheus"},
-      "description": "Minimum blackbox probe result across every declared public Cloudflare endpoint.",
+      "description": "Down when any declared public Cloudflare endpoint failed every probe in the last 15 minutes. Probes run from Kim through its own ISP, so single failures are usually that path, not the service.",
       "fieldConfig": {
         "defaults": {"color": {"mode": "thresholds"}, "mappings": [{"options": {"0": {"color": "red", "index": 1, "text": "Down"}, "1": {"color": "green", "index": 0, "text": "Up"}}, "type": "value"}], "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 1}]}, "unit": "none"},
         "overrides": []
@@ -330,7 +330,7 @@
       "gridPos": {"h": 4, "w": 24, "x": 0, "y": 40},
       "id": 18,
       "options": {"colorMode": "value", "graphMode": "none", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto", "wideLayout": true},
-      "targets": [{"editorMode": "code", "expr": "min(probe_success{job=\"public-ingress\"})", "instant": true, "legendFormat": "Public ingress", "range": false, "refId": "A"}],
+      "targets": [{"editorMode": "code", "expr": "min(max_over_time(probe_success{job=\"public-ingress\"}[15m]))", "instant": true, "legendFormat": "Public ingress", "range": false, "refId": "A"}],
       "title": "Public ingress",
       "type": "stat"
     },

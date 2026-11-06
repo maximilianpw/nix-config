@@ -257,6 +257,17 @@ in
     (builtins.elem "${mediaRoot}/torrents" config.systemd.services.plex.serviceConfig.InaccessiblePaths)
     (builtins.elem usenetRoot config.systemd.services.plex.serviceConfig.InaccessiblePaths)
   ];
+  assert expect.all "internet-facing Plex must keep its sandbox: read-only OS, no capabilities, filtered syscalls" [
+    (config.systemd.services.plex.serviceConfig.ProtectSystem == "strict")
+    (config.systemd.services.plex.serviceConfig.StateDirectory == "plex")
+    (config.systemd.services.plex.serviceConfig.ReadWritePaths == [mediaRoot "-${secondaryMediaRoot}"])
+    (config.systemd.services.plex.serviceConfig.CapabilityBoundingSet == "")
+    (config.systemd.services.plex.serviceConfig.RestrictNamespaces == ["user" "mnt"])
+    (config.systemd.services.plex.serviceConfig.SystemCallFilter == ["@system-service" "@mount"])
+    (config.systemd.services.plex.serviceConfig.SystemCallArchitectures == "native")
+    config.systemd.services.plex.serviceConfig.ProtectHome
+    config.systemd.services.plex.serviceConfig.NoNewPrivileges
+  ];
   assert expect.all "Tunarr must keep private state while all media writers preserve shared-group access" [
     (tunarrService.serviceConfig.UMask == "0077")
     (tunarrService.serviceConfig.StateDirectory == "tunarr")
@@ -377,8 +388,8 @@ in
     (lib.hasSuffix "systemd-socket-proxyd 10.89.1.2:8080" config.systemd.services.sabnzbd-proxy.serviceConfig.ExecStart)
   ];
   assert expect.all "Plex TCP must be open over IPv4 while discovery stays LAN-only and Jellyfin remains available on the physical interface" [
-    (config.networking.firewall.interfaces.enp194s0.allowedTCPPorts == [endpoints.jellyfin.port])
-    (config.networking.firewall.interfaces.enp194s0.allowedUDPPorts == [7359])
+    (builtins.elem endpoints.jellyfin.port config.networking.firewall.interfaces.enp194s0.allowedTCPPorts)
+    (builtins.elem 7359 config.networking.firewall.interfaces.enp194s0.allowedUDPPorts)
     (lib.hasInfix
       "-i enp194s0 -p tcp --dport ${toString endpoints.plex.port} -j nixos-fw-accept"
       config.networking.firewall.extraCommands)

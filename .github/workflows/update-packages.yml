@@ -31,8 +31,8 @@ jobs:
         with:
           cache: 'true'
 
-      - name: Use the public Superlocal stub
-        run: scripts/ci/use-superlocal-stub.sh
+      - name: Stub private flake inputs
+        run: scripts/ci/use-private-input-stubs.sh
 
       - name: Run nix-update for each package
         id: bump

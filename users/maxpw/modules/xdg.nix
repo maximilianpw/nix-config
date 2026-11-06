@@ -1,65 +1,10 @@
 {
-  config,
   isDarwin,
   isLinuxDesktop,
-  currentSystemUserDir,
-  hostname,
   lib,
   pkgs,
   ...
 }: let
-  homeFiles = import ../../../lib/home-files.nix {
-    inherit lib;
-    mkOutOfStoreSymlink = config.lib.file.mkOutOfStoreSymlink;
-  };
-
-  hyprConfigPath = "${config.home.homeDirectory}/nix-config/users/${currentSystemUserDir}/hyprland";
-  uwsmEnv = ''
-    export GDK_SCALE=1.6
-    export GDK_DPI_SCALE=1
-    export GDK_BACKEND=wayland,x11
-    export QT_QPA_PLATFORM='wayland;xcb'
-    export MOZ_ENABLE_WAYLAND=1
-    export XCURSOR_THEME=Vanilla-DMZ
-    export XCURSOR_SIZE=128
-  '';
-
-  hasLockScreen = hostname != "kim";
-
-  hostLua =
-    if hasLockScreen
-    then ''
-      hl.bind("SUPER + ESCAPE", hl.dsp.exec_cmd("hyprlock"))
-    ''
-    else "";
-
-  hypridleConfig =
-    if hasLockScreen
-    then ''
-      listener {
-        timeout = 600
-        on-timeout = hyprlock
-      }
-
-      listener {
-        timeout = 900
-        on-timeout = hyprctl dispatch dpms off
-        on-resume = hyprctl dispatch dpms on
-      }
-
-      listener {
-        timeout = 3600
-        on-timeout = systemctl hibernate
-      }
-    ''
-    else ''
-      listener {
-        timeout = 900
-        on-timeout = hyprctl dispatch dpms off
-        on-resume = hyprctl dispatch dpms on
-      }
-    '';
-
   onePasswordAllowedOrigins = [
     "chrome-extension://aeblfdkhhhdcdjpifhhbdiojplfjncoa/"
     "chrome-extension://bkpbhnjcbehoklfkljkkbbmipaphipgl/"
@@ -111,19 +56,6 @@ in {
       then
         {
           "ghostty/config".text = ghosttyConfig;
-          "gammastep/config.ini".text = builtins.readFile ../config.gammastep;
-          "uwsm/env".text = uwsmEnv;
-          "waybar".source = ../waybar;
-          "waybar".recursive = true;
-          "swaync".source = ../swaync;
-          "swaync".recursive = true;
-          "wlogout/layout".source = ../wlogout/layout;
-          "wlogout/colors.css".source = ../wlogout/colors.css;
-          "wlogout/style.css".text =
-            builtins.replaceStrings
-            ["@WLOGOUT_ICONS@"]
-            ["${pkgs.wlogout}/share/wlogout/icons"]
-            (builtins.readFile ../wlogout/style.css);
 
           # 1Password browser integration for Helium (Chromium fork).
           # Must also add Helium's binary path to customAllowedBrowsers via
@@ -131,16 +63,6 @@ in {
           # HMAC-signed so it cannot be set declaratively.
         }
         // heliumNativeMessagingFiles
-        // (homeFiles.symlinkDir {
-          dir = ../hyprland;
-          outOfStoreDir = hyprConfigPath;
-          prefix = "hypr";
-          exclude = ["hyprland.conf"];
-        })
-        // {
-          "hypr/host.lua".text = hostLua;
-          "hypr/hypridle.conf".text = hypridleConfig;
-        }
       else {}
     );
 }

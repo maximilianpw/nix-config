@@ -242,8 +242,14 @@ in
   assert expect.all "local probes must stay responsive while public ingress probes use low-noise five-minute health checks" [
     (localBackendScrape.scrape_interval == "1m")
     (publicIngressScrape.scrape_interval == "5m")
+    (localBackendScrape.params.module == ["http_2xx"])
     (publicIngressTargets == expectedPublicIngressTargets)
     (homelab.publicEndpoints.cliproxy.publicMonitorUrl == "https://${homelab.publicEndpoints.cliproxy.host}/healthz")
+  ];
+  assert expect.all "public probes must tolerate Kim's slow ISP-to-Cloudflare hairpin and the dashboard must ignore single failed probes" [
+    (publicIngressScrape.params.module == ["public_http_2xx"])
+    (publicIngressScrape.scrape_timeout == "30s")
+    (lib.hasInfix ''min(max_over_time(probe_success{job="public-ingress"}[15m]))'' queryText)
   ];
   assert expect.all "CLIProxyAPI readiness must be a fixed-target loopback probe that holds the key as a systemd credential" [
     (lib.hasPrefix "http://127.0.0.1:" cliProxyBackend.baseUrl)
@@ -468,6 +474,7 @@ in
       # The shell test in scripts/tests covers the probe's behavior.
       grep -F -- 'CLIPROXYAPI_MODELS_URL=${cliProxyBackend.baseUrl}/v1/models' ${lib.escapeShellArg readinessProbeService.serviceConfig.ExecStart}
       grep -F -- 'cliproxyapi-readiness-probe.sh' ${lib.escapeShellArg readinessProbeService.serviceConfig.ExecStart}
+      grep -F -- 'public_http_2xx' ${exporters.blackbox.configFile}
       if grep -F -- 'cliproxyapi' ${exporters.blackbox.configFile}; then
         echo "the blackbox exporter must not carry a CLIProxyAPI module" >&2
         exit 1

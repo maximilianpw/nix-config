@@ -101,7 +101,7 @@ secret contents were read while compiling it.
 - Docker group membership (`machines/kim.nix`): the Docker socket is
   root-equivalent on the host, so it reaches `/var/lib/sops-nix/key.txt`,
   `/etc/ssh/ssh_host_ed25519_key` (the second sops recipient), every
-  root-owned file under `/run/secrets/`, `/var/lib/executor` (Executor's
+  root-owned file under `/run/secrets/`, `/var/lib/executor-v2` (Executor's
   database and generated encryption keys), and all container state.
 - `wheel` membership (`users/maxpw/nixos.nix`): sudo is available but requires
   the user's password, which is stored only as a hash

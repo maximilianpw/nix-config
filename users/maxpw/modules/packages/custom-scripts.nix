@@ -17,6 +17,18 @@ in {
       text = builtins.readFile ../../../../scripts/user/npmrc-token.sh;
     })
     (pkgs.writeShellApplication {
+      name = "dcompose";
+      text = ''
+        # APFS is case-insensitive, so ~/Local/vev and ~/local/vev are the same tree.
+        cwd=$(pwd -P)
+        vev_root="$HOME/local/vev"
+        case "''${cwd,,}/" in
+          "''${vev_root,,}/"*) exec npmrc-token docker compose "$@" ;;
+        esac
+        exec docker compose "$@"
+      '';
+    })
+    (pkgs.writeShellApplication {
       name = "ynab-mcp-server";
       runtimeInputs = [pkgs.nodejs pkgs._1password-cli];
       text = ''

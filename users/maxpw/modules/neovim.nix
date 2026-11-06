@@ -5,9 +5,8 @@
   pkgs,
   ...
 }: let
-  # Editor and application-file ownership move together. Chezmoi must exclude
-  # .config/nvim and the two helper scripts on each migrated host; see the
-  # cutover procedure in docs/nixvim-hjem.md.
+  # Editor and application-file ownership move together; see the cutover
+  # procedure in docs/nixvim-hjem.md.
   useNixvim = hostRecord.hjem;
 
   editor = inputs.self.packages.${pkgs.stdenv.hostPlatform.system};
@@ -45,7 +44,6 @@ in
         editor.nvim-vscode
         viAliases
         pkgs.lazygit-nvim-edit
-        pkgs.herdr-shell
       ];
       home.shellAliases.vimdiff = "nvim -d";
       # EDITOR/VISUAL are set in home-manager.nix for every host.

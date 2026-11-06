@@ -24,6 +24,7 @@ in {
   imports =
     [
       inputs.nix-index-database.homeModules.nix-index
+      inputs.rex.homeManagerModules.default
       inputs.stylix.homeModules.stylix
       (import ../../modules/cliproxyapi/home-manager.nix {
         agentConfigDirectory = ./agents;
@@ -41,6 +42,7 @@ in {
       ./modules/gpg.nix
       ./modules/himalaya.nix
       ./modules/xdg.nix
+      ./hyprland
       ./modules/app-config.nix
       ./modules/linux-services.nix
       ./modules/tmux.nix
@@ -132,6 +134,9 @@ in {
       enableNushellIntegration = true;
       globalConfig.settings.node.compile = false;
     };
+
+    # Rex Beta.app runs Joyce's server; this adds its CLI, terminfo and ssh guard.
+    rex.enable = isDarwin;
 
     ssh = {
       enable = true;

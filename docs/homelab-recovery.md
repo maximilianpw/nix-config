@@ -63,7 +63,7 @@ sudo systemctl mask --runtime \
   phpfpm-nextcloud.service paperless-consumer.service \
   paperless-exporter.service paperless-scheduler.service \
   paperless-task-queue.service paperless-web.service miniflux.service \
-  immich-machine-learning.service immich-server.service leerr.service superlocal.service \
+  immich-machine-learning.service immich-server.service leerr.service \
   bazarr.service jellyfin.service lidarr.service plex.service prowlarr.service \
   radarr.service seerr.service sonarr.service tunarr.service \
   container@qbt.service container@sab.service \
@@ -96,12 +96,13 @@ sudo borg-restore-main <archive> /var/tmp/homelab-state \
   var/backup/t3code/state.tar \
   srv/forgejo srv/immich srv/nextcloud srv/paperless/export srv/paperless/consume \
   srv/paperless/media var/lib/actual var/lib/bazarr var/lib/bitwarden_rs \
-  var/lib/executor var/lib/forgejo-runner-registration var/lib/jellyfin var/lib/leerr \
+  var/lib/executor-v2 var/lib/forgejo-runner-registration var/lib/jellyfin \
+  var/lib/leerr \
   var/lib/lidarr/.config/Lidarr var/lib/nixos-containers/qbt \
   var/lib/nixos-containers/sab var/lib/plex \
   var/lib/private/jellyseerr var/lib/private/prowlarr \
   var/lib/private/uptime-kuma var/lib/radarr/.config/Radarr \
-  var/lib/sabnzbd var/lib/sonarr/.config/NzbDrone var/lib/superlocal var/lib/tunarr \
+  var/lib/sabnzbd var/lib/sonarr/.config/NzbDrone var/lib/tunarr \
   home/maxpw/.config/syncthing home/maxpw/Sync
 sudo homelab-backup-inspect <archive>
 ```
@@ -281,13 +282,18 @@ recoverable from the server state.
 ### Executor
 
 Keep `docker-executor.service` stopped and restore the complete staged
-`/var/lib/executor` directory, including `data.db` and the generated encryption
-keys. Preserve restrictive ownership and modes. Start the image reference
+`/var/lib/executor-v2` directory. V2 stores its PGlite database, app source,
+builds, app data, `auth-secret.key`, and `encryption.key` together; restoring only
+the database is insufficient. Preserve numeric ownership (the pinned image's
+`executor` user is UID/GID 1000) and restrictive modes. Start the image reference
 recorded at `applicationVersions.executor` on loopback before attempting an
-upgrade. Sign in as the existing owner, verify the integration catalog and
-policies, then make one harmless read-only tool call through the MCP endpoint.
+upgrade. The service refuses to start without both saved key files. Check
+`http://127.0.0.1:19005/health`, sign in as the existing administrator, verify
+apps, account links and approval policies, then make one harmless read-only tool
+call through the MCP endpoint.
+
 Do not expose an empty replacement instance: its first account would become the
-new owner and newly generated keys could not decrypt the archived credentials.
+new owner and newly generated keys could not decrypt archived credentials.
 
 ### Forgejo
 
@@ -375,14 +381,6 @@ integrity, account login and per-user Jellyfin library access in an isolated
 instance; do not expose the service before they pass. A generation rollback
 does not undo a SQLite migration: restore the matching pre-upgrade database if
 the older application cannot read the new schema.
-
-### Superlocal
-
-Keep `superlocal.service` stopped and restore the complete staged
-`/var/lib/superlocal` tree, configuration, databases and `runtime-secrets.json`
-together, with the archived version. Follow the maintained
-[Superlocal recovery procedure](superlocal.md#recovery) for ownership, SQLite
-and mailbox acceptance checks; do not expose the service before they pass.
 
 ### Grafana and Prometheus
 

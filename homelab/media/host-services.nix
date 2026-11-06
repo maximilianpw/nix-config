@@ -291,6 +291,9 @@ in {
         };
         # Plex can manage the shared group-writable library but cannot see
         # active downloads, same as Jellyfin.
+        # Plex is reachable from the internet through the router's port forward.
+        # Its FHS wrapper runs under bubblewrap, which needs user and mount
+        # namespaces and the mount syscalls.
         plex.serviceConfig = {
           InaccessiblePaths =
             [
@@ -299,6 +302,25 @@ in {
             ]
             ++ secondaryDownloadDirectories;
           UMask = lib.mkForce "0002";
+          ProtectSystem = lib.mkForce "strict";
+          # The module's privileged ExecStartPre still runs inside the read-only
+          # namespace, so it cannot create the data directory on a fresh disk.
+          StateDirectory = "plex";
+          ReadWritePaths = [
+            mediaRoot
+            "-${secondaryMediaRoot}"
+          ];
+          CapabilityBoundingSet = "";
+          AmbientCapabilities = "";
+          ProtectClock = true;
+          ProtectHostname = true;
+          ProtectKernelLogs = true;
+          ProtectProc = "invisible";
+          RemoveIPC = true;
+          RestrictNamespaces = ["user" "mnt"];
+          SystemCallArchitectures = "native";
+          SystemCallFilter = ["@system-service" "@mount"];
+          SystemCallErrorNumber = "EPERM";
         };
       }
       // lib.mapAttrs mkContainerProxyService downloadProxies;

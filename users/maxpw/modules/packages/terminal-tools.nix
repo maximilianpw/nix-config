@@ -7,8 +7,6 @@
 }: {
   home.packages =
     [
-      # Environment management
-      pkgs.chezmoi
       # Local log viewer (own project, built from its flake)
       inputs.loggle.packages.${pkgs.stdenv.hostPlatform.system}.default
       # File navigation & search

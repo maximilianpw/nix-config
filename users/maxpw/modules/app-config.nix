@@ -5,15 +5,14 @@
 #
 # Hjem owns the static files (users/maxpw/hjem); this module owns only these
 # writable ones, and the Hjem module asserts that no path has both owners.
-# Applies to hosts migrated off chezmoi (`hjem = true` in lib/hosts.nix), whose
-# .chezmoiignore excludes the same paths. Contents are not pinned by a Nix
-# generation: recovery is from Git. If an app replaces the link with a regular
-# file when it saves, take that file out of this list rather than fighting it.
+# Applies to hosts with `hjem = true` in lib/hosts.nix. Contents are not pinned
+# by a Nix generation: recovery is from Git. If an app replaces the link with a
+# regular file when it saves, take that file out of this list rather than
+# fighting it.
 {
   config,
   currentSystemUserDir,
   hostRecord,
-  isDarwin,
   lib,
   ...
 }: let
@@ -22,18 +21,12 @@
     inherit (config.lib.file) mkOutOfStoreSymlink;
   };
 
-  shared = [
-    ".cursor/permissions.json"
-    ".cursor/sandbox.json"
+  paths = [
     ".plannotator/config.json"
-  ];
-  darwinOnly = [
-    "Library/Application Support/Cursor/User/keybindings.json"
-    "Library/Application Support/Cursor/User/settings.json"
   ];
 in
   lib.mkIf hostRecord.hjem {
-    home.file = lib.genAttrs (shared ++ lib.optionals isDarwin darwinOnly) (path: {
+    home.file = lib.genAttrs paths (path: {
       source = homeFiles.mkRepoSource config.home.homeDirectory "users/${currentSystemUserDir}/app-config/${path}";
     });
   }

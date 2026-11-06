@@ -5,10 +5,12 @@ host networking on `127.0.0.1:19005`, so its container can reach that endpoint.
 Cloudflare still routes `executor.maximilian.pw` to port 19005. There is no
 public route or firewall opening for port 19200.
 
-`EXECUTOR_ALLOW_LOCAL_NETWORK=true` permits Executor integrations to reach local
-and private addresses, not only this MCP. Executor's account authentication and
-integration policies remain responsible for access. Only trusted users should
-be allowed to configure integrations.
+Executor v2 uses `EXECUTOR_APPS_ALLOW_PRIVATE_FETCH=true` for app tool calls.
+Host-side import and OAuth requests have a separate exact-origin allowlist,
+`EXECUTOR_URL_ALLOW_HTTP_ORIGINS`, containing `http://127.0.0.1:19200` and the
+portfolio API origin. These controls do not replace the upstream bearer token.
+Executor's account authentication and app tool policies remain responsible for
+access. Only trusted users should be allowed to configure apps.
 
 ## Activation and connection
 
@@ -19,17 +21,16 @@ make rebuild
 systemctl status homelab-mcp docker-executor --no-pager
 ```
 
-Sign in to `https://executor.maximilian.pw`. Add an MCP integration with URL
-`http://127.0.0.1:19200/mcp` and namespace `homelab`. Configure bearer
-authentication using the value of the SOPS secret `homelab-mcp-access-token`.
+Sign in to `https://executor.maximilian.pw`. Add an app from the MCP URL
+`http://127.0.0.1:19200/mcp`, then connect its account from the app page.
+Configure bearer authentication using the value of the SOPS secret `homelab-mcp-access-token`.
 The root-readable runtime file is `/run/secrets/homelab-mcp-access-token`.
 Enter it only in Executor's secret field, never in a URL or a committed config.
-Use an organization connection if other Executor users need access; a personal
-connection suffices for devices signed in as the same user.
+Select the app's account links for the intended users.
 
 Refresh tool discovery and call `media_stack_health` through Executor. Check
 that Seerr, Sonarr, Radarr, Lidarr, Prowlarr and Plex all respond. Then call it
-from another device using the existing Executor MCP connection at
+from another device using the v2 dashboard's **Connect** instructions for
 `https://executor.maximilian.pw/mcp`. Devices need Executor authentication only;
 the homelab bearer token stays in Executor.
 
@@ -104,10 +105,12 @@ consumes the upstream `homelab-mcp` package. The source repository owns the Nix
 build recipe; this repository does not vendor a source archive or duplicate it.
 Database migrations and dependencies are unchanged from the previous snapshot.
 
-The repository is private, so the input uses Git over SSH, as the `superlocal`
-input does. Evaluation on a new machine requires a GitHub SSH identity with
-repository access. Authentication stays with the evaluating user, never in a
-Nix expression, URL credential, or the Nix store.
+The repository is private, so the input uses Git over SSH. Evaluation on a new
+machine requires a GitHub SSH identity with repository access. Authentication
+stays with the evaluating user, never in a Nix expression, URL credential, or
+the Nix store. CI has no such identity and relocks onto the inert stub in
+`tests/stubs/homelab-mcp`; mirror the package outputs this repository consumes
+there when they change.
 
 The transaction-update fix uses a default import of `@actual-app/api` so Bun
 reads its live `internal` getter. A namespace import captures the initial

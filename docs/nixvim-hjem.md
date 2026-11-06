@@ -11,8 +11,8 @@ Manager selects Nixvim from the same flag so the two stay in step.
   `~/.local/state/nvim-migration-recovery/` on each host.
 - Cuno's live cutover is pending. Before its first migrated rebuild, follow the
   host cutover below.
-- Chezmoi is not retired. On Kim it still owns two legacy Zed configs and a
-  stray research note; `scripts/dev/chezmoi.sh` covers what remains.
+- Chezmoi is retired (2026-11-01). Files it wrote stay on disk, unmanaged,
+  until removed by hand.
 
 ## Editing the editor
 
@@ -49,18 +49,17 @@ online behavior and VS Code integration. Verify those interactively.
 
 1. Snapshot `~/.config/nvim`, `~/.local/share/nvim/{site,lazy}` and
    `~/.local/state/nvim` outside `~/.config` and the runtime path.
-2. Exclude `.config/nvim`, the two `.local/bin` helpers and the Hjem-managed
-   files from chezmoi for that host; render (`chezmoi managed`, `chezmoi diff`)
-   before applying. Retire any shadowing helpers in `~/.local/bin`.
+2. Remove the host's chezmoi source (`~/.local/share/chezmoi`) if it still has
+   one, so nothing reapplies the old files. Retire any shadowing helpers in
+   `~/.local/bin`.
 3. Rebuild. Check that `which nvim` resolves into the profile and
    `:lua =vim.api.nvim_list_runtime_paths()` lists store paths only.
 4. Move Hjem's `.backup-*` collision files into the snapshot directory; a second
    collision would overwrite them.
 
-Roll back by reverting the commit and rebuilding, re-enabling the chezmoi
-entries and restoring the snapshot. A generation rollback alone does not
-restore files chezmoi removed. Turning `hjem` off removes Hjem's agents but not
-its links: delete them using the state manifest.
+Roll back by reverting the commit, rebuilding and restoring the snapshot.
+Turning `hjem` off removes Hjem's agents but not its links: delete them using
+the state manifest.
 
 ## Hjem hazards
 
@@ -93,10 +92,12 @@ Home Manager's `linkApps`/`copyApps` off.
 
 ## App-written files
 
-`users/maxpw/modules/app-config.nix` links app-written files (Cursor settings
-and keybindings, `.cursor/{permissions,sandbox}.json`,
-`.plannotator/config.json`) straight to `users/maxpw/app-config/` with
+`users/maxpw/modules/app-config.nix` links app-written files
+(`.plannotator/config.json`) straight to `users/maxpw/app-config/` with
 `mkOutOfStoreSymlink`. Apps write through the link, `git diff` shows their
 changes, and recovery is from Git. A file whose app replaces the link instead
 of writing through it must leave this list. `users/maxpw/hjem/default.nix`
 asserts that no Home Manager file shares a path with a Hjem file.
+
+Cursor's settings, keybindings, and `~/.cursor/{permissions,sandbox}.json` are
+not managed here; Cursor syncs them through its account login.

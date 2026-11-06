@@ -16,19 +16,22 @@
       kim = self.nixosConfigurations.kim.config;
       cuno = self.nixosConfigurations.cuno.config;
     };
+    herdr-core-package = self.packages.x86_64-linux.herdr-core;
     herdr-config-regression = import ../tests/herdr-config-regression.nix {
       inherit lib;
       pkgs = nixpkgs.legacyPackages.x86_64-linux;
-      herdr = self.nixosConfigurations.kim.pkgs.herdr;
+      core = self.nixosConfigurations.kim.pkgs.herdr-core;
       package = inputs.herdr-jj.packages.x86_64-linux.default;
       home = self.nixosConfigurations.kim.config.home-manager.users.maxpw;
+      files = self.nixosConfigurations.kim.config.hjem.users.maxpw.files;
     };
     herdr-cuno-config-regression = import ../tests/herdr-config-regression.nix {
       inherit lib;
       pkgs = nixpkgs.legacyPackages.x86_64-linux;
-      herdr = self.nixosConfigurations.cuno.pkgs.herdr;
+      core = self.nixosConfigurations.cuno.pkgs.herdr-core;
       package = inputs.herdr-jj.packages.x86_64-linux.default;
       home = self.nixosConfigurations.cuno.config.home-manager.users.maxpw;
+      files = self.nixosConfigurations.cuno.config.hjem.users.maxpw.files;
     };
     plannotator-config-regression = import ../tests/plannotator-config-regression.nix {
       inherit lib;
@@ -191,12 +194,14 @@
     };
   };
   aarch64-darwin = {
+    herdr-core-package = self.packages.aarch64-darwin.herdr-core;
     herdr-config-regression = import ../tests/herdr-config-regression.nix {
       inherit lib;
       pkgs = nixpkgs.legacyPackages.aarch64-darwin;
-      herdr = self.darwinConfigurations.joyce.pkgs.herdr;
+      core = self.darwinConfigurations.joyce.pkgs.herdr-core;
       package = inputs.herdr-jj.packages.aarch64-darwin.default;
       home = self.darwinConfigurations.joyce.config.home-manager.users.max-vev;
+      files = self.darwinConfigurations.joyce.config.hjem.users.max-vev.files;
     };
     opencode-config-regression = import ../tests/opencode-config-regression.nix {
       pkgs = nixpkgs.legacyPackages.aarch64-darwin;

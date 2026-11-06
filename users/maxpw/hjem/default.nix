@@ -2,9 +2,8 @@
 #
 # Sources live under ./files at their $HOME-relative path. Hjem owns individual
 # files, never whole directories: several of these apps write state, logs or
-# sockets beside their config (e.g. ~/.config/herdr). Each path deployed here
-# must also be in the host's .chezmoiignore block, so exactly one tool owns it. See
-# docs/nixvim-hjem.md for the handoff and recovery procedure.
+# sockets beside their config (e.g. ~/.config/herdr). See docs/nixvim-hjem.md
+# for the handoff and recovery procedure.
 {
   config,
   currentSystemUser,
@@ -41,7 +40,14 @@ in {
     files =
       lib.genAttrs paths (
         path:
-          {source = ./files + "/${path}";}
+          {
+            # Preserve sibling paths after symlink resolution: Bun resolves the
+            # Herdr backend's relative imports and executable bridge in the store.
+            source =
+              if lib.hasPrefix ".config/herdr-app/" path
+              then "${./files/.config/herdr-app}/${lib.removePrefix ".config/herdr-app/" path}"
+              else ./files + "/${path}";
+          }
           // lib.optionalAttrs (isCopied path) {
             type = "copy";
             permissions = "644";

@@ -120,8 +120,6 @@ successful rebuild:
 - [ ] Restore homelab data in the safe, version-matched order from
       [docs/homelab-recovery.md](docs/homelab-recovery.md); never extract over
       live service paths
-- [ ] `make chezmoi-bootstrap`, inspect `make chezmoi-preview`, then run the
-      interactive `make chezmoi-apply`
 - [ ] Verify secrets decrypted: `ls -la /run/secrets/`
 
 ## Scenario 2: New (or wiped) Mac
@@ -163,10 +161,8 @@ successful rebuild:
    `/etc/nix/nix.custom.conf`, managed by the darwin config — not
    `nix.settings`.
 
-5. **Post-install**: run `make chezmoi-bootstrap` and
-   `make chezmoi-preview`; use `make chezmoi-apply` only after reviewing the
-   diff. Then create/upload a GitHub SSH key if needed, switch the repo remote
-   to SSH, start Tailscale, and pair Syncthing.
+5. **Post-install**: create/upload a GitHub SSH key if needed, switch the repo
+   remote to SSH, start Tailscale, and pair Syncthing.
 
 ## Scenario 3: Existing host
 
@@ -270,7 +266,7 @@ nix flake check --no-build
 See the troubleshooting section in `secrets/README.md` — usually the age key
 is missing from `/var/lib/sops-nix/key.txt` or doesn't match `.sops.yaml`.
 
-For the Nix/chezmoi ownership boundary and the remaining off-site/offline
+For the configuration ownership boundary and the remaining off-site/offline
 recovery prerequisites, see
 [docs/config-ownership-and-recovery.md](docs/config-ownership-and-recovery.md).
 
