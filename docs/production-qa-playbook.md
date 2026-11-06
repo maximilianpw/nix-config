@@ -191,7 +191,9 @@ Layer the guards; prompts alone are not enough.
 
 Sign-in, token refresh, and sign-out commonly need writes. Obtain explicit
 approval for those test-account actions during Prepare, then narrowly allow
-only the reviewed endpoints in the browser driver. Do not disable the guard
+only the reviewed methods and exact endpoint URLs in both the page guard and
+browser driver. Keep the page allowlist empty until approval is recorded;
+validate any request-body restrictions in the driver. Do not disable the guard
 globally to make authentication work. A blocked login is a coverage gap, not
 a reason to claim the authenticated journeys passed.
 
@@ -202,7 +204,12 @@ so it runs before application code):
 // qa/guards/read-only.js — blocks same-origin writes in the page.
 (() => {
   const SAFE = new Set(["GET", "HEAD", "OPTIONS"]);
+  // Populate only after approval: "POST https://<app-origin>/<auth-path>".
+  // Match exact absolute URLs, including query strings; never use prefixes.
+  const APPROVED_AUTH = new Set([]);
   const sameOrigin = (url) => new URL(url, location.href).origin === location.origin;
+  const isBlocked = (method, url) => !SAFE.has(method) && sameOrigin(url)
+    && !APPROVED_AUTH.has(`${method} ${new URL(url, location.href).href}`);
   const blocked = (method) => {
     // URLs may contain credentials, private IDs, or magic-link tokens.
     console.warn(`[qa-guard] blocked ${method}`);
@@ -213,20 +220,23 @@ so it runs before application code):
   window.fetch = function (input, init = {}) {
     const url = input instanceof Request ? input.url : String(input);
     const method = String(init?.method ?? (input instanceof Request ? input.method : "GET")).toUpperCase();
-    if (!SAFE.has(method) && sameOrigin(url)) return Promise.reject(blocked(method));
+    if (isBlocked(method, url)) return Promise.reject(blocked(method));
     return origFetch.apply(this, arguments);
   };
 
   const origOpen = XMLHttpRequest.prototype.open;
   XMLHttpRequest.prototype.open = function (method, url) {
-    if (!SAFE.has(String(method).toUpperCase()) && sameOrigin(url)) throw blocked(String(method).toUpperCase());
+    if (isBlocked(String(method).toUpperCase(), url)) throw blocked(String(method).toUpperCase());
     return origOpen.apply(this, arguments);
   };
 
   document.addEventListener("submit", (event) => {
     const form = event.target;
-    const method = (form.method || "GET").toUpperCase();
-    if (!SAFE.has(method) && sameOrigin(form.action || location.href)) {
+    const button = event.submitter;
+    const method = (button?.hasAttribute("formmethod") ? button.formMethod : form.method).toUpperCase();
+    const action = button?.hasAttribute("formaction") ? button.formAction : form.action;
+    if (method === "DIALOG") return; // Closes a dialog without a request.
+    if (isBlocked(method, action || location.href)) {
       event.preventDefault();
       event.stopImmediatePropagation();
       blocked(`form ${method}`);
@@ -236,7 +246,7 @@ so it runs before application code):
   const origBeacon = navigator.sendBeacon?.bind(navigator);
   if (origBeacon) {
     navigator.sendBeacon = (url, data) =>
-      sameOrigin(url) ? (blocked("beacon"), false) : origBeacon(url, data);
+      isBlocked("POST", url) ? (blocked("beacon"), false) : origBeacon(url, data);
   }
 })();
 ```
@@ -756,8 +766,11 @@ and validate the script against a disposable local fixture first.
    command, and the migration policy. If there is no rollback, say so.
 5. **Create test accounts** (a human does this if sign-up is gated), one per
    persona plus a second tenant and an elevated role if relevant. Add them to
-   `docs/qa/accounts.md` and the secret store. Verify each can sign in and
-   that email codes arrive in its own inbox.
+   `docs/qa/accounts.md` and the secret store. Before verifying production
+   sign-in, install and validate the page guard and driver interception against
+   a disposable fixture, and obtain approval for the required authentication
+   writes. Configure the same narrow exceptions in both layers. Only then
+   verify each account can sign in and email codes arrive in its own inbox.
 6. **Add the guard and smoke script** (`qa/guards/read-only.js`,
    `qa/smoke/signed-out.sh`) and run the smoke script against production
    once to get a baseline. Fix false failures in the script, not the
