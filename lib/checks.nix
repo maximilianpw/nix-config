@@ -44,6 +44,7 @@
     opencode-config-regression = import ../tests/opencode-config-regression.nix {
       pkgs = nixpkgs.legacyPackages.x86_64-linux;
       package = self.nixosConfigurations.kim.pkgs.opencode;
+      plannotatorVersion = self.nixosConfigurations.kim.pkgs.plannotator.version;
       home = self.nixosConfigurations.kim.config.home-manager.users.maxpw;
     };
     git-merge-regression = import ../tests/git-merge-regression.nix {
@@ -206,6 +207,7 @@
     opencode-config-regression = import ../tests/opencode-config-regression.nix {
       pkgs = nixpkgs.legacyPackages.aarch64-darwin;
       package = self.darwinConfigurations.joyce.pkgs.opencode;
+      plannotatorVersion = self.darwinConfigurations.joyce.pkgs.plannotator.version;
       home = self.darwinConfigurations.joyce.config.home-manager.users.max-vev;
     };
     git-merge-regression = import ../tests/git-merge-regression.nix {
