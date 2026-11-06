@@ -160,8 +160,8 @@ in {
           src = pkgs.fetchFromGitHub {
             owner = "jethrokuan";
             repo = "fzf";
-            rev = "24f4739fc1dffafcc0da3ccfbbd14d9c7d31827a";
-            sha256 = "sha256-QyCkksUYELC+TJDZS1C8aL5MBLmDcwM8gMsfkO0p4E8=";
+            rev = "479fa67d7439b23095e01b64987ae79a91a4e283";
+            sha256 = "sha256-28QW/WTLckR4lEfHv6dSotwkAKpNJFCShxmKFGQQ1Ew=";
           };
         }
         {
@@ -169,8 +169,8 @@ in {
           src = pkgs.fetchFromGitHub {
             owner = "oh-my-fish";
             repo = "plugin-foreign-env";
-            rev = "dddd9213272a0ab848d474d0cbde12ad034e65bc";
-            sha256 = "sha256-er1KI2xSUtTlQd9jZl1AjqeArrfBxrgBLcw5OqinuAM=";
+            rev = "b693237c3027b81ac3760d60d159d2be4925ed1c";
+            sha256 = "sha256-JyAFxYkPQZs4TfVfBVPKa202SXsAZCyCLzVW+6/PASA=";
           };
         }
       ];
