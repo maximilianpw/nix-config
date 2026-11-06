@@ -12,7 +12,7 @@
   stdenvNoCC,
 }: let
   pname = "obsidian";
-  version = "1.14.4";
+  version = "1.15.0";
   releases = "https://github.com/obsidianmd/obsidian-releases/releases/download/v${version}";
 
   meta = with lib; {
@@ -30,9 +30,10 @@
       inherit pname version meta;
       src = fetchurl {
         url = "${releases}/Obsidian-${version}.AppImage";
-        hash = "sha256-Y2Ldvu7rt7vMtI+uAJVyzyKE75L1yRnBMyq6SN5v/qo=";
+        hash = "sha256-HdjPtZPeqmRBAb2032WxWe15hZk7ZXLdJf0TY0Wekcw=";
       };
       iconPath = "obsidian.png";
+      desktopFile = "md.obsidian.Obsidian.desktop";
       extraInstallCommands = appimageContents: ''
         install -m 755 -D ${appimageContents}/obsidian-cli $out/bin/obsidian-cli
         ${pkgs.patchelf}/bin/patchelf \
@@ -46,7 +47,7 @@
     inherit pname version meta;
     src = fetchurl {
       url = "${releases}/Obsidian-${version}.dmg";
-      hash = "sha256-3PgY3SDuXZ3T54Lu4MDExHzCJTg7BRwvya99V3L1n3A=";
+      hash = "sha256-0/g35v0++vZfoL7Jh7GClpgpldTdrjFxp/f2fg4reqg=";
     };
     nativeBuildInputs = [_7zz makeWrapper];
     # -snl keeps the DMG's symlinks as symlinks. Without it the framework

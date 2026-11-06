@@ -4,6 +4,7 @@
     version,
     src,
     iconPath,
+    desktopFile ? "${pname}.desktop",
     extraInstallCommands ? (_: ""),
     meta ? {},
   }: let
@@ -15,7 +16,7 @@
       inherit pname version src meta;
 
       extraInstallCommands = ''
-        install -m 444 -D ${appimageContents}/${pname}.desktop $out/share/applications/${pname}.desktop
+        install -m 444 -D ${appimageContents}/${desktopFile} $out/share/applications/${pname}.desktop
         substituteInPlace $out/share/applications/${pname}.desktop \
           --replace-warn 'Exec=AppRun' "Exec=${pname}" \
           --replace-warn 'Icon=${pname}' "Icon=$out/share/pixmaps/${pname}.png"
