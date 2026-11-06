@@ -46,6 +46,37 @@ Bootstrap a new machine with [BOOTSTRAP.md](BOOTSTRAP.md). For an existing
 checkout, choose checks that match the change as listed in
 [AGENTS.md](AGENTS.md#local-workflow-and-checks).
 
+`make update-all` refreshes every repository-managed runtime pin: flake inputs
+(including explicit release tags and commits), custom packages and their platform
+hashes, T3 Code nightlies, Neovim and Fish plugins, and homelab container digests.
+Plannotator's Claude/OpenCode plugin pins are synchronized with the locked CLI.
+It needs the tools in `nix develop` and authenticated `gh` access to private
+inputs; the container target obtains Skopeo from the locked nixpkgs input.
+Linux binary packages are refreshed from macOS too, without running them.
+
+The command attempts every update group and exits nonzero if any fails.
+Successful edits remain in the worktree; inspect the diff and retry the named
+failed targets. `PACKAGES` can narrow `make update-packages`, but is deliberately
+ignored by `make update-all`. Obsidian, Herdr Core and Plex refresh all of their
+platform hashes together; failures leave that package's source file unchanged.
+
+Release-pinned inputs follow the newest stable tag at or above the current pin
+whose Nix-fetched source contains `flake.nix`. Tags missing that file are reported
+and skipped; fetch/authentication failures remain errors. Commit-pinned inputs
+follow the upstream default branch, also checked for `flake.nix` before writing.
+Container updates preserve digest pinning:
+Executor follows the v2 release/beta line (not its v1 `latest` tag), while the
+media containers follow `latest`. Review compatibility before applying updates,
+especially for database-backed services. NixOS release branches, explicit major
+package selections (such as Nextcloud), and state-version compatibility settings
+are not automatically migrated. CI action pins are not runtime dependencies.
+
+This only refreshes source definitions and lockfiles. It does not deploy, restart
+containers, upgrade Homebrew or mutable Nextcloud apps, or modify dependencies
+in other checkouts such as `pi-config`. Build and run the relevant checks before
+explicitly choosing `make rebuild`. `make update` remains the narrower core-input,
+T3 Code and Neovim update (also synchronizing Plannotator plugins).
+
 `make help` lists the other supported targets.
 
 ## Safety boundaries

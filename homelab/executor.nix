@@ -8,7 +8,7 @@ in {
   virtualisation.oci-containers = {
     backend = "docker";
     containers.executor = {
-      # v2.0.0-beta.32.
+      # Updated within the v2 release/beta line by make update-container-images.
       inherit image;
       # The homelab MCP and portfolio API listen only on host loopback.
       extraOptions = ["--network=host" "--init"];

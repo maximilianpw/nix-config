@@ -7,7 +7,6 @@
   endpoint = homelab.publicEndpoints.executor;
   ingress = config.services.cloudflared.tunnels.${homelab.infrastructure.cloudflare.tunnelId}.ingress;
   container = config.virtualisation.oci-containers.containers.executor;
-  image = "ghcr.io/usefulsoftwareco/executor-selfhost@sha256:df242f0242f4aa75ae091e39c8d1a9f0ad29c32e9b9d603122048f9106cf97e2";
 in
   assert lib.assertMsg (
     homelab.services.executor.endpoint.exposure
@@ -25,8 +24,8 @@ in
   "Cloudflare must route Executor's public hostname to its loopback endpoint";
   assert lib.assertMsg (config.virtualisation.oci-containers.backend == "docker")
   "Executor must use Kim's existing Docker backend";
-  assert lib.assertMsg (container.image == image)
-  "Executor must use the reviewed immutable image digest";
+  assert lib.assertMsg (builtins.match "ghcr[.]io/usefulsoftwareco/executor-selfhost@sha256:[0-9a-f]{64}" container.image != null)
+  "Executor must use an immutable digest from its selfhost repository";
   assert lib.assertMsg (
     container.ports
     == []

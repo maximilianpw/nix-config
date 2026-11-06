@@ -34,7 +34,7 @@ jobs:
       - name: Stub private flake inputs
         run: scripts/ci/use-private-input-stubs.sh
 
-      - name: Run nix-update for each package
+      - name: Run the repository package updaters
         id: bump
         env:
           PACKAGES: ${{ github.event.inputs.packages }}
@@ -63,7 +63,7 @@ jobs:
           commit-message: 'chore: bump custom packages'
           title: 'chore: bump custom packages'
           body: |
-            Automated version bumps from `nix-update`, run by
+            Automated version and platform-hash bumps from the repository updaters, run by
             `.github/workflows/update-packages.yml`.
 
             CI runs lightweight checks and evaluates every host configuration.

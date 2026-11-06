@@ -349,6 +349,7 @@
       in
         editorPackages "x86_64-linux"
         // {
+          inherit (pkgs) cloudflared plannotator;
           inherit (pkgs) helium obsidian skills cliproxyapi cua-driver nextcloud-calendar hunkdiff nix-update tunarr jellyfin jellyfin-web jellyfin-ffmpeg vite-plus t3code herdr-core herdr-jj;
           inherit (inputs.jj-stack.packages.x86_64-linux) jj-stack;
         };
@@ -357,6 +358,7 @@
       in
         editorPackages "aarch64-darwin"
         // {
+          inherit (pkgs) cloudflared plannotator;
           inherit (pkgs) cua-driver skills nextcloud-calendar hunkdiff nix-update obsidian vite-plus t3code herdr-core herdr-jj;
           inherit (inputs.jj-stack.packages.aarch64-darwin) jj-stack;
         };

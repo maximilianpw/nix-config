@@ -140,7 +140,7 @@ in {
     backend = "docker";
     containers = {
       maintainerr = {
-        # v3.29.0. Host networking lets it reach the existing loopback APIs;
+        # Host networking lets it reach the existing loopback APIs;
         # its own UI still binds only to loopback.
         image = maintainerrImage;
         user = "974:${toString mediaGid}";
@@ -154,7 +154,7 @@ in {
         extraOptions = ["--network=host" "--cap-drop=ALL" "--security-opt=no-new-privileges"];
       };
       tdarr = {
-        # 2.92.01. One health-check worker; library mounts prohibit media writes.
+        # One health-check worker; library mounts prohibit media writes.
         image = tdarrImage;
         ports = ["127.0.0.1:${toString endpoints.tdarr.port}:8265"];
         volumes = [
@@ -192,7 +192,7 @@ in {
         ];
       };
       kometa = {
-        # v2.5.1. A private config supplies Plex/TMDb tokens and collection rules.
+        # A private config supplies Plex/TMDb tokens and collection rules.
         image = kometaImage;
         user = "976:${toString mediaGid}";
         volumes = ["/var/lib/kometa:/config"];

@@ -33,28 +33,40 @@ else
   done <"$list_file"
 fi
 
+cd "$script_dir/../.."
+
+update_package() {
+  local package=$1
+  case $package in
+    obsidian|herdr-core|plex)
+      python3 scripts/dev/update-source-pins.py "$package"
+      ;;
+    cua-driver)
+      bash packages/scripts/update-cua-driver.sh
+      ;;
+    cloudflared)
+      # Go dependency hashing runs on the current host; never edit nixpkgs in the store.
+      nix run .#nix-update -- --flake --override-filename flake.nix cloudflared
+      ;;
+    *)
+      # Fetch-only Linux packages can be evaluated from Darwin without building
+      # their executables. Select the output explicitly instead of skipping them.
+      nix run .#nix-update -- --flake --system x86_64-linux --use-update-script "$package"
+      ;;
+  esac
+}
+
 failed=()
 
 for package in "${packages[@]}"; do
-  if [[ $mode == local && $(uname -s) == Darwin ]]; then
-    case $package in
-      helium|obsidian|cliproxyapi|tunarr)
-        echo "(skipped: $package is Linux-only; CI updates it)"
-        continue
-        ;;
-    esac
-  fi
-
   if [[ $mode == ci ]]; then
-    echo "::group::nix-update $package"
+    echo "::group::update $package"
   else
-    echo ">> nix-update $package"
+    echo ">> update $package"
   fi
 
-  if nix run .#nix-update -- --flake --use-update-script "$package"; then
+  if update_package "$package"; then
     echo "ok: $package"
-  elif [[ $mode == local ]]; then
-    echo "(skipped: $package)"
   else
     echo "failed: $package"
     failed+=("$package")
@@ -65,6 +77,12 @@ for package in "${packages[@]}"; do
   fi
 done
 
-if [[ $mode == ci ]] && ((${#failed[@]} > 0)); then
-  echo "failed_packages=${failed[*]}" >>"$GITHUB_OUTPUT"
+if ((${#failed[@]} > 0)); then
+  echo "Package updates incomplete: ${failed[*]}. Review partial changes and retry the failed packages." >&2
+  if [[ $mode == ci ]]; then
+    # CI deliberately opens a partial-update PR with this warning in its body.
+    echo "failed_packages=${failed[*]}" >>"$GITHUB_OUTPUT"
+  else
+    exit 1
+  fi
 fi

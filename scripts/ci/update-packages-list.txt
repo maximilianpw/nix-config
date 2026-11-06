@@ -4,3 +4,6 @@ cliproxyapi
 cua-driver
 nextcloud-calendar
 tunarr
+herdr-core
+cloudflared
+plex

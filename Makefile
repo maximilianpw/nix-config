@@ -1,4 +1,4 @@
-.PHONY: help bootstrap rebuild rebuild-processes cleanup-rebuild check-scripts check-linux lint update update-all update-packages update-nvim-plugins update-nextcloud-apps build generations rollback gc wsl info
+.PHONY: help bootstrap rebuild rebuild-processes cleanup-rebuild check-scripts check-linux lint update update-all update-flake-inputs update-packages update-t3code update-nvim-plugins update-container-images update-fish-plugins update-agent-plugins update-nextcloud-apps build generations rollback gc wsl info
 
 # Default target
 .DEFAULT_GOAL := help
@@ -6,7 +6,7 @@
 # Configuration
 SCRIPT_DIR := scripts
 CONFIG_DIR := $(shell pwd)
-# Inputs bumped by `make update`; the rest move only with `make update-all`.
+# Inputs bumped by `make update`; `make update-all` refreshes the full inventory.
 # nixvim follows nixpkgs-unstable, so it must move in lockstep with it.
 CORE_INPUTS := nixpkgs nixpkgs-unstable home-manager nix-darwin fenix llm-agents autolith rex nixvim hjem
 # Only update commands inherit temporary GitHub credentials.
@@ -37,24 +37,44 @@ cleanup-rebuild: ## Stop only the tracked active rebuild process tree
 update: ## Update core flake inputs, T3 Code, and Neovim plugin pins
 	@echo "Updating core flake inputs: $(CORE_INPUTS)"
 	@$(UPDATE_AUTH) nix flake update $(CORE_INPUTS)
-	@$(UPDATE_AUTH) python3 packages/scripts/update-t3code.py
+	@$(MAKE) update-agent-plugins
+	@$(MAKE) update-t3code
 	@$(MAKE) update-nvim-plugins
 	@echo "Done! Run 'make rebuild' to apply updates."
 
-update-all: ## Update all flake inputs and repo-local custom packages
-	@echo "Updating all flake inputs..."
-	@$(UPDATE_AUTH) nix flake update
-	@$(MAKE) update-packages
-	@$(UPDATE_AUTH) python3 packages/scripts/update-t3code.py
-	@$(MAKE) update-nvim-plugins
-	@echo "Done! Run 'make rebuild' to apply updates."
+update-all: ## Refresh every repo-managed runtime pin (no deployment)
+	@failed=""; \
+	for target in update-flake-inputs update-agent-plugins update-packages update-t3code update-nvim-plugins update-container-images update-fish-plugins; do \
+		echo "=== $$target ==="; \
+		$(MAKE) "$$target" PACKAGES= || failed="$$failed $$target"; \
+	done; \
+	if [ -n "$$failed" ]; then \
+		echo "Update incomplete. Failed targets:$$failed" >&2; \
+		echo "Successful updates remain in the worktree. Review the diff and retry the failed targets before building." >&2; \
+		exit 1; \
+	fi; \
+	echo "All runtime pins refreshed. Review the diff, build and check before 'make rebuild'. Nothing was deployed."
 
-update-packages: ## Bump repo-local custom packages via nix-update
-	@echo "Bumping custom packages via nix-update..."
-	@echo "Note: Linux-only packages cannot be built from macOS. The CI workflow"
-	@echo "handles them; here we only bump what this host can evaluate."
-	@echo "(skills/hunkdiff come from the llm-agents input: use 'make update')"
+update-flake-inputs: ## Refresh explicit flake release/commit pins and every locked input
+	@status=0; \
+	$(UPDATE_AUTH) python3 $(SCRIPT_DIR)/dev/update-source-pins.py flake-inputs || status=1; \
+	$(UPDATE_AUTH) nix flake update || status=1; \
+	exit $$status
+
+update-packages: ## Refresh all custom packages, including cross-platform binary hashes
 	@$(UPDATE_AUTH) $(SCRIPT_DIR)/ci/update-packages.sh --local
+
+update-t3code: ## Refresh the shared Linux/macOS T3 Code nightly pin
+	@$(UPDATE_AUTH) python3 packages/scripts/update-t3code.py
+
+update-container-images: ## Refresh homelab image digests without pulling into Docker or restarting services
+	@$(UPDATE_AUTH) nix shell --inputs-from . nixpkgs#skopeo --command python3 $(SCRIPT_DIR)/dev/update-source-pins.py containers
+
+update-agent-plugins: ## Match Plannotator agent-plugin pins to the locked CLI
+	@$(UPDATE_AUTH) python3 $(SCRIPT_DIR)/dev/update-source-pins.py agent-plugins
+
+update-fish-plugins: ## Refresh Fish plugin source revisions and hashes
+	@$(UPDATE_AUTH) python3 $(SCRIPT_DIR)/dev/update-source-pins.py fish-plugins
 
 update-nvim-plugins: ## Move Neovim's pinned Lua plugins to upstream HEAD (replaces :Lazy update)
 	@$(UPDATE_AUTH) $(SCRIPT_DIR)/dev/nvim-plugin-pins.sh --all
