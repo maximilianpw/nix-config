@@ -61,9 +61,9 @@
           - trash_id: d1d67249d3890e49bc12e275d989a7e9
             name: TRaSH HD Bluray + WEB
   '';
-  maintainerrImage = "ghcr.io/maintainerr/maintainerr@sha256:7487d374290e59add65407ec295629e489f9057dbf18e2a9dff70d6201ffb6f9";
-  tdarrImage = "ghcr.io/haveagitgat/tdarr@sha256:b01f83c8b7d06c765422753d7b40f846ab7a227d2e792659d9f435315eaa31c4";
-  kometaImage = "docker.io/kometateam/kometa@sha256:20388de48f0e088ad9feb9904f6a452fd9ef933a79c7b2bf186e388224e8f437";
+  maintainerrImage = "ghcr.io/maintainerr/maintainerr@sha256:5dcd5bef9d49c614bb74453df3da198afc05a38d8e2cd96b3669bc2c76a94112";
+  tdarrImage = "ghcr.io/haveagitgat/tdarr@sha256:0880fd036a4ac6ef8a2fef2a7b8ddedf5d0898c9ee1a495580356dc922f54d62";
+  kometaImage = "docker.io/kometateam/kometa@sha256:93b0909d1a34d75985c2258f451aac4ece4216d02f0c4914a0a4fa4be39a88c0";
 in {
   custom.backup = {
     applicationVersions = {
