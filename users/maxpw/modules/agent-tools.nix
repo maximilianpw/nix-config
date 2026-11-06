@@ -120,6 +120,7 @@ in {
       ".config/opencode/AGENTS.md".source = source "shared/AGENTS.md";
       ".pi/agent/AGENTS.md".source = source "shared/AGENTS.md";
       ".claude/settings.json".source = source "claude/settings.json";
+      ".claude/rules/pstack-models.md".source = source "claude/rules/pstack-models.md";
       ".grok/config.toml" = {
         source = source "grok/config.toml";
         force = true;
