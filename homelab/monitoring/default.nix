@@ -361,7 +361,7 @@ in {
           publicIngressScrape
           {
             job_name = "cliproxy-quota";
-            scrape_interval = "2m";
+            scrape_interval = "5m";
             scrape_timeout = "30s";
             static_configs = [{targets = ["${cliProxy.host}:${toString cliProxy.quotaPort}"];}];
           }

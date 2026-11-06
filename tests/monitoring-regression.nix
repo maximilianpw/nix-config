@@ -228,7 +228,7 @@ in
           labels = {};
         }
       ])
-    ((builtins.head (builtins.filter (job: job.job_name == "cliproxy-quota") prometheus.scrapeConfigs)).scrape_interval == "2m")
+    ((builtins.head (builtins.filter (job: job.job_name == "cliproxy-quota") prometheus.scrapeConfigs)).scrape_interval == "5m")
     (lib.all (panel: panel.datasource.uid == "prometheus") (builtins.fromJSON (builtins.readFile ../homelab/monitoring/grafana/cliproxy-quota.json)).panels)
   ];
   assert lib.assertMsg (builtins.elem "alertmanager" scrapeJobNames)
