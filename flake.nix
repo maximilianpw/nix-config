@@ -227,7 +227,7 @@
         # Pin only Plex's upstream binary until nixpkgs catches up; keep the
         # existing wrapper and dependencies without updating either input.
         plexRaw = prev.plexRaw.overrideAttrs (_: let
-          version = "1.43.4.10903-e5521bd8c";
+          version = "1.43.5.11079-b3b13e506";
           isArm = prev.stdenv.hostPlatform.system == "aarch64-linux";
           arch =
             if isArm
@@ -239,8 +239,8 @@
             url = "https://downloads.plex.tv/plex-media-server-new/${version}/debian/plexmediaserver_${version}_${arch}.deb";
             sha256 =
               if isArm
-              then "1az511cpn0gc5diphpc9yqvb74hqx73fmfv9a4mljqaga788cpll"
-              else "1nry7dffb5lv30mqmcb6d9pssjw8951r79ji07rf2yfp6s1iqskg";
+              then "sha256-ivNrF/iG40QUCotH5OLvZT8xx4bS6qc4dEL1tgYgBxc="
+              else "sha256-dOmnHJfgbW6SXMQ5gnkUH9g47p30RvkOdpYU+iyHogY=";
           };
         });
         t3code = final.callPackage ./packages/t3code.nix {};
