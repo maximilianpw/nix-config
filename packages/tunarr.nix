@@ -6,7 +6,7 @@
   patchelf,
   ffmpeg,
 }: let
-  version = "2026.11.1";
+  version = "2026.11.2";
 in
   stdenv.mkDerivation {
     pname = "tunarr";
@@ -14,10 +14,10 @@ in
 
     src = fetchurl {
       url = "https://github.com/chrisbenincasa/tunarr/releases/download/v${version}/tunarr-v${version}-linux-x64.tar.gz";
-      hash = "sha256-Srwu2Xhw6lHDUQbCz3TkMx/fbzaGq2f2NnILGMkHI38=";
+      hash = "sha256-Cm+Bx/HCiatbwFpUkTIjzGO6P7EC+hDnPlNv04/LdQA=";
     };
 
-    sourceRoot = ".";
+    sourceRoot = "tunarr-v${version}-linux-x64";
     nativeBuildInputs = [
       makeWrapper
       patchelf
@@ -30,7 +30,7 @@ in
     installPhase = ''
       runHook preInstall
 
-      install -Dm755 tunarr-v${version}-linux-x64 "$out/libexec/tunarr/tunarr"
+      install -Dm755 tunarr "$out/libexec/tunarr/tunarr"
       install -Dm755 meilisearch "$out/bin/meilisearch"
 
       # Tunarr is a pkg single-file executable with an appended payload, so
