@@ -33,10 +33,6 @@ if test -d "/opt/homebrew"
     set -q INFOPATH; or set INFOPATH ''; set -gx INFOPATH "/opt/homebrew/share/info" $INFOPATH;
 end
 
-# Add ~/.local/bin
-fish_add_path -g "$HOME/.local/bin"
-
-
 #-------------------------------------------------------------------------------
 # Vars
 #-------------------------------------------------------------------------------
@@ -45,14 +41,9 @@ if isatty
     set -x GPG_TTY (tty)
 end
 
-# Editor
-set -gx EDITOR nvim
-
 #-------------------------------------------------------------------------------
 # Functions
 #-------------------------------------------------------------------------------
-alias rebuild-nix "~/nix-config/scripts/rebuild/nixos-rebuild.sh"
-
 # JJ PR creation with GitHub CLI
 # Usage: jprgh "commit message" [gh pr create args...]
 function jprgh

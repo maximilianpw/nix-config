@@ -54,9 +54,8 @@
     # Nix system management aliases
     nr = "make -C ~/nix-config rebuild";
     nup = "make -C ~/nix-config update";
-    # nh rebuild pilot (plan 007) - side-by-side with `nr`. nh has no
-    # platform-neutral switch subcommand and infers the wrong hostname on
-    # darwin, so pass the flake attr explicitly there (see plans/007 report).
+    # nh trial alongside `nr`. nh has no platform-neutral switch subcommand and
+    # infers the wrong hostname on darwin, so pass the flake attr explicitly.
     nhs =
       if isDarwin
       then "nh darwin switch --no-nom -H joyce ~/nix-config"

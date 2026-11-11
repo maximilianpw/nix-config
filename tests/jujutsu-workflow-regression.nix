@@ -7,14 +7,15 @@
 in
   assert builtins.elem stackPackage home.home.packages;
   assert jj.settings.git.abandon-unreachable-commits;
-  assert jj.settings.git.sign-on-push;
+  assert !(jj.settings.git ? sign-on-push);
+  assert jj.settings.revsets.git-sign-on-push == "~signed() & mine()";
   assert !(jj.settings.templates ? private-commits);
   assert !(jj.settings.aliases ? tidy) && !(jj.settings.aliases ? tidy-all);
   assert jj.settings.aliases.f == ["git" "fetch"];
-  assert jj.settings.aliases.sync == ["stack" "sync" "--all"];
+  assert jj.settings.aliases.sync.definition == ["stack" "sync" "--all"];
   assert jj.settings.remotes.origin.auto-track-bookmarks == "glob:main";
     pkgs.runCommand "jujutsu-workflow-regression" {
-      nativeBuildInputs = [home.programs.git.package jj.package pkgs.python3];
+      nativeBuildInputs = [home.programs.git.package jj.package pkgs.python3 pkgs.openssh];
     } ''
       export HOME="$TMPDIR/home"
       export XDG_CONFIG_HOME="$HOME/.config"

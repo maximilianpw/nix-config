@@ -36,10 +36,6 @@ $env.config.keybindings = ($env.config.keybindings | append [
 #-------------------------------------------------------------------------------
 # Functions
 #-------------------------------------------------------------------------------
-def rebuild-nix [...args: string] {
-  ^bash $"($env.HOME)/nix-config/scripts/rebuild/nixos-rebuild.sh" ...$args
-}
-
 def gitprep [message: string] {
   git add .
   git commit -m $message

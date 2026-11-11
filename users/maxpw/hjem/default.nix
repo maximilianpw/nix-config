@@ -12,8 +12,11 @@
 }: let
   home = config.users.users.${currentSystemUser}.home;
 
-  # Every file under ./files is deployed at the same $HOME-relative path.
-  paths = map (file: lib.removePrefix "${toString ./files}/" (toString file)) (lib.filesystem.listFilesRecursive ./files);
+  # Every file under ./files is deployed at the same $HOME-relative path,
+  # except tests that live beside the code they cover.
+  paths = builtins.filter (path: !(lib.hasSuffix ".test.mjs" path)) (
+    map (file: lib.removePrefix "${toString ./files}/" (toString file)) (lib.filesystem.listFilesRecursive ./files)
+  );
 
   hmTargets = map (file: file.target) (builtins.filter (file: file.enable) (builtins.attrValues config.home-manager.users.${currentSystemUser}.home.file));
   hjemTargets = builtins.attrNames config.hjem.users.${currentSystemUser}.files;

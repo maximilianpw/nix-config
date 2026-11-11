@@ -18,7 +18,7 @@ class JujutsuWorkflowTest(unittest.TestCase):
         self.env.pop("JJ_AGENT", None)
         self.run_command(["git", "init", "--bare", str(self.remote)], cwd=self.root)
         self.run_command(["jj", "git", "init", "--colocate", str(self.repo)], cwd=self.root)
-        self.jj("config", "set", "--repo", "git.sign-on-push", "false")
+        self.jj("config", "set", "--repo", "revsets.git-sign-on-push", "none()")
         self.jj("config", "set", "--repo", "user.name", "Fixture")
         self.jj("config", "set", "--repo", "user.email", "fixture@example.invalid")
         (self.repo / "base.txt").write_text("base\n")
@@ -39,7 +39,9 @@ class JujutsuWorkflowTest(unittest.TestCase):
         return result
 
     def jj(self, *args, **kwargs):
-        return self.run_command(["jj", "--no-pager", *args], **kwargs)
+        result = self.run_command(["jj", "--no-pager", *args], **kwargs)
+        self.assertNotIn("Deprecated", result.stderr)
+        return result
 
     def revision(self, revset):
         return self.jj("log", "-r", revset, "--no-graph", "-T", "commit_id").stdout
@@ -75,7 +77,7 @@ class JujutsuWorkflowTest(unittest.TestCase):
         self.jj("describe", "-m", "ready for review")
         self.jj("git", "push", "-b", "private-test", "--dry-run")
 
-        self.assertEqual(self.jj("config", "get", "ui.editor").stdout.strip(), "nvim")
+        self.assertEqual(self.jj("config", "get", "ui.editor").stdout.strip(), '["nvim", "+$line"]')
         agent_env = dict(self.env, JJ_AGENT="1")
         for key, value in {
             "ui.paginate": "never", "ui.color": "never",
@@ -86,6 +88,71 @@ class JujutsuWorkflowTest(unittest.TestCase):
         self.jj("describe", env=agent_env, success=False)
         self.jj("tidy", success=False)
         self.jj("tidy-all", success=False)
+
+    def test_push_signs_only_unsigned_commits_authored_by_me(self):
+        key = self.root / "signing-key"
+        self.run_command(["ssh-keygen", "-q", "-t", "ed25519", "-N", "", "-f", str(key)])
+        self.jj("config", "set", "--repo", "signing.backend", "ssh")
+        self.jj("config", "set", "--repo", "signing.key", str(key))
+        self.jj("config", "unset", "--repo", "revsets.git-sign-on-push")
+
+        self.jj("new", "main", "-m", "already signed")
+        (self.repo / "signed.txt").write_text("signed\n")
+        self.jj("sign")
+        signed = self.revision("@")
+        self.jj("new", "-m", "other author's work")
+        (self.repo / "other.txt").write_text("other\n")
+        self.jj("metaedit", "--author", "Other <other@example.invalid>")
+        other = self.revision("@")
+        self.jj("new", "-m", "my unsigned work")
+        (self.repo / "mine.txt").write_text("mine\n")
+        self.jj("bookmark", "create", "signing-test")
+        unsigned = self.revision("@")
+
+        self.jj("p", "-b", "signing-test")
+        self.assertNotEqual(self.revision("signing-test"), unsigned)
+        self.assertEqual(self.revision("signed() & signing-test"), self.revision("signing-test"))
+        self.assertEqual(self.revision("signing-test-"), other)
+        self.assertEqual(self.revision("signed() & signing-test-"), "")
+        self.assertEqual(self.revision("signing-test--"), signed)
+        self.assertEqual(self.revision("signing-test@origin"), self.revision("signing-test"))
+
+    def test_resolve_editor_handles_multi_sided_conflicts_and_agent_guard(self):
+        for side in ("left", "right", "third"):
+            self.jj("new", "main", "-m", side)
+            (self.repo / "base.txt").write_text(side + "\n")
+            self.jj("bookmark", "create", side)
+        self.jj("new", "left", "right", "third", "-m", "multi-sided merge")
+        self.assertNotEqual(self.revision("conflicts() & @"), "")
+        self.jj("resolve-editor", env=dict(self.env, JJ_AGENT="1"), success=False)
+        self.assertNotEqual(self.revision("conflicts() & @"), "")
+
+        bin_dir = self.root / "bin"
+        bin_dir.mkdir()
+        editor = bin_dir / "nvim"
+        editor.write_text(
+            '#!/bin/sh\nprintf "%s\\n" "$@" > "$EDITOR_ARGS"\n'
+            'printf "resolved\\n" > "$2"\n'
+        )
+        editor.chmod(0o755)
+        args_file = self.root / "editor-args"
+        editor_env = dict(self.env, PATH=str(bin_dir) + os.pathsep + self.env["PATH"],
+                          EDITOR_ARGS=str(args_file))
+        self.jj("resolve-editor", env=editor_env)
+        args = args_file.read_text().splitlines()
+        self.assertEqual(len(args), 2)
+        self.assertRegex(args[0], r"^\+\d+$")
+        self.assertEqual(self.revision("conflicts() & @"), "")
+        self.assertEqual((self.repo / "base.txt").read_text(), "resolved\n")
+        self.assertEqual(self.jj("config", "get", "ui.merge-editor").stdout.strip(), "mergiraf")
+
+    def test_workflow_alias_descriptions_appear_in_shell_completion(self):
+        result = self.run_command(["jj", "--", "jj", "check-"],
+                                  env=dict(self.env, COMPLETE="fish"))
+        self.assertIn("check-stack\tCheck non-empty mutable ancestors without rewriting commits", result.stdout)
+        result = self.run_command(["jj", "--", "jj", "sync"],
+                                  env=dict(self.env, COMPLETE="fish"))
+        self.assertIn("may update PRs and delete obsolete remote branches", result.stdout)
 
     def test_stack_check_does_not_rewrite_and_propagates_failure(self):
         self.jj("new", "main", "-m", "first layer")

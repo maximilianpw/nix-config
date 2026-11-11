@@ -27,16 +27,15 @@
       "mods/migrated-pane/split-right.svg"
       "mods/migrated-pane/unzoom.svg"
       "mods/migrated-pane/zoom.svg"
-      "mods/migrated-tools/controller.test.mjs"
-      "mods/migrated-tools/backend/backend.test.mjs"
       "mods/migrated-tools/backend/bridge"
       "mods/migrated-tools/backend/bridge-lib.mjs"
-      "mods/migrated-tools/backend/core-smoke.test.mjs"
       "mods/migrated-tools/backend/tools.mjs"
-      "mods/tmux-prefix/main.test.mjs"
     ]
     ++ lib.concatMap (mod: map (file: "mods/${mod}/${file}") ["main.js" "mod.json"]) mods;
   appSource = path: files."${appPrefix}${path}".source;
+  # Tests stay in the repository; backend.test.mjs and core-smoke.test.mjs need
+  # a live Herdr core and are run by hand with `bun test`.
+  appTests = ../users/maxpw/hjem/files/.config/herdr-app;
   keys = builtins.fromJSON (builtins.readFile (appSource "keys.json"));
   layout = builtins.fromJSON (builtins.readFile (appSource "layouts/migrated.json"));
   theme = builtins.fromJSON (builtins.readFile (appSource "themes/catppuccin-mocha.json"));
@@ -66,7 +65,7 @@ in
     } ''
       test -x ${appSource "mods/migrated-tools/backend/bridge"}
       node --experimental-vm-modules --test \
-        ${appSource "mods/tmux-prefix/main.test.mjs"} \
-        ${appSource "mods/migrated-tools/controller.test.mjs"}
+        ${appTests}/mods/tmux-prefix/main.test.mjs \
+        ${appTests}/mods/migrated-tools/controller.test.mjs
       touch "$out"
     ''
