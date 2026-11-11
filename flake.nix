@@ -171,21 +171,6 @@
     nixosConfigurations = lib.mapAttrs mkSystem nixosHosts;
     darwinConfigurations = lib.mapAttrs mkSystem darwinHosts;
 
-    templates = {
-      generic = {
-        path = ./templates/generic;
-        description = "Generic Nix devshell with direnv";
-      };
-      node = {
-        path = ./templates/node;
-        description = "Node.js project with pnpm";
-      };
-      rust = {
-        path = ./templates/rust;
-        description = "Rust project with fenix toolchain";
-      };
-    };
-
     # Locked reprovisioning tool. The layout itself remains intentionally
     # separate from live mounts and must only be run after a manual disk review.
     apps.x86_64-linux.disko = {
