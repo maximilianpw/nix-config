@@ -84,6 +84,7 @@ in
     xdg.configFile =
       {
         "gammastep/config.ini".text = builtins.readFile ./gammastep.ini;
+        "kitty/kitty.conf".source = ./kitty.conf;
         "uwsm/env".text = uwsmEnv;
         "waybar".source = ./waybar;
         "waybar".recursive = true;
