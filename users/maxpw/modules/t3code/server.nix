@@ -1,14 +1,14 @@
 {
   config,
-  hostname,
-  isLinuxDesktop,
+  hostRecord,
   pkgs,
   lib,
   ...
 }: let
-  # Run headlessly on Linux desktops and Kim, where Tailscale Serve provides
-  # tailnet-only HTTPS.
-  runServer = isLinuxDesktop || hostname == "kim";
+  # Hosts with a T3 Code port run the server headlessly; on Kim, Tailscale
+  # Serve provides tailnet-only HTTPS.
+  port = hostRecord.t3codePort;
+  runServer = port != null;
   servicePath = [
     pkgs.nodejs
     pkgs.claude-code
@@ -35,7 +35,7 @@ in {
     };
 
     Service = {
-      ExecStart = "${pkgs.t3code}/bin/t3 serve --host 127.0.0.1 --port 51000 --base-dir %h/.local/share/t3code --no-browser";
+      ExecStart = "${pkgs.t3code}/bin/t3 serve --host 127.0.0.1 --port ${toString port} --base-dir %h/.local/share/t3code --no-browser";
       Restart = "on-failure";
       RestartSec = "5s";
       StandardOutput = "journal";

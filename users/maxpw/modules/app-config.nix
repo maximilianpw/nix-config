@@ -10,7 +10,6 @@
 # fighting it.
 {
   config,
-  currentSystemUserDir,
   lib,
   ...
 }: let
@@ -24,6 +23,6 @@
   ];
 in {
   home.file = lib.genAttrs paths (path: {
-    source = homeFiles.mkRepoSource config.home.homeDirectory "users/${currentSystemUserDir}/app-config/${path}";
+    source = homeFiles.mkRepoSource config.home.homeDirectory "users/maxpw/app-config/${path}";
   });
 }

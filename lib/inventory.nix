@@ -32,16 +32,17 @@
     options = {
       system = mkOption {type = types.str;};
       user = mkOption {type = types.str;};
-      userDir = mkOption {type = types.str;};
-      darwin = mkOption {type = types.bool;};
-      wsl = mkOption {type = types.bool;};
-      linuxDesktop = mkOption {type = types.bool;};
+      os = mkOption {type = types.enum ["darwin" "nixos" "nixos-wsl"];};
+      linuxDesktop = mkOption {
+        type = types.bool;
+        default = false;
+        description = "Hyprland desktop profile; only valid when os is nixos.";
+      };
       hardwareModules = mkOption {
         type = types.listOf types.str;
         default = [];
       };
-      profiles = mkOption {type = types.listOf types.str;};
-      role = mkOption {type = types.str;};
+      role = mkOption {type = types.enum ["nixos-homelab" "nixos-wsl" "darwin-workstation"];};
       longRunningAgents = mkOption {type = types.bool;};
       client = mkOption {
         type = types.nullOr clientType;
@@ -81,15 +82,15 @@
           else "/run/current-system/sw/bin/tmux";
       };
 
-      os = mkOption {
-        type = types.enum ["darwin" "nixos" "nixos-wsl"];
+      darwin = mkOption {
+        type = types.bool;
         readOnly = true;
-        default =
-          if config.darwin
-          then "darwin"
-          else if config.wsl
-          then "nixos-wsl"
-          else "nixos";
+        default = config.os == "darwin";
+      };
+      wsl = mkOption {
+        type = types.bool;
+        readOnly = true;
+        default = config.os == "nixos-wsl";
       };
       gui = mkOption {
         type = types.bool;
@@ -120,12 +121,9 @@
 
   allNames = lib.concatLists (lib.mapAttrsToList (name: host: [name] ++ host.aliases) hosts);
   duplicateNames = lib.filter (candidate: lib.count (name: name == candidate) allNames > 1) (lib.unique allNames);
-  incompatiblePlatforms = lib.attrNames (lib.filterAttrs (_: host:
-    (host.darwin && (host.wsl || host.linuxDesktop))
-    || (host.wsl && host.linuxDesktop))
-  hosts);
+  incompatiblePlatforms = lib.attrNames (lib.filterAttrs (_: host: host.linuxDesktop && host.os != "nixos") hosts);
 in
   assert lib.assertMsg (duplicateNames == [])
   "Fleet host names and aliases collide: ${lib.concatStringsSep ", " duplicateNames}";
   assert lib.assertMsg (incompatiblePlatforms == [])
-  "Hosts declare incompatible platform flags: ${lib.concatStringsSep ", " incompatiblePlatforms}"; hosts
+  "Only nixos hosts can enable linuxDesktop: ${lib.concatStringsSep ", " incompatiblePlatforms}"; hosts

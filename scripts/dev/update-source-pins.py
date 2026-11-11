@@ -258,7 +258,7 @@ def update_herdr_core():
 
 
 def update_plex():
-    path = ROOT / "flake.nix"
+    path = ROOT / "overlays.nix"
     original = path.read_text()
     release = fetch_json("https://plex.tv/api/downloads/5.json")["computer"]["Linux"]
     version = require_match(r"\d+\.\d+\.\d+\.\d+-[0-9a-f]+", release["version"], "Plex version")
@@ -271,17 +271,15 @@ def update_plex():
     artifacts = release["releases"]
     if not isinstance(artifacts, list) or not all(isinstance(artifact, dict) for artifact in artifacts):
         raise ValueError("expected a Plex artifact list")
-    hashes = {}
-    for arch in ("arm64", "amd64"):
-        url = f"https://downloads.plex.tv/plex-media-server-new/{version}/debian/plexmediaserver_{version}_{arch}.deb"
-        if not any(artifact.get("url") == url for artifact in artifacts):
-            raise ValueError(f"Plex release has no Debian {arch} artifact")
-        hashes[arch] = prefetch(url)
+    url = f"https://downloads.plex.tv/plex-media-server-new/{version}/debian/plexmediaserver_{version}_amd64.deb"
+    if not any(artifact.get("url") == url for artifact in artifacts):
+        raise ValueError("Plex release has no Debian amd64 artifact")
+    hash_value = prefetch(url)
     updated = replace_once(original, pattern, lambda m: m[1] + version + m[3])
-    pattern = r'(url = "https://downloads\.plex\.tv/[^"\n]+";\s*sha256 =\s*if isArm\s*then ")[^"]+("\s*else ")[^"]+(";)'
-    updated = replace_once(updated, pattern, lambda m: m[1] + hashes["arm64"] + m[2] + hashes["amd64"] + m[3])
+    pattern = r'(url = "https://downloads\.plex\.tv/[^"\n]+";\s*sha256 = ")[^"]+(";)'
+    updated = replace_once(updated, pattern, lambda m: m[1] + hash_value + m[2])
     save(path, original, updated)
-    print(f"plex: {version} (amd64 and arm64)")
+    print(f"plex: {version}")
 
 
 def main():

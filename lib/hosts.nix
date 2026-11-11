@@ -4,19 +4,10 @@
   kim = {
     system = "x86_64-linux";
     user = "maxpw";
-    userDir = "maxpw";
-    darwin = false;
-    wsl = false;
-    linuxDesktop = false;
+    os = "nixos";
     hardwareModules = [
       "common-cpu-amd"
       "common-pc-ssd"
-    ];
-    profiles = [
-      "base"
-      "dev"
-      "agent"
-      "homelab"
     ];
     role = "nixos-homelab";
     longRunningAgents = true;
@@ -42,16 +33,7 @@
   cuno = {
     system = "x86_64-linux";
     user = "maxpw";
-    userDir = "maxpw";
-    darwin = false;
-    wsl = true;
-    linuxDesktop = false;
-    profiles = [
-      "base"
-      "dev"
-      "agent"
-      "wsl"
-    ];
+    os = "nixos-wsl";
     role = "nixos-wsl";
     longRunningAgents = false;
     # Enrol after `tailscale up` inside WSL and key generation; Fleet surfaces
@@ -63,16 +45,7 @@
   joyce = {
     system = "aarch64-darwin";
     user = "max-vev";
-    userDir = "maxpw";
-    darwin = true;
-    wsl = false;
-    linuxDesktop = false;
-    profiles = [
-      "base"
-      "dev"
-      "agent"
-      "darwin"
-    ];
+    os = "darwin";
     role = "darwin-workstation";
     longRunningAgents = false;
     client = {

@@ -24,17 +24,21 @@
   };
 
   linux = let
-    appimage = import ../lib/appimage.nix {inherit pkgs;};
+    src = fetchurl {
+      url = "${releases}/Obsidian-${version}.AppImage";
+      hash = "sha256-HdjPtZPeqmRBAb2032WxWe15hZk7ZXLdJf0TY0Wekcw=";
+    };
+    appimageContents = pkgs.appimageTools.extractType2 {inherit pname version src;};
   in
-    appimage.mkDesktopAppImage {
-      inherit pname version meta;
-      src = fetchurl {
-        url = "${releases}/Obsidian-${version}.AppImage";
-        hash = "sha256-HdjPtZPeqmRBAb2032WxWe15hZk7ZXLdJf0TY0Wekcw=";
-      };
-      iconPath = "obsidian.png";
-      desktopFile = "md.obsidian.Obsidian.desktop";
-      extraInstallCommands = appimageContents: ''
+    pkgs.appimageTools.wrapType2 {
+      inherit pname version src meta;
+      extraInstallCommands = ''
+        install -m 444 -D ${appimageContents}/md.obsidian.Obsidian.desktop $out/share/applications/${pname}.desktop
+        substituteInPlace $out/share/applications/${pname}.desktop \
+          --replace-warn 'Exec=AppRun' "Exec=${pname}" \
+          --replace-warn 'Icon=${pname}' "Icon=$out/share/pixmaps/${pname}.png"
+
+        install -m 444 -D ${appimageContents}/obsidian.png $out/share/pixmaps/${pname}.png
         install -m 755 -D ${appimageContents}/obsidian-cli $out/bin/obsidian-cli
         ${pkgs.patchelf}/bin/patchelf \
           --set-interpreter "$(cat ${pkgs.stdenv.cc}/nix-support/dynamic-linker)" \

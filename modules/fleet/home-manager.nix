@@ -1,14 +1,15 @@
 {
   config,
-  hostname,
+  currentSystemName,
   inputs,
   lib,
   pkgs,
   ...
 }: let
-  defaultTunnels = (import ./default-tunnels.nix).${hostname} or [];
+  defaultTunnels = (import ./default-tunnels.nix).${currentSystemName} or [];
   fleet = import ../../lib/fleet.nix {
-    inherit hostname lib;
+    inherit lib;
+    hostname = currentSystemName;
     homeDirectory = config.home.homeDirectory;
     tunnels = config.fleet.tunnels.mappings;
   };

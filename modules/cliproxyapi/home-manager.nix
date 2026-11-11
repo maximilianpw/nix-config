@@ -1,13 +1,13 @@
 {agentConfigDirectory}: {
   config,
-  currentSystemName,
+  hostRecord,
   inputs,
   lib,
   pkgs,
   ...
 }: let
   cliProxy = import ./config.nix;
-  useLocalProxy = currentSystemName == "kim";
+  useLocalProxy = hostRecord.role == "nixos-homelab";
   proxyBaseUrl =
     if useLocalProxy
     then cliProxy.baseUrl

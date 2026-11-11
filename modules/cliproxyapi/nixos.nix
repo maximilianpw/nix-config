@@ -1,6 +1,6 @@
 {
   config,
-  currentSystemName,
+  hostRecord,
   currentSystemUser,
   lib,
   pkgs,
@@ -8,7 +8,7 @@
 }: let
   cliProxy = import ./config.nix;
   homeDirectory = "/home/${currentSystemUser}";
-  runServer = currentSystemName == "kim";
+  runServer = hostRecord.role == "nixos-homelab";
 in {
   environment.systemPackages = lib.optionals runServer [pkgs.cliproxyapi];
 

@@ -4,7 +4,7 @@
   pkgs,
   lib,
   isDarwin,
-  hostname,
+  currentSystemName,
   ...
 }: let
   homelab = import ../../../homelab/inventory {inherit lib;};
@@ -71,7 +71,7 @@ in {
   home.sessionVariables.RIPGREP_CONFIG_PATH = "${config.xdg.configHome}/ripgrep/config";
 
   programs = {
-    atuin = lib.mkIf (builtins.elem hostname ["kim" "joyce"]) {
+    atuin = lib.mkIf (builtins.elem currentSystemName ["kim" "joyce"]) {
       enable = true;
       enableBashIntegration = true;
       enableFishIntegration = true;

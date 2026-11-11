@@ -30,8 +30,8 @@ Collect or infer these values before editing:
 - SSH target, preferably Tailscale MagicDNS, as `hostName`.
 - Remote login `user`.
 - Short `aliases` for shells and agents.
-- `role`, such as `nixos-desktop`, `darwin-brain`, `linux-builder`, or `agent-runner`.
-- Platform flags (`darwin`, `wsl`, `linuxDesktop`); normalized `os` and `gui` values are derived.
+- `role`: one of the enum values in `lib/inventory.nix` (`nixos-homelab`, `nixos-wsl`, `darwin-workstation`); extend the enum for a new kind of host.
+- `os` (`darwin`, `nixos` or `nixos-wsl`), plus `linuxDesktop = true` for a NixOS desktop; `darwin`, `wsl` and `gui` are derived. `users/maxpw/<os>.nix` is the user OS config.
 - `longRunningAgents`: set `true` only for machines intended for unattended or multi-hour agent work.
 - Optional `tmuxCommand` override; the normalized inventory derives the standard NixOS/nix-darwin path.
 - Optional `hostKey`: pin only after cross-checking the host's real ED25519 public key.
@@ -44,7 +44,7 @@ If key facts are missing, ask for them. Do not guess `longRunningAgents = true`.
 ## Implementation
 
 1. Add the host to `lib/hosts.nix`. Every inventory host is automatically a Fleet member; do not add a connectivity flag or nested Fleet record.
-2. Set the platform flags, `user`, `role`, `longRunningAgents`, and `client` explicitly. The normalized inventory derives `os`, `gui`, `accent`, `tmuxCommand`, and the default `hostName`.
+2. Set `system`, `os`, `user`, `role`, `longRunningAgents`, and `client` explicitly. The normalized inventory derives `os`, `gui`, `accent`, `tmuxCommand`, and the default `hostName`.
 3. Add optional `aliases`, target override, ports, host key, or presentation overrides directly to the host record only when they differ from defaults.
 4. Leave `hostKey` absent only while bootstrapping; generated SSH config uses `StrictHostKeyChecking = "accept-new"` until it is pinned.
 5. Generate `~/.ssh/fleet_ed25519` on non-Darwin clients (or use the 1Password SSH agent on Darwin), then add only the public key, identity selector, and stable Tailscale IPv4/IPv6 addresses to the host's `client` record. `modules/fleet/ssh-access.nix` derives and distributes the restricted trust set.

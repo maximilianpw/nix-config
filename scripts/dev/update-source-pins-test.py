@@ -29,7 +29,7 @@ class SourcePinsTest(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
-        for name in [SCRIPT, "flake.nix", "packages/obsidian.nix", "packages/herdr-core.nix", "users/maxpw/modules/shells.nix", "homelab/executor.nix", "homelab/media/companions.nix", "users/maxpw/agents/claude/settings.json", "users/maxpw/agents/opencode/cliproxyapi.json"]:
+        for name in [SCRIPT, "flake.nix", "overlays.nix", "packages/obsidian.nix", "packages/herdr-core.nix", "users/maxpw/modules/shells.nix", "homelab/executor.nix", "homelab/media/companions.nix", "users/maxpw/agents/claude/settings.json", "users/maxpw/agents/opencode/cliproxyapi.json"]:
             target = self.root / name
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(REPO / name, target)
@@ -263,19 +263,19 @@ sys.stdout.write(response)
         self.assertIn("checksum mismatch", self.run_group("herdr-core", success=False).stderr)
         self.assertEqual(updated, self.read("packages/herdr-core.nix"))
 
-    def test_plex_updates_both_architectures_without_touching_cloudflared(self):
+    def test_plex_updates_amd64_without_touching_cloudflared(self):
         version = "9.0.0.12345-abcdef"
         artifacts = []
         for arch in ("arm64", "amd64"):
             url = f"https://downloads.plex.tv/plex-media-server-new/{version}/debian/plexmediaserver_{version}_{arch}.deb"
             artifacts.append({"url": url})
-            self.prefetch(url)
+        self.prefetch(artifacts[1]["url"])
         self.fetch("https://plex.tv/api/downloads/5.json", {"computer": {"Linux": {"version": version, "releases": artifacts}}})
-        original = self.read("flake.nix")
+        original = self.read("overlays.nix")
         self.run_group("plex")
-        updated = self.read("flake.nix")
+        updated = self.read("overlays.nix")
         self.assertIn(version, updated)
-        self.assertEqual(updated.count(HASH), 2)
+        self.assertEqual(updated.count(HASH), 1)
         self.assertEqual(original.split("plexRaw =")[0], updated.split("plexRaw =")[0])
 
     def test_layout_drift_fails_without_partial_write(self):

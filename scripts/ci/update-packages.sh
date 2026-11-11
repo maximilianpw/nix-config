@@ -46,7 +46,7 @@ update_package() {
       ;;
     cloudflared)
       # Go dependency hashing runs on the current host; never edit nixpkgs in the store.
-      nix run .#nix-update -- --flake --override-filename flake.nix cloudflared
+      nix run .#nix-update -- --flake --override-filename overlays.nix cloudflared
       ;;
     *)
       # Fetch-only Linux packages can be evaluated from Darwin without building

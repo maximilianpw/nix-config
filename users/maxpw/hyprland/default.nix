@@ -1,8 +1,7 @@
 {
   config,
   isLinuxDesktop,
-  currentSystemUserDir,
-  hostname,
+  currentSystemName,
   lib,
   pkgs,
   ...
@@ -12,7 +11,7 @@
     mkOutOfStoreSymlink = config.lib.file.mkOutOfStoreSymlink;
   };
 
-  hyprConfigPath = "${config.home.homeDirectory}/nix-config/users/${currentSystemUserDir}/hyprland/hypr";
+  hyprConfigPath = "${config.home.homeDirectory}/nix-config/users/maxpw/hyprland/hypr";
   uwsmEnv = ''
     export GDK_SCALE=1.6
     export GDK_DPI_SCALE=1
@@ -23,7 +22,7 @@
     export XCURSOR_SIZE=128
   '';
 
-  hasLockScreen = hostname != "kim";
+  hasLockScreen = currentSystemName != "kim";
 
   hostLua =
     if hasLockScreen

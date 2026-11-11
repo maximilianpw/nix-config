@@ -12,7 +12,7 @@ Home Manager configuration, and Kim's homelab services.
   that owns scripts is a directory; `scripts/` holds only repository tooling.
 - Host concerns belong in `machines/`; shared system concerns in `modules/`;
   user and platform concerns in `users/maxpw/`. Keep substantial OS divergence
-  in `nixos.nix`, `darwin.nix`, or `wsl.nix`.
+  in `nixos.nix`, `darwin.nix`, or `nixos-wsl.nix`.
 - `homelab/inventory/services.nix` owns service metadata and recovery contracts;
   application options and implementation stay in their owning `homelab/`
   module.

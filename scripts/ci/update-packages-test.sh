@@ -57,7 +57,7 @@ for platform in Darwin Linux; do
   TEST_UNAME=$platform "$update_script" --local >"$tmp/$platform.out"
   diff -u "$tmp/expected-defaults" "$TEST_ATTEMPTS"
   grep -Fxq 'run .#nix-update -- --flake --system x86_64-linux --use-update-script helium' "$TEST_COMMANDS"
-  grep -Fxq 'run .#nix-update -- --flake --override-filename flake.nix cloudflared' "$TEST_COMMANDS"
+  grep -Fxq 'run .#nix-update -- --flake --override-filename overlays.nix cloudflared' "$TEST_COMMANDS"
 
   : >"$TEST_ATTEMPTS"
   if TEST_UNAME=$platform TEST_FAIL_PACKAGE=obsidian "$update_script" --local >"$tmp/failure.out" 2>"$tmp/failure.err"; then

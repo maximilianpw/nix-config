@@ -12,6 +12,7 @@ A parked Hyprland profile for a future desktop host still evaluates as
 ## Layout
 
 - `lib/`: host inventory (`hosts.nix`) and the plumbing that builds hosts from it.
+- `overlays.nix`: package overlays (agent CLIs, unstable picks, pins, `packages/`).
 - `machines/`: per-host OS configuration. `modules/`: shared system modules.
 - `homelab/`: Kim's services; `homelab/inventory/services.nix` holds their
   exposure, state, backup, monitoring and recovery metadata.

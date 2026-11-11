@@ -1,6 +1,5 @@
 {
   config,
-  currentSystemUserDir,
   pkgs,
   lib,
   ...
@@ -10,7 +9,7 @@
     mkOutOfStoreSymlink = config.lib.file.mkOutOfStoreSymlink;
   };
 
-  source = path: homeFiles.mkRepoSource config.home.homeDirectory "users/${currentSystemUserDir}/agents/${path}";
+  source = path: homeFiles.mkRepoSource config.home.homeDirectory "users/maxpw/agents/${path}";
   piConfigSource = path: homeFiles.mkHomeSource config.home.homeDirectory "pi-config/${path}";
   isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
   cuaDriverApp = "${pkgs.cua-driver}/Applications/CuaDriver.app";

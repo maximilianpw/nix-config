@@ -14,7 +14,7 @@
   # longRunningAgents = true and the homelab profile. Kim is currently the only
   # such host, but the predicate is not Kim-specific: a future host matching
   # both will also schedule the report.
-  runReport = hostRecord.longRunningAgents && lib.elem "homelab" hostRecord.profiles;
+  runReport = hostRecord.longRunningAgents && hostRecord.role == "nixos-homelab";
   reportDirectory = "${config.home.homeDirectory}/reports/morning";
   # Mirrors nodeExporterTextfileDirectory in homelab/monitoring/default.nix and the
   # file written by homelab/monitoring/cliproxyapi-readiness-probe.sh; absence is "unknown".

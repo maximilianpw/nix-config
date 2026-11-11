@@ -2,30 +2,14 @@
   nixpkgs,
   overlays,
   inputs,
-}: name: {
-  system,
-  user,
-  # The directory holding the user configs, which may differ from the
-  # on-system login name (e.g. "max-vev" uses "maxpw").
-  userDir,
-  darwin,
-  wsl,
-  linuxDesktop,
-  hostRecord,
   hostInventory,
-  extraModules,
-}: let
+}: name: host: let
   inherit (nixpkgs) lib;
-  machineConfig = ../machines/${name}.nix;
-  userOSConfig =
-    ../users/${userDir}/${
-      if darwin
-      then "darwin"
-      else if wsl
-      then "wsl"
-      else "nixos"
-    }.nix;
-  userHMConfig = ../users/${userDir}/home-manager.nix;
+  inherit (host) darwin wsl user;
+  # Config lives in users/maxpw even where the login account differs (Joyce's
+  # is max-vev).
+  userConfig = ../users/maxpw;
+  isHomelab = host.role == "nixos-homelab";
 
   systemFunc =
     if darwin
@@ -39,17 +23,17 @@
   systemArgs = {
     currentSystemName = name;
     currentSystemUser = user;
-    currentSystemUserDir = userDir;
     isDarwin = darwin;
     isWSL = wsl;
-    isLinuxDesktop = linuxDesktop;
-    inherit hostInventory hostRecord inputs;
+    isLinuxDesktop = host.linuxDesktop;
+    hostRecord = host;
+    inherit hostInventory inputs;
   };
 in
   systemFunc {
     modules =
       [
-        {nixpkgs.hostPlatform = system;}
+        {nixpkgs.hostPlatform = host.system;}
         {nixpkgs.config.allowUnfree = true;}
         {nixpkgs.overlays = overlays;}
       ]
@@ -59,37 +43,33 @@ in
       ++ lib.optional (!darwin) inputs.fleet.nixosModules.cliproxy-quota
       # Imported here because homelab modules receive inputs through
       # _module.args, which cannot feed `imports`.
-      ++ lib.optional (hostRecord.role == "nixos-homelab") inputs.portfolio-tracker.nixosModules.default
-      ++ lib.optional (hostRecord.role == "nixos-homelab") inputs.rex.nixosModules.default
+      ++ lib.optional isHomelab inputs.portfolio-tracker.nixosModules.default
+      ++ lib.optional isHomelab inputs.rex.nixosModules.default
       ++ [
         (
           if darwin
           then inputs.hjem.darwinModules.default
           else inputs.hjem.nixosModules.default
         )
-        ../users/${userDir}/hjem
+        (userConfig + "/hjem")
       ]
-      ++ lib.optional darwin ../users/${userDir}/hjem/darwin.nix
+      ++ lib.optional darwin (userConfig + "/hjem/darwin.nix")
       ++ [
-        machineConfig
-        userOSConfig
+        ../machines/${name}.nix
+        (userConfig + "/${host.os}.nix")
         homeManagerMods.home-manager
         {
           home-manager = {
             useGlobalPkgs = true;
             useUserPackages = true;
             backupFileExtension = "backup";
-            extraSpecialArgs =
-              systemArgs
-              // {
-                hostname = name;
-              };
-            users.${user} = import userHMConfig;
+            extraSpecialArgs = systemArgs;
+            users.${user} = import (userConfig + "/home-manager.nix");
           };
         }
         {
           config._module.args = systemArgs;
         }
       ]
-      ++ extraModules;
+      ++ map (moduleName: inputs.nixos-hardware.nixosModules.${moduleName}) host.hardwareModules;
   }
