@@ -1,5 +1,5 @@
 {lib, ...}: let
-  homelab = import ../lib/homelab.nix {inherit lib;};
+  homelab = import ./inventory {inherit lib;};
 in {
   # Existing bulk-storage filesystem for self-hosted services. Kernel NVMe
   # names are not stable identities; see "Storage identities" in

@@ -202,7 +202,7 @@ in
 
     installPhase = ''
       export HELIUM_LIB_PATH="${libPath}"
-      ${builtins.readFile ./scripts/helium-install.sh}
+      ${builtins.readFile ./helium-install.sh}
     '';
 
     preFixup = ''

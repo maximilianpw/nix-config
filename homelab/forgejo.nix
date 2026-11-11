@@ -4,7 +4,7 @@
   pkgs,
   ...
 }: let
-  homelab = import ../lib/homelab.nix {inherit lib;};
+  homelab = import ./inventory {inherit lib;};
   forge = homelab.endpoints.forgejo;
   forgejo = lib.getExe config.services.forgejo.package;
   runner = lib.getExe pkgs.forgejo-runner;

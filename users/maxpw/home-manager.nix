@@ -31,12 +31,12 @@ in {
       })
       ./modules/fonts.nix
       ./modules/git.nix
-      ./modules/vcs/jujutsu.nix
+      ./modules/jujutsu.nix
       ./modules/agent-tools.nix
       ./modules/vicinae.nix
       ../../modules/fleet/home-manager.nix
-      ./modules/t3code-server.nix
-      ./modules/morning-report.nix
+      ./modules/t3code/server.nix
+      ./modules/morning-report
       ./modules/shells.nix
       ./modules/syncthing.nix
       ./modules/gpg.nix
@@ -51,7 +51,7 @@ in {
       ./modules/packages/terminal-tools.nix
       ./modules/packages/linux-desktop.nix
       ./modules/packages/darwin-apps.nix
-      ./modules/packages/custom-scripts.nix
+      ./modules/packages/custom-scripts
     ]
     ++ lib.optionals (isDarwin || isWSL) [
       ./modules/agent-secrets.nix

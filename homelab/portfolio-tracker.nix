@@ -5,7 +5,7 @@
   pkgs,
   ...
 }: let
-  homelab = import ../lib/homelab.nix {inherit lib;};
+  homelab = import ./inventory {inherit lib;};
   inherit (homelab.services.portfolio-tracker) endpoint;
   system = pkgs.stdenv.hostPlatform.system;
   sopsFile = ../secrets/portfolio-tracker.yaml;

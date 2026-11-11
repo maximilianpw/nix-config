@@ -7,7 +7,7 @@
   hostname,
   ...
 }: let
-  homelab = import ../../../lib/homelab.nix {inherit lib;};
+  homelab = import ../../../homelab/inventory {inherit lib;};
   template = import ../../../lib/template.nix {inherit lib;};
 
   agentAliases = {

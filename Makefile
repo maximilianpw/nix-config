@@ -11,7 +11,9 @@ CONFIG_DIR := $(shell pwd)
 CORE_INPUTS := nixpkgs nixpkgs-unstable home-manager nix-darwin fenix llm-agents rex nixvim hjem
 # Only update commands inherit temporary GitHub credentials.
 UPDATE_AUTH := $(SCRIPT_DIR)/dev/with-github-auth.sh
-SHELL_SCRIPTS = $(SCRIPT_DIR)/*/*.sh $(SCRIPT_DIR)/rebuild/lib/*.sh tests/*.sh packages/scripts/*.sh
+# Every script's test sits beside it as <name>-test.sh.
+SHELL_SCRIPTS = $(shell git ls-files '*.sh')
+SCRIPT_TESTS = $(shell git ls-files '*-test.sh')
 
 help: ## Show this help message
 	@echo "Nix-Config Management Commands"
@@ -65,7 +67,7 @@ update-packages: ## Refresh all custom packages, including cross-platform binary
 	@$(UPDATE_AUTH) $(SCRIPT_DIR)/ci/update-packages.sh --local
 
 update-t3code: ## Refresh the shared Linux/macOS T3 Code nightly pin
-	@$(UPDATE_AUTH) python3 packages/scripts/update-t3code.py
+	@$(UPDATE_AUTH) python3 packages/update-t3code.py
 
 update-container-images: ## Refresh homelab image digests without pulling into Docker or restarting services
 	@$(UPDATE_AUTH) nix shell --inputs-from . nixpkgs#skopeo --command python3 $(SCRIPT_DIR)/dev/update-source-pins.py containers
@@ -85,7 +87,7 @@ check-scripts: ## Run shell syntax, ShellCheck, and safety regression tests
 	@command -v shellcheck >/dev/null || { echo "shellcheck not on PATH; run inside 'nix develop'" >&2; exit 1; }
 	@set -e; for script in $(SHELL_SCRIPTS); do bash -n "$$script"; done
 	@shellcheck --severity=warning $(SHELL_SCRIPTS)
-	@set -e; for test in $(SCRIPT_DIR)/tests/*-test.sh; do bash "$$test" || { echo "FAILED: $$test" >&2; exit 1; }; done
+	@set -e; for test in $(SCRIPT_TESTS); do bash "$$test" || { echo "FAILED: $$test" >&2; exit 1; }; done
 
 check-linux: ## Evaluate every x86_64-linux check (forces regression assertions on any host)
 	@$(SCRIPT_DIR)/dev/check-linux-eval.sh

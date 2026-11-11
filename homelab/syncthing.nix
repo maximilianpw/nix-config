@@ -4,7 +4,7 @@
   lib,
   ...
 }: let
-  homelab = import ../lib/homelab.nix {inherit lib;};
+  homelab = import ./inventory {inherit lib;};
   home = "/home/${currentSystemUser}";
   inherit (homelab.privateServices) syncthing;
 in {

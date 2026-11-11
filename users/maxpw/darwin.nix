@@ -11,7 +11,7 @@ in {
     ../../modules/core/shells.nix
     ../../modules/core/sops-user-key.nix
     ../../modules/fleet/ssh-access.nix
-    ./modules/t3code-darwin.nix
+    ./modules/t3code/darwin.nix
   ];
 
   # Fonts come from Home Manager (users/maxpw/modules/fonts.nix), which

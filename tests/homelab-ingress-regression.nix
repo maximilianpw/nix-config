@@ -5,7 +5,7 @@
   pkgs,
 }: let
   expect = import ./lib/expect.nix {inherit lib;};
-  homelab = import ../lib/homelab.nix {inherit lib;};
+  homelab = import ../homelab/inventory {inherit lib;};
   tunnel = config.services.cloudflared.tunnels.${homelab.infrastructure.cloudflare.tunnelId};
   publicNames = builtins.attrNames homelab.publicEndpoints;
   publicHosts = map (name: homelab.publicEndpoints.${name}.host) publicNames;

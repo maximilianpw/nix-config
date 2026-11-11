@@ -4,7 +4,7 @@
   pkgs,
 }: let
   expect = import ./lib/expect.nix {inherit lib;};
-  homelab = import ../lib/homelab.nix {inherit lib;};
+  homelab = import ../homelab/inventory {inherit lib;};
   endpoint = homelab.endpoints.immich;
   immich = config.services.immich;
   server = config.systemd.services.immich-server;

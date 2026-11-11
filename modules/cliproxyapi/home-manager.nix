@@ -31,7 +31,7 @@
   configureOpenCodeCli = pkgs.writeShellApplication {
     name = "opencode-configure-cli";
     runtimeInputs = [pkgs.jq pkgs.coreutils];
-    text = builtins.readFile ../../scripts/user/opencode-configure-cli.sh;
+    text = builtins.readFile ./opencode-configure-cli.sh;
   };
 
   opencodeConfig =

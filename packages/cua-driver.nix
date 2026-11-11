@@ -95,7 +95,7 @@ in
         "$out/bin/cua-driver" --version
       '';
 
-    passthru.updateScript = ./scripts/update-cua-driver.sh;
+    passthru.updateScript = ./update-cua-driver.sh;
 
     meta = {
       description = "Cross-platform computer-use driver for AI agents";

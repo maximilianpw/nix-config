@@ -4,7 +4,7 @@
   pkgs,
 }: let
   expect = import ./lib/expect.nix {inherit lib;};
-  homelab = import ../lib/homelab.nix {inherit lib;};
+  homelab = import ../homelab/inventory {inherit lib;};
   containers = config.virtualisation.oci-containers.containers;
   manifest = config.custom.backup.manifestMetadata;
   names = ["autobrr" "cross-seed" "kometa" "maintainerr" "recyclarr" "tdarr" "unpackerr"];
@@ -68,6 +68,6 @@ in
     (builtins.elem "recyclarr.timer" homelab.backup.archiveUnits)
   ];
     pkgs.runCommand "media-companions-regression" {nativeBuildInputs = [pkgs.python3];} ''
-      python3 ${./media-manager-api-env-test.py} ${../scripts/homelab/media-manager-api-env.py}
+      python3 ${../homelab/media/media-manager-api-env-test.py} ${../homelab/media/media-manager-api-env.py}
       touch "$out"
     ''

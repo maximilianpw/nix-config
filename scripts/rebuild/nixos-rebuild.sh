@@ -176,7 +176,7 @@ if [[ "$PLATFORM" == "nixos" && "$HOSTNAME" == "kim" ]]; then
         [[ -n "$app_id" ]] && declarative_app_ids+=("$app_id")
     done <<< "$declarative_apps"
 
-    if ! NEXTCLOUD_USE_SUDO=1 "$SCRIPT_DIR/../homelab/check-nextcloud-app-ownership.sh" "${declarative_app_ids[@]}"; then
+    if ! NEXTCLOUD_USE_SUDO=1 "$SCRIPT_DIR/../../homelab/nextcloud/check-nextcloud-app-ownership.sh" "${declarative_app_ids[@]}"; then
         error "Refusing to activate conflicting Nextcloud app ownership"
         exit 1
     fi

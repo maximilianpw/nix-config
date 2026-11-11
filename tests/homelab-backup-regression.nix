@@ -4,7 +4,7 @@
   pkgs,
 }: let
   expect = import ./lib/expect.nix {inherit lib;};
-  homelab = import ../lib/homelab.nix {inherit lib;};
+  homelab = import ../homelab/inventory {inherit lib;};
   backup = config.services.borgbackup.jobs.main;
   backupUnit = config.systemd.services.borgbackup-job-main;
   verifyUnit = config.systemd.services.borgbackup-verify-main;
@@ -28,7 +28,7 @@
   missingVersionFixture = lib.evalModules {
     specialArgs = {inherit pkgs;};
     modules = [
-      ../homelab/backup.nix
+      ../homelab/backup
       {
         _module.check = false;
         custom.backup.applicationVersions = builtins.removeAttrs contributedVersions ["vaultwarden"];
@@ -44,7 +44,7 @@
   conflictingVersionFixture = lib.evalModules {
     specialArgs = {inherit pkgs;};
     modules = [
-      ../homelab/backup.nix
+      ../homelab/backup
       {_module.check = false;}
       {custom.backup.applicationVersions.actual = "first";}
       {custom.backup.applicationVersions.actual = "second";}

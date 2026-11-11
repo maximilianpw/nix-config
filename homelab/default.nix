@@ -2,13 +2,13 @@
   imports = [
     ./actual.nix
     ./atuin.nix
-    ./backup.nix
+    ./backup
     ./cloudflared.nix
     ./cliproxyapi.nix
-    ./container-hygiene.nix
+    ./container-hygiene
     ./executor.nix
     ./forgejo.nix
-    ./home-assistant.nix
+    ./home-assistant
     ./homepage
     ./immich.nix
     ./leerr.nix
@@ -16,13 +16,13 @@
     ./media
     ./miniflux
     ./monitoring
-    ./nextcloud.nix
+    ./nextcloud
     ./paperless.nix
     ./portfolio-tracker.nix
     ./storage.nix
     ./syncthing.nix
-    ./tailscale-serve.nix
-    ./uptime-kuma.nix
+    ./tailscale-serve
+    ./uptime-kuma
     ./vaultwarden.nix
   ];
 

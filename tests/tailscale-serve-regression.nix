@@ -2,7 +2,7 @@
   lib,
   pkgs,
 }: let
-  homelab = import ../lib/homelab.nix {inherit lib;};
+  homelab = import ../homelab/inventory {inherit lib;};
   tailscale = lib.getExe pkgs.tailscale;
   testPkgs =
     pkgs
@@ -10,7 +10,7 @@
       writeShellScript = _: text: text;
       writeText = _: text: text;
     };
-  module = import ../homelab/tailscale-serve.nix {
+  module = import ../homelab/tailscale-serve {
     config = {
       services.tailscale.package = pkgs.tailscale;
     };

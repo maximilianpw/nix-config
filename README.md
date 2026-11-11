@@ -11,13 +11,17 @@ A parked Hyprland profile for a future desktop host still evaluates as
 
 ## Layout
 
-- `lib/hosts.nix`: host and Fleet inventory; `lib/mksystem.nix` builds hosts from it.
-- `lib/homelab-services.nix`: homelab service metadata (exposure, state, backup,
-  monitoring, recovery). Implementations live in `homelab/`.
+- `lib/`: host inventory (`hosts.nix`) and the plumbing that builds hosts from it.
 - `machines/`: per-host OS configuration. `modules/`: shared system modules.
+- `homelab/`: Kim's services; `homelab/inventory/services.nix` holds their
+  exposure, state, backup, monitoring and recovery metadata.
 - `users/maxpw/`: Home Manager, Nixvim (`neovim/`) and Hjem (`hjem/`) config.
-- `packages/`: repository-owned packages. `scripts/`: operational scripts.
-  `tests/`: flake regression checks.
+- `packages/`: repository-built packages and their updaters.
+- `scripts/`: repository tooling (`rebuild/`, `ci/`, `dev/`).
+- `tests/`: flake checks (`tests/default.nix` registers them).
+
+A script lives beside the Nix file that uses it, and its test beside it as
+`<name>-test.sh`; a module that owns scripts is a directory.
 
 ## Workflow
 

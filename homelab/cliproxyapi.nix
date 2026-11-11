@@ -5,7 +5,7 @@
   pkgs,
   ...
 }: let
-  homelab = import ../lib/homelab.nix {inherit lib;};
+  homelab = import ./inventory {inherit lib;};
   endpoint = homelab.publicEndpoints.cliproxy;
   cliProxy = import ../modules/cliproxyapi/config.nix;
   managementLocation = {

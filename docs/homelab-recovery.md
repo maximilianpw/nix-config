@@ -77,7 +77,7 @@ sudo systemctl mask --runtime \
   recyclarr.service recyclarr.timer unpackerr.service
 ```
 
-The quiesce units in `lib/homelab-services.nix` (`backup.quiesce` and
+The quiesce units in `homelab/inventory/services.nix` (`backup.quiesce` and
 `operations.units`) are the source of truth; add any new stateful unit here.
 
 Also keep `t3code.service` stopped in `maxpw`'s user manager while restoring its

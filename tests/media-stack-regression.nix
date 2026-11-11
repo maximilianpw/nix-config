@@ -4,7 +4,7 @@
   pkgs,
 }: let
   expect = import ./lib/expect.nix {inherit lib;};
-  homelab = import ../lib/homelab.nix {inherit lib;};
+  homelab = import ../homelab/inventory {inherit lib;};
   endpoints =
     homelab.endpoints
     // homelab.publicEndpoints;
@@ -458,10 +458,10 @@ in
     pkgs.runCommand "media-stack-regression" {
       nativeBuildInputs = [pkgs.bash pkgs.jq pkgs.coreutils pkgs.findutils pkgs.diffutils pkgs.gnused];
     } ''
-      mkdir -p scripts/homelab scripts/tests
-      cp ${../scripts/homelab/tunarr-reconcile-settings.sh} scripts/homelab/tunarr-reconcile-settings.sh
-      cp ${../scripts/tests/tunarr-reconcile-settings-test.sh} scripts/tests/tunarr-reconcile-settings-test.sh
-      bash scripts/tests/tunarr-reconcile-settings-test.sh
+      mkdir -p homelab/media
+      cp ${../homelab/media/tunarr-reconcile-settings.sh} homelab/media/tunarr-reconcile-settings.sh
+      cp ${../homelab/media/tunarr-reconcile-settings-test.sh} homelab/media/tunarr-reconcile-settings-test.sh
+      bash homelab/media/tunarr-reconcile-settings-test.sh
       # Exercise the configured ExecStartPre too, redirected to disposable state.
       # This catches regressions back to the upstream CLI that never exits.
       sed "s|export TUNARR_SETTINGS_FILE=.*|export TUNARR_SETTINGS_FILE=$PWD/settings.json|" \

@@ -7,7 +7,7 @@
   alerts = builtins.listToAttrs (map (rule: lib.nameValuePair rule.alert rule) (
     builtins.filter (rule: rule ? alert) (lib.concatMap (group: group.rules) config.homelab.monitoring.ruleGroups)
   ));
-  homelab = import ../lib/homelab.nix {inherit lib;};
+  homelab = import ../homelab/inventory {inherit lib;};
   prometheus = config.services.prometheus;
   inherit (prometheus) alertmanager exporters;
   postgresql = config.services.postgresql;
@@ -463,15 +463,15 @@ in
     } ''
       ${lib.getExe' pkgs.prometheus.cli "promtool"} test rules ${filesystemAlertTests}
       ${lib.getExe' pkgs.prometheus.cli "promtool"} test rules ${storageAlertTests}
-      ${lib.getExe pkgs.bash} ${../scripts}/tests/homelab-storage-kernel-metrics-test.sh
-      ${lib.getExe pkgs.bash} ${../scripts}/tests/homelab-public-ingress-check-test.sh
-      ${lib.getExe pkgs.bash} ${../scripts}/tests/homelab-media-smart-check-test.sh
+      ${lib.getExe pkgs.bash} ${../homelab/monitoring}/homelab-storage-kernel-metrics-test.sh
+      ${lib.getExe pkgs.bash} ${../homelab/monitoring}/homelab-public-ingress-check-test.sh
+      ${lib.getExe pkgs.bash} ${../homelab/monitoring}/homelab-media-smart-check-test.sh
       grep -F -- 'homelab-storage-kernel-metrics.py' ${lib.escapeShellArg storageKernelMetricsService.serviceConfig.ExecStart}
       cmp ${lib.escapeShellArg homeDashboardPath} ${../homelab/monitoring/grafana/kim-overview.json}
       grep -F -- 'immich-server.service' ${lib.escapeShellArg systemdMetricsService.serviceConfig.ExecStart}
       # Narrow guards on the rendered artifacts: the probe wrapper pins the
       # loopback destination and the blackbox file gained no credential module.
-      # The shell test in scripts/tests covers the probe's behavior.
+      # cliproxyapi-readiness-probe-test.sh beside the probe covers its behavior.
       grep -F -- 'CLIPROXYAPI_MODELS_URL=${cliProxyBackend.baseUrl}/v1/models' ${lib.escapeShellArg readinessProbeService.serviceConfig.ExecStart}
       grep -F -- 'cliproxyapi-readiness-probe.sh' ${lib.escapeShellArg readinessProbeService.serviceConfig.ExecStart}
       grep -F -- 'public_http_2xx' ${exporters.blackbox.configFile}

@@ -1,5 +1,5 @@
 {lib, ...}: let
-  homelab = import ../lib/homelab.nix {inherit lib;};
+  homelab = import ./inventory {inherit lib;};
   inherit (homelab.publicEndpoints) executor;
   image = "ghcr.io/usefulsoftwareco/executor-selfhost@sha256:3dff4d002d96a86b741a33af9560431b963961f024fff5fedb41db79396435c8";
 in {

@@ -7,10 +7,13 @@ Home Manager configuration, and Kim's homelab services.
 
 - `lib/hosts.nix` is the host/fleet inventory. `lib/inventory.nix` validates and
   normalizes it; `flake.nix` and `lib/mksystem.nix` build system outputs from it.
+- A script lives beside the Nix file that uses it, with its test beside it as
+  `<name>-test.sh` (`make check-scripts` finds every tracked one). A module
+  that owns scripts is a directory; `scripts/` holds only repository tooling.
 - Host concerns belong in `machines/`; shared system concerns in `modules/`;
   user and platform concerns in `users/maxpw/`. Keep substantial OS divergence
   in `nixos.nix`, `darwin.nix`, or `wsl.nix`.
-- `lib/homelab-services.nix` owns service metadata and recovery contracts;
+- `homelab/inventory/services.nix` owns service metadata and recovery contracts;
   application options and implementation stay in their owning `homelab/`
   module.
 - Nix/Home Manager owns systems, packages, shells, and executables; Nixvim

@@ -3,7 +3,7 @@
   lib,
   pkgs,
 }: let
-  homelab = import ../lib/homelab.nix {inherit lib;};
+  homelab = import ../homelab/inventory {inherit lib;};
   endpoint = homelab.publicEndpoints.executor;
   ingress = config.services.cloudflared.tunnels.${homelab.infrastructure.cloudflare.tunnelId}.ingress;
   container = config.virtualisation.oci-containers.containers.executor;

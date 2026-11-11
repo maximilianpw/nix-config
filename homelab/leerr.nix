@@ -5,7 +5,7 @@
   pkgs,
   ...
 }: let
-  homelab = import ../lib/homelab.nix {inherit lib;};
+  homelab = import ./inventory {inherit lib;};
   inherit (homelab.publicEndpoints) leerr;
   package = inputs.leerr.packages.${pkgs.stdenv.hostPlatform.system}.default;
   # From the certificate Plex serves (`*.<id>.plex.direct`).

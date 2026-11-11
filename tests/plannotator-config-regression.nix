@@ -9,7 +9,7 @@
   homes = [kim joyce cuno];
   appConfig = builtins.fromJSON (builtins.readFile ../users/maxpw/app-config/.plannotator/config.json);
   cli = kim.home.file.".local/bin/plannotator".source;
-  homelab = import ../lib/homelab.nix {inherit lib;};
+  homelab = import ../homelab/inventory {inherit lib;};
   claude = builtins.fromJSON (builtins.readFile ../users/maxpw/agents/claude/settings.json);
   opencode = builtins.fromJSON (builtins.readFile ../users/maxpw/agents/opencode/cliproxyapi.json);
   removeCodexInbox = pkgs.writeShellScript "remove-plannotator-codex-inbox-fixture" ''

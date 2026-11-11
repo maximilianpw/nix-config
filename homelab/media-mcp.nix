@@ -5,7 +5,7 @@
   pkgs,
   ...
 }: let
-  homelab = import ../lib/homelab.nix {inherit lib;};
+  homelab = import ./inventory {inherit lib;};
   package = inputs.homelab-mcp.packages.${pkgs.stdenv.hostPlatform.system}.homelab-mcp;
 in {
   custom.backup.applicationVersions.homelab-mcp = package.version;

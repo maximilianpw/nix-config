@@ -4,7 +4,7 @@
   pkgs,
   ...
 }: let
-  homelab = import ../lib/homelab.nix {inherit lib;};
+  homelab = import ./inventory {inherit lib;};
   inherit (homelab.endpoints) immich;
 in {
   custom.backup.applicationVersions.immich = config.services.immich.package.version;

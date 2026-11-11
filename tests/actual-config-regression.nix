@@ -4,7 +4,7 @@
   lib,
   pkgs,
 }: let
-  homelab = import ../lib/homelab.nix {inherit lib;};
+  homelab = import ../homelab/inventory {inherit lib;};
   endpoint = homelab.publicEndpoints.actual;
   tunnel = config.services.cloudflared.tunnels.${homelab.infrastructure.cloudflare.tunnelId};
   actual = config.services.actual;

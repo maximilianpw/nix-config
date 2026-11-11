@@ -322,7 +322,7 @@
     };
 
     # Eval-only checks catch typos, missing modules, and type errors without building.
-    checks = import ./lib/checks.nix {
+    checks = import ./tests {
       inherit desktopKim hosts inputs lib mkPreCommitCheck nixpkgs nvim self;
     };
 

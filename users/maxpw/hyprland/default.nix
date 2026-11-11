@@ -75,7 +75,7 @@ in
         # Focus existing window or launch app (used by hyper key bindings)
         (pkgs.writeShellScriptBin "focus-or-launch" ''
           export FOCUS_OR_LAUNCH_AWK=${lib.escapeShellArg "${pkgs.gawk}/bin/awk"}
-          ${builtins.readFile ../../../scripts/user/focus-or-launch.sh}
+          ${builtins.readFile ./focus-or-launch.sh}
         '')
       ]
       ++ lib.optionals hasLockScreen [

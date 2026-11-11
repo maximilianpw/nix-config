@@ -79,7 +79,7 @@
     tailscale.extraSetFlags = ["--hostname=kim"];
 
     # Rex for Mac reaches this as http://kim.<tailnet>:7297 and runs as maxpw.
-    # A direct tailnet listener rather than Serve: homelab/tailscale-serve.nix
+    # A direct tailnet listener rather than Serve: homelab/tailscale-serve/default.nix
     # owns this host's Serve configuration and only proxies loopback HTTP.
     rex.loginServer = {
       enable = true;

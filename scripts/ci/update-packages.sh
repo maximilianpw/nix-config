@@ -42,7 +42,7 @@ update_package() {
       python3 scripts/dev/update-source-pins.py "$package"
       ;;
     cua-driver)
-      bash packages/scripts/update-cua-driver.sh
+      bash packages/update-cua-driver.sh
       ;;
     cloudflared)
       # Go dependency hashing runs on the current host; never edit nixpkgs in the store.
