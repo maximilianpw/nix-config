@@ -27,7 +27,7 @@ in {
 
       ui = {
         default-command = "log";
-        editor = "nvim";
+        editor = ["nvim" "+$line"];
       };
 
       "--scope" = [
@@ -63,13 +63,30 @@ in {
         n = ["new"];
         p = ["git" "push"];
         s = ["status"];
-        tug = ["bookmark" "advance" "--to" "@-"];
-        # Rebase the current branch onto the trunk.
-        retrunk = ["rebase" "-d" "trunk()"];
-        stack = ["util" "exec" "--" (lib.getExe jjStack)];
-        # Explicit: sync can update PRs and delete obsolete remote branches.
-        sync = ["stack" "sync" "--all"];
-        check-stack = ["run" "--ignore-changes" "--revision" "mutable() & ::@ & ~empty()" "--"];
+        tug = {
+          definition = ["bookmark" "advance" "--to" "@-"];
+          doc = "Advance the closest bookmark to the working-copy parent";
+        };
+        retrunk = {
+          definition = ["rebase" "-d" "trunk()"];
+          doc = "Rebase the current branch onto trunk";
+        };
+        stack = {
+          definition = ["util" "exec" "--" (lib.getExe jjStack)];
+          doc = "Manage stacked pull requests with jj-stack";
+        };
+        sync = {
+          definition = ["stack" "sync" "--all"];
+          doc = "Sync all stacks; may update PRs and delete obsolete remote branches";
+        };
+        check-stack = {
+          definition = ["run" "--ignore-changes" "--revision" "mutable() & ::@ & ~empty()" "--"];
+          doc = "Check non-empty mutable ancestors without rewriting commits";
+        };
+        resolve-editor = {
+          definition = ["resolve" "--tool" ":editor"];
+          doc = "Resolve conflict markers in Neovim, including multi-sided conflicts";
+        };
         a = ["absorb"];
         el = ["evolog" "-p"];
         sp = ["split"];
@@ -97,9 +114,10 @@ in {
 
       git = {
         abandon-unreachable-commits = true;
-        sign-on-push = true;
         private-commits = "description(glob:'wip:*') | description(glob:'private:*')";
       };
+
+      revsets.git-sign-on-push = "~signed() & mine()";
 
       remotes.origin.auto-track-bookmarks = "glob:main";
 

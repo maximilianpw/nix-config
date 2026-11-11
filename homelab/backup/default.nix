@@ -50,9 +50,6 @@
       # T3 Code is configured in Home Manager, which is a separate module
       # system, so the NixOS backup coordinator keeps this one lookup.
       t3code = t3codeVersion;
-      # Preserve the schema-v1 manifest key while the canonical inventory name
-      # lets coverage track the service directly as `kuma`.
-      uptimeKuma = cfg.applicationVersions.kuma;
     };
   statefulServiceNames = builtins.attrNames (
     lib.filterAttrs (_: service: service.state.kind != "none") homelab.services

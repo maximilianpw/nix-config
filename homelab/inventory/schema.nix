@@ -130,14 +130,6 @@
         type = types.listOf types.str;
         default = [];
       };
-      order = mkOption {
-        type = types.nullOr types.int;
-        default = null;
-      };
-      owner = mkOption {
-        type = types.nullOr types.str;
-        default = "homelab-operator";
-      };
       runbook = mkOption {
         type = types.nullOr types.str;
         default = null;
@@ -185,11 +177,27 @@
       };
     };
 
-    config.backup.strategy = lib.mkDefault (
-      if config.state.disposable || (config.state.paths == [] && config.state.database == null)
-      then null
-      else "direct"
-    );
+    config.backup = let
+      stateful = !config.state.disposable && (config.state.paths != [] || config.state.database != null);
+    in {
+      strategy = lib.mkDefault (
+        if stateful
+        then "direct"
+        else null
+      );
+      # Stateful services stop their operational units for the archive unless
+      # they declare a different order or a dump-phase stop.
+      quiesce = lib.mkDefault (
+        if stateful
+        then
+          map (unit: {
+            inherit unit;
+            until = "archive";
+          })
+          config.operations.units
+        else []
+      );
+    };
   });
 
   typed =
@@ -301,15 +309,12 @@
       || (
         recovery.acceptance
         != []
-        && recovery.order != null
-        && recovery.owner != null
-        && recovery.owner != ""
         && recovery.runbook != null
         && recovery.runbook != ""
         && recovery.versionPolicy != null
         && recovery.versionPolicy != ""
       ))
-    "stateful homelab service ${name} must declare recovery ownership, order, version policy, runbook, and acceptance checks"; service;
+    "stateful homelab service ${name} must declare a recovery version policy, runbook, and acceptance checks"; service;
 
   validated = lib.mapAttrs validate normalized;
   endpointPorts = lib.concatMap (

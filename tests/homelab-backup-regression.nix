@@ -117,7 +117,7 @@ in
     (manifest.schemaVersion == 1)
     (builtins.attrNames contributedVersions == nixosOwnedVersionNames)
     (manifest.expectedDatabases == ["atuin" "forgejo" "hass" "immich" "miniflux" "nextcloud" "paperless" "vaultwarden"])
-    (builtins.hasAttr "uptimeKuma" manifest.applicationVersions)
+    (builtins.hasAttr "kuma" manifest.applicationVersions)
     (manifest.postgresql.majorVersion != "")
     (builtins.elem "/srv/nextcloud" manifest.expectedPrimaryStatePaths)
     (builtins.elem "/srv/immich" manifest.expectedPrimaryStatePaths)

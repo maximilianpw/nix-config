@@ -8,15 +8,8 @@
       port = 7474;
     };
     state.paths = ["/var/lib/private/autobrr" "/var/lib/autobrr-session"];
-    backup.quiesce = [
-      {
-        unit = "autobrr.service";
-        until = "archive";
-      }
-    ];
     operations.units = ["autobrr.service"];
     recovery = {
-      order = 96;
       versionPolicy = "restore-archived-version-first";
       runbook = "docs/homelab-recovery.md#media-companions";
       acceptance = ["account-filters-and-download-client-connections-load"];
@@ -35,16 +28,9 @@
     # v6 has a local API, not a dashboard. No probe until integrations exist.
     endpoint.port = 2468;
     state.paths = ["/var/lib/cross-seed"];
-    backup.quiesce = [
-      {
-        unit = "cross-seed.service";
-        until = "archive";
-      }
-    ];
     storage.units = ["cross-seed.service"];
     operations.units = ["cross-seed.service"];
     recovery = {
-      order = 96;
       versionPolicy = "restore-archived-version-first";
       runbook = "docs/homelab-recovery.md#media-companions";
       acceptance = ["private-integrations-load-and-saved-matches-are-preserved"];
@@ -54,15 +40,8 @@
 
   kometa = {
     state.paths = ["/var/lib/kometa"];
-    backup.quiesce = [
-      {
-        unit = "docker-kometa.service";
-        until = "archive";
-      }
-    ];
     operations.units = ["docker-kometa.service"];
     recovery = {
-      order = 96;
       versionPolicy = "restore-pinned-image-first";
       runbook = "docs/homelab-recovery.md#media-companions";
       acceptance = ["private-config-and-collection-state-load"];
@@ -78,15 +57,8 @@
       monitorPath = "/api/health/ready";
     };
     state.paths = ["/var/lib/maintainerr"];
-    backup.quiesce = [
-      {
-        unit = "docker-maintainerr.service";
-        until = "archive";
-      }
-    ];
     operations.units = ["docker-maintainerr.service"];
     recovery = {
-      order = 96;
       versionPolicy = "restore-pinned-image-first";
       runbook = "docs/homelab-recovery.md#media-companions";
       acceptance = ["connections-and-rules-load-before-enabling-actions"];
@@ -130,7 +102,6 @@
       "portfolio-tracker-sync.timer"
     ];
     recovery = {
-      order = 95;
       versionPolicy = "restore-archived-version-first";
       runbook = "docs/homelab-recovery.md#portfolio-tracker";
       acceptance = [
@@ -147,19 +118,8 @@
 
   recyclarr = {
     state.paths = ["/var/lib/recyclarr"];
-    backup.quiesce = [
-      {
-        unit = "recyclarr.timer";
-        until = "archive";
-      }
-      {
-        unit = "recyclarr.service";
-        until = "archive";
-      }
-    ];
     operations.units = ["recyclarr.timer" "recyclarr.service"];
     recovery = {
-      order = 96;
       versionPolicy = "restore-archived-version-first";
       runbook = "docs/homelab-recovery.md#media-companions";
       acceptance = ["sync-state-and-dedicated-trash-profiles-load"];
@@ -174,16 +134,9 @@
       port = 8265;
     };
     state.paths = ["/var/lib/tdarr"];
-    backup.quiesce = [
-      {
-        unit = "docker-tdarr.service";
-        until = "archive";
-      }
-    ];
     storage.units = ["docker-tdarr.service"];
     operations.units = ["docker-tdarr.service"];
     recovery = {
-      order = 96;
       versionPolicy = "restore-pinned-image-first";
       runbook = "docs/homelab-recovery.md#media-companions";
       acceptance = ["libraries-and-plugins-load-with-worker-paused"];
@@ -200,16 +153,9 @@
 
   unpackerr = {
     state.paths = ["/var/lib/unpackerr"];
-    backup.quiesce = [
-      {
-        unit = "unpackerr.service";
-        until = "archive";
-      }
-    ];
     storage.units = ["unpackerr.service"];
     operations.units = ["unpackerr.service"];
     recovery = {
-      order = 96;
       versionPolicy = "restore-archived-version-first";
       runbook = "docs/homelab-recovery.md#media-companions";
       acceptance = ["manager-connections-load-and-original-archives-remain"];
@@ -226,15 +172,8 @@
       monitorPath = "/health";
     };
     state.paths = ["/var/lib/actual"];
-    backup.quiesce = [
-      {
-        unit = "actual.service";
-        until = "archive";
-      }
-    ];
     operations.units = ["actual.service"];
     recovery = {
-      order = 72;
       versionPolicy = "restore-archived-version-first";
       runbook = "docs/homelab-recovery.md#actual-budget";
       acceptance = [
@@ -260,7 +199,6 @@
     ];
     operations.units = ["atuin.service"];
     recovery = {
-      order = 55;
       versionPolicy = "restore-archived-version-first";
       runbook = "docs/homelab-recovery.md#atuin";
       acceptance = [
@@ -281,16 +219,9 @@
       port = 6767;
     };
     state.paths = ["/var/lib/bazarr"];
-    backup.quiesce = [
-      {
-        unit = "bazarr.service";
-        until = "archive";
-      }
-    ];
     storage.units = ["bazarr.service"];
     operations.units = ["bazarr.service"];
     recovery = {
-      order = 92;
       versionPolicy = "restore-archived-version-first";
       runbook = "docs/homelab-recovery.md#media-stack";
       acceptance = ["sonarr-radarr-providers-and-subtitle-history-load"];
@@ -325,15 +256,8 @@
   homelab-mcp = {
     endpoint.port = 19200;
     state.paths = ["/var/lib/private/homelab-mcp"];
-    backup.quiesce = [
-      {
-        unit = "homelab-mcp.service";
-        until = "archive";
-      }
-    ];
     operations.units = ["homelab-mcp.service"];
     recovery = {
-      order = 76;
       versionPolicy = "restore-archived-version-first";
       runbook = "docs/homelab-recovery.md#homelab-mcp";
       acceptance = ["authenticated-stack-health-through-executor-succeeds"];
@@ -349,15 +273,8 @@
       port = 19005;
     };
     state.paths = ["/var/lib/executor-v2"];
-    backup.quiesce = [
-      {
-        unit = "docker-executor.service";
-        until = "archive";
-      }
-    ];
     operations.units = ["docker-executor.service"];
     recovery = {
-      order = 75;
       versionPolicy = "restore-pinned-image-first";
       runbook = "docs/homelab-recovery.md#executor";
       acceptance = [
@@ -402,7 +319,6 @@
       "forgejo-runner.service"
     ];
     recovery = {
-      order = 60;
       versionPolicy = "restore-archived-version-first";
       runbook = "docs/homelab-recovery.md#forgejo";
       acceptance = [
@@ -433,7 +349,6 @@
     state.disposable = true;
     operations.units = ["grafana.service"];
     recovery = {
-      order = 80;
       versionPolicy = "rebuild-from-archived-revision";
       runbook = "docs/homelab-recovery.md#grafana-and-prometheus";
       acceptance = ["provisioned-dashboard-and-datasource-load"];
@@ -472,7 +387,6 @@
     };
     operations.units = ["home-assistant.service"];
     recovery = {
-      order = 20;
       versionPolicy = "restore-archived-version-first";
       runbook = "docs/homelab-recovery.md#home-assistant";
       acceptance = [
@@ -522,7 +436,6 @@
       "immich-server.service"
     ];
     recovery = {
-      order = 15;
       versionPolicy = "restore-archived-version-first";
       runbook = "docs/homelab-recovery.md#immich";
       acceptance = [
@@ -553,16 +466,9 @@
       monitorPath = "/health";
     };
     state.paths = ["/var/lib/jellyfin"];
-    backup.quiesce = [
-      {
-        unit = "jellyfin.service";
-        until = "archive";
-      }
-    ];
     storage.units = ["jellyfin.service"];
     operations.units = ["jellyfin.service"];
     recovery = {
-      order = 90;
       versionPolicy = "restore-archived-version-first";
       runbook = "docs/homelab-recovery.md#media-stack";
       acceptance = [
@@ -592,16 +498,9 @@
       monitorPath = "/identity";
     };
     state.paths = ["/var/lib/plex"];
-    backup.quiesce = [
-      {
-        unit = "plex.service";
-        until = "archive";
-      }
-    ];
     storage.units = ["plex.service"];
     operations.units = ["plex.service"];
     recovery = {
-      order = 90;
       versionPolicy = "restore-archived-version-first";
       runbook = "docs/homelab-recovery.md#media-stack";
       acceptance = [
@@ -631,15 +530,8 @@
       # /var/lib/uptime-kuma compatibility path is only a symlink.
       paths = ["/var/lib/private/uptime-kuma"];
     };
-    backup.quiesce = [
-      {
-        unit = "uptime-kuma.service";
-        until = "archive";
-      }
-    ];
     operations.units = ["uptime-kuma.service"];
     recovery = {
-      order = 70;
       versionPolicy = "restore-archived-version-first";
       runbook = "docs/homelab-recovery.md#uptime-kuma";
       acceptance = [
@@ -666,15 +558,8 @@
       monitorPath = "/health";
     };
     state.paths = ["/var/lib/leerr"];
-    backup.quiesce = [
-      {
-        unit = "leerr.service";
-        until = "archive";
-      }
-    ];
     operations.units = ["leerr.service"];
     recovery = {
-      order = 95;
       versionPolicy = "restore-archived-version-first";
       runbook = "docs/homelab-recovery.md#leerr";
       acceptance = [
@@ -696,16 +581,9 @@
       monitorPath = "/ping";
     };
     state.paths = ["/var/lib/lidarr/.config/Lidarr"];
-    backup.quiesce = [
-      {
-        unit = "lidarr.service";
-        until = "archive";
-      }
-    ];
     storage.units = ["lidarr.service"];
     operations.units = ["lidarr.service"];
     recovery = {
-      order = 92;
       versionPolicy = "restore-archived-version-first";
       runbook = "docs/homelab-recovery.md#media-stack";
       acceptance = ["music-root-download-client-and-history-load"];
@@ -735,7 +613,6 @@
     ];
     operations.units = ["miniflux.service"];
     recovery = {
-      order = 50;
       versionPolicy = "restore-archived-version-first";
       runbook = "docs/homelab-recovery.md#miniflux";
       acceptance = ["login-feed-and-preference-state-load"];
@@ -800,7 +677,6 @@
       "phpfpm-nextcloud.service"
     ];
     recovery = {
-      order = 10;
       versionPolicy = "restore-archived-version-first";
       runbook = "docs/homelab-recovery.md#nextcloud";
       acceptance = [
@@ -872,7 +748,6 @@
       "paperless-exporter.service"
     ];
     recovery = {
-      order = 30;
       versionPolicy = "restore-archived-version-first";
       runbook = "docs/homelab-recovery.md#paperless";
       acceptance = [
@@ -902,15 +777,8 @@
       monitorPath = "/ping";
     };
     state.paths = ["/var/lib/private/prowlarr"];
-    backup.quiesce = [
-      {
-        unit = "prowlarr.service";
-        until = "archive";
-      }
-    ];
     operations.units = ["prowlarr.service"];
     recovery = {
-      order = 93;
       versionPolicy = "restore-archived-version-first";
       runbook = "docs/homelab-recovery.md#media-stack";
       acceptance = ["applications-and-authorized-indexer-definitions-load"];
@@ -935,7 +803,6 @@
     state.disposable = true;
     operations.units = ["prometheus.service"];
     recovery = {
-      order = 80;
       versionPolicy = "rebuild-from-archived-revision";
       runbook = "docs/homelab-recovery.md#grafana-and-prometheus";
       acceptance = ["targets-and-rules-load-with-empty-history"];
@@ -967,7 +834,6 @@
     storage.units = ["container@qbt.service"];
     operations.units = ["container@qbt.service"];
     recovery = {
-      order = 91;
       versionPolicy = "restore-archived-version-first";
       runbook = "docs/homelab-recovery.md#media-stack";
       acceptance = [
@@ -996,16 +862,9 @@
       monitorPath = "/ping";
     };
     state.paths = ["/var/lib/radarr/.config/Radarr"];
-    backup.quiesce = [
-      {
-        unit = "radarr.service";
-        until = "archive";
-      }
-    ];
     storage.units = ["radarr.service"];
     operations.units = ["radarr.service"];
     recovery = {
-      order = 92;
       versionPolicy = "restore-archived-version-first";
       runbook = "docs/homelab-recovery.md#media-stack";
       acceptance = ["movie-root-download-client-and-history-load"];
@@ -1048,7 +907,6 @@
     storage.units = ["container@sab.service"];
     operations.units = ["container@sab.service"];
     recovery = {
-      order = 91;
       versionPolicy = "restore-archived-version-first";
       runbook = "docs/homelab-recovery.md#media-stack";
       acceptance = [
@@ -1082,15 +940,8 @@
     # Kim retains stateVersion 24.05, so nixpkgs keeps Seerr's compatibility
     # StateDirectory name rather than migrating mutable state implicitly.
     state.paths = ["/var/lib/private/jellyseerr"];
-    backup.quiesce = [
-      {
-        unit = "seerr.service";
-        until = "archive";
-      }
-    ];
     operations.units = ["seerr.service"];
     recovery = {
-      order = 94;
       versionPolicy = "restore-archived-version-first";
       runbook = "docs/homelab-recovery.md#media-stack";
       acceptance = ["jellyfin-sonarr-and-radarr-connections-load"];
@@ -1113,16 +964,9 @@
       monitorPath = "/ping";
     };
     state.paths = ["/var/lib/sonarr/.config/NzbDrone"];
-    backup.quiesce = [
-      {
-        unit = "sonarr.service";
-        until = "archive";
-      }
-    ];
     storage.units = ["sonarr.service"];
     operations.units = ["sonarr.service"];
     recovery = {
-      order = 92;
       versionPolicy = "restore-archived-version-first";
       runbook = "docs/homelab-recovery.md#media-stack";
       acceptance = ["series-root-download-client-and-history-load"];
@@ -1145,16 +989,9 @@
       monitorPath = "/api/system/health";
     };
     state.paths = ["/var/lib/tunarr"];
-    backup.quiesce = [
-      {
-        unit = "tunarr.service";
-        until = "archive";
-      }
-    ];
     storage.units = ["tunarr.service"];
     operations.units = ["tunarr.service"];
     recovery = {
-      order = 91;
       versionPolicy = "restore-archived-version-first";
       runbook = "docs/homelab-recovery.md#media-stack";
       acceptance = [
@@ -1185,15 +1022,8 @@
         "/home/maxpw/Sync"
       ];
     };
-    backup.quiesce = [
-      {
-        unit = "syncthing.service";
-        until = "archive";
-      }
-    ];
     operations.units = ["syncthing.service"];
     recovery = {
-      order = 60;
       versionPolicy = "restore-archived-version-first";
       runbook = "docs/homelab-recovery.md#syncthing";
       acceptance = ["identity-reviewed-before-one-peer-reconnect"];
@@ -1229,7 +1059,6 @@
       monitorException = "T3 Code is a user service; endpoint monitoring owns its availability.";
     };
     recovery = {
-      order = 75;
       versionPolicy = "restore-archived-version-first";
       runbook = "docs/homelab-recovery.md#t3-code";
       acceptance = [
@@ -1260,15 +1089,8 @@
       paths = ["/var/lib/bitwarden_rs"];
       database = "vaultwarden";
     };
-    backup.quiesce = [
-      {
-        unit = "vaultwarden.service";
-        until = "archive";
-      }
-    ];
     operations.units = ["vaultwarden.service"];
     recovery = {
-      order = 40;
       versionPolicy = "restore-archived-version-first";
       runbook = "docs/homelab-recovery.md#vaultwarden";
       acceptance = [
