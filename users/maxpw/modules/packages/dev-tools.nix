@@ -13,7 +13,6 @@
     pkgs.bun
     pkgs.vite-plus # Global vp/vpx/vpr CLI; projects can pin their own toolchain
     pkgs.python3
-    pkgs.go
     # Rust via fenix (stable, project flakes provide full toolchains)
     (pkgs.fenix.stable.withComponents [
       "cargo"
@@ -25,17 +24,13 @@
     pkgs.lua
     pkgs.zig
     pkgs.openjdk
-    pkgs.golangci-lint
 
     # Shared editor tooling. Keep these on the normal PATH so Neovim, Zed,
     # Jujutsu hooks, and terminal workflows all resolve the same binaries.
     pkgs.biome
-    pkgs.black
     pkgs.checkstyle
     pkgs.clang-tools
     pkgs.eslint
-    pkgs.gofumpt
-    pkgs.gotools # goimports and other Go source tools
     pkgs.lldb # lldb-dap for Neovim's Rust debug configurations
     pkgs.oxlint
     pkgs.prettier

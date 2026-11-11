@@ -1,6 +1,6 @@
 # Editor-only tools Neovim invokes directly (language servers, debuggers,
 # linters). Shared by the Home Manager editor and the Nixvim packages so both
-# resolve the same binaries. Formatters and Go source tools live in
+# resolve the same binaries. Formatters live in
 # modules/packages/dev-tools.nix so terminals and VCS hooks can use them too.
 pkgs:
 with pkgs;
@@ -15,8 +15,6 @@ with pkgs;
     bash-language-server
     vscode-langservers-extracted # cssls, html, jsonls, eslint
     dockerfile-language-server
-    gopls
-    delve # Go debugger
     lua-language-server
     nil # Nix LSP
     typescript
@@ -27,7 +25,6 @@ with pkgs;
     zls
     # taplo (TOML LSP + formatter) comes from dev-tools.nix.
     yaml-language-server
-    eslint_d # Fast ESLint daemon
     hadolint # Dockerfile linter
     tflint # Terraform linter
     vale # Prose linter

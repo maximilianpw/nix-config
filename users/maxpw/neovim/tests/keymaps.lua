@@ -48,7 +48,7 @@ local defaults = vim.json.decode(clean.stdout)
 local names = {}
 for _, spec in ipairs(registry.specs(false)) do
   for _, s in ipairs(type(spec[1]) == "table" and spec or { spec }) do
-    if s[1] ~= "supermaven-nvim" and s[1] ~= "amp.nvim" then
+    if s[1] ~= "supermaven-nvim" then
       names[#names + 1] = s[1]
     end
   end

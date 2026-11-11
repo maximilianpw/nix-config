@@ -43,7 +43,7 @@ end
 expect(same_path(ran, package_root), "run project did not select the nearest project root")
 
 local adapter_options = {}
-for _, name in ipairs({ "neotest-jest", "neotest-vitest", "neotest-mocha", "neotest-golang" }) do
+for _, name in ipairs({ "neotest-jest", "neotest-vitest", "neotest-mocha" }) do
   package.loaded[name] = function(opts)
     adapter_options[name] = opts
     return {}
@@ -74,10 +74,6 @@ local dap_utils = {
   end,
 }
 package.loaded["dap.utils"] = dap_utils
-package.loaded["dap-go"] = nil
-package.preload["dap-go"] = function()
-  error("not installed for isolated test")
-end
 
 local dap = { adapters = {}, configurations = {} }
 require("config.dap.languages").setup(dap)

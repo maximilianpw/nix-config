@@ -9,13 +9,6 @@
   self,
 }: {
   x86_64-linux = {
-    amp-orb-provider-regression = import ../tests/amp-orb-provider-regression.nix {
-      inherit lib nixpkgs;
-      pkgs = nixpkgs.legacyPackages.x86_64-linux;
-      package = self.nixosConfigurations.kim.pkgs.amp-cli;
-      kim = self.nixosConfigurations.kim.config;
-      cuno = self.nixosConfigurations.cuno.config;
-    };
     herdr-core-package = self.packages.x86_64-linux.herdr-core;
     herdr-config-regression = import ../tests/herdr-config-regression.nix {
       inherit lib;

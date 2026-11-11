@@ -2,8 +2,8 @@
   homelab = import ../lib/homelab.nix {inherit lib;};
 in {
   # Existing bulk-storage filesystem for self-hosted services. Kernel NVMe
-  # names are not stable identities; docs/homelab-storage.md records the live
-  # audit needed before migrating this compatibility label to a unique UUID.
+  # names are not stable identities; see "Storage identities" in
+  # docs/homelab-recovery.md before migrating this label to a unique UUID.
   fileSystems."/srv" = {
     device = "/dev/disk/by-label/storage";
     fsType = "ext4";

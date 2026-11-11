@@ -334,7 +334,8 @@ in {
   # on the physical interface. Plex discovery remains restricted to Kim's IPv4
   # LAN, and no Plex ports are admitted over IPv6 because Kim has globally
   # routable IPv6 addresses. Claim the server from kim:32400/web before using
-  # the public hostname. See docs/media-stack.md#plex.
+  # the public hostname: the first plex.tv account to reach an unclaimed
+  # server owns it.
   networking.firewall = {
     interfaces.enp194s0 = {
       allowedTCPPorts = [endpoints.jellyfin.port];

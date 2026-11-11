@@ -12,12 +12,15 @@ Home Manager configuration, and Kim's homelab services.
   in `nixos.nix`, `darwin.nix`, or `wsl.nix`.
 - `lib/homelab-services.nix` owns service metadata and recovery contracts;
   application options and implementation stay in their owning `homelab/`
-  module. See `README.md` and `docs/homelab-recovery.md`.
+  module.
 - Nix/Home Manager owns systems, packages, shells, and executables; Nixvim
   (`users/maxpw/neovim/`) owns Neovim and Hjem (`users/maxpw/hjem/`) owns static
   app files; `pi-config` owns Pi resources.
-  Do not give two systems the same destination. See
-  `docs/config-ownership-and-recovery.md`.
+  Do not give two systems the same destination.
+- Documentation is deliberately small: `README.md`, `BOOTSTRAP.md`,
+  `secrets/README.md` and `docs/homelab-recovery.md`. Do not add docs, status
+  logs, or backlogs; put a non-obvious reason in a comment in the owning file
+  and recovery steps in the recovery runbook.
 
 ## Local workflow and checks
 
@@ -61,6 +64,5 @@ affected checks without asking; report checks that could not run.
   Self-contained notarized apps may move to
   `users/maxpw/modules/packages/darwin-apps.nix`; follow its non-zapping handover.
 - Hyprland comes from the flake input, not nixpkgs.
-- For storage/recovery work, use `docs/homelab-recovery.md` and the affected
-  service's runbook. Never point restore or provisioning tools at live paths or
-  unconfirmed disks.
+- For storage/recovery work, use `docs/homelab-recovery.md`. Never point
+  restore or provisioning tools at live paths or unconfirmed disks.

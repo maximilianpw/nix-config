@@ -19,18 +19,15 @@ in {
 
   home = {
     packages = [
-      pkgs.autolith
       pkgs.claude-code
       pkgs.cloudflared
       pkgs.codex
       pkgs.cua-driver
       pkgs.opencode
       pkgs.grok
-      pkgs.muse-code
       pkgs.herdr-core
       pkgs.herdr-jj
       pkgs.executor
-      pkgs.amp-cli
       pkgs.pi
       pkgs.skills
     ];
@@ -109,8 +106,6 @@ in {
         force = true;
       };
 
-      ".config/amp/settings.json".source = source "amp/settings.json";
-      ".config/muse/settings.json".source = source "muse/settings.json";
       ".codex/AGENTS.md".text =
         builtins.readFile ../agents/shared/AGENTS.md
         + "\n"

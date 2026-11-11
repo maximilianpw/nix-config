@@ -61,7 +61,7 @@ in
       # _module.args, which cannot feed `imports`.
       ++ lib.optional (hostRecord.role == "nixos-homelab") inputs.portfolio-tracker.nixosModules.default
       ++ lib.optional (hostRecord.role == "nixos-homelab") inputs.rex.nixosModules.default
-      ++ lib.optionals hostRecord.hjem [
+      ++ [
         (
           if darwin
           then inputs.hjem.darwinModules.default
@@ -69,7 +69,7 @@ in
         )
         ../users/${userDir}/hjem
       ]
-      ++ lib.optional (hostRecord.hjem && darwin) ../users/${userDir}/hjem/darwin.nix
+      ++ lib.optional darwin ../users/${userDir}/hjem/darwin.nix
       ++ [
         machineConfig
         userOSConfig

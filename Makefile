@@ -1,4 +1,4 @@
-.PHONY: help bootstrap rebuild rebuild-processes cleanup-rebuild check-scripts check-linux lint update update-all update-flake-inputs update-packages update-t3code update-nvim-plugins update-container-images update-fish-plugins update-agent-plugins update-nextcloud-apps build generations rollback gc wsl info
+.PHONY: help bootstrap rebuild rebuild-processes cleanup-rebuild check-scripts check-linux lint update update-all update-flake-inputs update-packages update-t3code update-nvim-plugins update-container-images update-fish-plugins update-agent-plugins build generations rollback gc wsl info
 
 # Default target
 .DEFAULT_GOAL := help
@@ -8,7 +8,7 @@ SCRIPT_DIR := scripts
 CONFIG_DIR := $(shell pwd)
 # Inputs bumped by `make update`; `make update-all` refreshes the full inventory.
 # nixvim follows nixpkgs-unstable, so it must move in lockstep with it.
-CORE_INPUTS := nixpkgs nixpkgs-unstable home-manager nix-darwin fenix llm-agents autolith rex nixvim hjem
+CORE_INPUTS := nixpkgs nixpkgs-unstable home-manager nix-darwin fenix llm-agents rex nixvim hjem
 # Only update commands inherit temporary GitHub credentials.
 UPDATE_AUTH := $(SCRIPT_DIR)/dev/with-github-auth.sh
 SHELL_SCRIPTS = $(SCRIPT_DIR)/*/*.sh $(SCRIPT_DIR)/rebuild/lib/*.sh tests/*.sh packages/scripts/*.sh
@@ -80,10 +80,6 @@ update-nvim-plugins: ## Move Neovim's pinned Lua plugins to upstream HEAD (repla
 	@$(UPDATE_AUTH) $(SCRIPT_DIR)/dev/nvim-plugin-pins.sh --all
 	@echo "Check the editor before rebuilding:"
 	@echo "  nix build .#checks.$$(nix eval --impure --raw --expr builtins.currentSystem).nvim-candidate .#checks.$$(nix eval --impure --raw --expr builtins.currentSystem).hjem-lifecycle-regression --no-link"
-
-update-nextcloud-apps: ## Bump declaratively managed Nextcloud apps
-	@$(UPDATE_AUTH) nix run .#nix-update -- --flake nextcloud-calendar
-
 
 check-scripts: ## Run shell syntax, ShellCheck, and safety regression tests
 	@command -v shellcheck >/dev/null || { echo "shellcheck not on PATH; run inside 'nix develop'" >&2; exit 1; }

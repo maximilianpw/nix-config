@@ -42,10 +42,8 @@
       # Compression & file tools
       pkgs.zip
       pkgs.unzip
-      pkgs.xdg-utils
 
       # Linting & validation
-      pkgs.vale
       pkgs.glow
       pkgs.python313Packages.mkdocs
       pkgs.python313Packages.mkdocs-material
@@ -57,5 +55,5 @@
       pkgs.ngrok
     ]
     # Darwin uses 1Password's signed Homebrew CLI for desktop-app integration.
-    ++ lib.optional (!isDarwin) pkgs._1password-cli;
+    ++ lib.optionals (!isDarwin) [pkgs._1password-cli pkgs.xdg-utils];
 }

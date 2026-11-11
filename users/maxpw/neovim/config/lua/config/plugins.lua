@@ -12,7 +12,6 @@ M.shared = {
 }
 
 M.terminal = {
-  "plugins.ai.amp",
   "plugins.ai.supermaven",
   "plugins.editor.blink",
   "plugins.editor.fff",
@@ -27,7 +26,6 @@ M.terminal = {
   "plugins.editor.which-key",
   "plugins.git.codediff",
   "plugins.git.gitsigns",
-  "plugins.lsp.go",
   "plugins.lsp.html",
   "plugins.lsp.init",
   "plugins.lsp.rust",

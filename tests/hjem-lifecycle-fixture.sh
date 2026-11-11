@@ -6,9 +6,15 @@
 # Asserts only the properties this repository relies on: links and copies are
 # created and removed, nothing a user or another owner wrote is deleted, the
 # two-stage handoff works, and older manifests roll back. Known upstream hazards
-# (single-use backup slot, partial failures, warn-only validation) are recorded
-# in docs/nixvim-hjem.md rather than pinned here, so an upstream fix does
-# not fail this check.
+# are deliberately not pinned, so an upstream fix does not fail this check:
+# - a collision becomes `.backup-<name>`, and a second collision overwrites it;
+# - a failed activation leaves partial changes and can leave the state file
+#   stale, so recover by inspecting targets;
+# - re-applying a manifest that still lists a path takes it back from another
+#   owner, so hand off in two activations;
+# - runtime activation only warns about invalid manifests;
+# - the nix-darwin import adds launch agents and the NixOS import adds
+#   hjem.target, even with no users.
 set -euo pipefail
 
 : "${HJEM:?HJEM must be set}"

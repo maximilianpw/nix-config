@@ -40,7 +40,6 @@ fish_add_path -g "$HOME/.local/bin"
 #-------------------------------------------------------------------------------
 # Vars
 #-------------------------------------------------------------------------------
-# Modify our path to include our Go binaries
 # Exported variables
 if isatty
     set -x GPG_TTY (tty)

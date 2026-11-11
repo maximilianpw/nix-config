@@ -23,6 +23,4 @@ in {
     home = "/home/maxpw";
     shell = settings.loginShell;
   };
-
-  system.stateVersion = lib.mkDefault "24.05";
 }

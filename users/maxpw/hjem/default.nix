@@ -1,9 +1,9 @@
-# Hjem-owned application files for hosts with `hjem = true` in lib/hosts.nix.
+# Hjem-owned application files.
 #
 # Sources live under ./files at their $HOME-relative path. Hjem owns individual
 # files, never whole directories: several of these apps write state, logs or
-# sockets beside their config (e.g. ~/.config/herdr). See docs/nixvim-hjem.md
-# for the handoff and recovery procedure.
+# sockets beside their config (e.g. ~/.config/herdr-app). Handoff and hazards
+# are described in tests/hjem-lifecycle-fixture.sh.
 {
   config,
   currentSystemUser,
@@ -14,10 +14,6 @@
 
   # Every file under ./files is deployed at the same $HOME-relative path.
   paths = map (file: lib.removePrefix "${toString ./files}/" (toString file)) (lib.filesystem.listFilesRecursive ./files);
-  # Amp discovers plugins by scanning its plugin directory; copy them as real
-  # files rather than relying on it to follow symlinks. Everything else is a
-  # read-only link into the store.
-  isCopied = lib.hasPrefix ".config/amp/plugins/";
 
   hmTargets = map (file: file.target) (builtins.filter (file: file.enable) (builtins.attrValues config.home-manager.users.${currentSystemUser}.home.file));
   hjemTargets = builtins.attrNames config.hjem.users.${currentSystemUser}.files;
@@ -39,19 +35,14 @@ in {
 
     files =
       lib.genAttrs paths (
-        path:
-          {
-            # Preserve sibling paths after symlink resolution: Bun resolves the
-            # Herdr backend's relative imports and executable bridge in the store.
-            source =
-              if lib.hasPrefix ".config/herdr-app/" path
-              then "${./files/.config/herdr-app}/${lib.removePrefix ".config/herdr-app/" path}"
-              else ./files + "/${path}";
-          }
-          // lib.optionalAttrs (isCopied path) {
-            type = "copy";
-            permissions = "644";
-          }
+        path: {
+          # Preserve sibling paths after symlink resolution: Bun resolves the
+          # Herdr backend's relative imports and executable bridge in the store.
+          source =
+            if lib.hasPrefix ".config/herdr-app/" path
+            then "${./files/.config/herdr-app}/${lib.removePrefix ".config/herdr-app/" path}"
+            else ./files + "/${path}";
+        }
       )
       // {
         ".config/glow/glow.yml".text = ''

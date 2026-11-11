@@ -6,7 +6,6 @@
   imports = [
     ./hardware/kim.nix
     ../homelab
-    ../modules/amp-orb-provider
   ];
 
   networking = {
@@ -60,7 +59,6 @@
     # 100) win ties once every core is busy. One ordinary compile saturates all
     # 24 cores while leaving memory and loopback services untouched, so quotas,
     # memory limits, or a lower max-jobs would only slow uncontended builds.
-    # See docs/kim-build-contention.md.
     services.nix-daemon.serviceConfig = {
       CPUWeight = 50;
       IOWeight = 50;
@@ -70,28 +68,13 @@
   hardware.bluetooth.enable = lib.mkDefault false;
 
   # Container stack for dev databases and ad-hoc services.
-  virtualisation.docker = {
-    enable = true;
-    # Default docker (28.x) is unmaintained and marked insecure in nixpkgs 25.11
-    package = pkgs.docker_29;
-  };
+  virtualisation.docker.enable = true;
   users.users.maxpw.extraGroups = lib.mkAfter ["docker"];
-
-  # Provision the encrypted token separately; until then the provider's
-  # ConditionPathExists keeps it stopped. See docs/amp-orbs.md.
-  sops.secrets = lib.optionalAttrs (builtins.pathExists ../secrets/amp-orb-provider.yaml) {
-    amp-orb-provider-token = {
-      sopsFile = ../secrets/amp-orb-provider.yaml;
-      restartUnits = ["amp-orb-provider.service"];
-    };
-  };
 
   # Start user services (including t3code) at boot instead of first SSH login.
   users.users.maxpw.linger = true;
 
   services = {
-    amp-orb-provider.enable = true;
-
     # Keep the Tailscale/MagicDNS identity aligned with the system hostname.
     tailscale.extraSetFlags = ["--hostname=kim"];
 

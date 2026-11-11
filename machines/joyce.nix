@@ -33,7 +33,7 @@
     '';
 
     # Determinate reads netrc tokens only from these sources; rex.netrc holds the
-    # Rex package token and stays unmanaged (docs/rex.md). The known hash adopts
+    # Rex package token and stays unmanaged (BOOTSTRAP.md). The known hash adopts
     # the file written by Rex's bootstrap instructions.
     etc."determinate/config.json" = {
       text =

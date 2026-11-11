@@ -83,12 +83,11 @@ local spec = {
     local formatters_by_ft = {
       lua = { "stylua" },
       nix = { "alejandra" },
-      go = { "goimports", "gofmt" },
       c = { "clang_format" },
       cpp = { "clang_format" },
       rust = { "rustfmt" },
       terraform = { "terraform_fmt" },
-      python = { "ruff_format", "black", stop_after_first = true },
+      python = { "ruff_format" },
       sh = { "shfmt" },
       bash = { "shfmt" },
       zsh = { "shfmt" },

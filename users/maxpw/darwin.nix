@@ -70,7 +70,6 @@ in {
       "plex"
       "tldraw"
       "grok-bot"
-      "kitlangton-hex"
     ];
 
     onActivation = {
@@ -184,9 +183,4 @@ in {
     home = "/Users/max-vev";
     shell = settings.loginShell;
   };
-
-  # Obsidian CLI (installed via Homebrew cask)
-  environment.systemPath = [
-    "/Applications/Obsidian.app/Contents/MacOS"
-  ];
 }

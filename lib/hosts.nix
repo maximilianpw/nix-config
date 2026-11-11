@@ -18,7 +18,6 @@
       "agent"
       "homelab"
     ];
-    hjem = true;
     role = "nixos-homelab";
     longRunningAgents = true;
     client = {
@@ -53,7 +52,6 @@
       "agent"
       "wsl"
     ];
-    hjem = true;
     role = "nixos-wsl";
     longRunningAgents = false;
     # Enrol after `tailscale up` inside WSL and key generation; Fleet surfaces
@@ -69,7 +67,6 @@
     darwin = true;
     wsl = false;
     linuxDesktop = false;
-    hjem = true;
     profiles = [
       "base"
       "dev"

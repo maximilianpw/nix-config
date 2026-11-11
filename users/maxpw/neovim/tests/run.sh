@@ -30,7 +30,7 @@ poison() {
 for app in nvim nvim-candidate nvim-vscode-candidate; do
   poison "$XDG_CONFIG_HOME/$app/init.lua"
   poison "$XDG_CONFIG_HOME/$app/plugin/legacy.lua"
-  poison "$XDG_CONFIG_HOME/$app/lsp/gopls.lua"
+  poison "$XDG_CONFIG_HOME/$app/lsp/lua_ls.lua"
   poison "$XDG_CONFIG_HOME/$app/lua/config/init.lua"
   poison "$XDG_DATA_HOME/$app/site/plugin/legacy.lua"
 done
@@ -86,14 +86,12 @@ for file in "$NVIM_CONFIG_SOURCE"/lsp/*.lua; do
   name="$(basename "$file" .lua)"
   if ! grep -qx "$name" <<<"$enable_list"; then
     fail "lsp/$name.lua exists but '$name' is not in the vim.lsp.enable list"
-  elif ! grep -q "\`$name\`" "$NVIM_CONFIG_SOURCE/NIXOS_SETUP.md"; then
-    fail "'$name' enabled but not documented in NIXOS_SETUP.md"
   fi
 done
 for name in $enable_list; do
   [[ -f "$NVIM_CONFIG_SOURCE/lsp/$name.lua" ]] || fail "'$name' is enabled but lsp/$name.lua does not exist"
 done
-pass "lsp/ files, enable list, and NIXOS_SETUP.md agree"
+pass "lsp/ files and enable list agree"
 
 echo "--- Terminal package ---"
 if output="$("$NVIM_TERMINAL" --headless -c 'lua print("init ok")' -c 'qa' 2>&1)" && grep -q "init ok" <<<"$output"; then

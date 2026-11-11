@@ -36,11 +36,6 @@
       darwin = mkOption {type = types.bool;};
       wsl = mkOption {type = types.bool;};
       linuxDesktop = mkOption {type = types.bool;};
-      hjem = mkOption {
-        type = types.bool;
-        default = false;
-        description = "Hjem owns this user's static app files (users/<userDir>/hjem); see docs/nixvim-hjem.md.";
-      };
       hardwareModules = mkOption {
         type = types.listOf types.str;
         default = [];

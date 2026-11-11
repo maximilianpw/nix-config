@@ -4,8 +4,7 @@ return {
     require("config.plugins").packadd(
       "nvim-dap-ui",
       "nvim-dap-virtual-text",
-      "persistent-breakpoints.nvim",
-      "nvim-dap-go"
+      "persistent-breakpoints.nvim"
     )
   end,
   keys = {

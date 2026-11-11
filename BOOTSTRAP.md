@@ -30,8 +30,8 @@ Boot the ISO, then partition and install. Two options:
 
 - **Manual/graphical install**: use the installer as usual. Keep the
   generated `hardware-configuration.nix` — you'll need it in step 3.
-- **Disko**: follow the destructive gates in
-  [docs/homelab-storage.md](docs/homelab-storage.md). From a reviewed checkout,
+- **Disko**: see "Storage identities" in
+  [docs/homelab-recovery.md](docs/homelab-recovery.md). From a reviewed checkout,
   adapt `machines/hardware/kim-disko.nix` for the new machine's stable disk
   by-id. Evaluate the locked app first; run destructive mode only after
   checking the plan and `lsblk` on that exact machine:
@@ -218,8 +218,35 @@ checks and will tell you if either key is missing.
 6. Commit, push, and run the bootstrap on the new machine. Start Tailscale and
    verify the inventory key resolves through MagicDNS before testing Fleet.
 
-For WSL specifically, see `docs/wsl-setup.md` (`make wsl` builds the import
-image at `.artifacts/nixos.wsl`).
+For WSL, `make wsl` builds the import image at `.artifacts/nixos.wsl`. On
+Windows, in an administrator PowerShell:
+
+```powershell
+wsl --install --no-distribution   # reboot if prompted
+wsl --import Cuno $env:USERPROFILE\Cuno C:\path\to\nixos.wsl
+wsl -d Cuno
+```
+
+Then clone the repository inside Cuno, place the sops age key, and run
+`sudo nixos-rebuild switch --flake .#cuno`.
+
+### Rex package token
+
+Until Rex's first release, every machine that evaluates this flake needs a
+`pkgs.superlogical.com` token in a netrc file kept out of Git, sops and the
+store; without it evaluation fails with HTTP 401. CI uses `tests/stubs/rex`.
+
+- NixOS: `/etc/nix/netrc`, `root:wheel`, mode `0640`:
+
+  ```sh
+  read -rs token
+  printf 'machine pkgs.superlogical.com\nlogin rex\npassword %s\n' "$token" \
+    | sudo install -m 0640 -o root -g wheel /dev/stdin /etc/nix/netrc
+  unset token
+  ```
+
+- Joyce (Determinate): `/etc/determinate/rex.netrc`, mode `0600` root;
+  `machines/joyce.nix` lists it under `additionalNetrcSources`.
 
 ## Day-to-day commands
 
@@ -265,10 +292,6 @@ nix flake check --no-build
 
 See the troubleshooting section in `secrets/README.md` — usually the age key
 is missing from `/var/lib/sops-nix/key.txt` or doesn't match `.sops.yaml`.
-
-For the configuration ownership boundary and the remaining off-site/offline
-recovery prerequisites, see
-[docs/config-ownership-and-recovery.md](docs/config-ownership-and-recovery.md).
 
 ## Support
 

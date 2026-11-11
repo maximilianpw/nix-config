@@ -5,11 +5,6 @@
 }: let
   homelab = import ../../../../lib/homelab.nix {inherit lib;};
   vaultwardenUrl = homelab.privateUrl "vaultwarden";
-  ynabMcpServerSource = pkgs.runCommand "ynab-mcp-server-source" {} ''
-    mkdir --parents "$out"
-    cp ${../../../../scripts/user/ynab-mcp-server.mjs} "$out/ynab-mcp-server.mjs"
-    cp ${../../../../scripts/user/ynab-mcp-operations.json} "$out/ynab-mcp-operations.json"
-  '';
 in {
   home.packages = [
     (pkgs.writeShellApplication {
@@ -26,13 +21,6 @@ in {
           "''${vev_root,,}/"*) exec npmrc-token docker compose "$@" ;;
         esac
         exec docker compose "$@"
-      '';
-    })
-    (pkgs.writeShellApplication {
-      name = "ynab-mcp-server";
-      runtimeInputs = [pkgs.nodejs pkgs._1password-cli];
-      text = ''
-        exec ${pkgs.nodejs}/bin/node ${ynabMcpServerSource}/ynab-mcp-server.mjs "$@"
       '';
     })
     (pkgs.writeShellApplication {

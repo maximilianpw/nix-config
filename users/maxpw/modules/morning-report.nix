@@ -1,7 +1,7 @@
 # Daily read-only morning report. Each run writes ~/reports/morning/<date>.md
 # (through a temporary file beside it, mode 0600) and a scratch directory it
 # removes; everything else is only read, and git runs with optional locks
-# disabled. See docs/agent-tooling-backlog.md.
+# disabled.
 {
   config,
   hostRecord,

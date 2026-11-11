@@ -17,7 +17,7 @@ if [[ -x $T3CODE_BREW_BIN ]]; then
       maxpw-t3-code-nightly|t3-code|t3-code@nightly)
         echo "T3 Code migration: $cask is still installed through Homebrew." >&2
         echo "Verify the Nix app first, then unpin and uninstall this cask WITHOUT --zap." >&2
-        echo "See docs/t3code.md. Activation stopped to protect T3 userdata." >&2
+        echo "Activation stopped to protect T3 userdata." >&2
         exit 1
         ;;
     esac

@@ -70,8 +70,6 @@ in
       PY
       grep -Fx 'saved messages must survive' "$HOME/.plannotator/inbox/fixture.txt"
       test ! -e "$HOME/.plannotator/inbox/inbox.json"
-      jq -e '(."amp.mcpServers" // {} | has("plannotator-inbox")) | not' ${../users/maxpw/agents/amp/settings.json}
-      jq -e '.mcpServers | has("plannotator-inbox") | not' ${../users/maxpw/agents/muse/settings.json}
       jq -e '.enabledPlugins."plannotator@plannotator" == true' ${../users/maxpw/agents/claude/settings.json}
       touch "$out"
     ''

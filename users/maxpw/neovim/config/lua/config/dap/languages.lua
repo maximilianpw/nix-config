@@ -7,27 +7,6 @@ function M.setup(dap)
     return vim.fn.input("Path to executable: ", vim.fn.getcwd() .. "/", "file")
   end
 
-  local ok_dap_go, dap_go = pcall(require, "dap-go")
-  if ok_dap_go then
-    dap_go.setup({
-      dap_configurations = {
-        {
-          type = "go",
-          name = "Attach remote",
-          mode = "remote",
-          request = "attach",
-        },
-      },
-      delve = {
-        path = "dlv",
-        initialize_timeout_sec = 20,
-        port = "${port}",
-        args = {},
-        build_flags = "",
-      },
-    })
-  end
-
   dap.adapters.lldb = {
     type = "executable",
     command = "lldb-dap",

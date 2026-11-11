@@ -18,7 +18,7 @@
     recovery = {
       order = 96;
       versionPolicy = "restore-archived-version-first";
-      runbook = "docs/media-companions.md#recovery";
+      runbook = "docs/homelab-recovery.md#media-companions";
       acceptance = ["account-filters-and-download-client-connections-load"];
       secretOwners = ["mutable-state:/var/lib/private/autobrr" "generated:/var/lib/autobrr-session/secret"];
     };
@@ -46,7 +46,7 @@
     recovery = {
       order = 96;
       versionPolicy = "restore-archived-version-first";
-      runbook = "docs/media-companions.md#recovery";
+      runbook = "docs/homelab-recovery.md#media-companions";
       acceptance = ["private-integrations-load-and-saved-matches-are-preserved"];
       secretOwners = ["mutable-state:/var/lib/cross-seed/integrations.json"];
     };
@@ -64,7 +64,7 @@
     recovery = {
       order = 96;
       versionPolicy = "restore-pinned-image-first";
-      runbook = "docs/media-companions.md#recovery";
+      runbook = "docs/homelab-recovery.md#media-companions";
       acceptance = ["private-config-and-collection-state-load"];
       secretOwners = ["mutable-state:/var/lib/kometa/config.yml"];
     };
@@ -88,7 +88,7 @@
     recovery = {
       order = 96;
       versionPolicy = "restore-pinned-image-first";
-      runbook = "docs/media-companions.md#recovery";
+      runbook = "docs/homelab-recovery.md#media-companions";
       acceptance = ["connections-and-rules-load-before-enabling-actions"];
       secretOwners = ["mutable-state:/var/lib/maintainerr"];
     };
@@ -132,7 +132,7 @@
     recovery = {
       order = 95;
       versionPolicy = "restore-archived-version-first";
-      runbook = "docs/portfolio-tracker.md#recovery";
+      runbook = "docs/homelab-recovery.md#portfolio-tracker";
       acceptance = [
         "sync-reconciles-both-accounts"
         "get-summary-through-executor-succeeds"
@@ -161,7 +161,7 @@
     recovery = {
       order = 96;
       versionPolicy = "restore-archived-version-first";
-      runbook = "docs/media-companions.md#recovery";
+      runbook = "docs/homelab-recovery.md#media-companions";
       acceptance = ["sync-state-and-dedicated-trash-profiles-load"];
       secretOwners = ["mutable-state:sonarr-and-radarr-config.xml"];
     };
@@ -185,7 +185,7 @@
     recovery = {
       order = 96;
       versionPolicy = "restore-pinned-image-first";
-      runbook = "docs/media-companions.md#recovery";
+      runbook = "docs/homelab-recovery.md#media-companions";
       acceptance = ["libraries-and-plugins-load-with-worker-paused"];
       secretOwners = ["mutable-state:/var/lib/tdarr/configs"];
     };
@@ -211,7 +211,7 @@
     recovery = {
       order = 96;
       versionPolicy = "restore-archived-version-first";
-      runbook = "docs/media-companions.md#recovery";
+      runbook = "docs/homelab-recovery.md#media-companions";
       acceptance = ["manager-connections-load-and-original-archives-remain"];
       secretOwners = ["mutable-state:sonarr-radarr-and-lidarr-config.xml"];
     };
@@ -292,7 +292,7 @@
     recovery = {
       order = 92;
       versionPolicy = "restore-archived-version-first";
-      runbook = "docs/media-stack.md#recovery";
+      runbook = "docs/homelab-recovery.md#media-stack";
       acceptance = ["sonarr-radarr-providers-and-subtitle-history-load"];
       secretOwners = ["mutable-state:/var/lib/bazarr"];
     };
@@ -335,7 +335,7 @@
     recovery = {
       order = 76;
       versionPolicy = "restore-archived-version-first";
-      runbook = "docs/media-mcp.md#recovery";
+      runbook = "docs/homelab-recovery.md#homelab-mcp";
       acceptance = ["authenticated-stack-health-through-executor-succeeds"];
       secretOwners = ["sops:homelab-mcp-access-token" "mutable-state:/var/lib/private/homelab-mcp"];
     };
@@ -404,7 +404,7 @@
     recovery = {
       order = 60;
       versionPolicy = "restore-archived-version-first";
-      runbook = "docs/forgejo.md#recovery";
+      runbook = "docs/homelab-recovery.md#forgejo";
       acceptance = [
         "owner-login-and-private-repository-clone-pass"
         "actions-runner-completes-a-container-job"
@@ -564,7 +564,7 @@
     recovery = {
       order = 90;
       versionPolicy = "restore-archived-version-first";
-      runbook = "docs/media-stack.md#recovery";
+      runbook = "docs/homelab-recovery.md#media-stack";
       acceptance = [
         "libraries-users-and-watch-state-load"
         "representative-direct-play-and-transcode-pass"
@@ -603,7 +603,7 @@
     recovery = {
       order = 90;
       versionPolicy = "restore-archived-version-first";
-      runbook = "docs/media-stack.md#recovery";
+      runbook = "docs/homelab-recovery.md#media-stack";
       acceptance = [
         "libraries-users-and-watch-state-load"
         "representative-direct-play-and-transcode-pass"
@@ -676,7 +676,7 @@
     recovery = {
       order = 95;
       versionPolicy = "restore-archived-version-first";
-      runbook = "docs/homelab-recovery.md";
+      runbook = "docs/homelab-recovery.md#leerr";
       acceptance = [
         "sqlite-integrity-and-account-login-pass"
         "per-user-plex-library-loads-without-fixtures"
@@ -707,7 +707,7 @@
     recovery = {
       order = 92;
       versionPolicy = "restore-archived-version-first";
-      runbook = "docs/media-stack.md#recovery";
+      runbook = "docs/homelab-recovery.md#media-stack";
       acceptance = ["music-root-download-client-and-history-load"];
       secretOwners = ["mutable-state:/var/lib/lidarr/.config/Lidarr"];
     };
@@ -912,7 +912,7 @@
     recovery = {
       order = 93;
       versionPolicy = "restore-archived-version-first";
-      runbook = "docs/media-stack.md#recovery";
+      runbook = "docs/homelab-recovery.md#media-stack";
       acceptance = ["applications-and-authorized-indexer-definitions-load"];
       secretOwners = ["mutable-state:/var/lib/private/prowlarr"];
     };
@@ -969,7 +969,7 @@
     recovery = {
       order = 91;
       versionPolicy = "restore-archived-version-first";
-      runbook = "docs/media-stack.md#recovery";
+      runbook = "docs/homelab-recovery.md#media-stack";
       acceptance = [
         "mullvad-reports-connected-before-daemon-start"
         "torrent-resume-state-and-categories-load"
@@ -1007,7 +1007,7 @@
     recovery = {
       order = 92;
       versionPolicy = "restore-archived-version-first";
-      runbook = "docs/media-stack.md#recovery";
+      runbook = "docs/homelab-recovery.md#media-stack";
       acceptance = ["movie-root-download-client-and-history-load"];
       secretOwners = ["mutable-state:/var/lib/radarr/.config/Radarr"];
     };
@@ -1050,7 +1050,7 @@
     recovery = {
       order = 91;
       versionPolicy = "restore-archived-version-first";
-      runbook = "docs/media-stack.md#recovery";
+      runbook = "docs/homelab-recovery.md#media-stack";
       acceptance = [
         "mullvad-reports-connected-before-daemon-start"
         "provider-uses-strict-tls"
@@ -1092,7 +1092,7 @@
     recovery = {
       order = 94;
       versionPolicy = "restore-archived-version-first";
-      runbook = "docs/media-stack.md#recovery";
+      runbook = "docs/homelab-recovery.md#media-stack";
       acceptance = ["jellyfin-sonarr-and-radarr-connections-load"];
       secretOwners = ["mutable-state:/var/lib/private/jellyseerr"];
     };
@@ -1124,7 +1124,7 @@
     recovery = {
       order = 92;
       versionPolicy = "restore-archived-version-first";
-      runbook = "docs/media-stack.md#recovery";
+      runbook = "docs/homelab-recovery.md#media-stack";
       acceptance = ["series-root-download-client-and-history-load"];
       secretOwners = ["mutable-state:/var/lib/sonarr/.config/NzbDrone"];
     };
@@ -1156,7 +1156,7 @@
     recovery = {
       order = 91;
       versionPolicy = "restore-archived-version-first";
-      runbook = "docs/media-stack.md#recovery";
+      runbook = "docs/homelab-recovery.md#media-stack";
       acceptance = [
         "jellyfin-source-channels-and-lineups-load"
         "hdhomerun-xmltv-and-representative-channel-play"

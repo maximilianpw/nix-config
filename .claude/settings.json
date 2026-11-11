@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "if [[ \"$CLAUDE_TOOL_INPUT_FILE_PATH\" == *.nix ]]; then alejandra -q \"$CLAUDE_TOOL_INPUT_FILE_PATH\" 2>/dev/null; fi"
+            "command": "f=$(jq -r '.tool_input.file_path // empty'); case \"$f\" in *.nix) alejandra -q \"$f\" 2>/dev/null || true;; esac"
           }
         ]
       }
@@ -28,7 +28,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "case \"$CLAUDE_TOOL_INPUT_FILE_PATH\" in */secrets/secrets.yaml|*/flake.lock) echo 'BLOCK: This file should not be edited directly. Use sops for secrets or nix flake update for the lock file.' && exit 1;; esac"
+            "command": "case \"$(jq -r '.tool_input.file_path // empty')\" in */secrets/*.yaml|*/flake.lock) echo 'Edit secrets with sops and flake.lock with nix flake commands.' >&2; exit 2;; esac"
           }
         ]
       }

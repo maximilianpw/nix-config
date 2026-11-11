@@ -48,7 +48,7 @@
     };
 
     # Prebuilt Rex. Until its first release the package host needs a netrc
-    # token on every evaluating machine (docs/rex.md); CI uses tests/stubs/rex.
+    # token on every evaluating machine (BOOTSTRAP.md); CI uses tests/stubs/rex.
     rex = {
       url = "https://pkgs.superlogical.com/rex/nix/preview.tar.gz";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -81,9 +81,6 @@
 
     llm-agents.url = "github:numtide/llm-agents.nix";
 
-    # Keep upstream nixpkgs: Autolith pins SBCL and its matching Lisp package set.
-    autolith.url = "github:lambda-symbolics/autolith";
-
     disko.url = "github:nix-community/disko";
     disko.inputs.nixpkgs.follows = "nixpkgs";
 
@@ -108,8 +105,8 @@
     # The nested neovim-src revision is what `nix flake update` advances.
     neovim-nightly-overlay.url = "github:nix-community/neovim-nightly-overlay";
 
-    # Manifest-based $HOME linker, imported only by hosts with `hjem = true` in
-    # lib/hosts.nix: its nix-darwin module adds launch agents even with no users.
+    # Manifest-based $HOME linker. Its nix-darwin module adds launch agents
+    # even with no users.
     hjem = {
       url = "github:feel-co/hjem";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -155,7 +152,6 @@
       in {
         inherit (llm) claude-code;
         inherit (llm) codex;
-        autolith = inputs.autolith.packages.${prev.stdenv.hostPlatform.system}.default;
         # llm-agents keeps v1 as opencode and installs v2 as opencode2.
         # Preserve the command name used by wrappers and service PATHs.
         # Wrap rather than overrideAttrs, which would rebuild it from source
@@ -170,15 +166,12 @@
           meta = llm.opencode2.meta // {mainProgram = "opencode";};
         };
         inherit (llm) grok;
-        inherit (llm) muse-code;
         herdr-jj = inputs.herdr-jj.packages.${prev.stdenv.hostPlatform.system}.default;
         inherit (llm) executor;
-        amp-cli = llm.amp;
         inherit pi;
         plannotator = resignBunBinary llm.plannotator "bin/plannotator";
         inherit (llm) skills;
         hunkdiff = hunk;
-        inherit (llm) agent-browser;
       })
       (final: prev: let
         unstable = inputs.nixpkgs-unstable.legacyPackages.${prev.stdenv.hostPlatform.system};
@@ -248,9 +241,7 @@
         cliproxyapi = final.callPackage ./packages/cliproxyapi.nix {};
         cua-driver = final.callPackage ./packages/cua-driver.nix {};
         herdr-core = final.callPackage ./packages/herdr-core.nix {};
-        nextcloud-calendar = final.callPackage ./packages/nextcloud-calendar.nix {};
         lazygit-nvim-edit = final.callPackage ./packages/lazygit-nvim-edit.nix {};
-        herdr-shell = final.callPackage ./packages/herdr-shell.nix {};
       })
     ];
 
@@ -341,7 +332,7 @@
     packages = let
       editorPackages = system: {
         inherit (nvim system) nvim nvim-stable nvim-vscode nvim-candidate nvim-vscode-candidate;
-        inherit (mkPkgs system) lazygit-nvim-edit herdr-shell;
+        inherit (mkPkgs system) lazygit-nvim-edit;
       };
     in {
       x86_64-linux = let
@@ -350,7 +341,7 @@
         editorPackages "x86_64-linux"
         // {
           inherit (pkgs) cloudflared plannotator;
-          inherit (pkgs) helium obsidian skills cliproxyapi cua-driver nextcloud-calendar hunkdiff nix-update tunarr jellyfin jellyfin-web jellyfin-ffmpeg vite-plus t3code herdr-core herdr-jj;
+          inherit (pkgs) helium obsidian skills cliproxyapi cua-driver hunkdiff nix-update tunarr jellyfin jellyfin-web jellyfin-ffmpeg vite-plus t3code herdr-core herdr-jj;
           inherit (inputs.jj-stack.packages.x86_64-linux) jj-stack;
         };
       aarch64-darwin = let
@@ -359,7 +350,7 @@
         editorPackages "aarch64-darwin"
         // {
           inherit (pkgs) cloudflared plannotator;
-          inherit (pkgs) cua-driver skills nextcloud-calendar hunkdiff nix-update obsidian vite-plus t3code herdr-core herdr-jj;
+          inherit (pkgs) cua-driver skills hunkdiff nix-update obsidian vite-plus t3code herdr-core herdr-jj;
           inherit (inputs.jj-stack.packages.aarch64-darwin) jj-stack;
         };
     };

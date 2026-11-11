@@ -427,8 +427,8 @@ in {
             listenAddress = "127.0.0.1";
             openFirewall = false;
             # These are the currently monitored NVMe namespaces, not stable disk
-            # identities. Reconcile them with model/serial data using
-            # docs/homelab-storage.md after hardware changes.
+            # identities. Reconcile them with model/serial data using "Storage
+            # identities" in docs/homelab-recovery.md after hardware changes.
             devices = [
               "/dev/nvme0n1"
               "/dev/nvme1n1"

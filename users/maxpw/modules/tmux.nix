@@ -1,5 +1,4 @@
 {
-  config,
   hostRecord,
   lib,
   pkgs,
@@ -9,7 +8,6 @@
   # Panes are human-facing: use the interactive shell (nushell), not the
   # compatibility login shell (fish) that sshd and tools exec into.
   interactiveShellPath = lib.getExe settings.interactiveShell;
-  resurrectDir = "${config.xdg.stateHome}/tmux/resurrect";
   hostAccent = hostRecord.accent;
 in {
   programs.tmux = {
@@ -27,48 +25,6 @@ in {
     plugins = with pkgs.tmuxPlugins; [
       vim-tmux-navigator
       yank
-      tmux-thumbs
-      tmux-fzf
-      sessionist
-      open
-      {
-        plugin = extrakto;
-        extraConfig = ''
-          set -g @extrakto_split_direction 'p'
-          set -g @extrakto_popup_size '60%'
-        '';
-      }
-      {
-        plugin = tmux-floax;
-        extraConfig = ''
-          set -g @floax-bind 'f'
-          set -g @floax-width '80%'
-          set -g @floax-height '80%'
-          set -g @floax-border-color '#7aa2f7'
-        '';
-      }
-      {
-        plugin = tmux-sessionx;
-        extraConfig = ''
-          set -g @sessionx-bind 'o'
-          set -g @sessionx-preview-enabled 'true'
-        '';
-      }
-      {
-        plugin = resurrect;
-        extraConfig = ''
-          set -g @resurrect-dir '${resurrectDir}'
-          set -g @resurrect-strategy-nvim 'session'
-          set -g @resurrect-capture-pane-contents 'off'
-        '';
-      }
-      {
-        plugin = continuum;
-        extraConfig = ''
-          set -g @continuum-restore 'off'
-          set -g @continuum-save-interval '10'
-        '';
-      }
     ];
 
     extraConfig = ''
@@ -117,7 +73,6 @@ in {
 
       bind g display-popup -E -w 90% -h 90% -d "#{pane_current_path}" lazygit
       bind G display-popup -E -w 90% -h 90% -d "#{pane_current_path}" jjui
-      # Session picker now handled by tmux-sessionx (prefix + o)
 
       # Join/break panes
       bind j choose-window "join-pane -h -s '%%'"
@@ -148,17 +103,6 @@ in {
 
       set -g message-style "fg=${hostAccent},bg=#1a1b26"
 
-    '';
-  };
-
-  home = {
-    packages = [pkgs.tmuxinator];
-
-    # Resurrect state contains commands and working directories. Keep it
-    # private, and remove pane-content archives/extractions from the old config.
-    activation.secureTmuxResurrect = lib.hm.dag.entryAfter ["writeBoundary"] ''
-      export TMUX_RESURRECT_DIR=${lib.escapeShellArg resurrectDir}
-      ${builtins.readFile ../../../scripts/user/secure-tmux-resurrect.sh}
     '';
   };
 }

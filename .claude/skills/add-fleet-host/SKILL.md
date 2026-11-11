@@ -14,7 +14,6 @@ Use this workflow to add one trusted machine to the declarative fleet without ed
 
 Read these files before making changes:
 
-- `modules/fleet/README.md`
 - `lib/hosts.nix`
 - `lib/inventory.nix`
 - `lib/fleet.nix`

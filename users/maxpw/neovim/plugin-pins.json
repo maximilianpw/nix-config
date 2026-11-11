@@ -1,10 +1,4 @@
 {
-  "amp.nvim": {
-    "owner": "sourcegraph",
-    "repo": "amp.nvim",
-    "rev": "01ede44322220da5dc0b73ad8ace328a5ec1f5bf",
-    "hash": "sha256-RS9BWupC50xhYos5eXqYz9SdVgl17zK4b09Ifze2j4A="
-  },
   "bufferline.nvim": {
     "owner": "akinsho",
     "repo": "bufferline.nvim",
@@ -40,12 +34,6 @@
     "repo": "gitsigns.nvim",
     "rev": "ef707fb93301a9b856f36eae4c8f56f5b988a794",
     "hash": "sha256-NBPaX6FtsSDMuqJan50Y1Gfxc35+3CgtKVJeL3zsBrQ="
-  },
-  "go.nvim": {
-    "owner": "ray-x",
-    "repo": "go.nvim",
-    "rev": "5622d97078b30d853a0dfaf8cba204263a60c99a",
-    "hash": "sha256-HX+jtsTtz1QgYtrgfW7wNZ2X4HwCjOmEA8hz12uwdFA="
   },
   "grug-far.nvim": {
     "owner": "MagicDuck",
@@ -83,12 +71,6 @@
     "rev": "27bf921498043f7ecd821d6db68d05de244bbd02",
     "hash": "sha256-BiU0OEN8kTbPbLr0f1ueHXFWwQN8djXlqqInFlV01rM="
   },
-  "neotest-golang": {
-    "owner": "fredrikaverpil",
-    "repo": "neotest-golang",
-    "rev": "65b2be63c3de00e6f15c05388ebdc8d603dbd727",
-    "hash": "sha256-EZG10y2ZLi0D33czCP3hv5azbWwBz3xEtNS5KdTk844="
-  },
   "neotest-jest": {
     "owner": "nvim-neotest",
     "repo": "neotest-jest",
@@ -124,12 +106,6 @@
     "repo": "nvim-dap",
     "rev": "cfa2d58f4537aca6ca83e2de1a0d9f1491121264",
     "hash": "sha256-9T6EL8mZ1rddDXBNvkh68jQSKK1bhi73IvyD6v464x8="
-  },
-  "nvim-dap-go": {
-    "owner": "leoluz",
-    "repo": "nvim-dap-go",
-    "rev": "b4421153ead5d726603b02743ea40cf26a51ed5f",
-    "hash": "sha256-wg9kiW2eAMmg4bvgqaAS9kt7qaVsIWl36BNqRbhZIgo="
   },
   "nvim-dap-ui": {
     "owner": "rcarriga",

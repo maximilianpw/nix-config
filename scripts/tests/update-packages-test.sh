@@ -43,7 +43,6 @@ helium
 obsidian
 cliproxyapi
 cua-driver
-nextcloud-calendar
 tunarr
 herdr-core
 cloudflared

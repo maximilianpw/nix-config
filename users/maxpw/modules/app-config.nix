@@ -5,14 +5,12 @@
 #
 # Hjem owns the static files (users/maxpw/hjem); this module owns only these
 # writable ones, and the Hjem module asserts that no path has both owners.
-# Applies to hosts with `hjem = true` in lib/hosts.nix. Contents are not pinned
-# by a Nix generation: recovery is from Git. If an app replaces the link with a
+# Contents are not pinned by a Nix generation: recovery is from Git. If an app replaces the link with a
 # regular file when it saves, take that file out of this list rather than
 # fighting it.
 {
   config,
   currentSystemUserDir,
-  hostRecord,
   lib,
   ...
 }: let
@@ -24,9 +22,8 @@
   paths = [
     ".plannotator/config.json"
   ];
-in
-  lib.mkIf hostRecord.hjem {
-    home.file = lib.genAttrs paths (path: {
-      source = homeFiles.mkRepoSource config.home.homeDirectory "users/${currentSystemUserDir}/app-config/${path}";
-    });
-  }
+in {
+  home.file = lib.genAttrs paths (path: {
+    source = homeFiles.mkRepoSource config.home.homeDirectory "users/${currentSystemUserDir}/app-config/${path}";
+  });
+}
