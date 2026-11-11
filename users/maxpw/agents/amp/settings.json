@@ -1,0 +1,30 @@
+{
+  "amp.permissions": [
+    {
+      "tool": "Bash",
+      "matches": {
+        "cmd": "*git commit*"
+      },
+      "action": "ask"
+    },
+    {
+      "tool": "Bash",
+      "matches": {
+        "cmd": [
+          "*python *",
+          "*python3 *"
+        ]
+      },
+      "action": "ask"
+    },
+    {
+      "tool": "mcp__playwright_*",
+      "action": "allow"
+    },
+    {
+      "tool": "mcp__*",
+      "action": "ask"
+    }
+  ],
+  "amp.dangerouslyAllowAll": true
+}

@@ -45,6 +45,7 @@ inputs: [
     inherit (llm) grok;
     herdr-jj = inputs.herdr-jj.packages.${prev.stdenv.hostPlatform.system}.default;
     inherit (llm) executor;
+    amp-cli = llm.amp;
     inherit pi;
     plannotator = resignBunBinary llm.plannotator "bin/plannotator";
     inherit (llm) skills;

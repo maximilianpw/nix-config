@@ -27,6 +27,7 @@ in {
       pkgs.herdr-core
       pkgs.herdr-jj
       pkgs.executor
+      pkgs.amp-cli
       pkgs.pi
       pkgs.skills
     ];
@@ -105,6 +106,7 @@ in {
         force = true;
       };
 
+      ".config/amp/settings.json".source = source "amp/settings.json";
       ".codex/AGENTS.md".text =
         builtins.readFile ../agents/shared/AGENTS.md
         + "\n"

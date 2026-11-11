@@ -18,6 +18,10 @@
     map (file: lib.removePrefix "${toString ./files}/" (toString file)) (lib.filesystem.listFilesRecursive ./files)
   );
 
+  # Amp discovers plugins by scanning its plugin directory, so copy them as
+  # real files; everything else is a read-only link into the store.
+  isCopied = lib.hasPrefix ".config/amp/plugins/";
+
   hmTargets = map (file: file.target) (builtins.filter (file: file.enable) (builtins.attrValues config.home-manager.users.${currentSystemUser}.home.file));
   hjemTargets = builtins.attrNames config.hjem.users.${currentSystemUser}.files;
 in {
@@ -38,14 +42,19 @@ in {
 
     files =
       lib.genAttrs paths (
-        path: {
-          # Preserve sibling paths after symlink resolution: Bun resolves the
-          # Herdr backend's relative imports and executable bridge in the store.
-          source =
-            if lib.hasPrefix ".config/herdr-app/" path
-            then "${./files/.config/herdr-app}/${lib.removePrefix ".config/herdr-app/" path}"
-            else ./files + "/${path}";
-        }
+        path:
+          {
+            # Preserve sibling paths after symlink resolution: Bun resolves the
+            # Herdr backend's relative imports and executable bridge in the store.
+            source =
+              if lib.hasPrefix ".config/herdr-app/" path
+              then "${./files/.config/herdr-app}/${lib.removePrefix ".config/herdr-app/" path}"
+              else ./files + "/${path}";
+          }
+          // lib.optionalAttrs (isCopied path) {
+            type = "copy";
+            permissions = "644";
+          }
       )
       // {
         ".config/glow/glow.yml".text = ''

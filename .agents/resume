@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+nix_bin=/nix/var/nix/profiles/default/bin/nix
+
+if [[ ! -x $nix_bin ]]; then
+  printf 'Orb snapshot is missing Nix; rerun .agents/setup.\n' >&2
+  exit 1
+fi
+
+if ! "$nix_bin" store info >/dev/null 2>&1; then
+  printf 'The Nix daemon is unavailable; rerun .agents/setup.\n' >&2
+  exit 1
+fi
+
+printf 'Orb ready: %s\n' "$("$nix_bin" --version)"

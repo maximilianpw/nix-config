@@ -36,6 +36,9 @@ Thumbs.db
 # Hyprland creates this stub even when hyprland.lua is the active config.
 users/maxpw/hyprland/hypr/hyprland.conf
 
+# Generated portal metadata for Amp orb services
+/.amp/portals/*
+
 # Secrets management
 # IMPORTANT: Only commit encrypted .yaml files, never plaintext or private keys
 secrets/secrets.yaml.dec

@@ -6,6 +6,7 @@
   imports = [
     ./hardware/kim.nix
     ../homelab
+    ../modules/amp-orb-provider
   ];
 
   networking = {
@@ -71,10 +72,17 @@
   virtualisation.docker.enable = true;
   users.users.maxpw.extraGroups = lib.mkAfter ["docker"];
 
+  sops.secrets.amp-orb-provider-token = {
+    sopsFile = ../secrets/amp-orb-provider.yaml;
+    restartUnits = ["amp-orb-provider.service"];
+  };
+
   # Start user services (including t3code) at boot instead of first SSH login.
   users.users.maxpw.linger = true;
 
   services = {
+    amp-orb-provider.enable = true;
+
     # Keep the Tailscale/MagicDNS identity aligned with the system hostname.
     tailscale.extraSetFlags = ["--hostname=kim"];
 
