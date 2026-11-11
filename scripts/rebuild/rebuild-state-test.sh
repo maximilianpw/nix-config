@@ -2,7 +2,7 @@
 set -euo pipefail
 here=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 
-# shellcheck source=../rebuild/lib/rebuild-state.sh
+# shellcheck source=scripts/rebuild/lib/rebuild-state.sh
 source "$here/lib/rebuild-state.sh"
 
 tmpdir=$(mktemp -d)

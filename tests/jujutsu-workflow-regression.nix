@@ -11,6 +11,7 @@ in
   assert jj.settings.revsets.git-sign-on-push == "~signed() & mine()";
   assert !(jj.settings.templates ? private-commits);
   assert !(jj.settings.aliases ? tidy) && !(jj.settings.aliases ? tidy-all);
+  assert !(jj.settings.aliases ? jrf);
   assert jj.settings.aliases.f == ["git" "fetch"];
   assert jj.settings.aliases.sync.definition == ["stack" "sync" "--all"];
   assert jj.settings.remotes.origin.auto-track-bookmarks == "glob:main";

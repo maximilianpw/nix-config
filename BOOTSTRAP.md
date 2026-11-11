@@ -7,17 +7,17 @@ driver". There are three scenarios, from most to least work:
 2. [New (or wiped) Mac](#scenario-2-new-or-wiped-mac)
 3. [Reinstalling an existing host / repo already cloned](#scenario-3-existing-host)
 
-In all cases the finishing move is the same: `./scripts/rebuild/bootstrap.sh`, which
-checks prerequisites, enables flakes, sets up the repo, verifies the host exists
-in the flake before maintaining the NixOS-only `/etc/nixos` symlink, checks the sops age key
-(NixOS and Darwin), and offers to run the first rebuild. Run
+In all cases the finishing move is the same: run `./scripts/rebuild/bootstrap.sh`
+from the clone. It checks prerequisites, enables flakes, verifies the host is in
+the inventory, checks the Darwin user age key, and offers the first rebuild,
+which then maintains `/etc/nixos` and guards the NixOS age key. Run
 `./scripts/rebuild/bootstrap.sh --dry-run` to see what it would do.
 
 > **The one dangerous gap to know about (NixOS):** the user password is a
 > sops secret. If the age key is not at `/var/lib/sops-nix/key.txt` before
 > the first rebuild, the user is created with **no password** — you're locked
-> out. Both `bootstrap.sh` and `nixos-rebuild.sh` check for this and refuse
-> to proceed, but do the key step early and deliberately.
+> out. `nixos-rebuild.sh` checks for this and refuses to switch, but do the
+> key step early and deliberately.
 
 ## Scenario 1: New NixOS machine from an ISO
 
@@ -99,7 +99,7 @@ sudo chown root:root /var/lib/sops-nix/key.txt
 
 ```bash
 cd ~/nix-config
-./scripts/rebuild/bootstrap.sh --skip-clone
+./scripts/rebuild/bootstrap.sh
 ```
 
 Say yes to the initial rebuild at the end (or run `make rebuild` later).
@@ -154,7 +154,7 @@ successful rebuild:
      'eval $(op signin); op item get "sops nixos" --fields password --reveal' \
      >> ~/.config/sops/age/keys.txt
    chmod 600 ~/.config/sops/age/keys.txt
-   ./scripts/rebuild/bootstrap.sh --skip-clone
+   ./scripts/rebuild/bootstrap.sh
    ```
 
    Note: macOS Nix settings (caches, trusted-users) live in
@@ -171,7 +171,7 @@ Kim):
 
 ```bash
 cd ~/nix-config
-./scripts/rebuild/bootstrap.sh --skip-clone   # or `make bootstrap`
+./scripts/rebuild/bootstrap.sh   # or `make bootstrap`
 ```
 
 On NixOS, place the system age key first (Scenario 1, step 4 above). On

@@ -2,7 +2,7 @@
 set -euo pipefail
 here=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 
-# shellcheck source=../rebuild/lib/rebuild-log.sh
+# shellcheck source=scripts/rebuild/lib/rebuild-log.sh
 source "$here/lib/rebuild-log.sh"
 
 eval_failure=$'warning: Git tree is dirty\nerror:\n       … while evaluating the attribute \'foo\'\n\n       error: attribute \'b\' missing\n\nError: nh trailer\nerror: second error'

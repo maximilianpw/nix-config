@@ -68,11 +68,11 @@ expect_build() {
   diff -u "$tmp/expected" "$TEST_COMMANDS"
 }
 
-expect_build nixosConfigurations.kim.config.system.build.toplevel Linux main-pc maxpw nixos kim 0
+expect_build nixosConfigurations.kim.config.system.build.toplevel Linux kim maxpw nixos kim 0
 expect_build nixosConfigurations.cuno.config.system.build.toplevel Linux arbitrary maxpw nixos-wsl cuno 1
 expect_build darwinConfigurations.joyce.system Darwin unrelated max-vev darwin joyce 0
 expect_build darwinConfigurations.joyce.system Darwin unrelated stranger darwin joyce 0 joyce
-expect_build nixosConfigurations.cuno.config.system.build.toplevel Linux arbitrary maxpw nixos-wsl cuno 0 wsl
+expect_build nixosConfigurations.cuno.config.system.build.toplevel Linux arbitrary maxpw nixos-wsl cuno 0 cuno
 
 expect_no_build() {
   if run_case "$@"; then

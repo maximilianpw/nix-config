@@ -67,7 +67,7 @@ bootstrap_case() {
   export TEST_OS=$1 TEST_KIND=$2 NIX_CONFIG_HOST=$3
   shift 3
   : > "$TEST_COMMANDS"
-  printf 'n\n' | bash "$here/bootstrap.sh" --skip-clone "$@" > "$tmp/out" 2> "$tmp/err"
+  printf 'n\n' | bash "$here/bootstrap.sh" "$@" > "$tmp/out" 2> "$tmp/err"
 }
 
 if TEST_EVAL_STATUS=17 bootstrap_case Linux nixos unknown; then
@@ -86,9 +86,8 @@ bootstrap_case Darwin darwin joyce
 [[ $(cat "$TEST_COMMANDS") == validate ]]
 
 bootstrap_case Linux nixos kim
-# Whether /etc/nixos exists on the test host or not, even inspecting it for
-# upkeep must follow compatible inventory validation. sudo above is inert.
-[[ $(head -n 2 "$TEST_COMMANDS") == $'validate\nlink-check' ]]
+# Bootstrap leaves /etc/nixos and every privileged step to nixos-rebuild.sh.
+[[ $(cat "$TEST_COMMANDS") == validate ]]
 assert_no_command nh
 
 bootstrap_case Linux nixos kim --dry-run

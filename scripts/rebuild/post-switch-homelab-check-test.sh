@@ -79,7 +79,7 @@ test "$(sort -u "$sleep_file")" = 1
 [[ $(wc -l < "$sleep_file") -eq 4 ]]
 grep -q $'\r\033\[2K' "$test_root/out"
 grep -Fq 'retrying in 2s' "$test_root/out"
-# shellcheck source=../rebuild/lib/rebuild-log.sh
+# shellcheck source=scripts/rebuild/lib/rebuild-log.sh
 source "$here/lib/rebuild-log.sh"
 clean_rebuild_log < "$test_root/out" | diff -u - <(cat <<'EXPECTED'
 Homelab check 1/4 failed (retrying every 2s):

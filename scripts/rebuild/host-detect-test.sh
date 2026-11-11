@@ -2,7 +2,7 @@
 set -euo pipefail
 here=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 
-# shellcheck source=../rebuild/lib/host-detect.sh
+# shellcheck source=scripts/rebuild/lib/host-detect.sh
 source "$here/lib/host-detect.sh"
 
 failures=0
@@ -29,7 +29,6 @@ expect_host() {
 }
 
 expect_host nixos kim Linux kim maxpw 0
-expect_host nixos kim Linux main-pc maxpw 0
 expect_host nixos build-box Linux build-box maxpw 0
 expect_host nixos cuno Linux arbitrary maxpw 1
 expect_host darwin joyce Darwin "Maxs-MacBook-Pro" max-vev 0
@@ -38,12 +37,6 @@ unset NIX_CONFIG_HOST
 export NIX_CONFIG_TEST_WSL=0
 if detect_host Darwin unknown stranger 2>/dev/null; then
     echo "FAIL: unknown Darwin login did not fail closed" >&2
-    failures=$((failures + 1))
-fi
-
-export NIX_CONFIG_HOST=wsl
-if ! detect_host Linux ignored maxpw || [[ "$HOSTNAME" != "cuno" ]]; then
-    echo "FAIL: legacy explicit host override was not canonicalized" >&2
     failures=$((failures + 1))
 fi
 

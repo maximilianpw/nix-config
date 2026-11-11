@@ -58,7 +58,6 @@ in {
         di = ["diff"];
         e = ["edit"];
         f = ["git" "fetch"];
-        jrf = ["refetch"];
         l = ["log" "-r" "trunk()..@"];
         n = ["new"];
         p = ["git" "push"];
