@@ -62,7 +62,7 @@
       "source": {
         "source": "github",
         "repo": "backnotprop/plannotator",
-        "ref": "v0.28.58"
+        "ref": "v0.28.62"
       }
     },
     "cursor-plugins": {

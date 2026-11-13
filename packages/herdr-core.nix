@@ -3,23 +3,23 @@
   lib,
   stdenvNoCC,
 }: let
-  version = "0.1.19";
+  version = "0.1.21";
   artifacts = {
     aarch64-darwin = {
       target = "macos-aarch64";
-      hash = "sha256-UzjZAK2tttJzucjpcCckfbMXnM/+3hCheTNY8W4I1oM=";
+      hash = "sha256-GrON2ScPY6j3lNbWDocC6w0chacr2oXXNeXupD8F/+0=";
     };
     x86_64-darwin = {
       target = "macos-x86_64";
-      hash = "sha256-L5W+2uLKG/n5YR1hBm7zrCEcYsoIKCEy1I4oe22hTQg=";
+      hash = "sha256-43fh00LN3OA0baWy88KBuXAeRzHAACTHxQKCZed6IX8=";
     };
     aarch64-linux = {
       target = "linux-aarch64";
-      hash = "sha256-+Vw0/XF37ViAfXT+TueLs9xz6zfyHGlJYGQACiGryxA=";
+      hash = "sha256-6ESiv6tIoiYJdnnQdryDBC/lf8zvU4fvgC5bJOeLUpo=";
     };
     x86_64-linux = {
       target = "linux-x86_64";
-      hash = "sha256-Stz7Qj1S8kxcxKHizS/K0fYtKLt3h2rEcsKQgqPqpCQ=";
+      hash = "sha256-eEJHVcEKQN3jigvbVcIKwZcG6a4F7Wj8Ks8fz/DZQcE=";
     };
   };
   artifact = artifacts.${stdenvNoCC.hostPlatform.system};

@@ -1,7 +1,7 @@
 {lib, ...}: let
   homelab = import ./inventory {inherit lib;};
   inherit (homelab.publicEndpoints) executor;
-  image = "ghcr.io/usefulsoftwareco/executor-selfhost@sha256:3dff4d002d96a86b741a33af9560431b963961f024fff5fedb41db79396435c8";
+  image = "ghcr.io/usefulsoftwareco/executor-selfhost@sha256:91ed614b847d2c35d360fb21fb2f489b4e3733d73577b6cfe3fdf281fa956154";
 in {
   custom.backup.applicationVersions.executor = image;
 
