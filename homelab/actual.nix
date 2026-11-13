@@ -1,10 +1,9 @@
 {
   config,
-  lib,
+  homelab,
   pkgs,
   ...
 }: let
-  homelab = import ./inventory {inherit lib;};
   inherit (homelab.publicEndpoints) actual;
 in {
   custom.backup.applicationVersions.actual = config.services.actual.package.version;

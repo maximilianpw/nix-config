@@ -1,10 +1,10 @@
 {
   config,
   currentSystemUser,
+  homelab,
   lib,
   ...
 }: let
-  homelab = import ./inventory {inherit lib;};
   home = "/home/${currentSystemUser}";
   inherit (homelab.privateServices) syncthing;
 in {

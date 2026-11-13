@@ -28,6 +28,8 @@
     isLinuxDesktop = host.linuxDesktop;
     hostRecord = host;
     inherit hostInventory inputs;
+    homelab = import ../homelab/inventory {inherit lib;};
+    template = import ./template.nix {inherit lib;};
   };
 in
   systemFunc {

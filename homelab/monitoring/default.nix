@@ -1,11 +1,11 @@
 {
   config,
+  homelab,
   lib,
   pkgs,
   ...
 }: let
   monitoringCfg = config.homelab.monitoring;
-  homelab = import ../inventory {inherit lib;};
   inherit (homelab) endpoints;
   prometheus = config.services.prometheus;
   inherit (prometheus) alertmanager exporters;

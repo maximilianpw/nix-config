@@ -26,7 +26,10 @@
     ["homepage"] ++ builtins.filter (name: name != "t3code") statefulServiceNames
   );
   missingVersionFixture = lib.evalModules {
-    specialArgs = {inherit pkgs;};
+    specialArgs = {
+      inherit homelab pkgs;
+      currentSystemUser = "maxpw";
+    };
     modules = [
       ../homelab/backup
       {
@@ -42,7 +45,10 @@
       builtins.deepSeq missingVersionFixture.config.custom.backup.manifestMetadata true
     )).success;
   conflictingVersionFixture = lib.evalModules {
-    specialArgs = {inherit pkgs;};
+    specialArgs = {
+      inherit homelab pkgs;
+      currentSystemUser = "maxpw";
+    };
     modules = [
       ../homelab/backup
       {_module.check = false;}

@@ -1,10 +1,10 @@
 {
   config,
+  homelab,
   lib,
   pkgs,
   ...
 }: let
-  homelab = import ../inventory {inherit lib;};
   inherit (homelab.publicEndpoints) nextcloud;
   declarativeAppIds = lib.attrNames config.services.nextcloud.extraApps;
   ownershipCheck = pkgs.writeShellApplication {

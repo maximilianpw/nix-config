@@ -1,11 +1,12 @@
 {
   config,
+  homelab,
   lib,
   pkgs,
   ...
 }: let
-  common = import ./common.nix {inherit config lib pkgs;};
-  inherit (common) endpoints homelab mediaGid mediaRoot secondaryMediaRoot;
+  common = import ./common.nix {inherit config homelab lib pkgs;};
+  inherit (common) endpoints mediaGid mediaRoot secondaryMediaRoot;
   managerConfigPaths = {
     sonarr = "/var/lib/sonarr/.config/NzbDrone/config.xml";
     radarr = "/var/lib/radarr/.config/Radarr/config.xml";

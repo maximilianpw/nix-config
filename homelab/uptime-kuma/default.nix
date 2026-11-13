@@ -1,10 +1,10 @@
 {
   config,
+  homelab,
   lib,
   pkgs,
   ...
 }: let
-  homelab = import ../inventory {inherit lib;};
   inherit (homelab.privateServices) kuma;
   reconcileMonitors = pkgs.writeShellApplication {
     name = "uptime-kuma-reconcile";

@@ -1,8 +1,9 @@
 {
   config,
-  pkgs,
+  currentSystemUser,
+  homelab,
   lib,
-  currentSystemUser ? "maxpw",
+  pkgs,
   ...
 }: let
   cfg = config.custom.backup;
@@ -16,7 +17,6 @@
   borgOperationLockFile = "/run/homelab-backup/borg-operation.lock";
   homelabBackupDir = "/var/backup/homelab";
   backupMetricsDir = "/var/lib/prometheus-node-exporter-text-files";
-  homelab = import ../inventory {inherit lib;};
   t3codeSourceDir = builtins.head homelab.services.t3code.state.paths;
   t3codeBackupArtifact = builtins.head homelab.services.t3code.backup.artifacts;
   t3codeBackupDir = builtins.dirOf t3codeBackupArtifact;

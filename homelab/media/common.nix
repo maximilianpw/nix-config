@@ -1,9 +1,9 @@
 {
   config,
+  homelab,
   lib,
   pkgs,
 }: let
-  homelab = import ../inventory {inherit lib;};
   endpoints =
     homelab.endpoints
     // homelab.publicEndpoints;
@@ -152,7 +152,6 @@ in {
   inherit
     downloadProxies
     endpoints
-    homelab
     indexerProxyPort
     indexerSolverPort
     mediaGid

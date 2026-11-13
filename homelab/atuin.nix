@@ -1,9 +1,8 @@
 {
   config,
-  lib,
+  homelab,
   ...
 }: let
-  homelab = import ./inventory {inherit lib;};
   inherit (homelab.endpoints) atuin;
 in {
   custom.backup.applicationVersions.atuin = config.services.atuin.package.version;

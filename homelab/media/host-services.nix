@@ -1,15 +1,15 @@
 {
   config,
+  homelab,
   lib,
   pkgs,
   ...
 }: let
-  common = import ./common.nix {inherit config lib pkgs;};
+  common = import ./common.nix {inherit config homelab lib pkgs;};
   inherit
     (common)
     downloadProxies
     endpoints
-    homelab
     mediaGid
     mediaRoot
     mkContainerProxyService

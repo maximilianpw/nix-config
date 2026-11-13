@@ -1,11 +1,10 @@
 {
   config,
+  homelab,
   inputs,
-  lib,
   pkgs,
   ...
 }: let
-  homelab = import ./inventory {inherit lib;};
   endpoint = homelab.publicEndpoints.cliproxy;
   cliProxy = import ../modules/cliproxyapi/config.nix;
   managementLocation = {

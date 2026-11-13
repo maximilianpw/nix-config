@@ -1,9 +1,8 @@
 {
   config,
-  lib,
+  homelab,
   ...
 }: let
-  homelab = import ../inventory {inherit lib;};
   inherit (homelab.endpoints) miniflux;
 in {
   custom.backup.applicationVersions.miniflux = config.services.miniflux.package.version;

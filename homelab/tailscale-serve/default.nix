@@ -1,11 +1,11 @@
 {
   config,
+  homelab,
   lib,
   pkgs,
+  template,
   ...
 }: let
-  homelab = import ../inventory {inherit lib;};
-  template = import ../../lib/template.nix {inherit lib;};
   tailscale = lib.getExe config.services.tailscale.package;
   # The Services config-file format cannot round-trip HTTPS termination to an
   # HTTP backend: set-config recreates these endpoints as HTTP listeners. Keep

@@ -1,6 +1,8 @@
-{lib, ...}: let
-  homelab = import ./inventory {inherit lib;};
-in {
+{
+  homelab,
+  lib,
+  ...
+}: {
   # Existing bulk-storage filesystem for self-hosted services. Kernel NVMe
   # names are not stable identities; see "Storage identities" in
   # docs/homelab-recovery.md before migrating this label to a unique UUID.

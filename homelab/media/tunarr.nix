@@ -1,10 +1,11 @@
 {
   config,
+  homelab,
   lib,
   pkgs,
   ...
 }: let
-  common = import ./common.nix {inherit config lib pkgs;};
+  common = import ./common.nix {inherit config homelab lib pkgs;};
   inherit (common) endpoints mediaRoot secondaryMediaRoot secondaryUsenetRoot usenetRoot;
   tunarrReconcileSettings = pkgs.writeShellScript "tunarr-reconcile-settings" ''
     export PATH=${lib.makeBinPath [pkgs.coreutils]}

@@ -1,10 +1,10 @@
 {
   config,
+  homelab,
   lib,
   pkgs,
   ...
 }: let
-  homelab = import ../inventory {inherit lib;};
   inherit (homelab.publicEndpoints) homeassistant;
   database = homelab.services.homeassistant.state.database;
   archive = builtins.head homelab.services.homeassistant.backup.artifacts;

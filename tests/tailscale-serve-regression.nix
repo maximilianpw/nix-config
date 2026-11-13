@@ -14,7 +14,8 @@
     config = {
       services.tailscale.package = pkgs.tailscale;
     };
-    inherit lib;
+    inherit homelab lib;
+    template = import ../lib/template.nix {inherit lib;};
     pkgs = testPkgs;
   };
   applyScript = builtins.unsafeDiscardStringContext module.config.systemd.services.tailscale-serve.serviceConfig.ExecStart;

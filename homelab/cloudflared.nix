@@ -1,9 +1,9 @@
 {
   config,
+  homelab,
   lib,
   ...
 }: let
-  homelab = import ./inventory {inherit lib;};
   public = homelab.publicEndpoints;
   inherit (homelab.infrastructure.cloudflare) tunnelId unit;
 in {
