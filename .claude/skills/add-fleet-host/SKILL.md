@@ -31,7 +31,7 @@ Collect or infer these values before editing:
 - Remote login `user`.
 - Short `aliases` for shells and agents.
 - `role`: one of the enum values in `lib/inventory.nix` (`nixos-homelab`, `nixos-wsl`, `darwin-workstation`); extend the enum for a new kind of host.
-- `os` (`darwin`, `nixos` or `nixos-wsl`), plus `linuxDesktop = true` for a NixOS desktop; `darwin`, `wsl` and `gui` are derived. `users/maxpw/<os>.nix` is the user OS config.
+- `os` (`darwin`, `nixos` or `nixos-wsl`), plus `linuxDesktop = true` for a NixOS desktop; `darwin`, `wsl` and `gui` are derived. `profiles/<role>.nix` selects the modules for the host's `role`.
 - `longRunningAgents`: set `true` only for machines intended for unattended or multi-hour agent work.
 - Optional `tmuxCommand` override; the normalized inventory derives the standard NixOS/nix-darwin path.
 - Optional `hostKey`: pin only after cross-checking the host's real ED25519 public key.
@@ -48,7 +48,7 @@ If key facts are missing, ask for them. Do not guess `longRunningAgents = true`.
 3. Add optional `aliases`, target override, ports, host key, or presentation overrides directly to the host record only when they differ from defaults.
 4. Leave `hostKey` absent only while bootstrapping; generated SSH config uses `StrictHostKeyChecking = "accept-new"` until it is pinned.
 5. Generate `~/.ssh/fleet_ed25519` on non-Darwin clients (or use the 1Password SSH agent on Darwin), then add only the public key, identity selector, and stable Tailscale IPv4/IPv6 addresses to the host's `client` record. `modules/fleet/system.nix` derives and distributes the restricted trust set.
-6. For NixOS and WSL machines, confirm the system imports `modules/fleet/nixos.nix`; all platforms import `modules/fleet/system.nix` through their user OS module.
+6. For NixOS and WSL machines, confirm the system imports `modules/fleet/nixos.nix`; all platforms import `modules/fleet/system.nix` through their role profile.
 7. The tmux accent is generated from inventory data. Keep per-host presentation overrides in the host record rather than the tmux module.
 8. Do not edit generated files such as `~/.config/fleet/hosts.json`, `~/.config/fleet/FLEET.md`, or `~/.ssh/config`.
 

@@ -1,13 +1,5 @@
-{
-  isDarwin,
-  isLinuxDesktop,
-  lib,
-  pkgs,
-  ...
-}: let
-  needsDesktopFonts = isDarwin || isLinuxDesktop;
-in {
-  home.packages = lib.optionals needsDesktopFonts (with pkgs; [
+{pkgs, ...}: {
+  home.packages = with pkgs; [
     # Nerd/symbols (terminal, waybar, icons)
     nerd-fonts.jetbrains-mono
     nerd-fonts.fira-code
@@ -21,20 +13,17 @@ in {
     dejavu_fonts
     unifont
 
-    # Optional extras (keep if you really use them)
     ibm-plex
     roboto
     roboto-mono
     ubuntu-classic
     cantarell-fonts
-    # source-code-pro   # usually redundant if you already picked a mono
-    # dina-font         # bitmap look; keep only if you like it
-  ]);
+  ];
 
   fonts.fontconfig = {
-    enable = needsDesktopFonts;
+    enable = true;
 
-    defaultFonts = lib.mkIf needsDesktopFonts {
+    defaultFonts = {
       monospace = [
         "JetBrainsMono Nerd Font"
         "FiraCode Nerd Font"

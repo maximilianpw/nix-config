@@ -25,6 +25,7 @@
       "desktop"
     ];
     t3codePort = 51000;
+    atuinSync = true;
     # Cross-checked against the host's public key, ssh-keyscan over
     # Tailscale, and the existing known_hosts entry on 2026-07-09.
     hostKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIO9tCTFAEd4W4eywYE3GJuYSh4mVbtImMtXIjQ3IIuhO";
@@ -63,6 +64,19 @@
     aliases = [
       "macbook"
       "mac"
+    ];
+    atuinSync = true;
+    tunnels = [
+      {
+        host = "kim";
+        localPort = 3000;
+        remotePort = 3000;
+      }
+      {
+        host = "kim";
+        localPort = 5173;
+        remotePort = 5173;
+      }
     ];
   };
 }

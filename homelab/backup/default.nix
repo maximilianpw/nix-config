@@ -347,6 +347,8 @@ in {
       ];
     };
 
+    sops.secrets.borg-backup-passphrase = {};
+
     services.borgbackup.jobs.main = {
       inherit (cfg) paths;
       inherit (cfg) exclude repo;

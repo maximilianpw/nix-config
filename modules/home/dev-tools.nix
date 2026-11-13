@@ -1,4 +1,20 @@
 {pkgs, ...}: {
+  programs = {
+    direnv = {
+      enable = true;
+      nix-direnv.enable = true;
+    };
+    mise = {
+      enable = true;
+      enableBashIntegration = true;
+      enableFishIntegration = true;
+      enableNushellIntegration = true;
+      globalConfig.settings.node.compile = false;
+    };
+  };
+  # Migrate the former chezmoi-owned file to programs.mise on first activation.
+  xdg.configFile."mise/config.toml".force = true;
+
   # Nix owns runtimes and shell configuration; Vite+ only manages its own data.
   home.sessionVariables = {
     VP_NODE_MANAGER = "no";

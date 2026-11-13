@@ -101,7 +101,7 @@ if [[ "$CONFIG_DIR" != "$CANONICAL_CONFIG_DIR" ]]; then
 fi
 
 # Lockout guard: on full NixOS the user password comes from a sops secret
-# (users/maxpw/nixos.nix, neededForUsers), so switching without the age key
+# (modules/user-account/sops-password.nix, neededForUsers), so switching without the age key
 # leaves the user with no password. Validate the privileged file itself with
 # sudo, including type, ownership, mode, readability, and symlink refusal.
 if [[ "$PLATFORM" == "nixos" && "$HOSTNAME" != "cuno" && "${SKIP_SOPS_CHECK:-0}" != "1" ]]; then

@@ -1,13 +1,13 @@
-{agentConfigDirectory}: {
+{
   config,
-  hostRecord,
   inputs,
   lib,
   pkgs,
   ...
 }: let
   cliProxy = import ./config.nix;
-  useLocalProxy = hostRecord.role == "nixos-homelab";
+  agentConfigDirectory = ../../users/maxpw/files/editable/agents;
+  useLocalProxy = config.custom.cliproxyapi.endpoint == "local";
   proxyBaseUrl =
     if useLocalProxy
     then cliProxy.baseUrl
@@ -82,7 +82,13 @@
       context_window = 500000
     '';
 in {
-  home = {
+  options.custom.cliproxyapi.endpoint = lib.mkOption {
+    type = lib.types.enum ["local" "public"];
+    default = "public";
+    description = "Which CLIProxyAPI the agent CLIs talk to: the loopback server on this host, or Kim's public endpoint.";
+  };
+
+  config.home = {
     sessionVariables = {
       CLIPROXYAPI_ROOT_URL = proxyBaseUrl;
       CLIPROXYAPI_API_KEY_FILE = proxyApiKeyPath;

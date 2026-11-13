@@ -1,9 +1,0 @@
-{pkgs}: {
-  # SSH remote commands are parsed by the account login shell before any
-  # interactive shell config can run. Fish can launch the `/bin/sh -c ...`
-  # wrapper used by tools like Codex remote SSH; Nushell rejects that syntax.
-  loginShell = pkgs.fish;
-  interactiveShell = pkgs.nushell;
-
-  sshKeys.githubAuthentication = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKSE4irNaEh8R1RxL0/839aKlA9KgdKIZl/uKgGCvMzs GitHub Authentication Key";
-}

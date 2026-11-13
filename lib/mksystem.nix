@@ -6,9 +6,6 @@
 }: name: host: let
   inherit (nixpkgs) lib;
   inherit (host) darwin wsl user;
-  # Config lives in users/maxpw even where the login account differs (Joyce's
-  # is max-vev).
-  userConfig = ../users/maxpw;
   isHomelab = host.role == "nixos-homelab";
 
   systemFunc =
@@ -43,8 +40,8 @@ in
       ++ lib.optional (!darwin) inputs.sops-nix.nixosModules.sops
       ++ lib.optional wsl inputs.nixos-wsl.nixosModules.wsl
       ++ lib.optional (!darwin) inputs.fleet.nixosModules.cliproxy-quota
-      # Imported here because homelab modules receive inputs through
-      # _module.args, which cannot feed `imports`.
+      # Imported here because modules receive inputs through _module.args,
+      # which cannot feed `imports`.
       ++ lib.optional isHomelab inputs.portfolio-tracker.nixosModules.default
       ++ lib.optional isHomelab inputs.rex.nixosModules.default
       ++ [
@@ -53,12 +50,11 @@ in
           then inputs.hjem.darwinModules.default
           else inputs.hjem.nixosModules.default
         )
-        ../modules/hjem/system.nix
-      ]
-      ++ lib.optional darwin ../modules/hjem/darwin.nix
-      ++ [
         ../machines/${name}.nix
-        (userConfig + "/${host.os}.nix")
+        ../profiles/${host.role}.nix
+      ]
+      ++ lib.optional host.linuxDesktop ../profiles/linux-desktop.nix
+      ++ [
         homeManagerMods.home-manager
         {
           home-manager = {
@@ -66,7 +62,9 @@ in
             useUserPackages = true;
             backupFileExtension = "backup";
             extraSpecialArgs = systemArgs;
-            users.${user} = import (userConfig + "/home.nix");
+            # One user configuration even where the login account differs
+            # (Joyce's is max-vev).
+            users.${user} = import ../users/maxpw/home.nix;
           };
         }
         {

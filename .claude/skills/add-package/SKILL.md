@@ -14,8 +14,8 @@ Based on the package type, add it to the right file:
 
 - **CLI/terminal tools** (bat, ripgrep, fd, etc.) -> `modules/home/terminal-tools.nix`
 - **Dev tools, languages, formatters, cloud tools** -> `modules/home/dev-tools.nix`
-- **Linux desktop/GUI apps** (Wayland tools, GUI editors, etc.) -> `users/maxpw/modules/packages/linux-desktop.nix`
-- **macOS GUI apps** -> `users/maxpw/darwin.nix` (as a Homebrew cask in the `casks` list)
+- **Linux desktop/GUI apps** (Wayland tools, GUI editors, etc.) -> `modules/linux-desktop/home.nix`
+- **macOS GUI apps** -> `modules/darwin/homebrew.nix` (as a Homebrew cask in the `casks` list)
 - **System-level packages** (drivers, kernel modules, services) -> `machines/<hostname>.nix`
 - **Fonts** -> `modules/home/fonts.nix`
 

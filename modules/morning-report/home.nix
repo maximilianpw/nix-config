@@ -4,17 +4,12 @@
 # disabled.
 {
   config,
-  hostRecord,
+  homelab,
   lib,
   pkgs,
   ...
 }: let
-  homelab = import ../../homelab/inventory {inherit lib;};
-  # Unattended, homelab-aware work runs on every inventory host that has
-  # longRunningAgents = true and the homelab profile. Kim is currently the only
-  # such host, but the predicate is not Kim-specific: a future host matching
-  # both will also schedule the report.
-  runReport = hostRecord.longRunningAgents && hostRecord.role == "nixos-homelab";
+  runReport = config.custom.morningReport.enable;
   reportDirectory = "${config.home.homeDirectory}/reports/morning";
   # Mirrors nodeExporterTextfileDirectory in homelab/monitoring/default.nix and the
   # file written by homelab/monitoring/cliproxyapi-readiness-probe.sh; absence is "unknown".
@@ -40,34 +35,38 @@
     '';
   };
 in {
-  home.packages = lib.optionals runReport [morningReport];
+  options.custom.morningReport.enable = lib.mkEnableOption "the daily read-only morning report timer";
 
-  systemd.user.services.morning-report = lib.mkIf runReport {
-    Unit = {
-      Description = "Read-only morning status report";
-      After = ["network-online.target"];
-    };
-    Service = {
-      Type = "oneshot";
-      ExecStart = lib.getExe morningReport;
-      WorkingDirectory = "%h";
-      # cliproxyapi-util is a Home Manager file in ~/.local/bin, not a package.
-      Environment = [
-        "PATH=${config.home.homeDirectory}/.local/bin:/run/current-system/sw/bin"
-      ];
-      StandardOutput = "journal";
-      StandardError = "journal";
-    };
-  };
+  config = {
+    home.packages = lib.optionals runReport [morningReport];
 
-  systemd.user.timers.morning-report = lib.mkIf runReport {
-    Unit.Description = "Daily read-only morning status report";
-    Timer = {
-      OnCalendar = "*-*-* 07:00:00";
-      RandomizedDelaySec = "5m";
-      # Catch up after downtime so a missed morning still produces a report.
-      Persistent = true;
+    systemd.user.services.morning-report = lib.mkIf runReport {
+      Unit = {
+        Description = "Read-only morning status report";
+        After = ["network-online.target"];
+      };
+      Service = {
+        Type = "oneshot";
+        ExecStart = lib.getExe morningReport;
+        WorkingDirectory = "%h";
+        # cliproxyapi-util is a Home Manager file in ~/.local/bin, not a package.
+        Environment = [
+          "PATH=${config.home.homeDirectory}/.local/bin:/run/current-system/sw/bin"
+        ];
+        StandardOutput = "journal";
+        StandardError = "journal";
+      };
     };
-    Install.WantedBy = ["timers.target"];
+
+    systemd.user.timers.morning-report = lib.mkIf runReport {
+      Unit.Description = "Daily read-only morning status report";
+      Timer = {
+        OnCalendar = "*-*-* 07:00:00";
+        RandomizedDelaySec = "5m";
+        # Catch up after downtime so a missed morning still produces a report.
+        Persistent = true;
+      };
+      Install.WantedBy = ["timers.target"];
+    };
   };
 }

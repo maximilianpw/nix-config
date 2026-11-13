@@ -4,7 +4,25 @@
   lib,
   pkgs,
   ...
-}: {
+}: let
+  # https://github.com/sharkdp/bat/issues/1145
+  manpager = pkgs.writeShellScriptBin "manpager" ''
+    col -bx | ${pkgs.bat}/bin/bat -l man -p --paging=always
+  '';
+in {
+  imports = [inputs.nix-index-database.homeModules.nix-index];
+
+  programs = {
+    nix-index.enable = true;
+    nix-index-database.comma.enable = true;
+  };
+
+  home.sessionVariables = {
+    PAGER = "less -FirSwX";
+    MANPAGER = "${manpager}/bin/manpager";
+    MANROFFOPT = "-c";
+  };
+
   home.packages =
     [
       # Local log viewer (own project, built from its flake)

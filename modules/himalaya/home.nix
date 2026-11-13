@@ -3,33 +3,19 @@
 # declaratively via Home Manager's `accounts.email` framework; enabling
 # `programs.himalaya` installs the package and generates config.toml.
 #
-# Secret handling mirrors the borg backup passphrase: the Bridge password lives
-# encrypted in secrets/secrets.yaml under sops, is decrypted at activation, and
-# is read at runtime via `passwordCommand = "cat <path>"`. The decrypt path
-# differs per platform:
-#   - darwin: nix-darwin has no system sops, so we use sops-nix's home-manager
-#     module (activates via a launchd agent) -> ~/.config/sops-nix/secrets/...
-#   - NixOS:  reuse the existing *system* sops (modules/core/sops.nix), exactly
-#     like borg -> /run/secrets/...
+# Proton Bridge generates a different password per machine, so each platform
+# has its own sops secret, read at runtime via `passwordCommand`:
+#   - darwin: himalaya-work-password, decrypted by the Home Manager sops module
+#   - NixOS:  himalaya-bridge-password, a system secret under /run/secrets
 #
-# Proton Bridge generates a DIFFERENT password per machine, so the Mac and
-# Kim uses a separate sops key:
-#   - darwin -> himalaya-work-password      (added via the HM sops module here)
-#   - NixOS  -> himalaya-bridge-password    (declared in modules/core/sops.nix)
-#
-# Enabled on the Mac and the Linux desktop; skipped on WSL.
+# Imported by the Mac and Linux desktop profiles only.
 {
   isDarwin,
-  isLinuxDesktop,
-  inputs,
   config,
   pkgs,
   lib,
   ...
 }: let
-  enableMail = isDarwin || isLinuxDesktop;
-
-  # Path to the sops-decrypted Bridge password, per platform.
   passwordFile =
     if isDarwin
     then config.sops.secrets.himalaya-work-password.path
@@ -37,23 +23,8 @@
 
   bridgeCertFile = "${config.xdg.configHome}/himalaya/proton-bridge-cert.pem";
 in {
-  imports = lib.optionals isDarwin [
-    inputs.sops-nix.homeManagerModules.sops
-  ];
-
-  config = lib.mkIf enableMail (lib.mkMerge [
-    # darwin only: sops-nix home-manager module. Decrypts at activation using the
-    # age key at ~/.config/sops/age/keys.txt (backed up in 1Password). On NixOS
-    # the system sops module (modules/core/sops.nix) handles this instead.
-    # optionalAttrs (not mkIf): the `sops` option only exists when the HM sops
-    # module is imported, which is darwin-only above.
-    (lib.optionalAttrs isDarwin {
-      sops = {
-        age.keyFile = "${config.home.homeDirectory}/.config/sops/age/keys.txt";
-        defaultSopsFile = ../../secrets/secrets.yaml;
-        secrets.himalaya-work-password = {};
-      };
-    })
+  config = lib.mkMerge [
+    {sops.secrets.himalaya-work-password = lib.mkIf isDarwin {};}
     {
       home.activation.exportProtonBridgeCert = lib.hm.dag.entryAfter ["writeBoundary"] ''
         cert_file="${bridgeCertFile}"
@@ -107,5 +78,5 @@ in {
         };
       };
     }
-  ]);
+  ];
 }

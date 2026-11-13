@@ -9,6 +9,7 @@
   networking.hostName = "cuno";
 
   virtualisation.docker.enable = true;
+  users.users.maxpw.extraGroups = ["docker"];
 
   system.stateVersion = lib.mkDefault "24.05";
 }

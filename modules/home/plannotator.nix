@@ -1,4 +1,6 @@
 {
+  config,
+  homeFiles,
   lib,
   pkgs,
   ...
@@ -24,8 +26,13 @@ in {
     packages = [plannotator];
     sessionVariables = inboxEnvironment;
 
-    # Native review plugins prefer the installer's usual path over PATH.
-    file.".local/bin/plannotator".source = "${plannotator}/bin/plannotator";
+    file = {
+      # Native review plugins prefer the installer's usual path over PATH.
+      ".local/bin/plannotator".source = "${plannotator}/bin/plannotator";
+      # Plannotator rewrites its config, so it links to the checkout, not the
+      # store; `git diff` shows the app's changes for review.
+      ".plannotator/config.json".source = homeFiles.mkRepoSource config.home.homeDirectory "users/maxpw/files/editable/.plannotator/config.json";
+    };
 
     # Undo the old Inbox registration without replacing Codex's mutable
     # configuration or touching saved Plannotator messages and attachments.

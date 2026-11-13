@@ -4,7 +4,7 @@
   pkgs,
   ...
 }: {
-  # Mesh-networked development nodes: ssh-access.nix owns authentication and
+  # Mesh-networked development nodes: system.nix owns authentication and
   # source policy; this adds private networking and resilient terminal transport.
   services.tailscale = {
     enable = lib.mkDefault true;

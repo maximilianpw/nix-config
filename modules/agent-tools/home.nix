@@ -1,20 +1,19 @@
 {
   config,
+  homeFiles,
+  isDarwin,
+  isWSL,
   pkgs,
   lib,
   ...
 }: let
-  homeFiles = import ../../lib/home-files.nix {
-    inherit lib;
-    mkOutOfStoreSymlink = config.lib.file.mkOutOfStoreSymlink;
-  };
-
   source = path: homeFiles.mkRepoSource config.home.homeDirectory "users/maxpw/files/editable/agents/${path}";
   piConfigSource = path: homeFiles.mkHomeSource config.home.homeDirectory "pi-config/${path}";
-  isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
   cuaDriverApp = "${pkgs.cua-driver}/Applications/CuaDriver.app";
 in {
-  imports = [../home/plannotator.nix];
+  # Hosts without system-level sops decrypt the key through Home Manager sops;
+  # modules/agent-tools/nixos.nix covers the others.
+  sops.secrets.linear-api-key = lib.mkIf (isDarwin || isWSL) {mode = "0400";};
 
   home = {
     packages = [

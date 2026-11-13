@@ -10,15 +10,24 @@ Home Manager configuration, and Kim's homelab services.
 - A script lives beside the Nix file that uses it, with its test beside it as
   `<name>-test.sh` (`make check-scripts` finds every tracked one). A module
   that owns scripts is a directory; `scripts/` holds only repository tooling.
-- Host concerns belong in `machines/`; shared system concerns in `modules/`;
-  user and platform concerns in `users/maxpw/`. Keep substantial OS divergence
-  in `nixos.nix`, `darwin.nix`, or `nixos-wsl.nix`.
+- `machines/<host>.nix` holds host facts. `profiles/<role>.nix` (one per
+  inventory role, plus `linux-desktop.nix`) lists the modules a role gets and
+  sets their `custom.*` options; modules never branch on a role or host name.
+- A module's path names its module system: `modules/home/`, `modules/nixos/`
+  and `modules/darwin/` hold single-file concerns; a concern that spans systems
+  or owns scripts or data is `modules/<concern>/` with `home.nix`, `nixos.nix`,
+  `darwin.nix` or `system.nix` (valid on both NixOS and nix-darwin).
+  `users/maxpw/home.nix` is the Home Manager base every host imports.
+- Modules receive `homelab`, `template`, `hostRecord` and (Home Manager)
+  `homeFiles` as arguments; do not `import` those helpers by relative path.
 - `homelab/inventory/services.nix` owns service metadata and recovery contracts;
   application options and implementation stay in their owning `homelab/`
   module.
 - Nix/Home Manager owns systems, packages, shells, and executables; Nixvim
-  (`users/maxpw/neovim/`) owns Neovim and Hjem (`modules/hjem/`) owns static
-  app files; `pi-config` owns Pi resources.
+  (`users/maxpw/neovim/`) owns Neovim; Hjem links `users/maxpw/files/managed/`
+  from the store (rebuild to apply); Home Manager links
+  `users/maxpw/files/editable/` into the checkout (edits apply live);
+  `pi-config` owns Pi resources.
   Do not give two systems the same destination.
 - Documentation is deliberately small: `README.md`, `BOOTSTRAP.md`,
   `secrets/README.md` and `docs/homelab-recovery.md`. Do not add docs, status

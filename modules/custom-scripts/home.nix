@@ -1,9 +1,9 @@
 {
+  homelab,
   lib,
   pkgs,
   ...
 }: let
-  homelab = import ../../homelab/inventory {inherit lib;};
   vaultwardenUrl = homelab.privateUrl "vaultwarden";
 in {
   home.packages = [

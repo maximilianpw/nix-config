@@ -1,6 +1,6 @@
 -- Outside tmux the plugin only runs wincmd, so in a Rex pane each key moves to
 -- the next Rex pane once no Neovim window lies that way. Rex's own ctrl+hjkl
--- bindings (hjem/files/.config/rex/init.lua) pass the keys through to Neovim.
+-- bindings (files/managed/.config/rex/init.lua) pass the keys through to Neovim.
 local function navigate(wincmd, command, direction)
   return function()
     if vim.env.TMUX or not vim.env.REX_SESSION or vim.fn.executable("rex") == 0 then

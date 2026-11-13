@@ -21,5 +21,5 @@ in {
     pkgs.lazygit-nvim-edit
   ];
   home.shellAliases.vimdiff = "nvim -d";
-  # EDITOR/VISUAL are set in home-manager.nix for every host.
+  # EDITOR/VISUAL are set in users/maxpw/home.nix for every host.
 }

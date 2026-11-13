@@ -1,13 +1,13 @@
 {
   hostRecord,
   lib,
+  osConfig,
   pkgs,
   ...
 }: let
-  settings = import ../../users/maxpw/settings.nix {inherit pkgs;};
-  # Panes are human-facing: use the interactive shell (nushell), not the
-  # compatibility login shell (fish) that sshd and tools exec into.
-  interactiveShellPath = lib.getExe settings.interactiveShell;
+  # Panes are human-facing: use the interactive shell, not the compatibility
+  # login shell that sshd and tools exec into.
+  interactiveShellPath = lib.getExe osConfig.custom.shells.interactive;
   hostAccent = hostRecord.accent;
 in {
   programs.tmux = {

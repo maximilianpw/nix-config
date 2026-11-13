@@ -4,19 +4,21 @@
 # second copy of the same apps under ~/Applications/Home Manager Apps. Another
 # module setting either to true fails evaluation as a conflicting definition.
 #
-# ../../users/maxpw/files/managed-darwin holds macOS-only app files, laid out like ./files. Rectangle
-# reads its JSON only through the app's manual import.
+# users/maxpw/files/managed-darwin holds macOS-only managed files, laid out like
+# files/managed. Rectangle reads its JSON only through the app's manual import.
 {
   currentSystemUser,
   lib,
   ...
-}: {
+}: let
+  managedDarwin = ../../users/maxpw/files/managed-darwin;
+in {
   home-manager.users.${currentSystemUser}.targets.darwin = {
     linkApps.enable = false;
     copyApps.enable = false;
   };
 
   hjem.users.${currentSystemUser}.files = lib.genAttrs (
-    map (file: lib.removePrefix "${toString ../../users/maxpw/files/managed-darwin}/" (toString file)) (lib.filesystem.listFilesRecursive ../../users/maxpw/files/managed-darwin)
-  ) (path: {source = ../../users/maxpw/files/managed-darwin + "/${path}";});
+    map (file: lib.removePrefix "${toString managedDarwin}/" (toString file)) (lib.filesystem.listFilesRecursive managedDarwin)
+  ) (path: {source = managedDarwin + "/${path}";});
 }

@@ -1,172 +1,46 @@
+# Home Manager base for every host. Profiles add their platform's modules
+# through home-manager.sharedModules; files/ holds the dotfiles (managed/ is
+# linked from the store by Hjem, editable/ out of store by Home Manager).
 {
   config,
-  hostRecord,
-  isDarwin,
-  isLinuxDesktop,
-  isWSL,
-  inputs,
-  pkgs,
   lib,
   ...
-}: let
-  settings = import ./settings.nix {inherit pkgs;};
-  useSopsGithubSshKey = !isDarwin && !isLinuxDesktop && !isWSL;
-  # For our MANPAGER env var
-  # https://github.com/sharkdp/bat/issues/1145
-  manpager = pkgs.writeShellScriptBin "manpager" ''
-    # Read from stdin, clean overstrikes, then send to bat
-    # -l man : syntax highlighting for manpages
-    # -p     : plain; no extra decorations
-    # --paging=always : ensure paging when run in a terminal
-    col -bx | ${pkgs.bat}/bin/bat -l man -p --paging=always
-  '';
-in {
-  imports =
-    [
-      inputs.nix-index-database.homeModules.nix-index
-      inputs.rex.homeManagerModules.default
-      inputs.stylix.homeModules.stylix
-      (import ../../modules/cliproxyapi/home.nix {
-        agentConfigDirectory = ./files/editable/agents;
-      })
-      ../../modules/home/fonts.nix
-      ../../modules/home/git.nix
-      ../../modules/home/jujutsu.nix
-      ../../modules/agent-tools/home.nix
-      ../../modules/home/vicinae.nix
-      ../../modules/fleet/home.nix
-      ../../modules/t3code/home.nix
-      ../../modules/morning-report/home.nix
-      ../../modules/shells/home.nix
-      ./modules/syncthing.nix
-      ../../modules/home/gpg.nix
-      ../../modules/himalaya/home.nix
-      ../../modules/onepassword/home.nix
-      ../../modules/hyprland/home.nix
-      ./modules/app-config.nix
-      ../../modules/linux-desktop/home.nix
-      ../../modules/home/tmux.nix
-      ../../modules/home/neovim.nix
-      ../../modules/home/dev-tools.nix
-      ../../modules/home/terminal-tools.nix
-      ./modules/packages/linux-desktop.nix
-      ../../modules/home/darwin-apps.nix
-      ../../modules/custom-scripts/home.nix
-    ]
-    ++ lib.optionals (isDarwin || isWSL) [
-      ./modules/agent-secrets.nix
-    ];
-
-  stylix = lib.mkMerge [
-    {
-      # home-manager.useGlobalPkgs ignores HM-level nixpkgs.overlays, and
-      # stylix's package overlays (on by default, even with stylix disabled)
-      # trip HM's nixpkgs deprecation warning on every profile.
-      overlays.enable = false;
-    }
-    (lib.mkIf isLinuxDesktop {
-      enable = true;
-      autoEnable = false;
-      base16Scheme = "${inputs.stylix.inputs.tinted-schemes}/base16/gruvbox-material-dark-hard.yaml";
-      targets.ghostty.enable = true;
-      targets.waybar.enable = true;
-    })
+}: {
+  imports = [
+    ../../modules/agent-tools/home.nix
+    ../../modules/cliproxyapi/home.nix
+    ../../modules/custom-scripts/home.nix
+    ../../modules/home/dev-tools.nix
+    ../../modules/fleet/home.nix
+    ../../modules/home/git.nix
+    ../../modules/home/gpg.nix
+    ../../modules/home/jujutsu.nix
+    ../../modules/home/neovim.nix
+    ../../modules/home/plannotator.nix
+    ../../modules/shells/home.nix
+    ../../modules/sops/home.nix
+    ../../modules/ssh/home.nix
+    ../../modules/home/terminal-tools.nix
+    ../../modules/home/tmux.nix
   ];
+
+  _module.args.homeFiles = import ../../lib/home-files.nix {
+    inherit lib;
+    inherit (config.lib.file) mkOutOfStoreSymlink;
+  };
 
   home = {
     stateVersion = "25.05";
-
-    activation.ensureOnePasswordAgentSymlink = lib.hm.dag.entryBefore ["checkLinkTargets"] ''
-      if [ ${lib.escapeShellArg (
-        if isDarwin
-        then "1"
-        else "0"
-      )} = 1 ]; then
-        agent_dir="${config.home.homeDirectory}/.1password"
-        agent_target="${config.home.homeDirectory}/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
-
-        mkdir -p "$agent_dir"
-        ln -sfn "$agent_target" "$agent_dir/agent.sock"
-      fi
-    '';
-
-    file = lib.mkIf isDarwin {
-      ".ssh/github-authentication_ed25519.pub".text = settings.sshKeys.githubAuthentication + "\n";
-      ".ssh/fleet_1password_ed25519.pub".text = hostRecord.client.key + "\n";
-    };
-
-    sessionPath = [
-      "$HOME/.local/bin"
-    ];
-
-    sessionVariables =
-      {
-        EDITOR = "nvim";
-        VISUAL = "nvim";
-        PAGER = "less -FirSwX";
-        MANPAGER = "${manpager}/bin/manpager";
-        MANROFFOPT = "-c";
-      }
-      // (
-        if isDarwin
-        then {
-          # See: https://github.com/NixOS/nixpkgs/issues/390751
-          DISPLAY = "nixpkgs-390751";
-          SSH_AUTH_SOCK = "${config.home.homeDirectory}/.1password/agent.sock";
-        }
-        else {}
-      );
-  };
-
-  programs = {
-    direnv = {
-      enable = true;
-      nix-direnv.enable = true;
-    };
-
-    nix-index.enable = true;
-    nix-index-database.comma.enable = true;
-
-    mise = {
-      enable = true;
-      enableBashIntegration = true;
-      enableFishIntegration = true;
-      enableNushellIntegration = true;
-      globalConfig.settings.node.compile = false;
-    };
-
-    # Rex Beta.app runs Joyce's server; this adds its CLI, terminfo and ssh guard.
-    rex.enable = isDarwin;
-
-    ssh = {
-      enable = true;
-      # Keep SSH defaults explicit as Home Manager changes its implicit defaults.
-      enableDefaultConfig = false;
-      includes = lib.optionals isDarwin ["~/.orbstack/ssh/config"];
-      settings = lib.mkMerge [
-        (lib.mkIf isDarwin {
-          "github.com" = {
-            HostName = "github.com";
-            User = "git";
-            IdentityAgent = "%d/.1password/agent.sock";
-            IdentityFile = "~/.ssh/github-authentication_ed25519.pub";
-            IdentitiesOnly = "yes";
-            AddKeysToAgent = "no";
-          };
-        })
-        (lib.mkIf useSopsGithubSshKey {
-          "github.com" = {
-            HostName = "github.com";
-            User = "git";
-            IdentityFile = "/run/secrets/github-ssh-private-key";
-            IdentitiesOnly = "yes";
-            AddKeysToAgent = "no";
-          };
-        })
-      ];
+    sessionPath = ["$HOME/.local/bin"];
+    sessionVariables = {
+      EDITOR = "nvim";
+      VISUAL = "nvim";
     };
   };
 
-  # Migrate the former chezmoi-owned file to programs.mise on first activation.
-  xdg.configFile."mise/config.toml".force = true;
+  xdg.enable = true;
+
+  # Home Manager turns fontconfig on by default; only desktop profiles
+  # (modules/home/fonts.nix) want it.
+  fonts.fontconfig.enable = lib.mkDefault false;
 }

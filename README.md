@@ -13,10 +13,16 @@ A parked Hyprland profile for a future desktop host still evaluates as
 
 - `lib/`: host inventory (`hosts.nix`) and the plumbing that builds hosts from it.
 - `overlays.nix`: package overlays (agent CLIs, unstable picks, pins, `packages/`).
-- `machines/`: per-host OS configuration. `modules/`: shared system modules.
+- `machines/`: per-host facts. `profiles/`: one file per host role, listing its
+  modules and setting their options.
+- `modules/`: every module, with the module system in the path: `home/`,
+  `nixos/`, `darwin/` for single files, `<concern>/{home,nixos,darwin,system}.nix`
+  for concerns that span systems or own scripts.
 - `homelab/`: Kim's services; `homelab/inventory/services.nix` holds their
   exposure, state, backup, monitoring and recovery metadata.
-- `users/maxpw/`: Home Manager, Nixvim (`neovim/`) and Hjem (`hjem/`) config.
+- `users/maxpw/`: the Home Manager base (`home.nix`), Nixvim (`neovim/`) and
+  dotfiles. Dotfiles live in `files/managed/` (Hjem store links, rebuild to apply) or
+  `files/editable/` (links into this checkout, edits apply live).
 - `packages/`: repository-built packages and their updaters.
 - `scripts/`: repository tooling (`rebuild/`, `ci/`, `dev/`).
 - `tests/`: flake checks (`tests/default.nix` registers them).

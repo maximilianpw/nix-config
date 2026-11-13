@@ -4,12 +4,11 @@
   pkgs,
   lib,
   isDarwin,
-  currentSystemName,
+  homelab,
+  hostRecord,
+  template,
   ...
 }: let
-  homelab = import ../../homelab/inventory {inherit lib;};
-  template = import ../../lib/template.nix {inherit lib;};
-
   agentAliases = {
     c = "codex --yolo";
     ccc = "DISABLE_ZOXIDE=1 claude --dangerously-skip-permissions";
@@ -70,7 +69,7 @@ in {
   home.sessionVariables.RIPGREP_CONFIG_PATH = "${config.xdg.configHome}/ripgrep/config";
 
   programs = {
-    atuin = lib.mkIf (builtins.elem currentSystemName ["kim" "joyce"]) {
+    atuin = lib.mkIf hostRecord.atuinSync {
       enable = true;
       enableBashIntegration = true;
       enableFishIntegration = true;

@@ -71,6 +71,9 @@
   virtualisation.docker.enable = true;
   users.users.maxpw.extraGroups = lib.mkAfter ["docker"];
 
+  # Keep the stateVersion at the initial install release; don't bump later.
+  system.stateVersion = lib.mkDefault "24.05";
+
   # Start user services (including t3code) at boot instead of first SSH login.
   users.users.maxpw.linger = true;
 
