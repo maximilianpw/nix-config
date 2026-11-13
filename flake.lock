@@ -920,6 +920,27 @@
         "type": "github"
       }
     },
+    "linrex": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1793973292,
+        "narHash": "sha256-JHzqRAxxnqWHRf4PqTRutQ6XhJ1WiKnjc9hEHIvAp8M=",
+        "owner": "maximilianpw",
+        "repo": "linrex",
+        "rev": "89d80b583b373bdf294d74d583ce6057e0d70eb9",
+        "type": "github"
+      },
+      "original": {
+        "owner": "maximilianpw",
+        "ref": "v0.3.1",
+        "repo": "linrex",
+        "type": "github"
+      }
+    },
     "llm-agents": {
       "inputs": {
         "bun2nix": "bun2nix_2",
@@ -1300,6 +1321,7 @@
         "hyprland": "hyprland",
         "jj-stack": "jj-stack",
         "leerr": "leerr",
+        "linrex": "linrex",
         "llm-agents": "llm-agents",
         "loggle": "loggle",
         "neovim-nightly-overlay": "neovim-nightly-overlay",

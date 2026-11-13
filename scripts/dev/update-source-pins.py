@@ -18,6 +18,7 @@ FLAKE_INPUTS = {
     "jj-stack": ("bos/jj-stack", "commit"),
     "fleet": ("maximilianpw/fleet", "commit"),
     "loggle": ("maximilianpw/loggle", "release"),
+    "linrex": ("maximilianpw/linrex", "release"),
     "herdr-jj": ("maximilianpw/herdr-jj", "release"),
     "homelab-mcp": ("maximilianpw/homelab-mcp", "release"),
     "portfolio-tracker": ("maximilianpw/portfolio-tracker", "release"),

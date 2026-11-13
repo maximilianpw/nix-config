@@ -29,6 +29,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Own Linear TUI that opens a Rex session per issue; pinned to a release tag.
+    linrex = {
+      url = "github:maximilianpw/linrex/v0.3.1";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # Release-pinned Herdr plugin; Bun >= 1.3.14 and JJ >= 0.46 need unstable.
     herdr-jj = {
       url = "github:maximilianpw/herdr-jj/v0.1.1";
