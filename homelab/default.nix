@@ -1,6 +1,7 @@
 {lib, ...}: {
   imports = [
     ./actual.nix
+    ./amp-orb-provider
     ./atuin.nix
     ./backup
     ./cloudflared.nix

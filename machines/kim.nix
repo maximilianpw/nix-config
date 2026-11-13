@@ -6,7 +6,6 @@
   imports = [
     ./hardware/kim.nix
     ../homelab
-    ../modules/amp-orb-provider
   ];
 
   networking = {
@@ -71,11 +70,6 @@
   # Container stack for dev databases and ad-hoc services.
   virtualisation.docker.enable = true;
   users.users.maxpw.extraGroups = lib.mkAfter ["docker"];
-
-  sops.secrets.amp-orb-provider-token = {
-    sopsFile = ../secrets/amp-orb-provider.yaml;
-    restartUnits = ["amp-orb-provider.service"];
-  };
 
   # Start user services (including t3code) at boot instead of first SSH login.
   users.users.maxpw.linger = true;

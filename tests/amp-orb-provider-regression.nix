@@ -10,7 +10,8 @@
     (nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
       modules = [
-        ../modules/amp-orb-provider
+        ../homelab/amp-orb-provider
+        {options.sops.secrets = lib.mkOption {type = lib.types.attrsOf lib.types.anything;};}
         {
           nixpkgs.pkgs = pkgs;
           boot.loader.grub.enable = false;
@@ -93,6 +94,6 @@ in
     } ''
       # Building the service also checks both generated shell applications.
       test -x ${service.serviceConfig.ExecStart}
-      bash ${../modules/amp-orb-provider}/amp-orb-dispatch-test.sh
+      bash ${../homelab/amp-orb-provider}/amp-orb-dispatch-test.sh
       touch "$out"
     ''

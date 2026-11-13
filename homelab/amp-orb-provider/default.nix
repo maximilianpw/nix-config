@@ -96,6 +96,11 @@ in {
       }
     ];
 
+    sops.secrets.amp-orb-provider-token = {
+      sopsFile = ../../secrets/amp-orb-provider.yaml;
+      restartUnits = ["amp-orb-provider.service"];
+    };
+
     virtualisation.docker.enable = true;
     users.groups.amp-orb-provider = {};
     users.users.amp-orb-provider = {
