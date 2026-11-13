@@ -4,7 +4,7 @@
   pkgs,
   ...
 }: let
-  settings = import ../settings.nix {inherit pkgs;};
+  settings = import ../../users/maxpw/settings.nix {inherit pkgs;};
   # Panes are human-facing: use the interactive shell (nushell), not the
   # compatibility login shell (fish) that sshd and tools exec into.
   interactiveShellPath = lib.getExe settings.interactiveShell;

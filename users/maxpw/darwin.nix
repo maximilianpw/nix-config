@@ -10,11 +10,11 @@ in {
     ../../modules/cliproxyapi/darwin.nix
     ../../modules/core/shells.nix
     ../../modules/core/sops-user-key.nix
-    ../../modules/fleet/ssh-access.nix
-    ./modules/t3code/darwin.nix
+    ../../modules/fleet/system.nix
+    ../../modules/t3code/darwin.nix
   ];
 
-  # Fonts come from Home Manager (users/maxpw/modules/fonts.nix), which
+  # Fonts come from Home Manager (modules/home/fonts.nix), which
   # installs them to ~/Library/Fonts/HomeManager on macOS.
   homebrew = {
     enable = true;

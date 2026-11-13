@@ -211,7 +211,7 @@ if [[ "$PLATFORM" == "nixos" && "$HOSTNAME" == "kim" ]]; then
 fi
 
 # NixOS hosts clean on a timer (programs.nh.clean in
-# modules/core/nix-settings.nix). Joyce's Determinate-owned daemon has no
+# modules/nixos/nix-settings.nix). Joyce's Determinate-owned daemon has no
 # scheduled cleanup, so keep the same rollback floor after each switch there.
 if [[ "$PLATFORM" == "darwin" ]]; then
     info "Cleaning up old generations (keep 5, keep 30d)..."

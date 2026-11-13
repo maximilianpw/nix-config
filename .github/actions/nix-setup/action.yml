@@ -10,7 +10,7 @@ runs:
   steps:
     - uses: DeterminateSystems/determinate-nix-action@8d87e8d5e5b8a8309d4281094560f127d9a265f1 # v3
       with:
-        # The hosts' caches (modules/core/nix-settings.nix). Without llm-agents'
+        # The hosts' caches (modules/nixos/nix-settings.nix). Without llm-agents'
         # numtide cache every llm-agents tool builds from source and the jobs
         # exceed their timeouts.
         extra-conf: |

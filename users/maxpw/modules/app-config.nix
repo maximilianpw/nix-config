@@ -1,9 +1,9 @@
 # App-written config files, linked straight to the nix-config checkout
-# (users/maxpw/app-config) instead of the Nix store. The apps rewrite these
+# (users/maxpw/files/editable) instead of the Nix store. The apps rewrite these
 # files, so a read-only store link would break them. Writing through the link
 # edits the checkout, and `git diff` shows the app's changes for review.
 #
-# Hjem owns the static files (users/maxpw/hjem); this module owns only these
+# Hjem owns the static files (modules/hjem); this module owns only these
 # writable ones, and the Hjem module asserts that no path has both owners.
 # Contents are not pinned by a Nix generation: recovery is from Git. If an app replaces the link with a
 # regular file when it saves, take that file out of this list rather than
@@ -23,6 +23,6 @@
   ];
 in {
   home.file = lib.genAttrs paths (path: {
-    source = homeFiles.mkRepoSource config.home.homeDirectory "users/maxpw/app-config/${path}";
+    source = homeFiles.mkRepoSource config.home.homeDirectory "users/maxpw/files/editable/${path}";
   });
 }

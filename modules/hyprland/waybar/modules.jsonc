@@ -69,7 +69,7 @@
   // Lua dispatcher objects, while Waybar's built-in Hyprland workspace click
   // handler sends the legacy string dispatch command.
   "custom/workspace_1": {
-    "exec": "/home/maxpw/nix-config/users/maxpw/hyprland/waybar/scripts/workspace-button 1",
+    "exec": "/home/maxpw/nix-config/modules/hyprland/waybar/scripts/workspace-button 1",
     "return-type": "json",
     "interval": 1,
     "format": "{text}",
@@ -77,7 +77,7 @@
     "on-click": "hyprctl eval 'hl.dispatch(hl.dsp.focus({ workspace = 1 }))'"
   },
   "custom/workspace_2": {
-    "exec": "/home/maxpw/nix-config/users/maxpw/hyprland/waybar/scripts/workspace-button 2",
+    "exec": "/home/maxpw/nix-config/modules/hyprland/waybar/scripts/workspace-button 2",
     "return-type": "json",
     "interval": 1,
     "format": "{text}",
@@ -85,7 +85,7 @@
     "on-click": "hyprctl eval 'hl.dispatch(hl.dsp.focus({ workspace = 2 }))'"
   },
   "custom/workspace_3": {
-    "exec": "/home/maxpw/nix-config/users/maxpw/hyprland/waybar/scripts/workspace-button 3",
+    "exec": "/home/maxpw/nix-config/modules/hyprland/waybar/scripts/workspace-button 3",
     "return-type": "json",
     "interval": 1,
     "format": "{text}",
@@ -93,7 +93,7 @@
     "on-click": "hyprctl eval 'hl.dispatch(hl.dsp.focus({ workspace = 3 }))'"
   },
   "custom/workspace_4": {
-    "exec": "/home/maxpw/nix-config/users/maxpw/hyprland/waybar/scripts/workspace-button 4",
+    "exec": "/home/maxpw/nix-config/modules/hyprland/waybar/scripts/workspace-button 4",
     "return-type": "json",
     "interval": 1,
     "format": "{text}",
@@ -101,7 +101,7 @@
     "on-click": "hyprctl eval 'hl.dispatch(hl.dsp.focus({ workspace = 4 }))'"
   },
   "custom/workspace_5": {
-    "exec": "/home/maxpw/nix-config/users/maxpw/hyprland/waybar/scripts/workspace-button 5",
+    "exec": "/home/maxpw/nix-config/modules/hyprland/waybar/scripts/workspace-button 5",
     "return-type": "json",
     "interval": 1,
     "format": "{text}",
@@ -109,7 +109,7 @@
     "on-click": "hyprctl eval 'hl.dispatch(hl.dsp.focus({ workspace = 5 }))'"
   },
   "custom/workspace_6": {
-    "exec": "/home/maxpw/nix-config/users/maxpw/hyprland/waybar/scripts/workspace-button 6",
+    "exec": "/home/maxpw/nix-config/modules/hyprland/waybar/scripts/workspace-button 6",
     "return-type": "json",
     "interval": 1,
     "format": "{text}",
@@ -117,7 +117,7 @@
     "on-click": "hyprctl eval 'hl.dispatch(hl.dsp.focus({ workspace = 6 }))'"
   },
   "custom/workspace_7": {
-    "exec": "/home/maxpw/nix-config/users/maxpw/hyprland/waybar/scripts/workspace-button 7",
+    "exec": "/home/maxpw/nix-config/modules/hyprland/waybar/scripts/workspace-button 7",
     "return-type": "json",
     "interval": 1,
     "format": "{text}",
@@ -125,7 +125,7 @@
     "on-click": "hyprctl eval 'hl.dispatch(hl.dsp.focus({ workspace = 7 }))'"
   },
   "custom/workspace_8": {
-    "exec": "/home/maxpw/nix-config/users/maxpw/hyprland/waybar/scripts/workspace-button 8",
+    "exec": "/home/maxpw/nix-config/modules/hyprland/waybar/scripts/workspace-button 8",
     "return-type": "json",
     "interval": 1,
     "format": "{text}",
@@ -133,7 +133,7 @@
     "on-click": "hyprctl eval 'hl.dispatch(hl.dsp.focus({ workspace = 8 }))'"
   },
   "custom/workspace_9": {
-    "exec": "/home/maxpw/nix-config/users/maxpw/hyprland/waybar/scripts/workspace-button 9",
+    "exec": "/home/maxpw/nix-config/modules/hyprland/waybar/scripts/workspace-button 9",
     "return-type": "json",
     "interval": 1,
     "format": "{text}",

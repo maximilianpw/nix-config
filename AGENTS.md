@@ -17,7 +17,7 @@ Home Manager configuration, and Kim's homelab services.
   application options and implementation stay in their owning `homelab/`
   module.
 - Nix/Home Manager owns systems, packages, shells, and executables; Nixvim
-  (`users/maxpw/neovim/`) owns Neovim and Hjem (`users/maxpw/hjem/`) owns static
+  (`users/maxpw/neovim/`) owns Neovim and Hjem (`modules/hjem/`) owns static
   app files; `pi-config` owns Pi resources.
   Do not give two systems the same destination.
 - Documentation is deliberately small: `README.md`, `BOOTSTRAP.md`,
@@ -65,7 +65,7 @@ affected checks without asking; report checks that could not run.
   settings live in `/etc/nix/nix.custom.conf` via `machines/joyce.nix`.
 - macOS GUI apps belong in Homebrew declarations; activation cleanup is `zap`.
   Self-contained notarized apps may move to
-  `users/maxpw/modules/packages/darwin-apps.nix`; follow its non-zapping handover.
+  `modules/home/darwin-apps.nix`; follow its non-zapping handover.
 - Hyprland comes from the flake input, not nixpkgs.
 - For storage/recovery work, use `docs/homelab-recovery.md`. Never point
   restore or provisioning tools at live paths or unconfirmed disks.

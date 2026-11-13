@@ -26,14 +26,14 @@
     "net.imput.helium/NativeMessagingHosts/com.1password.1password.json"
   ] (_: {text = onePasswordNativeMessagingHost;});
 
-  settings = import ../settings.nix {inherit pkgs;};
+  settings = import ../../users/maxpw/settings.nix {inherit pkgs;};
   # Login shell for session environment, then hand off to the interactive
   # shell (same shape as the old `bash -l -c nu`).
   ghosttyConfig =
     ''
       command = ${lib.getExe settings.loginShell} -l -c ${lib.getExe settings.interactiveShell}
     ''
-    + builtins.readFile ../ghostty.linux;
+    + builtins.readFile ../linux-desktop/ghostty.linux;
 in {
   xdg.enable = true;
 

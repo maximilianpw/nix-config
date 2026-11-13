@@ -29,7 +29,7 @@ class SourcePinsTest(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
-        for name in [SCRIPT, "flake.nix", "overlays.nix", "packages/obsidian.nix", "packages/herdr-core.nix", "users/maxpw/modules/shells.nix", "homelab/executor.nix", "homelab/media/companions.nix", "users/maxpw/agents/claude/settings.json", "users/maxpw/agents/opencode/cliproxyapi.json"]:
+        for name in [SCRIPT, "flake.nix", "overlays.nix", "packages/obsidian.nix", "packages/herdr-core.nix", "modules/shells/home.nix", "homelab/executor.nix", "homelab/media/companions.nix", "users/maxpw/files/editable/agents/claude/settings.json", "users/maxpw/files/editable/agents/opencode/cliproxyapi.json"]:
             target = self.root / name
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(REPO / name, target)
@@ -194,13 +194,13 @@ sys.stdout.write(response)
         for repository in pins.FISH_PLUGINS.values():
             self.respond(["nix", "flake", "prefetch", "--json", "github:" + repository], {"locked": {"rev": REVISION}, "hash": HASH})
         self.run_group("fish-plugins")
-        updated = self.read("users/maxpw/modules/shells.nix")
+        updated = self.read("modules/shells/home.nix")
         self.assertEqual(updated.count(REVISION), 2)
         self.assertEqual(updated.count(HASH), 2)
 
     def test_agent_plugins_follow_locked_cli_without_reformatting_settings(self):
         self.respond(["nix", "eval", "--raw", ".#packages.x86_64-linux.plannotator.version"], "9.0.0")
-        filenames = ["users/maxpw/agents/claude/settings.json", "users/maxpw/agents/opencode/cliproxyapi.json"]
+        filenames = ["users/maxpw/files/editable/agents/claude/settings.json", "users/maxpw/files/editable/agents/opencode/cliproxyapi.json"]
         before = [self.read(filename) for filename in filenames]
         self.run_group("agent-plugins")
         for filename, original in zip(filenames, before):
@@ -214,7 +214,7 @@ sys.stdout.write(response)
 
     def test_agent_plugin_evaluation_failure_changes_neither_file(self):
         self.respond(["nix", "eval", "--raw", ".#packages.x86_64-linux.plannotator.version"], 1)
-        filenames = ["users/maxpw/agents/claude/settings.json", "users/maxpw/agents/opencode/cliproxyapi.json"]
+        filenames = ["users/maxpw/files/editable/agents/claude/settings.json", "users/maxpw/files/editable/agents/opencode/cliproxyapi.json"]
         before = [self.read(filename) for filename in filenames]
         self.run_group("agent-plugins", success=False)
         self.assertEqual(before, [self.read(filename) for filename in filenames])

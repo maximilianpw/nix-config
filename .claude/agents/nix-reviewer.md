@@ -10,7 +10,7 @@ Follow the changed behavior; not every review needs every item below.
 
 - Module wiring: imports reach the intended hosts and arguments match the
   importer. `lib/mksystem.nix` supplies Home Manager's `extraSpecialArgs`;
-  `users/maxpw/home-manager.nix` owns shared user module imports.
+  `users/maxpw/home.nix` owns shared user module imports.
 - Platform scope: use the supplied host flags (`isDarwin`, `isWSL`,
   `isLinuxDesktop`) consistently with nearby code. Check that packages and
   options evaluate on affected platforms; keep substantial OS divergence in

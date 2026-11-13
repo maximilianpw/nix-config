@@ -26,32 +26,32 @@ in {
       inputs.nix-index-database.homeModules.nix-index
       inputs.rex.homeManagerModules.default
       inputs.stylix.homeModules.stylix
-      (import ../../modules/cliproxyapi/home-manager.nix {
-        agentConfigDirectory = ./agents;
+      (import ../../modules/cliproxyapi/home.nix {
+        agentConfigDirectory = ./files/editable/agents;
       })
-      ./modules/fonts.nix
-      ./modules/git.nix
-      ./modules/jujutsu.nix
-      ./modules/agent-tools.nix
-      ./modules/vicinae.nix
-      ../../modules/fleet/home-manager.nix
-      ./modules/t3code/server.nix
-      ./modules/morning-report
-      ./modules/shells.nix
+      ../../modules/home/fonts.nix
+      ../../modules/home/git.nix
+      ../../modules/home/jujutsu.nix
+      ../../modules/agent-tools/home.nix
+      ../../modules/home/vicinae.nix
+      ../../modules/fleet/home.nix
+      ../../modules/t3code/home.nix
+      ../../modules/morning-report/home.nix
+      ../../modules/shells/home.nix
       ./modules/syncthing.nix
-      ./modules/gpg.nix
-      ./modules/himalaya.nix
-      ./modules/xdg.nix
-      ./hyprland
+      ../../modules/home/gpg.nix
+      ../../modules/himalaya/home.nix
+      ../../modules/onepassword/home.nix
+      ../../modules/hyprland/home.nix
       ./modules/app-config.nix
-      ./modules/linux-services.nix
-      ./modules/tmux.nix
-      ./modules/neovim.nix
-      ./modules/packages/dev-tools.nix
-      ./modules/packages/terminal-tools.nix
+      ../../modules/linux-desktop/home.nix
+      ../../modules/home/tmux.nix
+      ../../modules/home/neovim.nix
+      ../../modules/home/dev-tools.nix
+      ../../modules/home/terminal-tools.nix
       ./modules/packages/linux-desktop.nix
-      ./modules/packages/darwin-apps.nix
-      ./modules/packages/custom-scripts
+      ../../modules/home/darwin-apps.nix
+      ../../modules/custom-scripts/home.nix
     ]
     ++ lib.optionals (isDarwin || isWSL) [
       ./modules/agent-secrets.nix

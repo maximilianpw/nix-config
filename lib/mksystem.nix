@@ -53,9 +53,9 @@ in
           then inputs.hjem.darwinModules.default
           else inputs.hjem.nixosModules.default
         )
-        (userConfig + "/hjem")
+        ../modules/hjem/system.nix
       ]
-      ++ lib.optional darwin (userConfig + "/hjem/darwin.nix")
+      ++ lib.optional darwin ../modules/hjem/darwin.nix
       ++ [
         ../machines/${name}.nix
         (userConfig + "/${host.os}.nix")
@@ -66,7 +66,7 @@ in
             useUserPackages = true;
             backupFileExtension = "backup";
             extraSpecialArgs = systemArgs;
-            users.${user} = import (userConfig + "/home-manager.nix");
+            users.${user} = import (userConfig + "/home.nix");
           };
         }
         {

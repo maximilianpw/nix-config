@@ -4,7 +4,7 @@
     computerName = "joyce";
   };
 
-  # Note: ../modules/core/nix-settings.nix is intentionally NOT imported here.
+  # Note: ../modules/nixos/nix-settings.nix is intentionally NOT imported here.
   # With `nix.enable = false` (Determinate manages the daemon), nix-darwin
   # ignores `nix.settings`, so caches/trusted-users must go through
   # Determinate's /etc/nix/nix.custom.conf instead (see environment.etc below).

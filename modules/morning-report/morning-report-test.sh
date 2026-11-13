@@ -4,7 +4,7 @@
 set -euo pipefail
 
 here=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)
+repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 script="$here/morning-report.sh"
 # shellcheck source=tests/lib/portable-gnu-fixtures.sh
 source "$repo_root/tests/lib/portable-gnu-fixtures.sh"

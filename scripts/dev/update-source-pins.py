@@ -181,7 +181,7 @@ def prefetch(url):
 
 def update_fish_plugin(name):
     repository = FISH_PLUGINS[name]
-    path = ROOT / "users/maxpw/modules/shells.nix"
+    path = ROOT / "modules/shells/home.nix"
     original = path.read_text()
     result = json.loads(command("nix", "flake", "prefetch", "--json", f"github:{repository}"))
     revision = require_match(r"[0-9a-f]{40}", result["locked"]["rev"], "Fish plugin revision")
@@ -198,8 +198,8 @@ def update_agent_plugins():
     require_match(r"\d+\.\d+\.\d+", version, "locked Plannotator version")
     changes = []
     for filename, pattern, value in [
-        ("users/maxpw/agents/claude/settings.json", r'("repo":\s*"backnotprop/plannotator",\s*"ref":\s*")[^"]+("\s*)', "v" + version),
-        ("users/maxpw/agents/opencode/cliproxyapi.json", r'("@plannotator/opencode@)[^"]+("\s*)', version),
+        ("users/maxpw/files/editable/agents/claude/settings.json", r'("repo":\s*"backnotprop/plannotator",\s*"ref":\s*")[^"]+("\s*)', "v" + version),
+        ("users/maxpw/files/editable/agents/opencode/cliproxyapi.json", r'("@plannotator/opencode@)[^"]+("\s*)', version),
     ]:
         path = ROOT / filename
         original = path.read_text()

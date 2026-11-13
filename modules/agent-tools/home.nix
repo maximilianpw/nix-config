@@ -4,17 +4,17 @@
   lib,
   ...
 }: let
-  homeFiles = import ../../../lib/home-files.nix {
+  homeFiles = import ../../lib/home-files.nix {
     inherit lib;
     mkOutOfStoreSymlink = config.lib.file.mkOutOfStoreSymlink;
   };
 
-  source = path: homeFiles.mkRepoSource config.home.homeDirectory "users/maxpw/agents/${path}";
+  source = path: homeFiles.mkRepoSource config.home.homeDirectory "users/maxpw/files/editable/agents/${path}";
   piConfigSource = path: homeFiles.mkHomeSource config.home.homeDirectory "pi-config/${path}";
   isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
   cuaDriverApp = "${pkgs.cua-driver}/Applications/CuaDriver.app";
 in {
-  imports = [./plannotator.nix];
+  imports = [../home/plannotator.nix];
 
   home = {
     packages = [
@@ -108,9 +108,9 @@ in {
 
       ".config/amp/settings.json".source = source "amp/settings.json";
       ".codex/AGENTS.md".text =
-        builtins.readFile ../agents/shared/AGENTS.md
+        builtins.readFile ../../users/maxpw/files/editable/agents/shared/AGENTS.md
         + "\n"
-        + builtins.readFile ../agents/codex/AGENTS.md;
+        + builtins.readFile ../../users/maxpw/files/editable/agents/codex/AGENTS.md;
       ".config/agent-policy/AGENTS.md".source = source "shared/AGENTS.md";
       ".claude/CLAUDE.md".source = source "claude/CLAUDE.md";
       ".config/opencode/AGENTS.md".source = source "shared/AGENTS.md";

@@ -6,12 +6,12 @@
   pkgs,
   ...
 }: let
-  homeFiles = import ../../../lib/home-files.nix {
+  homeFiles = import ../../lib/home-files.nix {
     inherit lib;
     mkOutOfStoreSymlink = config.lib.file.mkOutOfStoreSymlink;
   };
 
-  hyprConfigPath = "${config.home.homeDirectory}/nix-config/users/maxpw/hyprland/hypr";
+  hyprConfigPath = "${config.home.homeDirectory}/nix-config/modules/hyprland/hypr";
   uwsmEnv = ''
     export GDK_SCALE=1.6
     export GDK_DPI_SCALE=1

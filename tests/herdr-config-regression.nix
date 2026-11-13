@@ -35,7 +35,7 @@
   appSource = path: files."${appPrefix}${path}".source;
   # Tests stay in the repository; backend.test.mjs and core-smoke.test.mjs need
   # a live Herdr core and are run by hand with `bun test`.
-  appTests = ../users/maxpw/hjem/files/.config/herdr-app;
+  appTests = ../users/maxpw/files/managed/.config/herdr-app;
   keys = builtins.fromJSON (builtins.readFile (appSource "keys.json"));
   layout = builtins.fromJSON (builtins.readFile (appSource "layouts/migrated.json"));
   theme = builtins.fromJSON (builtins.readFile (appSource "themes/catppuccin-mocha.json"));

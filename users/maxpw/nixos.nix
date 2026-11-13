@@ -11,14 +11,14 @@
 in {
   imports = [
     ../../modules/cliproxyapi/nixos.nix
-    ../../modules/core/nix-settings.nix
+    ../../modules/nixos/nix-settings.nix
     ../../modules/fleet/nixos.nix
-    ../../modules/fleet/ssh-access.nix
+    ../../modules/fleet/system.nix
     ../../modules/core/security.nix
     ../../modules/core/sops.nix
     ../../modules/core/shells.nix
-    ../../modules/desktop/hyprland.nix
-    ./modules/linux-common.nix
+    ../../modules/hyprland/nixos.nix
+    ../../modules/nixos/linux-base.nix
   ];
 
   custom.hyprland.enable = lib.mkDefault isLinuxDesktop;

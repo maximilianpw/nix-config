@@ -9,7 +9,7 @@
   pkgs,
   ...
 }: let
-  homelab = import ../../../../homelab/inventory {inherit lib;};
+  homelab = import ../../homelab/inventory {inherit lib;};
   # Unattended, homelab-aware work runs on every inventory host that has
   # longRunningAgents = true and the homelab profile. Kim is currently the only
   # such host, but the predicate is not Kim-specific: a future host matching

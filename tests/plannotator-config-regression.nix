@@ -7,11 +7,11 @@
   version,
 }: let
   homes = [kim joyce cuno];
-  appConfig = builtins.fromJSON (builtins.readFile ../users/maxpw/app-config/.plannotator/config.json);
+  appConfig = builtins.fromJSON (builtins.readFile ../users/maxpw/files/editable/.plannotator/config.json);
   cli = kim.home.file.".local/bin/plannotator".source;
   homelab = import ../homelab/inventory {inherit lib;};
-  claude = builtins.fromJSON (builtins.readFile ../users/maxpw/agents/claude/settings.json);
-  opencode = builtins.fromJSON (builtins.readFile ../users/maxpw/agents/opencode/cliproxyapi.json);
+  claude = builtins.fromJSON (builtins.readFile ../users/maxpw/files/editable/agents/claude/settings.json);
+  opencode = builtins.fromJSON (builtins.readFile ../users/maxpw/files/editable/agents/opencode/cliproxyapi.json);
   removeCodexInbox = pkgs.writeShellScript "remove-plannotator-codex-inbox-fixture" ''
     set -euo pipefail
     run() { "$@"; }
@@ -65,12 +65,12 @@ in
       assert config["model"] == "fixture-model"
       assert config["mcp_servers"]["fixture"]["command"] == "fixture"
       assert "plannotator-inbox" not in config["mcp_servers"]
-      grok = tomllib.loads(Path("${../users/maxpw/agents/grok/config.toml}").read_text())
+      grok = tomllib.loads(Path("${../users/maxpw/files/editable/agents/grok/config.toml}").read_text())
       assert "plannotator-inbox" not in grok.get("mcp_servers", {})
       PY
       grep -Fx 'saved messages must survive' "$HOME/.plannotator/inbox/fixture.txt"
       test ! -e "$HOME/.plannotator/inbox/inbox.json"
-      jq -e '(."amp.mcpServers" // {} | has("plannotator-inbox")) | not' ${../users/maxpw/agents/amp/settings.json}
-      jq -e '.enabledPlugins."plannotator@plannotator" == true' ${../users/maxpw/agents/claude/settings.json}
+      jq -e '(."amp.mcpServers" // {} | has("plannotator-inbox")) | not' ${../users/maxpw/files/editable/agents/amp/settings.json}
+      jq -e '.enabledPlugins."plannotator@plannotator" == true' ${../users/maxpw/files/editable/agents/claude/settings.json}
       touch "$out"
     ''

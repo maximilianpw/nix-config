@@ -6,7 +6,7 @@
 }: let
   configFile = home.home.file.".config/opencode/opencode.json".source;
   quotaFile = home.home.file.".config/opencode/opencode-quota/quota-toast.json".source;
-  cliDefaults = ../users/maxpw/agents/opencode/cli.json;
+  cliDefaults = ../users/maxpw/files/editable/agents/opencode/cli.json;
   configureCli = ../modules/cliproxyapi/opencode-configure-cli.sh;
   cliProxy = import ../modules/cliproxyapi/config.nix;
   serverConfig = pkgs.writeText "cliproxyapi-fixture.yaml" (cliProxy.mkServerConfig {
