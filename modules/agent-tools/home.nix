@@ -21,7 +21,7 @@ in {
       pkgs.cloudflared
       pkgs.codex
       pkgs.cua-driver
-      pkgs.opencode
+      pkgs.opencode2
       pkgs.grok
       pkgs.herdr-core
       pkgs.herdr-jj

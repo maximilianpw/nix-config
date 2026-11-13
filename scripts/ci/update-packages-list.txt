@@ -1,6 +1,5 @@
 helium
 obsidian
-cliproxyapi
 cua-driver
 tunarr
 herdr-core

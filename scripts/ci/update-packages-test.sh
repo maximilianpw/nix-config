@@ -41,7 +41,6 @@ export TEST_ATTEMPTS="$tmp/attempts" TEST_COMMANDS="$tmp/commands"
 cat >"$tmp/expected-defaults" <<'EOF'
 helium
 obsidian
-cliproxyapi
 cua-driver
 tunarr
 herdr-core

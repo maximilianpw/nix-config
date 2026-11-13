@@ -182,7 +182,7 @@
       args = ["--provider" "openai-codex" "--model" cliProxy.defaultModel];
     };
     opencode = {
-      program = lib.getExe pkgs.opencode;
+      program = lib.getExe pkgs.opencode2;
       needsProxyKey = true;
     };
   };

@@ -43,7 +43,7 @@
     };
     opencode-config-regression = import ./opencode-config-regression.nix {
       pkgs = nixpkgs.legacyPackages.x86_64-linux;
-      package = self.nixosConfigurations.kim.pkgs.opencode;
+      package = self.nixosConfigurations.kim.pkgs.opencode2;
       plannotatorVersion = self.nixosConfigurations.kim.pkgs.plannotator.version;
       home = self.nixosConfigurations.kim.config.home-manager.users.maxpw;
     };
@@ -206,7 +206,7 @@
     };
     opencode-config-regression = import ./opencode-config-regression.nix {
       pkgs = nixpkgs.legacyPackages.aarch64-darwin;
-      package = self.darwinConfigurations.joyce.pkgs.opencode;
+      package = self.darwinConfigurations.joyce.pkgs.opencode2;
       plannotatorVersion = self.darwinConfigurations.joyce.pkgs.plannotator.version;
       home = self.darwinConfigurations.joyce.config.home-manager.users.max-vev;
     };

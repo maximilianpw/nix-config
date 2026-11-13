@@ -11,7 +11,7 @@
     pkgs.nodejs
     pkgs.claude-code
     pkgs.codex
-    pkgs.opencode
+    pkgs.opencode2
     pkgs.grok
     pkgs.git
     pkgs.openssh

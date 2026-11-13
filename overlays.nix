@@ -29,19 +29,10 @@ inputs: [
   in {
     inherit (llm) claude-code;
     inherit (llm) codex;
-    # llm-agents keeps v1 as opencode and installs v2 as opencode2.
-    # Preserve the command name used by wrappers and service PATHs.
-    # Wrap rather than overrideAttrs, which would rebuild it from source
-    # instead of substituting llm-agents' cached build.
-    opencode = prev.symlinkJoin {
-      name = "opencode-${llm.opencode2.version}";
-      inherit (llm.opencode2) version;
-      paths = [llm.opencode2];
-      postBuild = ''
-        ln -s opencode2 "$out/bin/opencode"
-      '';
-      meta = llm.opencode2.meta // {mainProgram = "opencode";};
-    };
+    # llm-agents keeps v1 as opencode; v2 installs the command `opencode2`.
+    # modules/cliproxyapi/home.nix provides the `opencode` command.
+    inherit (llm) opencode2;
+    cliproxyapi = llm.cli-proxy-api;
     inherit (llm) grok;
     herdr-jj = inputs.herdr-jj.packages.${prev.stdenv.hostPlatform.system}.default;
     inherit (llm) executor;
@@ -108,7 +99,6 @@ inputs: [
     });
     t3code = final.callPackage ./packages/t3code.nix {};
     obsidian = final.callPackage ./packages/obsidian.nix {};
-    cliproxyapi = final.callPackage ./packages/cliproxyapi.nix {};
     cua-driver = final.callPackage ./packages/cua-driver.nix {};
     herdr-core = final.callPackage ./packages/herdr-core.nix {};
     lazygit-nvim-edit = final.callPackage ./packages/lazygit-nvim-edit.nix {};

@@ -48,10 +48,10 @@ in
       cd "$HOME"
 
       # Exercise the packaged v2 executable with canonical configuration.
-      ${package}/bin/opencode --version | grep -E '^opencode v2\.'
+      ${package}/bin/opencode2 --version | grep -E '^opencode v2\.'
       # Keep diagnostic commands in disposable private servers, too.
-      ${package}/bin/opencode service set disabled true
-      ${package}/bin/opencode debug config > resolved.json
+      ${package}/bin/opencode2 service set disabled true
+      ${package}/bin/opencode2 debug config > resolved.json
       jq -e '
         [.[] | select(.type == "document") | .info] | first
         | .model.providerID == "cliproxyapi" and
@@ -120,7 +120,7 @@ in
       }
       JSON
       # A project cannot relax the global provider policy, even with credentials.
-      ${package}/bin/opencode models --standalone > models.txt
+      ${package}/bin/opencode2 models --standalone > models.txt
       test "$(grep -c '^cliproxyapi/' models.txt)" -eq 9
       grep -Fx 'cliproxyapi/gpt-6-astra' models.txt
       grep -Fx 'opencode/deepseek-v4.1-flash-free' models.txt
