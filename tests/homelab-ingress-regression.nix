@@ -28,6 +28,18 @@ in
   "every public origin must use loopback and its exact public Host header";
   assert lib.assertMsg (tunnel.default == "http_status:404")
   "undeclared Cloudflare hostnames must reach the 404 fallback";
+  assert expect.all "Foodlog has no login, so it must stay on loopback behind Tailscale with its data backed up" [
+    (homelab.services.food-tracker.endpoint.authorizationOwner == "tailscale")
+    (homelab.services.food-tracker.endpoint.exposure == "tailnet")
+    (homelab.services.food-tracker.state.kind == "files")
+    (config.systemd.services.food-tracker.environment.HOST == "127.0.0.1")
+    (config.systemd.services.food-tracker.environment.PORT == "19015")
+    (lib.hasPrefix "/var/lib/food-tracker/" config.systemd.services.food-tracker.environment.DATABASE_PATH)
+    (config.systemd.services.food-tracker.serviceConfig.User == "food-tracker")
+    (!(config.systemd.services.food-tracker.environment ? VISION_BASE_URL))
+    (!(builtins.elem 19015 config.networking.firewall.allowedTCPPorts))
+    (!(builtins.hasAttr homelab.endpoints.food-tracker.host tunnel.ingress))
+  ];
   assert lib.assertMsg (
     builtins.length nextcloudListen
     == 1

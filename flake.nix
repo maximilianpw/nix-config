@@ -41,6 +41,11 @@
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
+    food-tracker-src = {
+      url = "git+https://github.com/maximilianpw/food-tracker?rev=0f2f2f594d8681b3348d6488b47bb5515cf864b4";
+      flake = false;
+    };
+
     # Private homelab MCP; pin an upstream release and consume its package.
     homelab-mcp = {
       url = "git+ssh://git@github.com/maximilianpw/homelab-mcp?ref=refs/tags/v0.1.1";

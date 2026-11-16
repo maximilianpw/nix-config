@@ -285,6 +285,36 @@
     };
   };
 
+  food-tracker = {
+    endpoint = {
+      authorizationOwner = "tailscale";
+      exposure = "tailnet";
+      port = 19015;
+      monitorPath = "/health";
+    };
+    state.paths = ["/var/lib/food-tracker"];
+    backup.quiesce = [
+      {
+        unit = "food-tracker.service";
+        until = "archive";
+      }
+    ];
+    operations.units = ["food-tracker.service"];
+    recovery = {
+      versionPolicy = "restore-archived-version-first";
+      runbook = "docs/homelab-recovery.md#foodlog";
+      acceptance = ["kitchen-recipes-and-diary-load"];
+      secretOwners = ["mutable-state:/var/lib/food-tracker"];
+    };
+    presentation = {
+      group = "applications";
+      title = "Foodlog";
+      icon = "mdi-food-apple-outline";
+      description = "Kitchen and food journal";
+      order = 46;
+    };
+  };
+
   forgejo = {
     endpoint = {
       authorizationOwner = "tailscale";

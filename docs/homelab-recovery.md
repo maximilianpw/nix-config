@@ -57,7 +57,7 @@ sudo systemctl mask --runtime \
   cloudflared-tunnel-5b712ae4-3ce4-4499-9cb7-a57cde1c571f.service \
   tailscale-serve.service borgbackup-job-main.service \
   actual.service atuin.service autobrr.service cross-seed.service \
-  home-assistant.service homelab-mcp.service nextcloud-cron.service nextcloud-cron.timer \
+  food-tracker.service home-assistant.service homelab-mcp.service nextcloud-cron.service nextcloud-cron.timer \
   forgejo-runner.service forgejo-runner-register.service forgejo.service \
   nextcloud-setup.service nextcloud-update-db.service \
   nextcloud-update-store-apps.service nextcloud-update-store-apps.timer \
@@ -330,6 +330,15 @@ call through the MCP endpoint.
 
 Do not expose an empty replacement instance: its first account would become the
 new owner and newly generated keys could not decrypt archived credentials.
+
+### Foodlog
+
+Restore `/var/lib/food-tracker` with `food-tracker.service` stopped: `foodlog.db`
+and its `-wal`/`-shm` files hold the kitchen stock, recipes, shopping list,
+diary, change history and the hashes of assistant tokens. Start the archived
+version first; a newer one applies its own migrations on start and cannot be
+rolled back onto the same file. Kitchen, Recipes and Today must load with their
+entries. Assistant tokens survive the restore; revoke any that should not.
 
 ### Forgejo
 
