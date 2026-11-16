@@ -1,5 +1,4 @@
 {
-  config,
   homelab,
   inputs,
   lib,
@@ -9,8 +8,6 @@
   inherit (homelab.services.food-tracker) endpoint;
   package = pkgs.callPackage ../packages/food-tracker.nix {src = inputs.food-tracker-src;};
   stateDir = "/var/lib/food-tracker";
-  visionModel = "qwen2.5vl:7b";
-  ollama = config.services.ollama;
 in {
   custom.backup.applicationVersions.food-tracker = inputs.food-tracker-src.shortRev or "ci-stub";
 
@@ -34,9 +31,8 @@ in {
       DATABASE_PATH = "${stateDir}/foodlog.db";
       MIGRATIONS_DIR = "${package}/migrations";
       STATIC_DIR = "${package}/client";
-      # Receipts and shopping lists are read on this machine; photos never leave it.
-      VISION_BASE_URL = "http://${ollama.host}:${toString ollama.port}/v1";
-      VISION_MODEL = visionModel;
+      # No VISION_* settings yet: photo scans answer "No vision model is
+      # configured" until a model is chosen. Everything else works without one.
     };
     serviceConfig = {
       ExecStart = "${lib.getExe pkgs.nodejs} ${package}/server/main.mjs";
@@ -60,13 +56,5 @@ in {
       SystemCallArchitectures = "native";
       CapabilityBoundingSet = "";
     };
-  };
-
-  # The vision model for scans. CPU-only here: a first scan takes under a minute
-  # while the model loads, later ones about ten seconds. The model (about 6 GB)
-  # is downloaded once on activation and can always be downloaded again.
-  services.ollama = {
-    enable = true;
-    loadModels = [visionModel];
   };
 }

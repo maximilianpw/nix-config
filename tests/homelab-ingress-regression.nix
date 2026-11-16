@@ -36,7 +36,7 @@ in
     (config.systemd.services.food-tracker.environment.PORT == "19015")
     (lib.hasPrefix "/var/lib/food-tracker/" config.systemd.services.food-tracker.environment.DATABASE_PATH)
     (config.systemd.services.food-tracker.serviceConfig.User == "food-tracker")
-    (lib.hasPrefix "http://127.0.0.1:" config.systemd.services.food-tracker.environment.VISION_BASE_URL)
+    (!(config.systemd.services.food-tracker.environment ? VISION_BASE_URL))
     (!(builtins.elem 19015 config.networking.firewall.allowedTCPPorts))
     (!(builtins.hasAttr homelab.endpoints.food-tracker.host tunnel.ingress))
   ];

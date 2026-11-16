@@ -338,8 +338,7 @@ and its `-wal`/`-shm` files hold the kitchen stock, recipes, shopping list,
 diary, change history and the hashes of assistant tokens. Start the archived
 version first; a newer one applies its own migrations on start and cannot be
 rolled back onto the same file. Kitchen, Recipes and Today must load with their
-entries. Assistant tokens survive the restore; revoke any that should not. The
-Ollama model is not backed up and is downloaded again on activation.
+entries. Assistant tokens survive the restore; revoke any that should not.
 
 ### Forgejo
 
