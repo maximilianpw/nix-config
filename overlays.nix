@@ -56,20 +56,31 @@ inputs: [
         urls = map (builtins.replaceStrings ["https://bin.equinox.io/"] ["https://bin.ngrok.com/"]) src.urls;
       });
     });
-    # cloudflared needs Go 1.27 from unstable; pin the requested release
-    # for both the tunnel service and the user CLI without moving inputs.
-    cloudflared = unstable.cloudflared.overrideAttrs (_: let
-      version = "2026.11.0";
-    in {
-      inherit version;
-      src = prev.fetchFromGitHub {
-        owner = "cloudflare";
-        repo = "cloudflared";
-        tag = version;
-        hash = "sha256-x2wEj/HyyROq5hq/MpXYt2PaiDOscHY3xLVSU6Ccjpw=";
-      };
-      vendorHash = "sha256-ah+kI+bWIZqsi9U+AJtWME9rfjTr6QpiLQy0RXNlDzc=";
-    });
+    # Cloudflared requires Go 1.27.4; scope the toolchain pin to this package
+    # rather than moving unstable for every host or allowing Go to download it.
+    cloudflared = let
+      go = unstable.go_1_27.overrideAttrs (_: {
+        version = "1.27.4";
+        src = prev.fetchurl {
+          url = "https://go.dev/dl/go1.27.4.src.tar.gz";
+          hash = "sha256-c8+4VxrsDAEXdofbhxY9Rqog6XeWcncokaoXZU2aYJk=";
+        };
+      });
+    in
+      (unstable.cloudflared.override {
+        buildGo127Module = unstable.buildGo127Module.override {inherit go;};
+      }).overrideAttrs (_: let
+        version = "2026.11.0";
+      in {
+        inherit version;
+        src = prev.fetchFromGitHub {
+          owner = "cloudflare";
+          repo = "cloudflared";
+          tag = version;
+          hash = "sha256-x2wEj/HyyROq5hq/MpXYt2PaiDOscHY3xLVSU6Ccjpw=";
+        };
+        vendorHash = "sha256-ah+kI+bWIZqsi9U+AJtWME9rfjTr6QpiLQy0RXNlDzc=";
+      });
     # direnv 2.37.1 fish tests get killed during build on macOS (sandbox/OOM)
     direnv = prev.direnv.overrideAttrs (_: {doCheck = false;});
     # Home Assistant integrations move on a monthly cadence, so keep Core
