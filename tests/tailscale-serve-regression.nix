@@ -2,7 +2,7 @@
   lib,
   pkgs,
 }: let
-  homelab = import ../lib/homelab.nix {inherit lib;};
+  homelab = import ../homelab/inventory {inherit lib;};
   tailscale = lib.getExe pkgs.tailscale;
   testPkgs =
     pkgs
@@ -10,11 +10,12 @@
       writeShellScript = _: text: text;
       writeText = _: text: text;
     };
-  module = import ../homelab/tailscale-serve.nix {
+  module = import ../homelab/tailscale-serve {
     config = {
       services.tailscale.package = pkgs.tailscale;
     };
-    inherit lib;
+    inherit homelab lib;
+    template = import ../lib/template.nix {inherit lib;};
     pkgs = testPkgs;
   };
   applyScript = builtins.unsafeDiscardStringContext module.config.systemd.services.tailscale-serve.serviceConfig.ExecStart;

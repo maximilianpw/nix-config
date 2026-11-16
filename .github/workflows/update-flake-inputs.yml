@@ -32,7 +32,7 @@ jobs:
         with:
           cache: 'true'
 
-      # Private applications stay local-only. Capture selection before reading the array
+      # homelab-mcp, rex and food-tracker-src stay local-only. Capture selection before reading the array
       # so validation failures cannot turn into an unscoped `nix flake update`.
       - name: Update selected public flake inputs
         id: selection
@@ -53,16 +53,11 @@ jobs:
           echo "branch=$branch" >> "$GITHUB_OUTPUT"
 
       - name: Evaluate the updated flake before opening a PR
-        run: |
-          # Validate with public fixtures, but propose the real updated lock.
-          cp flake.lock "$RUNNER_TEMP/updated-flake.lock"
-          trap 'cp "$RUNNER_TEMP/updated-flake.lock" flake.lock; git restore -- packages/food-tracker.nix' EXIT
-          scripts/ci/use-superlocal-stub.sh
-          nix flake check --no-build --no-write-lock-file
+        run: nix flake check --no-build --no-write-lock-file --override-input homelab-mcp path:./tests/stubs/homelab-mcp --override-input rex path:./tests/stubs/rex --override-input food-tracker-src path:./tests/stubs/food-tracker
 
       - name: Open pull request
         id: create-pull-request
-        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+        uses: peter-evans/create-pull-request@15733dbdfeedb4f7fdb73d13c6f5ac83b710fab8 # v8.1.2
         with:
           branch: ${{ steps.selection.outputs.branch }}
           base: main

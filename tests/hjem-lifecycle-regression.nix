@@ -14,9 +14,8 @@ in
   } ''
     bash ${./hjem-lifecycle-fixture.sh}
 
-    # Runtime activation only warns about invalid entries (see "Hjem hazards" in
-    # docs/nixvim-hjem.md), so the modules' build-time schema check is the
-    # guard that must keep rejecting them.
+    # Runtime activation only warns about invalid entries, so the modules'
+    # build-time schema check is the guard that must keep rejecting them.
     printf '{"version":3,"files":[{"type":"symlink","target":"relative"}]}\n' > invalid.json
     export CUE_CACHE_DIR="$PWD/.cache" CUE_CONFIG_DIR="$PWD/.config"
     if cue vet -c ${hjem}/manifest/v3.cue invalid.json 2>/dev/null; then

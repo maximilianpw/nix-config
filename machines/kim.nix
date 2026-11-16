@@ -6,14 +6,18 @@
   imports = [
     ./hardware/kim.nix
     ../homelab
-    ../modules/amp-orb-provider
   ];
 
-  networking.hostName = "kim";
+  networking = {
+    hostName = "kim";
 
-  # Wake-on-LAN on the Realtek RTL8125, so the box can be powered back up
-  # remotely after a manual shutdown.
-  networking.interfaces.enp194s0.wakeOnLan.enable = true;
+    # Wake-on-LAN on the Realtek RTL8125, so the box can be powered back up
+    # remotely after a manual shutdown.
+    interfaces.enp194s0.wakeOnLan.enable = true;
+
+    # services.rex.loginServer's tailnet listener.
+    firewall.interfaces.tailscale0.allowedTCPPorts = [7297];
+  };
 
   # schedutil idles low under amd_pstate=guided but still clocks up for nix
   # builds and long-running agents; powersave would pin the box to min freq.
@@ -55,7 +59,6 @@
     # 100) win ties once every core is busy. One ordinary compile saturates all
     # 24 cores while leaving memory and loopback services untouched, so quotas,
     # memory limits, or a lower max-jobs would only slow uncontended builds.
-    # See docs/kim-build-contention.md.
     services.nix-daemon.serviceConfig = {
       CPUWeight = 50;
       IOWeight = 50;
@@ -65,21 +68,11 @@
   hardware.bluetooth.enable = lib.mkDefault false;
 
   # Container stack for dev databases and ad-hoc services.
-  virtualisation.docker = {
-    enable = true;
-    # Default docker (28.x) is unmaintained and marked insecure in nixpkgs 25.11
-    package = pkgs.docker_29;
-  };
+  virtualisation.docker.enable = true;
   users.users.maxpw.extraGroups = lib.mkAfter ["docker"];
 
-  # Provision the encrypted token separately; until then the provider's
-  # ConditionPathExists keeps it stopped. See docs/amp-orbs.md.
-  sops.secrets = lib.optionalAttrs (builtins.pathExists ../secrets/amp-orb-provider.yaml) {
-    amp-orb-provider-token = {
-      sopsFile = ../secrets/amp-orb-provider.yaml;
-      restartUnits = ["amp-orb-provider.service"];
-    };
-  };
+  # Keep the stateVersion at the initial install release; don't bump later.
+  system.stateVersion = lib.mkDefault "24.05";
 
   # Start user services (including t3code) at boot instead of first SSH login.
   users.users.maxpw.linger = true;
@@ -89,6 +82,15 @@
 
     # Keep the Tailscale/MagicDNS identity aligned with the system hostname.
     tailscale.extraSetFlags = ["--hostname=kim"];
+
+    # Rex for Mac reaches this as http://kim.<tailnet>:7297 and runs as maxpw.
+    # A direct tailnet listener rather than Serve: homelab/tailscale-serve/default.nix
+    # owns this host's Serve configuration and only proxies loopback HTTP.
+    rex.loginServer = {
+      enable = true;
+      accounts.maxpw.principals = ["tailscale:maximilianpw@github"];
+      extraListen = ["tailnet://:7297"];
+    };
 
     # Firmware updates are still useful on a headless box.
     fwupd.enable = true;

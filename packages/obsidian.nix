@@ -12,7 +12,7 @@
   stdenvNoCC,
 }: let
   pname = "obsidian";
-  version = "1.14.4";
+  version = "1.15.1";
   releases = "https://github.com/obsidianmd/obsidian-releases/releases/download/v${version}";
 
   meta = with lib; {
@@ -24,16 +24,21 @@
   };
 
   linux = let
-    appimage = import ../lib/appimage.nix {inherit pkgs;};
+    src = fetchurl {
+      url = "${releases}/Obsidian-${version}.AppImage";
+      hash = "sha256-UV/0m7Jj0IhBBprcRgAtrpRWLlBB+3dis6Hct74QpRo=";
+    };
+    appimageContents = pkgs.appimageTools.extractType2 {inherit pname version src;};
   in
-    appimage.mkDesktopAppImage {
-      inherit pname version meta;
-      src = fetchurl {
-        url = "${releases}/Obsidian-${version}.AppImage";
-        hash = "sha256-Y2Ldvu7rt7vMtI+uAJVyzyKE75L1yRnBMyq6SN5v/qo=";
-      };
-      iconPath = "obsidian.png";
-      extraInstallCommands = appimageContents: ''
+    pkgs.appimageTools.wrapType2 {
+      inherit pname version src meta;
+      extraInstallCommands = ''
+        install -m 444 -D ${appimageContents}/md.obsidian.Obsidian.desktop $out/share/applications/${pname}.desktop
+        substituteInPlace $out/share/applications/${pname}.desktop \
+          --replace-warn 'Exec=AppRun' "Exec=${pname}" \
+          --replace-warn 'Icon=${pname}' "Icon=$out/share/pixmaps/${pname}.png"
+
+        install -m 444 -D ${appimageContents}/obsidian.png $out/share/pixmaps/${pname}.png
         install -m 755 -D ${appimageContents}/obsidian-cli $out/bin/obsidian-cli
         ${pkgs.patchelf}/bin/patchelf \
           --set-interpreter "$(cat ${pkgs.stdenv.cc}/nix-support/dynamic-linker)" \
@@ -46,7 +51,7 @@
     inherit pname version meta;
     src = fetchurl {
       url = "${releases}/Obsidian-${version}.dmg";
-      hash = "sha256-3PgY3SDuXZ3T54Lu4MDExHzCJTg7BRwvya99V3L1n3A=";
+      hash = "sha256-4Fx+PiJisUyWW7JG3LdKMPyQmL1mnkKVfE2feI0E/fQ=";
     };
     nativeBuildInputs = [_7zz makeWrapper];
     # -snl keeps the DMG's symlinks as symlinks. Without it the framework

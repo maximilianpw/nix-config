@@ -24,6 +24,28 @@
     };
   };
 
+  tunnelType = types.submodule {
+    options = {
+      host = mkOption {
+        type = types.strMatching "[A-Za-z0-9._-]+";
+        description = "Remote Fleet host or alias used as the fleet-forward-* SSH target.";
+      };
+      localPort = mkOption {
+        type = types.ints.between 1 65535;
+        description = "Local IPv4 loopback port bound on this machine.";
+      };
+      remotePort = mkOption {
+        type = types.ints.between 1 65535;
+        description = "Port on the remote host to forward to.";
+      };
+      remoteHost = mkOption {
+        type = types.strMatching "[A-Za-z0-9._-]+";
+        default = "localhost";
+        description = "Remote SSH -L target. localhost covers IPv4 and IPv6 loopback.";
+      };
+    };
+  };
+
   hostType = types.submodule ({
     config,
     name,
@@ -32,21 +54,22 @@
     options = {
       system = mkOption {type = types.str;};
       user = mkOption {type = types.str;};
-      userDir = mkOption {type = types.str;};
-      darwin = mkOption {type = types.bool;};
-      wsl = mkOption {type = types.bool;};
-      linuxDesktop = mkOption {type = types.bool;};
-      hjem = mkOption {
+      os = mkOption {type = types.enum ["darwin" "nixos" "nixos-wsl"];};
+      linuxDesktop = mkOption {
         type = types.bool;
         default = false;
-        description = "Hjem owns this user's static app files (users/<userDir>/hjem); see docs/nixvim-hjem.md.";
+        description = "Hyprland desktop profile; only valid when os is nixos.";
+      };
+      lockScreen = mkOption {
+        type = types.bool;
+        default = false;
+        description = "Hyprlock binding and idle lock; only valid with linuxDesktop.";
       };
       hardwareModules = mkOption {
         type = types.listOf types.str;
         default = [];
       };
-      profiles = mkOption {type = types.listOf types.str;};
-      role = mkOption {type = types.str;};
+      role = mkOption {type = types.enum ["nixos-homelab" "nixos-wsl" "darwin-workstation"];};
       longRunningAgents = mkOption {type = types.bool;};
       client = mkOption {
         type = types.nullOr clientType;
@@ -74,6 +97,16 @@
         type = types.nullOr types.port;
         default = null;
       };
+      atuinSync = mkOption {
+        type = types.bool;
+        default = false;
+        description = "Atuin shell history synced through Kim's server.";
+      };
+      tunnels = mkOption {
+        type = types.listOf tunnelType;
+        default = [];
+        description = "Login-supervised localhost SSH forwards; Darwin runs one LaunchAgent per local port.";
+      };
       tmuxSession = mkOption {
         type = types.str;
         default = "main";
@@ -86,15 +119,15 @@
           else "/run/current-system/sw/bin/tmux";
       };
 
-      os = mkOption {
-        type = types.enum ["darwin" "nixos" "nixos-wsl"];
+      darwin = mkOption {
+        type = types.bool;
         readOnly = true;
-        default =
-          if config.darwin
-          then "darwin"
-          else if config.wsl
-          then "nixos-wsl"
-          else "nixos";
+        default = config.os == "darwin";
+      };
+      wsl = mkOption {
+        type = types.bool;
+        readOnly = true;
+        default = config.os == "nixos-wsl";
       };
       gui = mkOption {
         type = types.bool;
@@ -125,12 +158,12 @@
 
   allNames = lib.concatLists (lib.mapAttrsToList (name: host: [name] ++ host.aliases) hosts);
   duplicateNames = lib.filter (candidate: lib.count (name: name == candidate) allNames > 1) (lib.unique allNames);
-  incompatiblePlatforms = lib.attrNames (lib.filterAttrs (_: host:
-    (host.darwin && (host.wsl || host.linuxDesktop))
-    || (host.wsl && host.linuxDesktop))
-  hosts);
+  incompatiblePlatforms = lib.attrNames (lib.filterAttrs (_: host: host.linuxDesktop && host.os != "nixos") hosts);
+  lockWithoutDesktop = lib.attrNames (lib.filterAttrs (_: host: host.lockScreen && !host.linuxDesktop) hosts);
 in
   assert lib.assertMsg (duplicateNames == [])
   "Fleet host names and aliases collide: ${lib.concatStringsSep ", " duplicateNames}";
   assert lib.assertMsg (incompatiblePlatforms == [])
-  "Hosts declare incompatible platform flags: ${lib.concatStringsSep ", " incompatiblePlatforms}"; hosts
+  "Only nixos hosts can enable linuxDesktop: ${lib.concatStringsSep ", " incompatiblePlatforms}";
+  assert lib.assertMsg (lockWithoutDesktop == [])
+  "Only linuxDesktop hosts can enable lockScreen: ${lib.concatStringsSep ", " lockWithoutDesktop}"; hosts

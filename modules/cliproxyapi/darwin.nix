@@ -15,11 +15,13 @@ in {
   };
 
   # GUI applications and launchd-owned agent sessions do not source the Home
-  # Manager shell environment. Publish only the endpoint and runtime secret
-  # path so newly launched Pi processes receive the same explicit routing.
+  # Manager shell environment. Publish only the endpoint, runtime secret path
+  # and direct Claude command so newly launched Pi processes receive the same
+  # explicit routing.
   launchd.user.envVariables = {
     CLIPROXYAPI_ROOT_URL = cliProxy.publicBaseUrl;
     CLIPROXYAPI_API_KEY_FILE = cliProxy.publicApiKeyPath;
+    PI_CLAUDE_CODE_COMMAND = "/Users/${currentSystemUser}/.local/bin/claude-direct";
   };
 
   # Removing a nix-darwin LaunchAgent declaration does not unload an agent from

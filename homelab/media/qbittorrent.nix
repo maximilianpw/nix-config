@@ -1,10 +1,11 @@
 {
   config,
+  homelab,
   lib,
   pkgs,
   ...
 }: let
-  common = import ./common.nix {inherit config lib pkgs;};
+  common = import ./common.nix {inherit config homelab lib pkgs;};
   inherit
     (common)
     endpoints
@@ -100,7 +101,7 @@ in {
           pkgs.mullvad
         ];
         text = ''
-          ${builtins.readFile ../../scripts/homelab/qbittorrent-vpn-prestart.sh}
+          ${builtins.readFile ./qbittorrent-vpn-prestart.sh}
           ${mullvadConnectionGate "qBittorrent"}
         '';
       };

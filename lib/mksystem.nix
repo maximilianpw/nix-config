@@ -2,30 +2,11 @@
   nixpkgs,
   overlays,
   inputs,
-}: name: {
-  system,
-  user,
-  # The directory holding the user configs, which may differ from the
-  # on-system login name (e.g. "max-vev" uses "maxpw").
-  userDir,
-  darwin,
-  wsl,
-  linuxDesktop,
-  hostRecord,
   hostInventory,
-  extraModules,
-}: let
+}: name: host: let
   inherit (nixpkgs) lib;
-  machineConfig = ../machines/${name}.nix;
-  userOSConfig =
-    ../users/${userDir}/${
-      if darwin
-      then "darwin"
-      else if wsl
-      then "wsl"
-      else "nixos"
-    }.nix;
-  userHMConfig = ../users/${userDir}/home-manager.nix;
+  inherit (host) darwin wsl user;
+  isHomelab = host.role == "nixos-homelab";
 
   systemFunc =
     if darwin
@@ -39,17 +20,19 @@
   systemArgs = {
     currentSystemName = name;
     currentSystemUser = user;
-    currentSystemUserDir = userDir;
     isDarwin = darwin;
     isWSL = wsl;
-    isLinuxDesktop = linuxDesktop;
-    inherit hostInventory hostRecord inputs;
+    isLinuxDesktop = host.linuxDesktop;
+    hostRecord = host;
+    inherit hostInventory inputs;
+    homelab = import ../homelab/inventory {inherit lib;};
+    template = import ./template.nix {inherit lib;};
   };
 in
   systemFunc {
     modules =
       [
-        {nixpkgs.hostPlatform = system;}
+        {nixpkgs.hostPlatform = host.system;}
         {nixpkgs.config.allowUnfree = true;}
         {nixpkgs.overlays = overlays;}
       ]
@@ -57,39 +40,36 @@ in
       ++ lib.optional (!darwin) inputs.sops-nix.nixosModules.sops
       ++ lib.optional wsl inputs.nixos-wsl.nixosModules.wsl
       ++ lib.optional (!darwin) inputs.fleet.nixosModules.cliproxy-quota
-      # Imported here because homelab modules receive inputs through
-      # _module.args, which cannot feed `imports`.
-      ++ lib.optional (hostRecord.role == "nixos-homelab") inputs.superlocal.nixosModules.default
-      ++ lib.optional (hostRecord.role == "nixos-homelab") inputs.portfolio-tracker.nixosModules.default
-      ++ lib.optionals hostRecord.hjem [
+      # Imported here because modules receive inputs through _module.args,
+      # which cannot feed `imports`.
+      ++ lib.optional isHomelab inputs.portfolio-tracker.nixosModules.default
+      ++ lib.optional isHomelab inputs.rex.nixosModules.default
+      ++ [
         (
           if darwin
           then inputs.hjem.darwinModules.default
           else inputs.hjem.nixosModules.default
         )
-        ../users/${userDir}/hjem
+        ../machines/${name}.nix
+        ../profiles/${host.role}.nix
       ]
-      ++ lib.optional (hostRecord.hjem && darwin) ../users/${userDir}/hjem/darwin.nix
+      ++ lib.optional host.linuxDesktop ../profiles/linux-desktop.nix
       ++ [
-        machineConfig
-        userOSConfig
         homeManagerMods.home-manager
         {
           home-manager = {
             useGlobalPkgs = true;
             useUserPackages = true;
             backupFileExtension = "backup";
-            extraSpecialArgs =
-              systemArgs
-              // {
-                hostname = name;
-              };
-            users.${user} = import userHMConfig;
+            extraSpecialArgs = systemArgs;
+            # One user configuration even where the login account differs
+            # (Joyce's is max-vev).
+            users.${user} = import ../users/maxpw/home.nix;
           };
         }
         {
           config._module.args = systemArgs;
         }
       ]
-      ++ extraModules;
+      ++ map (moduleName: inputs.nixos-hardware.nixosModules.${moduleName}) host.hardwareModules;
   }

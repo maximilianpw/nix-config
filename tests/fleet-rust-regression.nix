@@ -25,7 +25,6 @@
   expect = import ./lib/expect.nix {inherit lib;};
   inherit (lib) concatStringsSep filterAttrs hasSuffix;
 
-  defaultTunnels = import ../modules/fleet/default-tunnels.nix;
   inventory = import ../lib/inventory.nix {inherit lib;};
   mkFleet = args:
     import ../lib/fleet.nix ({
@@ -36,7 +35,7 @@
   joyce = mkFleet {
     hostname = "joyce";
     homeDirectory = "/Users/max-vev";
-    tunnels = defaultTunnels.joyce or [];
+    inherit (inventory.joyce) tunnels;
   };
   kim = mkFleet {
     hostname = "kim";

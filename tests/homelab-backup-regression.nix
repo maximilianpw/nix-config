@@ -4,7 +4,7 @@
   pkgs,
 }: let
   expect = import ./lib/expect.nix {inherit lib;};
-  homelab = import ../lib/homelab.nix {inherit lib;};
+  homelab = import ../homelab/inventory {inherit lib;};
   backup = config.services.borgbackup.jobs.main;
   backupUnit = config.systemd.services.borgbackup-job-main;
   verifyUnit = config.systemd.services.borgbackup-verify-main;
@@ -26,9 +26,12 @@
     ["homepage"] ++ builtins.filter (name: name != "t3code") statefulServiceNames
   );
   missingVersionFixture = lib.evalModules {
-    specialArgs = {inherit pkgs;};
+    specialArgs = {
+      inherit homelab pkgs;
+      currentSystemUser = "maxpw";
+    };
     modules = [
-      ../homelab/backup.nix
+      ../homelab/backup
       {
         _module.check = false;
         custom.backup.applicationVersions = builtins.removeAttrs contributedVersions ["vaultwarden"];
@@ -42,9 +45,12 @@
       builtins.deepSeq missingVersionFixture.config.custom.backup.manifestMetadata true
     )).success;
   conflictingVersionFixture = lib.evalModules {
-    specialArgs = {inherit pkgs;};
+    specialArgs = {
+      inherit homelab pkgs;
+      currentSystemUser = "maxpw";
+    };
     modules = [
-      ../homelab/backup.nix
+      ../homelab/backup
       {_module.check = false;}
       {custom.backup.applicationVersions.actual = "first";}
       {custom.backup.applicationVersions.actual = "second";}
@@ -117,7 +123,7 @@ in
     (manifest.schemaVersion == 1)
     (builtins.attrNames contributedVersions == nixosOwnedVersionNames)
     (manifest.expectedDatabases == ["atuin" "forgejo" "hass" "immich" "miniflux" "nextcloud" "paperless" "vaultwarden"])
-    (builtins.hasAttr "uptimeKuma" manifest.applicationVersions)
+    (builtins.hasAttr "kuma" manifest.applicationVersions)
     (manifest.postgresql.majorVersion != "")
     (builtins.elem "/srv/nextcloud" manifest.expectedPrimaryStatePaths)
     (builtins.elem "/srv/immich" manifest.expectedPrimaryStatePaths)

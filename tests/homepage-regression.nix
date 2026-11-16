@@ -3,7 +3,7 @@
   lib,
   pkgs,
 }: let
-  homelab = import ../lib/homelab.nix {inherit lib;};
+  homelab = import ../homelab/inventory {inherit lib;};
   homepage = config.services.homepage-dashboard;
 
   groupName = group: builtins.head (builtins.attrNames group);

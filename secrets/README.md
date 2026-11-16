@@ -74,9 +74,8 @@ recovery: the host key is on the same root disk as the system. Loss of both the
 machine and 1Password would still make the secrets, including the Borg
 passphrase, unrecoverable.
 
-The offline recovery identity is tracked in the
-[homelab backlog](../docs/homelab-backlog.md#disaster-recovery). Once its public
-recipient is in `.sops.yaml`, rewrap the data key with
+An offline recovery identity is still missing. Once its public recipient is in
+`.sops.yaml`, rewrap the data key with
 `nix-shell -p sops --run 'sops updatekeys secrets/secrets.yaml'`.
 
 ## Rotating Secrets

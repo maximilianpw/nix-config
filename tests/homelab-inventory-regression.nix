@@ -4,11 +4,11 @@
   pkgs,
 }: let
   expect = import ./lib/expect.nix {inherit lib;};
-  raw = import ../lib/homelab-services.nix;
-  homelab = import ../lib/homelab.nix {inherit lib;};
+  raw = import ../homelab/inventory/services.nix;
+  homelab = import ../homelab/inventory {inherit lib;};
   evaluate = services:
     builtins.tryEval (
-      builtins.deepSeq (import ../lib/homelab-inventory.nix {inherit lib services;}) true
+      builtins.deepSeq (import ../homelab/inventory/schema.nix {inherit lib services;}) true
     );
   rejects = services: !(evaluate services).success;
   withService = name: update:

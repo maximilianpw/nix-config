@@ -5,7 +5,7 @@
   pkgs,
 }: let
   expect = import ./lib/expect.nix {inherit lib;};
-  homelab = import ../lib/homelab.nix {inherit lib;};
+  homelab = import ../homelab/inventory {inherit lib;};
   tunnel = config.services.cloudflared.tunnels.${homelab.infrastructure.cloudflare.tunnelId};
   publicNames = builtins.attrNames homelab.publicEndpoints;
   publicHosts = map (name: homelab.publicEndpoints.${name}.host) publicNames;
@@ -28,22 +28,15 @@ in
   "every public origin must use loopback and its exact public Host header";
   assert lib.assertMsg (tunnel.default == "http_status:404")
   "undeclared Cloudflare hostnames must reach the 404 fallback";
-  assert expect.all "Foodlog must serve compiled files only on its loopback tailnet backend" [
+  assert expect.all "Foodlog has no login, so it must stay on loopback behind Tailscale with its data backed up" [
     (homelab.services.food-tracker.endpoint.authorizationOwner == "tailscale")
-    (homelab.services.food-tracker.state.kind == "none")
-    (config.services.nginx.virtualHosts.${homelab.endpoints.food-tracker.host}.listen
-      == [
-        {
-          addr = "127.0.0.1";
-          port = 19015;
-          ssl = false;
-          proxyProtocol = false;
-          extraParameters = [];
-        }
-      ])
-    (config.services.nginx.virtualHosts.${homelab.endpoints.food-tracker.host}.locations."/".tryFiles == "$uri $uri/ /index.html")
-    (config.services.nginx.virtualHosts.${homelab.endpoints.food-tracker.host}.locations."= /sw.js".tryFiles == "$uri =404")
-    (lib.hasInfix "Cache-Control \"no-cache\"" config.services.nginx.virtualHosts.${homelab.endpoints.food-tracker.host}.locations."= /sw.js".extraConfig)
+    (homelab.services.food-tracker.endpoint.exposure == "tailnet")
+    (homelab.services.food-tracker.state.kind == "files")
+    (config.systemd.services.food-tracker.environment.HOST == "127.0.0.1")
+    (config.systemd.services.food-tracker.environment.PORT == "19015")
+    (lib.hasPrefix "/var/lib/food-tracker/" config.systemd.services.food-tracker.environment.DATABASE_PATH)
+    (config.systemd.services.food-tracker.serviceConfig.User == "food-tracker")
+    (lib.hasPrefix "http://127.0.0.1:" config.systemd.services.food-tracker.environment.VISION_BASE_URL)
     (!(builtins.elem 19015 config.networking.firewall.allowedTCPPorts))
     (!(builtins.hasAttr homelab.endpoints.food-tracker.host tunnel.ingress))
   ];
@@ -99,12 +92,6 @@ in
     (config.sops.templates."cliproxyapi-upstream-auth.conf".mode == "0400")
     (!(builtins.elem cliproxyPort config.networking.firewall.allowedTCPPorts))
   ];
-  assert expect.all "Muse catalog discovery must use the authenticated live model registry, never the management redirect" [
-    (cliproxy.locations."= /muse-code/models".proxyPass == "${cliproxyBackend}/v1/models")
-    (lib.hasInfix "if ($cliproxyapi_public_authorized = 0) { return 401; }" cliproxy.locations."= /muse-code/models".extraConfig)
-    (lib.hasInfix config.sops.templates."cliproxyapi-upstream-auth.conf".path cliproxy.locations."= /muse-code/models".extraConfig)
-    (lib.hasInfix "Cache-Control \"no-store\"" cliproxy.locations."= /muse-code/models".extraConfig)
-  ];
   assert expect.all "the public CLIProxyAPI /healthz must stay a bare nginx 204 that never reaches the upstream proxy" [
     (cliproxy.locations."= /healthz".return == "204")
     (cliproxy.locations."= /healthz".proxyPass == null)
@@ -155,6 +142,18 @@ in
     (config.systemd.services.forgejo-runner.serviceConfig.User == "forgejo-runner")
     (!(builtins.elem "docker" config.users.users.forgejo-runner.extraGroups))
     (!(builtins.elem homelab.privateServices.forgejo.port config.networking.firewall.allowedTCPPorts))
+  ];
+  assert expect.all "Syncthing must accept peers only on the LAN and tailnet and never request a router port forward" [
+    (!config.services.syncthing.openDefaultPorts)
+    (!config.services.syncthing.settings.options.natEnabled)
+    (!(builtins.elem 22000 config.networking.firewall.allowedTCPPorts))
+    (!(builtins.elem 22000 config.networking.firewall.allowedUDPPorts))
+    (!(builtins.elem 21027 config.networking.firewall.allowedUDPPorts))
+    (lib.all
+      (interface:
+        builtins.elem 22000 config.networking.firewall.interfaces.${interface}.allowedTCPPorts
+        && lib.all (port: builtins.elem port config.networking.firewall.interfaces.${interface}.allowedUDPPorts) [22000 21027])
+      ["enp194s0" "tailscale0"])
   ];
     pkgs.runCommand "homelab-ingress-regression" {} ''
       touch "$out"

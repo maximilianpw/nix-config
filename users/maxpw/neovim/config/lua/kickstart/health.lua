@@ -28,7 +28,7 @@ return {
 
   Nix supplies plugins, native libraries (blink.cmp, fff.nvim) and Treesitter
   parsers; Home Manager or project environments supply external tools.
-  See NIXOS_SETUP.md and :checkhealth vim.lsp / :ConformInfo for language tooling.
+  See :checkhealth vim.lsp and :ConformInfo for language tooling.
   Fix warnings for the languages and workflows you actually use.]])
 
     local uv = vim.uv or vim.loop

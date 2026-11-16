@@ -1,7 +1,7 @@
 # Nixvim editor packages and their behavioral checks.
 #
 # `nvim`, `nvim-stable` and `nvim-vscode` are what Home Manager installs on
-# migrated hosts (users/maxpw/modules/neovim.nix). The terminal `nvim` runs the
+# migrated hosts (modules/home/neovim.nix). The terminal `nvim` runs the
 # Neovim development build; `nvim-stable` is the same configuration on the
 # release editor, kept as a fallback that shares the terminal editor's state.
 # VS Code stays on the release editor. The candidates differ only by

@@ -31,17 +31,17 @@ jobs:
         with:
           cache: 'true'
 
-      - name: Use public private-application stubs
-        run: scripts/ci/use-superlocal-stub.sh
+      - name: Stub private flake inputs
+        run: scripts/ci/use-private-input-stubs.sh
 
-      - name: Run nix-update for each package
+      - name: Run the repository package updaters
         id: bump
         env:
           PACKAGES: ${{ github.event.inputs.packages }}
         run: |
           scripts/ci/update-packages.sh
-          # Both substitutions are CI-local; never propose them in the PR.
-          git restore -- flake.lock packages/food-tracker.nix
+          # The stub relock is CI-local; never propose it in the package PR.
+          git checkout -- flake.lock
 
       - name: Check for changes
         id: diff
@@ -56,14 +56,14 @@ jobs:
       - name: Open pull request
         if: steps.diff.outputs.has_changes == 'true'
         id: create-pull-request
-        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+        uses: peter-evans/create-pull-request@15733dbdfeedb4f7fdb73d13c6f5ac83b710fab8 # v8.1.2
         with:
           branch: automated/update-packages
           base: main
           commit-message: 'chore: bump custom packages'
           title: 'chore: bump custom packages'
           body: |
-            Automated version bumps from `nix-update`, run by
+            Automated version and platform-hash bumps from the repository updaters, run by
             `.github/workflows/update-packages.yml`.
 
             CI runs lightweight checks and evaluates every host configuration.

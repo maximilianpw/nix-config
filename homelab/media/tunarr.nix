@@ -1,10 +1,11 @@
 {
   config,
+  homelab,
   lib,
   pkgs,
   ...
 }: let
-  common = import ./common.nix {inherit config lib pkgs;};
+  common = import ./common.nix {inherit config homelab lib pkgs;};
   inherit (common) endpoints mediaRoot secondaryMediaRoot secondaryUsenetRoot usenetRoot;
   tunarrReconcileSettings = pkgs.writeShellScript "tunarr-reconcile-settings" ''
     export PATH=${lib.makeBinPath [pkgs.coreutils]}
@@ -12,7 +13,7 @@
     export TUNARR_SETTINGS_FILE=/var/lib/tunarr/settings.json
     export FFMPEG_BIN=${lib.getExe pkgs.ffmpeg}
     export FFPROBE_BIN=${lib.getExe' pkgs.ffmpeg "ffprobe"}
-    ${builtins.readFile ../../scripts/homelab/tunarr-reconcile-settings.sh}
+    ${builtins.readFile ./tunarr-reconcile-settings.sh}
   '';
 in {
   custom.backup.applicationVersions.tunarr = pkgs.tunarr.version;

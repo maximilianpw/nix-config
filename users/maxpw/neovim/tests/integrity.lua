@@ -23,7 +23,7 @@ for _, dir in ipairs(vim.api.nvim_list_runtime_paths()) do
   assert(allowed, "impure runtimepath entry: " .. dir)
 end
 assert(#vim.api.nvim_get_runtime_file("plugin/legacy.lua", true) == 0, "legacy plugin directory is on the runtimepath")
-for _, file in ipairs(vim.api.nvim_get_runtime_file("lsp/gopls.lua", true)) do
+for _, file in ipairs(vim.api.nvim_get_runtime_file("lsp/lua_ls.lua", true)) do
   assert(vim.startswith(file, "/nix/store/"), "legacy lsp/ config discovered: " .. file)
 end
 
@@ -38,9 +38,9 @@ for _, spec in ipairs(registry.specs(false)) do
   end
 end
 
--- Run every after-hook. The Supermaven engine and Amp's IDE server are network
--- services; they are excluded from this offline check and verified interactively.
-local online = { ["supermaven-nvim"] = true, ["amp.nvim"] = true }
+-- Run every after-hook. The Supermaven engine is a network service; it is
+-- excluded from this offline check and verified interactively.
+local online = { ["supermaven-nvim"] = true }
 vim.fn.mkdir(vim.fs.joinpath(home, "Documents", "obsidian vault"), "p")
 require("lz.n").trigger_load(vim.tbl_filter(function(name)
   return not online[name]

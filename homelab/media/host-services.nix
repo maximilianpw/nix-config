@@ -1,15 +1,15 @@
 {
   config,
+  homelab,
   lib,
   pkgs,
   ...
 }: let
-  common = import ./common.nix {inherit config lib pkgs;};
+  common = import ./common.nix {inherit config homelab lib pkgs;};
   inherit
     (common)
     downloadProxies
     endpoints
-    homelab
     mediaGid
     mediaRoot
     mkContainerProxyService
@@ -38,7 +38,7 @@
       export SLEEP_BIN=${lib.getExe' pkgs.coreutils "sleep"}
       export PROWLARR_CONFIG_FILE=/var/lib/prowlarr/config.xml
       export PROWLARR_URL=${lib.escapeShellArg (homelab.loopbackUrl endpoints.prowlarr.port)}
-      exec ${lib.getExe pkgs.bash} ${../../scripts/homelab/prowlarr-reconcile.sh}
+      exec ${lib.getExe pkgs.bash} ${./prowlarr-reconcile.sh}
     '';
   };
   mediaDirectories = [
@@ -291,6 +291,9 @@ in {
         };
         # Plex can manage the shared group-writable library but cannot see
         # active downloads, same as Jellyfin.
+        # Plex is reachable from the internet through the router's port forward.
+        # Its FHS wrapper runs under bubblewrap, which needs user and mount
+        # namespaces and the mount syscalls.
         plex.serviceConfig = {
           InaccessiblePaths =
             [
@@ -299,6 +302,25 @@ in {
             ]
             ++ secondaryDownloadDirectories;
           UMask = lib.mkForce "0002";
+          ProtectSystem = lib.mkForce "strict";
+          # The module's privileged ExecStartPre still runs inside the read-only
+          # namespace, so it cannot create the data directory on a fresh disk.
+          StateDirectory = "plex";
+          ReadWritePaths = [
+            mediaRoot
+            "-${secondaryMediaRoot}"
+          ];
+          CapabilityBoundingSet = "";
+          AmbientCapabilities = "";
+          ProtectClock = true;
+          ProtectHostname = true;
+          ProtectKernelLogs = true;
+          ProtectProc = "invisible";
+          RemoveIPC = true;
+          RestrictNamespaces = ["user" "mnt"];
+          SystemCallArchitectures = "native";
+          SystemCallFilter = ["@system-service" "@mount"];
+          SystemCallErrorNumber = "EPERM";
         };
       }
       // lib.mapAttrs mkContainerProxyService downloadProxies;
@@ -312,7 +334,8 @@ in {
   # on the physical interface. Plex discovery remains restricted to Kim's IPv4
   # LAN, and no Plex ports are admitted over IPv6 because Kim has globally
   # routable IPv6 addresses. Claim the server from kim:32400/web before using
-  # the public hostname. See docs/media-stack.md#plex.
+  # the public hostname: the first plex.tv account to reach an unclaimed
+  # server owns it.
   networking.firewall = {
     interfaces.enp194s0 = {
       allowedTCPPorts = [endpoints.jellyfin.port];

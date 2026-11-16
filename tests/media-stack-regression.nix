@@ -4,7 +4,7 @@
   pkgs,
 }: let
   expect = import ./lib/expect.nix {inherit lib;};
-  homelab = import ../lib/homelab.nix {inherit lib;};
+  homelab = import ../homelab/inventory {inherit lib;};
   endpoints =
     homelab.endpoints
     // homelab.publicEndpoints;
@@ -257,6 +257,17 @@ in
     (builtins.elem "${mediaRoot}/torrents" config.systemd.services.plex.serviceConfig.InaccessiblePaths)
     (builtins.elem usenetRoot config.systemd.services.plex.serviceConfig.InaccessiblePaths)
   ];
+  assert expect.all "internet-facing Plex must keep its sandbox: read-only OS, no capabilities, filtered syscalls" [
+    (config.systemd.services.plex.serviceConfig.ProtectSystem == "strict")
+    (config.systemd.services.plex.serviceConfig.StateDirectory == "plex")
+    (config.systemd.services.plex.serviceConfig.ReadWritePaths == [mediaRoot "-${secondaryMediaRoot}"])
+    (config.systemd.services.plex.serviceConfig.CapabilityBoundingSet == "")
+    (config.systemd.services.plex.serviceConfig.RestrictNamespaces == ["user" "mnt"])
+    (config.systemd.services.plex.serviceConfig.SystemCallFilter == ["@system-service" "@mount"])
+    (config.systemd.services.plex.serviceConfig.SystemCallArchitectures == "native")
+    config.systemd.services.plex.serviceConfig.ProtectHome
+    config.systemd.services.plex.serviceConfig.NoNewPrivileges
+  ];
   assert expect.all "Tunarr must keep private state while all media writers preserve shared-group access" [
     (tunarrService.serviceConfig.UMask == "0077")
     (tunarrService.serviceConfig.StateDirectory == "tunarr")
@@ -377,8 +388,8 @@ in
     (lib.hasSuffix "systemd-socket-proxyd 10.89.1.2:8080" config.systemd.services.sabnzbd-proxy.serviceConfig.ExecStart)
   ];
   assert expect.all "Plex TCP must be open over IPv4 while discovery stays LAN-only and Jellyfin remains available on the physical interface" [
-    (config.networking.firewall.interfaces.enp194s0.allowedTCPPorts == [endpoints.jellyfin.port])
-    (config.networking.firewall.interfaces.enp194s0.allowedUDPPorts == [7359])
+    (builtins.elem endpoints.jellyfin.port config.networking.firewall.interfaces.enp194s0.allowedTCPPorts)
+    (builtins.elem 7359 config.networking.firewall.interfaces.enp194s0.allowedUDPPorts)
     (lib.hasInfix
       "-i enp194s0 -p tcp --dport ${toString endpoints.plex.port} -j nixos-fw-accept"
       config.networking.firewall.extraCommands)
@@ -447,10 +458,10 @@ in
     pkgs.runCommand "media-stack-regression" {
       nativeBuildInputs = [pkgs.bash pkgs.jq pkgs.coreutils pkgs.findutils pkgs.diffutils pkgs.gnused];
     } ''
-      mkdir -p scripts/homelab scripts/tests
-      cp ${../scripts/homelab/tunarr-reconcile-settings.sh} scripts/homelab/tunarr-reconcile-settings.sh
-      cp ${../scripts/tests/tunarr-reconcile-settings-test.sh} scripts/tests/tunarr-reconcile-settings-test.sh
-      bash scripts/tests/tunarr-reconcile-settings-test.sh
+      mkdir -p homelab/media
+      cp ${../homelab/media/tunarr-reconcile-settings.sh} homelab/media/tunarr-reconcile-settings.sh
+      cp ${../homelab/media/tunarr-reconcile-settings-test.sh} homelab/media/tunarr-reconcile-settings-test.sh
+      bash homelab/media/tunarr-reconcile-settings-test.sh
       # Exercise the configured ExecStartPre too, redirected to disposable state.
       # This catches regressions back to the upstream CLI that never exits.
       sed "s|export TUNARR_SETTINGS_FILE=.*|export TUNARR_SETTINGS_FILE=$PWD/settings.json|" \

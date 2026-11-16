@@ -1,15 +1,16 @@
 {lib, ...}: {
   imports = [
     ./actual.nix
+    ./amp-orb-provider
     ./atuin.nix
-    ./backup.nix
+    ./backup
     ./cloudflared.nix
     ./cliproxyapi.nix
-    ./container-hygiene.nix
+    ./container-hygiene
     ./executor.nix
     ./food-tracker.nix
     ./forgejo.nix
-    ./home-assistant.nix
+    ./home-assistant
     ./homepage
     ./immich.nix
     ./leerr.nix
@@ -17,14 +18,13 @@
     ./media
     ./miniflux
     ./monitoring
-    ./nextcloud.nix
+    ./nextcloud
     ./paperless.nix
     ./portfolio-tracker.nix
     ./storage.nix
-    ./superlocal.nix
     ./syncthing.nix
-    ./tailscale-serve.nix
-    ./uptime-kuma.nix
+    ./tailscale-serve
+    ./uptime-kuma
     ./vaultwarden.nix
   ];
 

@@ -12,15 +12,6 @@ map_darwin_user_to_host() {
     esac
 }
 
-canonical_host_name() {
-    case "$1" in
-        main-pc) printf '%s\n' "kim" ;;
-        macbook-pro-m1) printf '%s\n' "joyce" ;;
-        wsl) printf '%s\n' "cuno" ;;
-        *) printf '%s\n' "$1" ;;
-    esac
-}
-
 valid_host_name() {
     case "$1" in
         ""|*[!A-Za-z0-9_-]*) return 1 ;;
@@ -90,7 +81,7 @@ detect_host() {
             echo "Invalid NIX_CONFIG_HOST: '$NIX_CONFIG_HOST'" >&2
             return 1
         fi
-        HOSTNAME=$(canonical_host_name "$NIX_CONFIG_HOST")
+        HOSTNAME=$NIX_CONFIG_HOST
         if [[ "$os" == "Darwin" ]]; then
             PLATFORM="darwin"
         else
@@ -125,7 +116,7 @@ detect_host() {
         echo "Set NIX_CONFIG_HOST explicitly after checking lib/hosts.nix." >&2
         return 1
     fi
-    HOSTNAME=$(canonical_host_name "$detected_hostname")
+    HOSTNAME=$detected_hostname
 }
 
 # validate_host_configuration <config-dir> [flake-ref]

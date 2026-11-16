@@ -56,22 +56,29 @@ application from initializing an intended restore destination:
 sudo systemctl mask --runtime \
   cloudflared-tunnel-5b712ae4-3ce4-4499-9cb7-a57cde1c571f.service \
   tailscale-serve.service borgbackup-job-main.service \
-  actual.service atuin.service home-assistant.service nextcloud-cron.service nextcloud-cron.timer \
+  actual.service atuin.service autobrr.service cross-seed.service \
+  food-tracker.service home-assistant.service homelab-mcp.service nextcloud-cron.service nextcloud-cron.timer \
   forgejo-runner.service forgejo-runner-register.service forgejo.service \
   nextcloud-setup.service nextcloud-update-db.service \
   nextcloud-update-store-apps.service nextcloud-update-store-apps.timer \
   phpfpm-nextcloud.service paperless-consumer.service \
   paperless-exporter.service paperless-scheduler.service \
   paperless-task-queue.service paperless-web.service miniflux.service \
-  immich-machine-learning.service immich-server.service leerr.service superlocal.service \
+  immich-machine-learning.service immich-server.service leerr.service \
   bazarr.service jellyfin.service lidarr.service plex.service prowlarr.service \
   radarr.service seerr.service sonarr.service tunarr.service \
   container@qbt.service container@sab.service \
   qbittorrent-proxy.service qbittorrent-proxy.socket \
   sabnzbd-proxy.service sabnzbd-proxy.socket \
   syncthing.service uptime-kuma.service vaultwarden.service \
-  docker-executor.service
+  docker-executor.service docker-kometa.service docker-maintainerr.service \
+  docker-tdarr.service portfolio-tracker-api.service \
+  portfolio-tracker-sync.service portfolio-tracker-sync.timer \
+  recyclarr.service recyclarr.timer unpackerr.service
 ```
+
+The quiesce units in `homelab/inventory/services.nix` (`backup.quiesce` and
+`operations.units`) are the source of truth; add any new stateful unit here.
 
 Also keep `t3code.service` stopped in `maxpw`'s user manager while restoring its
 state.
@@ -83,26 +90,17 @@ expose a drill instance through production ingress.
 
 Create a second empty directory and extract the required members. Never point
 `borg-restore-main` at `/`, `/srv`, `/var/lib`, or any live service path. The
-example below reflects the maintained revision; before using it, reconcile the
-selection with the selected archive's manifest, transforms, application
-versions, and owning service runbooks. The source tree is already staged
-separately in section 2.
+archive's own manifest lists every path it was expected to contain, so stage
+from that list rather than from the current checkout. Reconcile the selection
+with the manifest's transforms, application versions, and owning service
+runbooks before restoring anything.
 
 ```sh
-sudo install -d -m 0700 /var/tmp/homelab-state
-sudo borg-restore-main <archive> /var/tmp/homelab-state \
-  var/backup/homelab/manifest.json \
-  var/backup/home-assistant/config.tar var/backup/postgresql \
-  var/backup/t3code/state.tar \
-  srv/forgejo srv/immich srv/nextcloud srv/paperless/export srv/paperless/consume \
-  srv/paperless/media var/lib/actual var/lib/bazarr var/lib/bitwarden_rs \
-  var/lib/executor var/lib/forgejo-runner-registration var/lib/jellyfin var/lib/leerr \
-  var/lib/lidarr/.config/Lidarr var/lib/nixos-containers/qbt \
-  var/lib/nixos-containers/sab var/lib/plex \
-  var/lib/private/jellyseerr var/lib/private/prowlarr \
-  var/lib/private/uptime-kuma var/lib/radarr/.config/Radarr \
-  var/lib/sabnzbd var/lib/sonarr/.config/NzbDrone var/lib/superlocal var/lib/tunarr \
-  home/maxpw/.config/syncthing home/maxpw/Sync
+sudo install -d -m 0700 /var/tmp/homelab-manifest /var/tmp/homelab-state
+sudo borg-restore-main <archive> /var/tmp/homelab-manifest var/backup/homelab/manifest.json
+mapfile -t paths < <(sudo jq -r '.expectedArchivePaths[] | ltrimstr("/")' \
+  /var/tmp/homelab-manifest/var/backup/homelab/manifest.json)
+sudo borg-restore-main <archive> /var/tmp/homelab-state "${paths[@]}"
 sudo homelab-backup-inspect <archive>
 ```
 
@@ -212,12 +210,51 @@ and determine who initialized it; do not merge blindly.
 
 Keep every media reader and writer stopped, including Jellyfin, Plex, Tunarr,
 the Servarr services, both downloader containers, and both host proxies, while
-restoring their matching control state from the selected archive. Follow the
-maintained [media-stack recovery procedure](media-stack.md#recovery) for
-version-matched restoration, namespace and VPN checks, start order, and
-acceptance. `/srv/media` is excluded from Borg and is recoverable only from a
-separate copy; otherwise leave it empty and reconcile missing entries after the
-control plane is healthy.
+restoring their matching control state from the selected archive.
+`/srv/media` is excluded from Borg and is recoverable only from a separate copy;
+otherwise leave it empty and reconcile missing entries after the control plane
+is healthy.
+
+1. Restore and mount `/srv` before starting any media service.
+2. Restore `/var/lib/nixos-containers/{qbt,sab}` and `/var/lib/sabnzbd` with
+   the other control-state paths.
+3. Start `container@qbt` and `container@sab`. Confirm Mullvad is connected in
+   each namespace before qBittorrent and SABnzbd run or their host proxy
+   sockets are unmasked. If a Mullvad device credential was lost or revoked,
+   log in again inside that container; never write the account number to a
+   file, the Nix store or shell history.
+4. Start Prowlarr, Sonarr, Radarr, Lidarr, Bazarr, Jellyfin, Plex, Tunarr and
+   Seerr. Confirm the Usenet provider still uses port 563, SSL and strict
+   certificate verification before resuming its queue.
+5. Reconcile missing files in the library managers rather than trusting their
+   restored databases.
+
+### Media companions
+
+Restore the Servarr managers first: Recyclarr and Unpackerr reuse their API
+keys. Required state is `/var/lib/recyclarr`, `/var/lib/unpackerr`,
+`/var/lib/private/autobrr`, `/var/lib/autobrr-session`, `/var/lib/cross-seed`,
+`/var/lib/kometa`, `/var/lib/maintainerr` and `/var/lib/tdarr`, with the archived
+package versions or image digests. Keep Tdarr paused and Maintainerr actions
+inactive until the private integration files, Plex/TMDb connections and rule
+definitions check out, then verify autobrr filters, cross-seed matches and
+Recyclarr profiles.
+
+### Homelab MCP
+
+Stop `homelab-mcp.service` and restore the whole `/var/lib/private/homelab-mcp`
+directory: `homelab-mcp.sqlite` is unreadable without its `secret-key`. Restore
+the archived package version before any schema upgrade, restore Executor (below),
+then verify an authenticated `media_stack_health` call through Executor.
+
+### Portfolio tracker
+
+Restore `/var/lib/portfolio-tracker` as one recovery point with both services
+stopped: `portfolio.sqlite` (history, prices, run log), `pytr/all_events.json`
+and the `.pytr/` Trade Republic session. Start the archived version and run a
+sync; it must reconcile both accounts and `get_summary` must work through
+Executor. Log in again if the session did not survive. History is rebuilt from
+Trade Republic's timeline, but price history exists only in the database.
 
 ### Paperless
 
@@ -281,21 +318,39 @@ recoverable from the server state.
 ### Executor
 
 Keep `docker-executor.service` stopped and restore the complete staged
-`/var/lib/executor` directory, including `data.db` and the generated encryption
-keys. Preserve restrictive ownership and modes. Start the image reference
+`/var/lib/executor-v2` directory. V2 stores its PGlite database, app source,
+builds, app data, `auth-secret.key`, and `encryption.key` together; restoring only
+the database is insufficient. Preserve numeric ownership (the pinned image's
+`executor` user is UID/GID 1000) and restrictive modes. Start the image reference
 recorded at `applicationVersions.executor` on loopback before attempting an
-upgrade. Sign in as the existing owner, verify the integration catalog and
-policies, then make one harmless read-only tool call through the MCP endpoint.
+upgrade. The service refuses to start without both saved key files. Check
+`http://127.0.0.1:19005/health`, sign in as the existing administrator, verify
+apps, account links and approval policies, then make one harmless read-only tool
+call through the MCP endpoint.
+
 Do not expose an empty replacement instance: its first account would become the
-new owner and newly generated keys could not decrypt the archived credentials.
+new owner and newly generated keys could not decrypt archived credentials.
+
+### Foodlog
+
+Restore `/var/lib/food-tracker` with `food-tracker.service` stopped: `foodlog.db`
+and its `-wal`/`-shm` files hold the kitchen stock, recipes, shopping list,
+diary, change history and the hashes of assistant tokens. Start the archived
+version first; a newer one applies its own migrations on start and cannot be
+rolled back onto the same file. Kitchen, Recipes and Today must load with their
+entries. Assistant tokens survive the restore; revoke any that should not. The
+Ollama model is not backed up and is downloaded again on activation.
 
 ### Forgejo
 
 Restore the `forgejo` PostgreSQL database together with `/srv/forgejo` and
-`/var/lib/forgejo-runner-registration` from the same archive. Keep the runner
-stopped until Forgejo and its tailnet ingress are healthy. Follow the
-[Forgejo recovery procedure](forgejo.md#recovery) to verify a private clone
-and a container job before accepting the service.
+`/var/lib/forgejo-runner-registration` from the same archive, keeping ownership
+and modes. Use the archived Forgejo version before allowing its migrations.
+Keep the runner stopped until Forgejo is healthy on tailnet ingress, the
+administrator can sign in, and a private repository clones over HTTPS and SSH.
+Then start the registration service and runner, confirm the runner UUID matches
+the archive, and run a harmless container job. A lost registration produces a
+new runner identity; remove the stale entry in Forgejo.
 
 ### Miniflux
 
@@ -316,8 +371,7 @@ existing account or merge live client SQLite files using file sync.
 Log in with the existing account and encryption key using isolated test client
 data directories. Confirm an existing history item decrypts, then synchronize
 a harmless new marker between two test clients before restoring production
-ingress. Preserve the pre-migration dump if upgrading afterward. See
-[enrollment and verification](atuin.md) for normal client setup.
+ingress. Preserve the pre-migration dump if upgrading afterward.
 
 ### Syncthing
 
@@ -376,14 +430,6 @@ instance; do not expose the service before they pass. A generation rollback
 does not undo a SQLite migration: restore the matching pre-upgrade database if
 the older application cannot read the new schema.
 
-### Superlocal
-
-Keep `superlocal.service` stopped and restore the complete staged
-`/var/lib/superlocal` tree, configuration, databases and `runtime-secrets.json`
-together, with the archived version. Follow the maintained
-[Superlocal recovery procedure](superlocal.md#recovery) for ownership, SQLite
-and mailbox acceptance checks; do not expose the service before they pass.
-
 ### Grafana and Prometheus
 
 Their local databases/TSDB are intentionally disposable. Rebuild Grafana's
@@ -392,6 +438,30 @@ history. Confirm the Kim dashboard, datasource, roles, alert rules, and backup
 freshness panels exist. Grafana's generated secret key is intentionally not a
 portable credential; integrations that later depend on it must become
 provisioned or the key must be reclassified as required state.
+
+## Storage identities
+
+Kernel names such as `/dev/nvme0n1` and `sdb2` change across reboots and
+reconnects; never infer a role from them. Before touching any device, capture
+the live layout and compare serials physically:
+
+```sh
+sudo lsblk -o NAME,PATH,MODEL,SERIAL,SIZE,FSTYPE,UUID,LABEL,MOUNTPOINTS
+sudo blkid
+ls -l /dev/disk/by-id /dev/disk/by-uuid
+```
+
+| Role | Live identifier | Hardware identity (verify live) | Notes |
+| --- | --- | --- | --- |
+| root | UUID `b7617fb1-d251-481a-9395-d17bbc9d0c1f` | `nvme-CT1000P3PSSD8_25144F70A197` | ext4 |
+| `/srv` | label `storage` | `nvme-CT1000P3PSSD8_25164F85F83A` | ext4; primary media and service state |
+| local backup | UUID `73afcc5c-6148-4dc2-ae0e-61649ce71120` | `ata-TOSHIBA_MQ04UBF100_35PPP14JT` | ext4; Borg repository at `/mnt/backups` |
+| LaCie media | UUID `4139bef6-d76c-4c41-99f6-3fd6090bdcd1`, label `media-secondary` | `ata-ST5000LM000-2AN170_WCJ23AWJ-part2` | ext4 at `/srv/media-secondary`, `nofail`; not in Borg |
+
+`machines/hardware/kim-disko.nix` is not imported and erases its target. Run it
+only against a blank replacement disk whose by-id you have just verified, never
+against a mounted or listed disk. Update this table and the monitoring device
+arguments together, from live output only.
 
 ## 6. Validate before ingress
 
@@ -425,7 +495,7 @@ application-level acceptance passes.
 After the drill record is safely stored outside Kim:
 
 ```sh
-sudo rm -rf /var/tmp/homelab-state \
+sudo rm -rf /var/tmp/homelab-state /var/tmp/homelab-manifest \
   /var/tmp/homelab-restore /var/tmp/home-assistant-config
 ```
 

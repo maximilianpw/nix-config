@@ -7,18 +7,32 @@ Home Manager configuration, and Kim's homelab services.
 
 - `lib/hosts.nix` is the host/fleet inventory. `lib/inventory.nix` validates and
   normalizes it; `flake.nix` and `lib/mksystem.nix` build system outputs from it.
-- Host concerns belong in `machines/`; shared system concerns in `modules/`;
-  user and platform concerns in `users/maxpw/`. Keep substantial OS divergence
-  in `nixos.nix`, `darwin.nix`, or `wsl.nix`.
-- `lib/homelab-services.nix` owns service metadata and recovery contracts;
+- A script lives beside the Nix file that uses it, with its test beside it as
+  `<name>-test.sh` (`make check-scripts` finds every tracked one). A module
+  that owns scripts is a directory; `scripts/` holds only repository tooling.
+- `machines/<host>.nix` holds host facts. `profiles/<role>.nix` (one per
+  inventory role, plus `linux-desktop.nix`) lists the modules a role gets and
+  sets their `custom.*` options; modules never branch on a role or host name.
+- A module's path names its module system: `modules/home/`, `modules/nixos/`
+  and `modules/darwin/` hold single-file concerns; a concern that spans systems
+  or owns scripts or data is `modules/<concern>/` with `home.nix`, `nixos.nix`,
+  `darwin.nix` or `system.nix` (valid on both NixOS and nix-darwin).
+  `users/maxpw/home.nix` is the Home Manager base every host imports.
+- Modules receive `homelab`, `template`, `hostRecord` and (Home Manager)
+  `homeFiles` as arguments; do not `import` those helpers by relative path.
+- `homelab/inventory/services.nix` owns service metadata and recovery contracts;
   application options and implementation stay in their owning `homelab/`
-  module. See `README.md` and `docs/homelab-recovery.md`.
+  module.
 - Nix/Home Manager owns systems, packages, shells, and executables; Nixvim
-  (`users/maxpw/neovim/`) owns Neovim and Hjem (`users/maxpw/hjem/`) owns static
-  app files. The separate chezmoi repository keeps only remaining legacy app
-  content; `pi-config` owns Pi resources.
-  Do not give two systems the same destination. See
-  `docs/config-ownership-and-recovery.md`.
+  (`users/maxpw/neovim/`) owns Neovim; Hjem links `users/maxpw/files/managed/`
+  from the store (rebuild to apply); Home Manager links
+  `users/maxpw/files/editable/` into the checkout (edits apply live);
+  `pi-config` owns Pi resources.
+  Do not give two systems the same destination.
+- Documentation is deliberately small: `README.md`, `BOOTSTRAP.md`,
+  `secrets/README.md` and `docs/homelab-recovery.md`. Do not add docs, status
+  logs, or backlogs; put a non-obvious reason in a comment in the owning file
+  and recovery steps in the recovery runbook.
 
 ## Local workflow and checks
 
@@ -60,8 +74,7 @@ affected checks without asking; report checks that could not run.
   settings live in `/etc/nix/nix.custom.conf` via `machines/joyce.nix`.
 - macOS GUI apps belong in Homebrew declarations; activation cleanup is `zap`.
   Self-contained notarized apps may move to
-  `users/maxpw/modules/packages/darwin-apps.nix`; follow its non-zapping handover.
+  `modules/home/darwin-apps.nix`; follow its non-zapping handover.
 - Hyprland comes from the flake input, not nixpkgs.
-- For storage/recovery work, use `docs/homelab-recovery.md` and the affected
-  service's runbook. Never point restore or provisioning tools at live paths or
-  unconfirmed disks.
+- For storage/recovery work, use `docs/homelab-recovery.md`. Never point
+  restore or provisioning tools at live paths or unconfirmed disks.

@@ -5,5 +5,5 @@ writeShellApplication {
   name = "lazygit-nvim-edit";
   # The script manages its own `set -eu`; keep its POSIX-sh semantics.
   bashOptions = [];
-  text = builtins.readFile ./scripts/lazygit-nvim-edit.sh;
+  text = builtins.readFile ./lazygit-nvim-edit.sh;
 }

@@ -1,74 +1,39 @@
 # Nix configuration
 
-This flake manages three hosts for Maximilian:
+This flake manages three hosts:
 
 - `kim`, an x86_64 NixOS homelab;
 - `cuno`, an x86_64 NixOS-WSL environment;
 - `joyce`, an Apple Silicon nix-darwin workstation.
 
-It also keeps a parked, evaluable Hyprland profile for Kim. Its desktop
-configuration and assets are intentionally retained for a future desktop host,
-even when currently unused. Revachol is the remote-development fleet name,
-while its command remains `fleet`.
+A parked Hyprland profile for a future desktop host still evaluates as
+`desktopKim`.
 
-## Ownership map
+## Layout
 
-- `lib/hosts.nix` is the host and Fleet inventory.
-  `lib/inventory.nix` validates and normalizes it, and `lib/mksystem.nix`
-  constructs system outputs.
-- `lib/homelab-services.nix` owns service exposure, state, backup, monitoring,
-  storage, and recovery metadata. Application implementation stays in the
-  owning module under `homelab/`.
-- `machines/` contains host-specific operating-system configuration.
-- `modules/` contains shared system, Fleet, desktop, and CLIProxyAPI modules.
-- `users/maxpw/` contains Home Manager and platform-specific user
-  configuration.
-- `scripts/` holds operational scripts grouped by purpose (`rebuild/`,
-  `homelab/`, `dev/`, `user/`, `ci/`); `scripts/tests/` is what
-  `make check-scripts` runs. `tests/` holds the flake checks and their fixtures.
-- `packages/` contains repository-owned package definitions. Flake package and
-  check registration live in `flake.nix` and `lib/checks.nix`.
+- `lib/`: host inventory (`hosts.nix`) and the plumbing that builds hosts from it.
+- `overlays.nix`: package overlays (agent CLIs, unstable picks, pins, `packages/`).
+- `machines/`: per-host facts. `profiles/`: one file per host role, listing its
+  modules and setting their options.
+- `modules/`: every module, with the module system in the path: `home/`,
+  `nixos/`, `darwin/` for single files, `<concern>/{home,nixos,darwin,system}.nix`
+  for concerns that span systems or own scripts.
+- `homelab/`: Kim's services; `homelab/inventory/services.nix` holds their
+  exposure, state, backup, monitoring and recovery metadata.
+- `users/maxpw/`: the Home Manager base (`home.nix`), Nixvim (`neovim/`) and
+  dotfiles. Dotfiles live in `files/managed/` (Hjem store links, rebuild to apply) or
+  `files/editable/` (links into this checkout, edits apply live).
+- `packages/`: repository-built packages and their updaters.
+- `scripts/`: repository tooling (`rebuild/`, `ci/`, `dev/`).
+- `tests/`: flake checks (`tests/default.nix` registers them).
 
-Nix and Home Manager own systems, packages, shells, and executables. Nixvim
-owns Neovim and Hjem owns static application files; the separate chezmoi
-repository keeps only remaining legacy application content. The external
-`pi-config` repository owns Pi settings, prompts, extensions, and themes. The
-pinned Fleet input owns the installed runtime CLI and tunnel supervision.
-This repository owns the personal Fleet inventory, SSH policy, trust, aliases,
-generated contract, and consumer compatibility checks. It does not retain a
-second CLI implementation. Do not give two systems the same destination.
+A script lives beside the Nix file that uses it, and its test beside it as
+`<name>-test.sh`; a module that owns scripts is a directory.
 
-See the [documentation index](docs/README.md) for runbooks, recovery guidance,
-accepted decisions, and open work.
+## Workflow
 
-## Common workflow
-
-Bootstrap a new machine with [BOOTSTRAP.md](BOOTSTRAP.md). For an existing
-checkout, choose checks that match the change as listed in
-[AGENTS.md](AGENTS.md#local-workflow-and-checks).
-
-`make help` lists the other supported targets. `make chezmoi-bootstrap` clones
-the dotfiles source without applying it. Review changes with
-`make chezmoi-preview` before an interactive `make chezmoi-apply`.
-
-## Safety boundaries
-
-- Builds and evaluation do not activate a configuration. Rebuild, deployment,
-  restore, migration, disk, and cleanup commands require an explicit operator
-  decision.
-- Secrets stay encrypted with SOPS. Never put private keys, decrypted values,
-  mutable service data, or restore artifacts in Git or the Nix store.
-- Determinate owns Joyce's Nix daemon. Keep `nix.enable = false`; daemon
-  settings belong in `/etc/nix/nix.custom.conf` through `machines/joyce.nix`.
-- `system.stateVersion` and `home.stateVersion` are compatibility settings, not
-  package upgrade controls.
-- Hyprland comes from the flake input. macOS GUI applications belong in the
-  Homebrew declarations.
-- Before storage or recovery work, read
-  [the recovery runbook](docs/homelab-recovery.md) and the affected service
-  runbook. Never point restore or provisioning tools at live paths or an
-  unconfirmed disk.
-
-## License
-
-Personal configuration; reuse at your own risk.
+- New machine: [BOOTSTRAP.md](BOOTSTRAP.md). Secrets: [secrets/README.md](secrets/README.md).
+- Homelab restore: [docs/homelab-recovery.md](docs/homelab-recovery.md).
+- `make help` lists targets. `make update-all` refreshes every pin without
+  deploying; review the diff and build before `make rebuild`.
+- Which checks to run for a change: [AGENTS.md](AGENTS.md#local-workflow-and-checks).

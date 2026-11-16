@@ -42,7 +42,6 @@
     "cpp"
     "css"
     "diff"
-    "go"
     "html"
     "javascript"
     "json"

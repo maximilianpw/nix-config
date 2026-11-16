@@ -1,12 +1,13 @@
 {
   pkgs,
   package,
+  plannotatorVersion,
   home,
 }: let
   configFile = home.home.file.".config/opencode/opencode.json".source;
   quotaFile = home.home.file.".config/opencode/opencode-quota/quota-toast.json".source;
-  cliDefaults = ../users/maxpw/agents/opencode/cli.json;
-  configureCli = ../scripts/user/opencode-configure-cli.sh;
+  cliDefaults = ../users/maxpw/files/editable/agents/opencode/cli.json;
+  configureCli = ../modules/cliproxyapi/opencode-configure-cli.sh;
   cliProxy = import ../modules/cliproxyapi/config.nix;
   serverConfig = pkgs.writeText "cliproxyapi-fixture.yaml" (cliProxy.mkServerConfig {
     homeDirectory = "/fixture";
@@ -23,7 +24,7 @@ in
         .providers.cliproxyapi.package == "aisdk:@ai-sdk/openai-compatible" and
         .providers.cliproxyapi.settings.apiKey == "{env:CLIPROXYAPI_API_KEY}" and
         .providers.cliproxyapi.compatibility.supportsPromptCacheKey == true and
-        .plugins == [{package: "@plannotator/opencode@0.28.32"}, "cc-safety-net", "@slkiser/opencode-quota"] and
+        .plugins == [{package: "@plannotator/opencode@${plannotatorVersion}"}, "cc-safety-net", "@slkiser/opencode-quota"] and
         .permissions[0] == {action: "shell", resource: "*", effect: "ask"}
       ' ${configFile}
       jq -e '
@@ -47,10 +48,10 @@ in
       cd "$HOME"
 
       # Exercise the packaged v2 executable with canonical configuration.
-      ${package}/bin/opencode --version | grep -E '^opencode v2\.'
+      ${package}/bin/opencode2 --version | grep -E '^opencode v2\.'
       # Keep diagnostic commands in disposable private servers, too.
-      ${package}/bin/opencode service set disabled true
-      ${package}/bin/opencode debug config > resolved.json
+      ${package}/bin/opencode2 service set disabled true
+      ${package}/bin/opencode2 debug config > resolved.json
       jq -e '
         [.[] | select(.type == "document") | .info] | first
         | .model.providerID == "cliproxyapi" and
@@ -65,7 +66,7 @@ in
           .agents.title.model.model == "deepseek-v4.1-flash-free" and
           (.providers.cliproxyapi.models | has("zen/deepseek-v4.1-flash-free") | not) and
           .providers.cliproxyapi.package == "aisdk:@ai-sdk/openai-compatible" and
-          .plugins == [{package: "@plannotator/opencode@0.28.32"}, "cc-safety-net", "@slkiser/opencode-quota"] and
+          .plugins == [{package: "@plannotator/opencode@${plannotatorVersion}"}, "cc-safety-net", "@slkiser/opencode-quota"] and
           .permissions[0] == {action: "shell", resource: "*", effect: "ask"} and
           (.permissions | any(.action == "shell" and .resource == "sudo *" and .effect == "deny")) and
           (.permissions | any(.action == "shell" and .resource == "rm -rf *" and .effect == "deny")) and
@@ -119,7 +120,7 @@ in
       }
       JSON
       # A project cannot relax the global provider policy, even with credentials.
-      ${package}/bin/opencode models --standalone > models.txt
+      ${package}/bin/opencode2 models --standalone > models.txt
       test "$(grep -c '^cliproxyapi/' models.txt)" -eq 9
       grep -Fx 'cliproxyapi/gpt-6-astra' models.txt
       grep -Fx 'opencode/deepseek-v4.1-flash-free' models.txt

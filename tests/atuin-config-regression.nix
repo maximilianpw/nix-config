@@ -6,7 +6,7 @@
   pkgs,
 }: let
   expect = import ./lib/expect.nix {inherit lib;};
-  homelab = import ../lib/homelab.nix {inherit lib;};
+  homelab = import ../homelab/inventory {inherit lib;};
   endpoint = homelab.endpoints.atuin;
   server = config.services.atuin;
   clients = [config.home-manager.users.maxpw.programs.atuin joyce.home-manager.users.max-vev.programs.atuin];

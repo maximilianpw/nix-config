@@ -1,11 +1,11 @@
 {
   config,
+  homelab,
   lib,
   pkgs,
   ...
 }: let
   monitoringCfg = config.homelab.monitoring;
-  homelab = import ../../lib/homelab.nix {inherit lib;};
   inherit (homelab) endpoints;
   prometheus = config.services.prometheus;
   inherit (prometheus) alertmanager exporters;
@@ -40,7 +40,7 @@
       export SYSTEMCTL_BIN=${lib.getExe' pkgs.systemd "systemctl"}
       export AWK_BIN=${lib.getExe pkgs.gawk}
       export HOMELAB_METRICS_DIR=${lib.escapeShellArg nodeExporterTextfileDirectory}
-      exec ${lib.getExe pkgs.bash} ${../../scripts/homelab/homelab-systemd-metrics.sh} ${lib.escapeShellArgs importantSystemdUnits}
+      exec ${lib.getExe pkgs.bash} ${./homelab-systemd-metrics.sh} ${lib.escapeShellArgs importantSystemdUnits}
     '';
   };
   storageKernelMetrics = pkgs.writeShellApplication {
@@ -48,7 +48,7 @@
     text = ''
       export JOURNALCTL_BIN=${lib.getExe' pkgs.systemd "journalctl"}
       export HOMELAB_METRICS_DIR=${lib.escapeShellArg nodeExporterTextfileDirectory}
-      exec ${lib.getExe pkgs.python3} ${../../scripts/homelab/homelab-storage-kernel-metrics.py}
+      exec ${lib.getExe pkgs.python3} ${./homelab-storage-kernel-metrics.py}
     '';
   };
   mediaSmartCheck = pkgs.writeShellApplication {
@@ -57,7 +57,7 @@
       export SMARTCTL_BIN=${lib.getExe' pkgs.smartmontools "smartctl"}
       export JQ_BIN=${lib.getExe pkgs.jq}
       export HOMELAB_MEDIA_SMART_DEVICE=/dev/disk/by-id/ata-ST5000LM000-2AN170_WCJ23AWJ
-      exec ${lib.getExe pkgs.bash} ${../../scripts/homelab/homelab-media-smart-check.sh}
+      exec ${lib.getExe pkgs.bash} ${./homelab-media-smart-check.sh}
     '';
   };
   publicIngressCheck = pkgs.writeShellApplication {
@@ -65,7 +65,7 @@
     text = ''
       export CURL_BIN=${lib.getExe pkgs.curl}
       export HOMELAB_PUBLIC_URLS=${lib.escapeShellArg (lib.concatMapStringsSep " " (endpoint: endpoint.publicMonitorUrl) (builtins.attrValues homelab.publicEndpoints))}
-      exec ${lib.getExe pkgs.bash} ${../../scripts/homelab/homelab-public-ingress-check.sh} "$@"
+      exec ${lib.getExe pkgs.bash} ${./homelab-public-ingress-check.sh} "$@"
     '';
   };
   # The public /healthz is answered by nginx alone, so this authenticated
@@ -85,7 +85,7 @@
       export CURL_BIN=${lib.getExe pkgs.curl}
       export CLIPROXYAPI_MODELS_URL=${lib.escapeShellArg "${cliProxy.baseUrl}/v1/models"}
       export HOMELAB_METRICS_DIR=${lib.escapeShellArg nodeExporterTextfileDirectory}
-      exec ${lib.getExe pkgs.bash} ${../../scripts/homelab/cliproxyapi-readiness-probe.sh}
+      exec ${lib.getExe pkgs.bash} ${./cliproxyapi-readiness-probe.sh}
     '';
   };
   hostHeartbeat = pkgs.writeShellApplication {
@@ -94,7 +94,7 @@
     text = ''
       export CURL_BIN=${lib.getExe pkgs.curl}
       export HOMELAB_HEALTHCHECK_URL_FILE=${lib.escapeShellArg monitoringCfg.hostHeartbeatUrlFile}
-      exec ${lib.getExe pkgs.bash} ${../../scripts/homelab/healthcheck-ping.sh} success
+      exec ${lib.getExe pkgs.bash} ${./healthcheck-ping.sh} success
     '';
   };
   grafanaSecretKeySetup = pkgs.writeShellScript "grafana-secret-key-setup" ''
@@ -121,30 +121,39 @@
     labels = {inherit severity;};
     annotations = {inherit summary;};
   };
+  blackboxHttp2xx = {
+    prober = "http";
+    timeout = "10s";
+    http = {
+      preferred_ip_protocol = "ip4";
+      follow_redirects = true;
+      headers.User-Agent = "maximilian-homelab-monitor/1";
+      # Tunarr's health endpoint returns HTTP 200 even when a component is
+      # unhealthy. Treat its compact JSON error marker as a failed probe.
+      fail_if_body_matches_regexp = [
+        ''"type":"error"''
+        ''"installed":false''
+        ''"maintenance":true''
+        ''"needsDbUpgrade":true''
+      ];
+    };
+  };
   blackboxConfig = (pkgs.formats.yaml {}).generate "homelab-blackbox.yaml" {
-    modules.http_2xx = {
-      prober = "http";
-      timeout = "10s";
-      http = {
-        preferred_ip_protocol = "ip4";
-        follow_redirects = true;
-        headers.User-Agent = "maximilian-homelab-monitor/1";
-        # Tunarr's health endpoint returns HTTP 200 even when a component is
-        # unhealthy. Treat its compact JSON error marker as a failed probe.
-        fail_if_body_matches_regexp = [
-          ''"type":"error"''
-          ''"installed":false''
-          ''"maintenance":true''
-          ''"needsDbUpgrade":true''
-        ];
-      };
+    modules = {
+      http_2xx = blackboxHttp2xx;
+      # Public probes hairpin through Kim's ISP to Cloudflare and back down the
+      # tunnel. That path regularly stalls healthy requests for 10-12s, so a
+      # loopback-sized timeout reports reachable endpoints as down.
+      public_http_2xx = blackboxHttp2xx // {timeout = "25s";};
     };
   };
   publicIngressScrape = {
     job_name = "public-ingress";
     scrape_interval = "5m";
+    # Blackbox caps its probe at the scrape timeout Prometheus advertises.
+    scrape_timeout = "30s";
     metrics_path = "/probe";
-    params.module = ["http_2xx"];
+    params.module = ["public_http_2xx"];
     static_configs = [
       {targets = map (endpoint: endpoint.publicMonitorUrl) (builtins.attrValues homelab.publicEndpoints);}
     ];
@@ -278,7 +287,7 @@
       export HOMELAB_CLOUDFLARED_UNIT=${lib.escapeShellArg homelab.infrastructure.cloudflare.unit}
       export HOMELAB_PROMETHEUS_URL=${lib.escapeShellArg (homelab.loopbackUrl prometheus.port)}
       export HOMELAB_INSPECT_BIN=homelab-backup-inspect
-      exec ${lib.getExe pkgs.bash} ${../../scripts/homelab/homelab-check.sh} "$@"
+      exec ${lib.getExe pkgs.bash} ${./homelab-check.sh} "$@"
     '';
   };
 in {
@@ -352,7 +361,7 @@ in {
           publicIngressScrape
           {
             job_name = "cliproxy-quota";
-            scrape_interval = "2m";
+            scrape_interval = "5m";
             scrape_timeout = "30s";
             static_configs = [{targets = ["${cliProxy.host}:${toString cliProxy.quotaPort}"];}];
           }
@@ -418,8 +427,8 @@ in {
             listenAddress = "127.0.0.1";
             openFirewall = false;
             # These are the currently monitored NVMe namespaces, not stable disk
-            # identities. Reconcile them with model/serial data using
-            # docs/homelab-storage.md after hardware changes.
+            # identities. Reconcile them with model/serial data using "Storage
+            # identities" in docs/homelab-recovery.md after hardware changes.
             devices = [
               "/dev/nvme0n1"
               "/dev/nvme1n1"

@@ -7,17 +7,17 @@ driver". There are three scenarios, from most to least work:
 2. [New (or wiped) Mac](#scenario-2-new-or-wiped-mac)
 3. [Reinstalling an existing host / repo already cloned](#scenario-3-existing-host)
 
-In all cases the finishing move is the same: `./scripts/rebuild/bootstrap.sh`, which
-checks prerequisites, enables flakes, sets up the repo, verifies the host exists
-in the flake before maintaining the NixOS-only `/etc/nixos` symlink, checks the sops age key
-(NixOS and Darwin), and offers to run the first rebuild. Run
+In all cases the finishing move is the same: run `./scripts/rebuild/bootstrap.sh`
+from the clone. It checks prerequisites, enables flakes, verifies the host is in
+the inventory, checks the Darwin user age key, and offers the first rebuild,
+which then maintains `/etc/nixos` and guards the NixOS age key. Run
 `./scripts/rebuild/bootstrap.sh --dry-run` to see what it would do.
 
 > **The one dangerous gap to know about (NixOS):** the user password is a
 > sops secret. If the age key is not at `/var/lib/sops-nix/key.txt` before
 > the first rebuild, the user is created with **no password** — you're locked
-> out. Both `bootstrap.sh` and `nixos-rebuild.sh` check for this and refuse
-> to proceed, but do the key step early and deliberately.
+> out. `nixos-rebuild.sh` checks for this and refuses to switch, but do the
+> key step early and deliberately.
 
 ## Scenario 1: New NixOS machine from an ISO
 
@@ -30,8 +30,8 @@ Boot the ISO, then partition and install. Two options:
 
 - **Manual/graphical install**: use the installer as usual. Keep the
   generated `hardware-configuration.nix` — you'll need it in step 3.
-- **Disko**: follow the destructive gates in
-  [docs/homelab-storage.md](docs/homelab-storage.md). From a reviewed checkout,
+- **Disko**: see "Storage identities" in
+  [docs/homelab-recovery.md](docs/homelab-recovery.md). From a reviewed checkout,
   adapt `machines/hardware/kim-disko.nix` for the new machine's stable disk
   by-id. Evaluate the locked app first; run destructive mode only after
   checking the plan and `lsblk` on that exact machine:
@@ -99,7 +99,7 @@ sudo chown root:root /var/lib/sops-nix/key.txt
 
 ```bash
 cd ~/nix-config
-./scripts/rebuild/bootstrap.sh --skip-clone
+./scripts/rebuild/bootstrap.sh
 ```
 
 Say yes to the initial rebuild at the end (or run `make rebuild` later).
@@ -120,8 +120,6 @@ successful rebuild:
 - [ ] Restore homelab data in the safe, version-matched order from
       [docs/homelab-recovery.md](docs/homelab-recovery.md); never extract over
       live service paths
-- [ ] `make chezmoi-bootstrap`, inspect `make chezmoi-preview`, then run the
-      interactive `make chezmoi-apply`
 - [ ] Verify secrets decrypted: `ls -la /run/secrets/`
 
 ## Scenario 2: New (or wiped) Mac
@@ -156,17 +154,15 @@ successful rebuild:
      'eval $(op signin); op item get "sops nixos" --fields password --reveal' \
      >> ~/.config/sops/age/keys.txt
    chmod 600 ~/.config/sops/age/keys.txt
-   ./scripts/rebuild/bootstrap.sh --skip-clone
+   ./scripts/rebuild/bootstrap.sh
    ```
 
    Note: macOS Nix settings (caches, trusted-users) live in
    `/etc/nix/nix.custom.conf`, managed by the darwin config — not
    `nix.settings`.
 
-5. **Post-install**: run `make chezmoi-bootstrap` and
-   `make chezmoi-preview`; use `make chezmoi-apply` only after reviewing the
-   diff. Then create/upload a GitHub SSH key if needed, switch the repo remote
-   to SSH, start Tailscale, and pair Syncthing.
+5. **Post-install**: create/upload a GitHub SSH key if needed, switch the repo
+   remote to SSH, start Tailscale, and pair Syncthing.
 
 ## Scenario 3: Existing host
 
@@ -175,7 +171,7 @@ Kim):
 
 ```bash
 cd ~/nix-config
-./scripts/rebuild/bootstrap.sh --skip-clone   # or `make bootstrap`
+./scripts/rebuild/bootstrap.sh   # or `make bootstrap`
 ```
 
 On NixOS, place the system age key first (Scenario 1, step 4 above). On
@@ -222,8 +218,35 @@ checks and will tell you if either key is missing.
 6. Commit, push, and run the bootstrap on the new machine. Start Tailscale and
    verify the inventory key resolves through MagicDNS before testing Fleet.
 
-For WSL specifically, see `docs/wsl-setup.md` (`make wsl` builds the import
-image at `.artifacts/nixos.wsl`).
+For WSL, `make wsl` builds the import image at `.artifacts/nixos.wsl`. On
+Windows, in an administrator PowerShell:
+
+```powershell
+wsl --install --no-distribution   # reboot if prompted
+wsl --import Cuno $env:USERPROFILE\Cuno C:\path\to\nixos.wsl
+wsl -d Cuno
+```
+
+Then clone the repository inside Cuno, place the sops age key, and run
+`sudo nixos-rebuild switch --flake .#cuno`.
+
+### Rex package token
+
+Until Rex's first release, every machine that evaluates this flake needs a
+`pkgs.superlogical.com` token in a netrc file kept out of Git, sops and the
+store; without it evaluation fails with HTTP 401. CI uses `tests/stubs/rex`.
+
+- NixOS: `/etc/nix/netrc`, `root:wheel`, mode `0640`:
+
+  ```sh
+  read -rs token
+  printf 'machine pkgs.superlogical.com\nlogin rex\npassword %s\n' "$token" \
+    | sudo install -m 0640 -o root -g wheel /dev/stdin /etc/nix/netrc
+  unset token
+  ```
+
+- Joyce (Determinate): `/etc/determinate/rex.netrc`, mode `0600` root;
+  `machines/joyce.nix` lists it under `additionalNetrcSources`.
 
 ## Day-to-day commands
 
@@ -269,10 +292,6 @@ nix flake check --no-build
 
 See the troubleshooting section in `secrets/README.md` — usually the age key
 is missing from `/var/lib/sops-nix/key.txt` or doesn't match `.sops.yaml`.
-
-For the Nix/chezmoi ownership boundary and the remaining off-site/offline
-recovery prerequisites, see
-[docs/config-ownership-and-recovery.md](docs/config-ownership-and-recovery.md).
 
 ## Support
 

@@ -1,18 +1,19 @@
 {
   config,
+  homelab,
   lib,
   pkgs,
   ...
 }: let
-  common = import ./common.nix {inherit config lib pkgs;};
-  inherit (common) endpoints homelab mediaGid mediaRoot secondaryMediaRoot;
+  common = import ./common.nix {inherit config homelab lib pkgs;};
+  inherit (common) endpoints mediaGid mediaRoot secondaryMediaRoot;
   managerConfigPaths = {
     sonarr = "/var/lib/sonarr/.config/NzbDrone/config.xml";
     radarr = "/var/lib/radarr/.config/Radarr/config.xml";
     lidarr = "/var/lib/lidarr/.config/Lidarr/config.xml";
   };
   managerCredentials = names: map (name: "${name}-config:${managerConfigPaths.${name}}") names;
-  withManagerKeys = mappings: command: "${lib.getExe pkgs.python3} ${../../scripts/homelab/media-manager-api-env.py} ${lib.escapeShellArgs (lib.concatMap (mapping: ["--api-key" mapping]) mappings)} -- ${command}";
+  withManagerKeys = mappings: command: "${lib.getExe pkgs.python3} ${./media-manager-api-env.py} ${lib.escapeShellArgs (lib.concatMap (mapping: ["--api-key" mapping]) mappings)} -- ${command}";
   privateService = stateDirectory: {
     NoNewPrivileges = true;
     PrivateTmp = true;
@@ -61,9 +62,9 @@
           - trash_id: d1d67249d3890e49bc12e275d989a7e9
             name: TRaSH HD Bluray + WEB
   '';
-  maintainerrImage = "ghcr.io/maintainerr/maintainerr@sha256:7487d374290e59add65407ec295629e489f9057dbf18e2a9dff70d6201ffb6f9";
-  tdarrImage = "ghcr.io/haveagitgat/tdarr@sha256:b01f83c8b7d06c765422753d7b40f846ab7a227d2e792659d9f435315eaa31c4";
-  kometaImage = "docker.io/kometateam/kometa@sha256:20388de48f0e088ad9feb9904f6a452fd9ef933a79c7b2bf186e388224e8f437";
+  maintainerrImage = "ghcr.io/maintainerr/maintainerr@sha256:5dcd5bef9d49c614bb74453df3da198afc05a38d8e2cd96b3669bc2c76a94112";
+  tdarrImage = "ghcr.io/haveagitgat/tdarr@sha256:84743e5ae433a5b49cb463b2dff2679eb02f0cac24fb88c830f49bf8aa9f1c04";
+  kometaImage = "docker.io/kometateam/kometa@sha256:93b0909d1a34d75985c2258f451aac4ece4216d02f0c4914a0a4fa4be39a88c0";
 in {
   custom.backup = {
     applicationVersions = {
@@ -140,7 +141,7 @@ in {
     backend = "docker";
     containers = {
       maintainerr = {
-        # v3.29.0. Host networking lets it reach the existing loopback APIs;
+        # Host networking lets it reach the existing loopback APIs;
         # its own UI still binds only to loopback.
         image = maintainerrImage;
         user = "974:${toString mediaGid}";
@@ -154,7 +155,7 @@ in {
         extraOptions = ["--network=host" "--cap-drop=ALL" "--security-opt=no-new-privileges"];
       };
       tdarr = {
-        # 2.92.01. One health-check worker; library mounts prohibit media writes.
+        # One health-check worker; library mounts prohibit media writes.
         image = tdarrImage;
         ports = ["127.0.0.1:${toString endpoints.tdarr.port}:8265"];
         volumes = [
@@ -192,7 +193,7 @@ in {
         ];
       };
       kometa = {
-        # v2.5.1. A private config supplies Plex/TMDb tokens and collection rules.
+        # A private config supplies Plex/TMDb tokens and collection rules.
         image = kometaImage;
         user = "976:${toString mediaGid}";
         volumes = ["/var/lib/kometa:/config"];

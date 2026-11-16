@@ -53,9 +53,18 @@ detect_host
 # stop this state instead of regex-matching unrelated Nix processes.
 # shellcheck source=lib/rebuild-state.sh
 source "$SCRIPT_DIR/lib/rebuild-state.sh"
+# shellcheck source=lib/rebuild-log.sh
+source "$SCRIPT_DIR/lib/rebuild-log.sh"
 register_rebuild_process
+# Outside the checkout, so it neither enters the flake source nor Git. It holds
+# raw terminal output while the rebuild runs so `tail -f` renders it; the exit
+# trap rewrites it without nom's progress frames.
+LOG_FILE="$REBUILD_STATE_DIR/rebuild.log"
 CONFIG_SNAPSHOT_DIR=""
 cleanup() {
+    if [[ -f "$LOG_FILE" ]] && clean_rebuild_log < "$LOG_FILE" > "$LOG_FILE.tmp"; then
+        mv "$LOG_FILE.tmp" "$LOG_FILE"
+    fi
     remove_rebuild_state
     [[ -z "$CONFIG_SNAPSHOT_DIR" ]] || rm -rf "$CONFIG_SNAPSHOT_DIR"
 }
@@ -70,9 +79,6 @@ if ! validate_host_configuration "$CONFIG_DIR" "$FLAKE_REF"; then
     error "Refusing to rebuild an unknown or platform-incompatible host"
     exit 1
 fi
-
-# Outside the checkout, so it neither enters the flake source nor Git.
-LOG_FILE="$REBUILD_STATE_DIR/rebuild.log"
 
 if [[ "$PLATFORM" == "darwin" ]]; then
     # Determinate Nix writes `lazy-trees = true` into /etc/nix/nix.conf.
@@ -95,7 +101,7 @@ if [[ "$CONFIG_DIR" != "$CANONICAL_CONFIG_DIR" ]]; then
 fi
 
 # Lockout guard: on full NixOS the user password comes from a sops secret
-# (users/maxpw/nixos.nix, neededForUsers), so switching without the age key
+# (modules/user-account/sops-password.nix, neededForUsers), so switching without the age key
 # leaves the user with no password. Validate the privileged file itself with
 # sudo, including type, ownership, mode, readability, and symlink refusal.
 if [[ "$PLATFORM" == "nixos" && "$HOSTNAME" != "cuno" && "${SKIP_SOPS_CHECK:-0}" != "1" ]]; then
@@ -117,7 +123,7 @@ fi
 pushd "$CONFIG_DIR" >/dev/null
 
 # Keep failure summaries scoped to the current rebuild attempt.
-: > "$LOG_FILE"
+printf 'Rebuild of %s from %s at %s\n' "$HOSTNAME" "$CONFIG_DIR" "$(date '+%Y-%m-%d %H:%M:%S')" > "$LOG_FILE"
 
 # Only NixOS uses /etc/nixos, and only the canonical checkout owns it
 # (optional override: set SKIP_ETC_NIXOS_LINK=1).
@@ -170,7 +176,7 @@ if [[ "$PLATFORM" == "nixos" && "$HOSTNAME" == "kim" ]]; then
         [[ -n "$app_id" ]] && declarative_app_ids+=("$app_id")
     done <<< "$declarative_apps"
 
-    if ! NEXTCLOUD_USE_SUDO=1 "$SCRIPT_DIR/../homelab/check-nextcloud-app-ownership.sh" "${declarative_app_ids[@]}"; then
+    if ! NEXTCLOUD_USE_SUDO=1 "$SCRIPT_DIR/../../homelab/nextcloud/check-nextcloud-app-ownership.sh" "${declarative_app_ids[@]}"; then
         error "Refusing to activate conflicting Nextcloud app ownership"
         exit 1
     fi
@@ -182,11 +188,10 @@ fi
 previous_system_generation=$(readlink -f /run/current-system 2>/dev/null || printf unknown)
 info "Switching configuration via nh: $HOSTNAME ($PLATFORM)"
 if ! "${NH_SWITCH[@]}" -H "$HOSTNAME" "$FLAKE_REF" 2>&1 | tee -a "$LOG_FILE"; then
-    # The first error is usually the cause; the tail shows where it stopped.
-    error "Rebuild failed! First error, then the end of $LOG_FILE:"
-    grep -m 1 -A 8 'error:' "$LOG_FILE" || true
-    echo "..."
-    tail -n 20 "$LOG_FILE"
+    echo ""
+    error "Rebuild failed:"
+    clean_rebuild_log < "$LOG_FILE" | summarize_rebuild_failure
+    error "Full log: $LOG_FILE"
     exit 1
 fi
 
@@ -194,8 +199,11 @@ success "Rebuild completed successfully!"
 
 if [[ "$PLATFORM" == "nixos" && "$HOSTNAME" == "kim" ]]; then
     info "Running post-switch homelab verification..."
-    if ! HOMELAB_CHECK_BIN=/run/current-system/sw/bin/homelab-check \
-        "$SCRIPT_DIR/post-switch-homelab-check.sh" "$previous_system_generation"; then
+    live_status=0
+    [[ ! -t 1 ]] || live_status=1
+    if ! HOMELAB_CHECK_BIN=/run/current-system/sw/bin/homelab-check HOMELAB_CHECK_LIVE=$live_status \
+        "$SCRIPT_DIR/post-switch-homelab-check.sh" "$previous_system_generation" 2>&1 |
+        tee -a "$LOG_FILE"; then
         error "The new generation switched, but Kim did not pass its runtime checks."
         error "Automatic rollback is disabled because application migrations may have run."
         exit 1
@@ -203,7 +211,7 @@ if [[ "$PLATFORM" == "nixos" && "$HOSTNAME" == "kim" ]]; then
 fi
 
 # NixOS hosts clean on a timer (programs.nh.clean in
-# modules/core/nix-settings.nix). Joyce's Determinate-owned daemon has no
+# modules/nixos/nix-settings.nix). Joyce's Determinate-owned daemon has no
 # scheduled cleanup, so keep the same rollback floor after each switch there.
 if [[ "$PLATFORM" == "darwin" ]]; then
     info "Cleaning up old generations (keep 5, keep 30d)..."

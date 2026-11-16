@@ -4,21 +4,11 @@
   kim = {
     system = "x86_64-linux";
     user = "maxpw";
-    userDir = "maxpw";
-    darwin = false;
-    wsl = false;
-    linuxDesktop = false;
+    os = "nixos";
     hardwareModules = [
       "common-cpu-amd"
       "common-pc-ssd"
     ];
-    profiles = [
-      "base"
-      "dev"
-      "agent"
-      "homelab"
-    ];
-    hjem = true;
     role = "nixos-homelab";
     longRunningAgents = true;
     client = {
@@ -35,6 +25,7 @@
       "desktop"
     ];
     t3codePort = 51000;
+    atuinSync = true;
     # Cross-checked against the host's public key, ssh-keyscan over
     # Tailscale, and the existing known_hosts entry on 2026-07-09.
     hostKey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIO9tCTFAEd4W4eywYE3GJuYSh4mVbtImMtXIjQ3IIuhO";
@@ -43,17 +34,7 @@
   cuno = {
     system = "x86_64-linux";
     user = "maxpw";
-    userDir = "maxpw";
-    darwin = false;
-    wsl = true;
-    linuxDesktop = false;
-    profiles = [
-      "base"
-      "dev"
-      "agent"
-      "wsl"
-    ];
-    hjem = true;
+    os = "nixos-wsl";
     role = "nixos-wsl";
     longRunningAgents = false;
     # Enrol after `tailscale up` inside WSL and key generation; Fleet surfaces
@@ -65,17 +46,7 @@
   joyce = {
     system = "aarch64-darwin";
     user = "max-vev";
-    userDir = "maxpw";
-    darwin = true;
-    wsl = false;
-    linuxDesktop = false;
-    hjem = true;
-    profiles = [
-      "base"
-      "dev"
-      "agent"
-      "darwin"
-    ];
+    os = "darwin";
     role = "darwin-workstation";
     longRunningAgents = false;
     client = {
@@ -93,6 +64,19 @@
     aliases = [
       "macbook"
       "mac"
+    ];
+    atuinSync = true;
+    tunnels = [
+      {
+        host = "kim";
+        localPort = 3000;
+        remotePort = 3000;
+      }
+      {
+        host = "kim";
+        localPort = 5173;
+        remotePort = 5173;
+      }
     ];
   };
 }

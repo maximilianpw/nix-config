@@ -8,7 +8,7 @@ import tempfile
 import unittest
 
 
-CONFIG = Path(__file__).resolve().parents[1] / "users/maxpw/hjem/files/.config/starship.toml"
+CONFIG = Path(__file__).resolve().parents[1] / "users/maxpw/files/managed/.config/starship.toml"
 ANSI = re.compile(r"\x1b\[[0-9;]*m")
 
 

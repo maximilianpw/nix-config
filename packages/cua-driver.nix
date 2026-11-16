@@ -9,26 +9,26 @@
   stdenvNoCC,
 }: let
   pname = "cua-driver";
-  version = "0.38.0";
+  version = "0.52.0";
   system = stdenv.hostPlatform.system;
   isDarwin = stdenv.hostPlatform.isDarwin;
 
   artifacts = {
     aarch64-darwin = {
       name = "darwin-universal";
-      hash = "sha256-EhzyDK/Sz6ad1yDolnNQxkBrIuVYvmiJ3noa4zQ7bUs=";
+      hash = "sha256-GeXmUtuDzAMk56OJjuh1uHsmWtfhwJ/YYu94hpSA9h0=";
     };
     x86_64-darwin = {
       name = "darwin-universal";
-      hash = "sha256-EhzyDK/Sz6ad1yDolnNQxkBrIuVYvmiJ3noa4zQ7bUs=";
+      hash = "sha256-GeXmUtuDzAMk56OJjuh1uHsmWtfhwJ/YYu94hpSA9h0=";
     };
     aarch64-linux = {
       name = "linux-arm64-binary";
-      hash = "sha256-gMmuZrxzIgUt1CbGEzyWCGsziUvwbJcryoIVOEQAsz0=";
+      hash = "sha256-XH0KNsDjaPsoR/ImyhQ1xgv7eaw5aNmwipTYLJfaiAo=";
     };
     x86_64-linux = {
       name = "linux-x86_64-binary";
-      hash = "sha256-MauXCd2RznNnfkm58+dcbw0+TZYlwobJ5YJiv76mmN0=";
+      hash = "sha256-VcmexBdxcLGkQKXv1B5Vusrh6f4lfJbc2eW4HvkIUDY=";
     };
   };
 
@@ -95,7 +95,7 @@ in
         "$out/bin/cua-driver" --version
       '';
 
-    passthru.updateScript = ./scripts/update-cua-driver.sh;
+    passthru.updateScript = ./update-cua-driver.sh;
 
     meta = {
       description = "Cross-platform computer-use driver for AI agents";

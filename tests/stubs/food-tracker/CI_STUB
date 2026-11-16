@@ -1,0 +1,4 @@
+Public stand-in for the private food-tracker source, used only by CI through
+`--override-input food-tracker-src path:./tests/stubs/food-tracker`.
+packages/food-tracker.nix builds an inert placeholder when it sees this file,
+so the private application is never fetched or pushed to the public cache.

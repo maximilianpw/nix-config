@@ -4,7 +4,7 @@ local function project_root(path)
     path = vim.fn.getcwd()
   end
 
-  return vim.fs.root(path, { "package.json", "go.mod", "Cargo.toml", ".git", ".jj" }) or vim.fn.getcwd()
+  return vim.fs.root(path, { "package.json", "Cargo.toml", ".git", ".jj" }) or vim.fn.getcwd()
 end
 
 return {
@@ -12,7 +12,7 @@ return {
   before = function()
     local plugins = require("config.plugins")
     plugins.trigger("nvim-treesitter")
-    plugins.packadd("neotest-jest", "neotest-vitest", "neotest-mocha", "neotest-golang")
+    plugins.packadd("neotest-jest", "neotest-vitest", "neotest-mocha")
   end,
   keys = {
     {
@@ -84,9 +84,6 @@ return {
         require("neotest-mocha")({
           env = { CI = true },
           cwd = project_root,
-        }),
-        require("neotest-golang")({
-          go_test_args = { "-v", "-count=1" },
         }),
       },
     })
