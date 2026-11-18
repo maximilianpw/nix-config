@@ -70,16 +70,16 @@ inputs: [
       (unstable.cloudflared.override {
         buildGo127Module = unstable.buildGo127Module.override {inherit go;};
       }).overrideAttrs (_: let
-        version = "2026.11.0";
+        version = "2026.11.1";
       in {
         inherit version;
         src = prev.fetchFromGitHub {
           owner = "cloudflare";
           repo = "cloudflared";
           tag = version;
-          hash = "sha256-x2wEj/HyyROq5hq/MpXYt2PaiDOscHY3xLVSU6Ccjpw=";
+          hash = "sha256-8QtcFT7H+pNrphkp0dM6RnVahLiOlvLv5A8C4jowdJQ=";
         };
-        vendorHash = "sha256-ah+kI+bWIZqsi9U+AJtWME9rfjTr6QpiLQy0RXNlDzc=";
+        vendorHash = "sha256-F6uCv7vxiRx7AZRqK37b4QG++JnEMez6yhM1qjipxdQ=";
       });
     # direnv 2.37.1 fish tests get killed during build on macOS (sandbox/OOM)
     direnv = prev.direnv.overrideAttrs (_: {doCheck = false;});
