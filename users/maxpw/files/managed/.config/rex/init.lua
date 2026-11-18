@@ -1,4 +1,4 @@
-local terminal = "com.superlogical.terminal"
+local panes = require("panes")
 
 -- These programs handle ctrl+hjkl themselves; Neovim hands focus back to Rex
 -- at its own edges (users/maxpw/neovim/config/lua/plugins/editor/vim-tmux-navigator.lua).
@@ -13,8 +13,7 @@ local passthrough = {
 }
 
 local function foreground_handles_navigation(ctx)
-  local proc = rex.block.call(terminal, "process", { block_id = ctx.block_id })
-  local fg = proc and proc.foreground
+  local fg = panes.foreground(ctx.block_id)
   if not fg then
     return false
   end
@@ -54,3 +53,39 @@ for key, direction in pairs(resize_keys) do
 end
 rex.bind("resize/=", "pane.balance")
 rex.bind("resize/enter", "client.mode.exit")
+
+require("popups")
+require("projects")
+require("runs")
+require("kim")
+
+-- cmd+g replaces the app's default Find Next shortcut.
+rex.bind("cmd+g", "lazygit_float")
+rex.bind("ctrl+cmd+d", "lazydocker_float")
+rex.bind("cmd+o", "project_open")
+rex.bind("cmd+e", "run_split")
+rex.bind("cmd+j", "workspace_open")
+rex.bind("cmd+u", "agents_fanout")
+rex.bind("cmd+b", "pane.move_to_new_tab")
+rex.bind("cmd+i", "kim_session")
+
+-- Everything else sits behind one prefix, on the keys the Herdr prefix used
+-- where the command existed there. Twice sends the prefix to the terminal.
+local prefixed = {
+  ["ctrl+space"] = { "pane.send_key", { key = "ctrl+space" } },
+  [";"] = { "pane.focus_recent.in_tab" },
+  ["shift+b"] = { "pane.move_to_new_tab" },
+  ["shift+p"] = { "pane.rename" },
+  o = { "project_open" },
+  t = { "workspace_open" },
+  ["shift+t"] = { "workspace_new" },
+  ["alt+t"] = { "workspace_archive" },
+  a = { "agents_fanout" },
+  r = { "run_split" },
+  ["alt+k"] = { "kim_session" },
+  k = { "kim_top" },
+  d = { "kim_dev" },
+}
+for key, binding in pairs(prefixed) do
+  rex.bind("ctrl+space>" .. key, binding[1], binding[2])
+end

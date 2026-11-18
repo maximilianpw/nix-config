@@ -17,7 +17,7 @@
 
   # Every managed file is deployed at the same $HOME-relative path, except
   # tests that live beside the code they cover.
-  paths = builtins.filter (path: !(lib.hasSuffix ".test.mjs" path)) (
+  paths = builtins.filter (path: !(lib.hasSuffix ".test.mjs" path || lib.hasSuffix "-test.sh" path)) (
     map (file: lib.removePrefix "${toString managed}/" (toString file)) (lib.filesystem.listFilesRecursive managed)
   );
 

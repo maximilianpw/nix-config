@@ -15,6 +15,11 @@ _: {
     "Workspace.tabIconTintMode" = "off";
     "Workspace.sidebarPosition" = "left";
     "Workspace.sidebarShowsActivity" = false;
+    # A program that reports itself blocked, failed or done (OSC 7501; the
+    # coding agents do) raises a macOS notification while Rex is in the
+    # background, and counts on the Dock icon until its tab is seen.
+    "Workspace.showsProgramActivityNotifications" = true;
+    "Workspace.showsProgramActivityDockBadge" = true;
     "Workspace.paneDensity" = "compact";
     "Workspace.inactivePaneFadeMode" = "both";
     # Lets `rex do` and `rex -C` run the app's client actions.
