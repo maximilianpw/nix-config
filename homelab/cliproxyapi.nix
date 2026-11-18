@@ -2,10 +2,15 @@
   config,
   homelab,
   inputs,
+  lib,
   pkgs,
   ...
 }: let
   endpoint = homelab.publicEndpoints.cliproxy;
+  # Guests may call /v1/ but not the owner-only quota endpoint. Removing a
+  # name revokes its key once Kim is rebuilt.
+  guests = ["guest"];
+  guestKeySecret = name: "cliproxyapi-guest-api-key-${name}";
   cliProxy = import ../modules/cliproxyapi/config.nix;
   managementLocation = {
     proxyPass = cliProxy.baseUrl;
@@ -26,16 +31,23 @@ in {
   };
 
   sops = {
-    secrets.cliproxyapi-public-api-key = {};
+    secrets =
+      {cliproxyapi-public-api-key = {};}
+      // lib.genAttrs (map guestKeySecret guests) (_: {});
     templates = {
       "cliproxyapi-public-auth.conf" = {
         owner = config.services.nginx.user;
         mode = "0400";
         restartUnits = ["nginx.service"];
-        content = ''
-          map $http_authorization $cliproxyapi_public_authorized {
-            default 0;
-            "~^Bearer ${config.sops.placeholder.cliproxyapi-public-api-key}$" 1;
+        content = let
+          client = secret: name: ''"~^Bearer ${config.sops.placeholder.${secret}}$" ${name};'';
+          clients =
+            [(client "cliproxyapi-public-api-key" "owner")]
+            ++ map (name: client (guestKeySecret name) "guest-${name}") guests;
+        in ''
+          map $http_authorization $cliproxyapi_client {
+            default "";
+            ${lib.concatStringsSep "\n  " clients}
           }
         '';
       };
@@ -90,7 +102,7 @@ in {
         "/quota/v1/" = {
           proxyPass = cliProxy.quotaBaseUrl;
           extraConfig = ''
-            if ($cliproxyapi_public_authorized = 0) { return 401; }
+            if ($cliproxyapi_client != owner) { return 401; }
             proxy_set_header Authorization "";
             add_header Cache-Control "no-store" always;
           '';
@@ -99,7 +111,7 @@ in {
           proxyPass = cliProxy.baseUrl;
           proxyWebsockets = true;
           extraConfig = ''
-            if ($cliproxyapi_public_authorized = 0) { return 401; }
+            if ($cliproxyapi_client = "") { return 401; }
             include ${config.sops.templates."cliproxyapi-upstream-auth.conf".path};
             proxy_buffering off;
             proxy_request_buffering off;
