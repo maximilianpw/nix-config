@@ -14,7 +14,7 @@ RELEASES_API = "repos/pingdotgg/t3code/releases"
 DOWNLOAD_URL = "https://github.com/pingdotgg/t3code/releases/download"
 ARTIFACTS = {"aarch64-darwin": "arm64.zip", "x86_64-linux": "x86_64.AppImage"}
 VERSION = re.compile(r"(\d+)\.(\d+)\.(\d+)-nightly\.(\d{8})\.(\d+)")
-MANIFEST = Path(__file__).resolve().parents[1] / "t3code-release.json"
+MANIFEST = Path(__file__).resolve().with_name("t3code-release.json")
 
 
 def version_key(version):
