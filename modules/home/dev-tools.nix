@@ -8,7 +8,6 @@
       enable = true;
       enableBashIntegration = true;
       enableFishIntegration = true;
-      enableNushellIntegration = true;
       globalConfig.settings.node.compile = false;
     };
   };

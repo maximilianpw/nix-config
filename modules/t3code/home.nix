@@ -16,7 +16,7 @@
     pkgs.git
     pkgs.openssh
 
-    # T3 probes $SHELL with POSIX syntax; use Bash instead of the login Nu shell.
+    # T3 probes $SHELL with POSIX syntax; use Bash instead of the Fish login shell.
     pkgs.bash
     pkgs.mise
     pkgs.zoxide

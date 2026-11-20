@@ -33,6 +33,5 @@ in {
 
     bash.shellAliases = fleet.aliases;
     fish.shellAliases = fleet.aliases;
-    nushell.shellAliases = fleet.aliases;
   };
 }

@@ -32,11 +32,10 @@
     pkgs.cava
   ];
 
-  # Login shell for session environment, then hand off to the interactive
-  # shell (same shape as the old `bash -l -c nu`).
+  # Run as a login shell so terminals load the session environment.
   xdg.configFile."ghostty/config".text =
     ''
-      command = ${lib.getExe osConfig.custom.shells.login} -l -c ${lib.getExe osConfig.custom.shells.interactive}
+      command = ${lib.getExe osConfig.custom.shells.login} -l
     ''
     + builtins.readFile ./ghostty.linux;
 

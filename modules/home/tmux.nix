@@ -5,14 +5,12 @@
   pkgs,
   ...
 }: let
-  # Panes are human-facing: use the interactive shell, not the compatibility
-  # login shell that sshd and tools exec into.
-  interactiveShellPath = lib.getExe osConfig.custom.shells.interactive;
+  shellPath = lib.getExe osConfig.custom.shells.login;
   hostAccent = hostRecord.accent;
 in {
   programs.tmux = {
     enable = true;
-    shell = interactiveShellPath;
+    shell = shellPath;
     terminal = "tmux-256color";
     prefix = "C-Space";
     baseIndex = 1;
@@ -29,7 +27,7 @@ in {
 
     extraConfig = ''
       # Override tmux-sensible's default-command compatibility wrapper.
-      set -g default-command "${interactiveShellPath}"
+      set -g default-command "${shellPath}"
 
       # True color, undercurl, and modified key support
       set -g extended-keys on

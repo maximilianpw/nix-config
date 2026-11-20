@@ -1,4 +1,4 @@
-# Shell configurations - Nushell (primary), Fish and Bash (compatibility)
+# Shell configurations - Fish (login and interactive), Bash (compatibility)
 {
   config,
   pkgs,
@@ -6,7 +6,6 @@
   isDarwin,
   homelab,
   hostRecord,
-  template,
   ...
 }: let
   agentAliases = {
@@ -64,6 +63,9 @@
     fnix = "nix-shell --run fish";
   };
 in {
+  # Nushell stays available as a tool (`nu`, `nu -c`), not as a configured shell.
+  home.packages = [pkgs.nushell];
+
   home.sessionVariables.RIPGREP_CONFIG_PATH = "${config.xdg.configHome}/ripgrep/config";
 
   programs = {
@@ -71,7 +73,6 @@ in {
       enable = true;
       enableBashIntegration = true;
       enableFishIntegration = true;
-      enableNushellIntegration = true;
       flags = ["--disable-up-arrow" "--disable-ai"];
       settings = {
         sync_address = homelab.endpoints.atuin.url;
@@ -94,30 +95,9 @@ in {
       '';
     };
 
-    nushell = {
-      enable = true;
-      shellAliases =
-        (builtins.removeAttrs shellAliases ["jtp" "ls" "fnix"])
-        // (builtins.removeAttrs agentAliases ["ccc" "claudex"]);
-      configFile.source = ./config.nu;
-      extraConfig = builtins.readFile ./extra-config.nu;
-      extraEnv = template.render ./extra-env.nu {
-        BASH_INTERACTIVE = "${pkgs.bashInteractive}/bin/bash";
-      };
-      plugins = with pkgs.nushellPlugins;
-      # Plugins pinned to nushell 0.111.0 in nixpkgs-unstable (skim, hcl,
-      # semver, desktop_notifications) are ABI-incompatible with nushell
-      # 0.112.1 and have been dropped until nixpkgs catches up.
-        [
-          gstat
-          query
-        ];
-    };
-
     carapace = {
       enable = true;
       enableFishIntegration = true;
-      enableNushellIntegration = true;
     };
 
     zoxide = {
@@ -132,7 +112,6 @@ in {
 
     nix-your-shell = {
       enable = true;
-      enableNushellIntegration = true;
       enableFishIntegration = true;
     };
 

@@ -45,7 +45,7 @@ in
     file = home.home.file.".local/bin/${name}";
   in
     toString file.source == "${core}/bin/${name}" && file.force) ["hc" "herdr-core"];
-  assert builtins.all (shell: !(shell.shellAliases ? h)) [home.programs.bash home.programs.fish home.programs.nushell];
+  assert builtins.all (shell: !(shell.shellAliases ? h)) [home.programs.bash home.programs.fish];
   assert coreConfig.history_mb == 50;
   assert !(home.xdg.configFile ? "herdr-core/config.toml");
   # An exact manifest keeps app-owned settings, state, shipped mods and generated

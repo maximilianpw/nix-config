@@ -30,7 +30,6 @@ in
   ];
   assert lib.assertMsg (lib.all (client:
     client.enable
-    && client.enableNushellIntegration
     && client.enableBashIntegration
     && client.enableFishIntegration
     && client.settings.sync_address == endpoint.url
