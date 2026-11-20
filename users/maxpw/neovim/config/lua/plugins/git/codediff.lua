@@ -8,6 +8,9 @@ return {
     { "<leader>gD", "<cmd>CodeDiff history<cr>", desc = "Git History (CodeDiff)" },
   },
   after = function()
+    -- Its file watcher would otherwise be downloaded into the read-only plugin
+    -- directory; without it codediff refreshes by polling.
+    vim.env.CODEDIFF_WATCHER_NO_AUTO_INSTALL = "1"
     require("codediff").setup({})
   end,
 }

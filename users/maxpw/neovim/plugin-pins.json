@@ -101,6 +101,12 @@
     "rev": "0dc0cfb0c6858041174a53c7aa4adaf65e994b3c",
     "hash": "sha256-7tYeIZnT+ZkU/rIPIqkcMIn61tEqH4afCY+7EsnbzR4="
   },
+  "nvim-window-picker": {
+    "owner": "s1n7ax",
+    "repo": "nvim-window-picker",
+    "rev": "6382540b2ae5de6c793d4aa2e3fe6dbb518505ec",
+    "hash": "sha256-ZavIPpQXLSRpJXJVJZp3N6QWHoTKRvVrFAw7jekNmX4="
+  },
   "oil.nvim": {
     "owner": "stevearc",
     "repo": "oil.nvim",

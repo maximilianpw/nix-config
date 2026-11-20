@@ -12,10 +12,6 @@
   agentAliases = {
     c = "codex --yolo";
     ccc = "DISABLE_ZOXIDE=1 claude --dangerously-skip-permissions";
-    h =
-      if isDarwin
-      then "/usr/bin/open -a Herdr"
-      else "hc";
     claudex = "CLAUDE_CODE_ALWAYS_ENABLE_EFFORT=1 CLAUDE_CODE_MAX_TOOL_USE_CONCURRENCY=3 ENABLE_TOOL_SEARCH=false claude";
     oc = "opencode";
     p = "pi";
@@ -34,11 +30,13 @@
     gd = "git diff";
     gl = "git prettylog";
     gp = "git push";
+    gll = "git pull";
     v = "nvim";
 
     jc = "jj commit";
     jd = "jj diff";
     jf = "jj git fetch";
+    jfr = "jj git fetch && jj retrunk";
     jn = "jj new";
     jp = "jj git push";
     js = "jj st";
@@ -147,15 +145,6 @@ in {
       ]);
 
       plugins = [
-        {
-          name = "fish-fzf";
-          src = pkgs.fetchFromGitHub {
-            owner = "jethrokuan";
-            repo = "fzf";
-            rev = "479fa67d7439b23095e01b64987ae79a91a4e283";
-            sha256 = "sha256-28QW/WTLckR4lEfHv6dSotwkAKpNJFCShxmKFGQQ1Ew=";
-          };
-        }
         {
           name = "fish-foreign-env";
           src = pkgs.fetchFromGitHub {

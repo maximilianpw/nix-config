@@ -47,6 +47,22 @@ local ok_fff, fff_rust = pcall(require, "fff.rust")
 assert(ok_fff and type(fff_rust) == "table", "fff.nvim native library failed to load: " .. tostring(fff_rust))
 -- Without the Nix-built library codediff would try to download one on first use.
 assert(require("codediff.core.installer.libvscode_diff").is_installed(), "codediff.nvim native library is missing")
+local watcher_binary, watcher_error = false, nil
+require("codediff.core.installer.watcher").ensure(function(binary, err)
+  watcher_binary, watcher_error = binary, err
+end)
+assert(
+  watcher_binary == nil and watcher_error:match("disabled"),
+  "codediff.nvim tried to install its watcher into the store: " .. tostring(watcher_error)
+)
+
+-- The check sandbox has no display, like a Rex or SSH session.
+vim.wait(1000, function()
+  return vim.o.clipboard == "unnamedplus"
+end)
+assert(vim.g.clipboard and vim.g.clipboard.name == "OSC 52 (copy only)", "remote sessions have no clipboard provider")
+vim.fn.setreg("+", { "copied", "lines" }, "V")
+assert(vim.deep_equal(vim.fn.getreg("+", 1, true), { "copied", "lines" }), "OSC 52 clipboard lost the last yank")
 
 for _, lang in ipairs(vim.g.maxpw_treesitter_parsers) do
   assert(vim.treesitter.language.add(lang), "missing Treesitter parser: " .. lang)

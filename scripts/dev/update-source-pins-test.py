@@ -195,8 +195,8 @@ sys.stdout.write(response)
             self.respond(["nix", "flake", "prefetch", "--json", "github:" + repository], {"locked": {"rev": REVISION}, "hash": HASH})
         self.run_group("fish-plugins")
         updated = self.read("modules/shells/home.nix")
-        self.assertEqual(updated.count(REVISION), 2)
-        self.assertEqual(updated.count(HASH), 2)
+        self.assertEqual(updated.count(REVISION), 1)
+        self.assertEqual(updated.count(HASH), 1)
 
     def test_agent_plugins_follow_locked_cli_without_reformatting_settings(self):
         self.respond(["nix", "eval", "--raw", ".#packages.x86_64-linux.plannotator.version"], "9.0.0")

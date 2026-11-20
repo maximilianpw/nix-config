@@ -131,7 +131,6 @@ return {
           map("<leader>ca", vim.lsp.buf.code_action, "Code Action", { "n", "x" })
           map("gD", vim.lsp.buf.declaration, "Goto Declaration")
           map("K", vim.lsp.buf.hover, "Hover Documentation")
-          map("<leader>cs", vim.lsp.buf.signature_help, "Signature Documentation")
           map("<leader>Q", vim.diagnostic.open_float, "Show line diagnostics")
           -- Formatting keys and policy are owned by plugins/style/autoformat.lua.
 

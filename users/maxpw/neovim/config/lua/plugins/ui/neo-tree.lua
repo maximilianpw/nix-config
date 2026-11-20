@@ -63,7 +63,21 @@ local spec = {
   },
 }
 
+local window_picker = {
+  hint = "floating-big-letter",
+  filter_rules = {
+    include_current_win = false,
+    autoselect_one = true,
+    bo = {
+      filetype = { "neo-tree", "neo-tree-popup", "snacks_notif" },
+      buftype = { "terminal", "quickfix" },
+    },
+  },
+}
+
 spec.after = function()
+  require("config.plugins").packadd("nvim-window-picker")
+  require("window-picker").setup(window_picker)
   require("neo-tree").setup(spec.opts)
 end
 

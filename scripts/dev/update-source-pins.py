@@ -30,7 +30,7 @@ CONTAINERS = {
     "tdarr": ("homelab/media/companions.nix", "tdarrImage", "ghcr.io/haveagitgat/tdarr", "latest"),
     "kometa": ("homelab/media/companions.nix", "kometaImage", "docker.io/kometateam/kometa", "latest"),
 }
-FISH_PLUGINS = {"fish-fzf": "jethrokuan/fzf", "fish-foreign-env": "oh-my-fish/plugin-foreign-env"}
+FISH_PLUGINS = {"fish-foreign-env": "oh-my-fish/plugin-foreign-env"}
 STABLE_VERSION = re.compile(r"v?(\d+(?:\.\d+){2,3})")
 SRI = re.compile(r"sha256-[A-Za-z0-9+/]{43}=")
 

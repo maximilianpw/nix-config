@@ -45,6 +45,10 @@ local blink = dofile(root .. "/lua/plugins/editor/blink.lua").opts
 assert(blink.completion.list.selection.preselect == false, "Enter would accept an item the user did not select")
 assert(vim.deep_equal(blink.keymap["<CR>"], { "accept", "fallback" }), "Enter is not explicit-selection accept")
 
+registry.trigger("neo-tree.nvim")
+local ok_picker, picker = pcall(require, "window-picker")
+assert(ok_picker and type(picker.pick_window) == "function", "neo-tree's open_with_window_picker has no picker")
+
 registry.trigger("bufferline.nvim")
 dofile(tests .. "/bufferline.lua")
 print("plugin contracts passed")

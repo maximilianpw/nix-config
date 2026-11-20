@@ -6,10 +6,6 @@
   home,
   files,
 }: let
-  expectedLauncher =
-    if pkgs.stdenv.hostPlatform.isDarwin
-    then "/usr/bin/open -a Herdr"
-    else "hc";
   # Comparing output paths before names forces unrelated package build graphs.
   hasPackage = expected:
     builtins.any (installed: lib.getName installed == lib.getName expected && toString installed == toString expected) home.home.packages;
@@ -49,7 +45,7 @@ in
     file = home.home.file.".local/bin/${name}";
   in
     toString file.source == "${core}/bin/${name}" && file.force) ["hc" "herdr-core"];
-  assert builtins.all (shell: shell.shellAliases.h == expectedLauncher) [home.programs.bash home.programs.fish home.programs.nushell];
+  assert builtins.all (shell: !(shell.shellAliases ? h)) [home.programs.bash home.programs.fish home.programs.nushell];
   assert coreConfig.history_mb == 50;
   assert !(home.xdg.configFile ? "herdr-core/config.toml");
   # An exact manifest keeps app-owned settings, state, shipped mods and generated
