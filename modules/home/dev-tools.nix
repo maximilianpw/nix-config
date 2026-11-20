@@ -8,6 +8,7 @@
       enable = true;
       enableBashIntegration = true;
       enableFishIntegration = true;
+      enableZshIntegration = true;
       globalConfig.settings.node.compile = false;
     };
   };
