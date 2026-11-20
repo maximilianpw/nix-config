@@ -38,16 +38,12 @@
     ])
     pkgs.deno
     pkgs.lua
-    pkgs.zig
-    pkgs.openjdk
 
     # Shared editor tooling. Keep these on the normal PATH so Neovim, Zed,
     # Jujutsu hooks, and terminal workflows all resolve the same binaries.
     pkgs.biome
-    pkgs.checkstyle
     pkgs.clang-tools
     pkgs.eslint
-    pkgs.lldb # lldb-dap for Neovim's Rust debug configurations
     pkgs.oxlint
     pkgs.prettier
     pkgs.prettierd

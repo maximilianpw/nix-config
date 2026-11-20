@@ -157,7 +157,6 @@ inputs: [
       home-assistant
       home-assistant-custom-lovelace-modules
       jujutsu
-      zig
       ;
     helium = final.callPackage ./packages/helium.nix {};
     tunarr = final.callPackage ./packages/tunarr.nix {};
