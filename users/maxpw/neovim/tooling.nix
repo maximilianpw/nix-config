@@ -18,14 +18,12 @@ with pkgs;
     lua-language-server
     nil # Nix LSP
     typescript
-    vscode-js-debug
     tailwindcss-language-server
     rust-analyzer
-    # Zig (the zig compiler itself comes from packages/dev-tools.nix)
-    zls
     # taplo (TOML LSP + formatter) comes from dev-tools.nix.
     yaml-language-server
     hadolint # Dockerfile linter
+    shellcheck # bash-language-server runs it for diagnostics
     tflint # Terraform linter
     vale # Prose linter
   ]

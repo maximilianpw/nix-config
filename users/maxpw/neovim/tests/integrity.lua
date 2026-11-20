@@ -2,7 +2,6 @@
 -- registered plugin is packaged once, every plugin hook runs, native libraries
 -- and Treesitter grammars come from Nix, and nothing is installed at runtime.
 local registry = require("config.plugins")
-local home = assert(vim.env.HOME)
 
 local errors = {}
 local notify = vim.notify
@@ -13,9 +12,7 @@ vim.notify = function(msg, level, ...)
   return notify(msg, level, ...)
 end
 
-assert(vim.g.maxpw_nvim_profile == "terminal", "not running the terminal package")
-local app = vim.env.NVIM_APPNAME or "nvim"
-assert(vim.fs.basename(vim.fn.stdpath("data")) == app, "stdpath state does not match NVIM_APPNAME " .. app)
+assert(vim.fs.basename(vim.fn.stdpath("data")) == "nvim", "editor state is not under the default nvim app name")
 
 -- Only store paths (plus nvim-treesitter's manual-install escape hatch) may be on the runtimepath.
 for _, dir in ipairs(vim.api.nvim_list_runtime_paths()) do
@@ -27,9 +24,9 @@ for _, file in ipairs(vim.api.nvim_get_runtime_file("lsp/lua_ls.lua", true)) do
   assert(vim.startswith(file, "/nix/store/"), "legacy lsp/ config discovered: " .. file)
 end
 
--- Every spec the terminal profile registers resolves to exactly one packaged plugin.
+-- Every registered spec resolves to exactly one packaged plugin.
 local names = {}
-for _, spec in ipairs(registry.specs(false)) do
+for _, spec in ipairs(registry.specs()) do
   local list = type(spec[1]) == "table" and spec or { spec }
   for _, s in ipairs(list) do
     local dirs = vim.fn.globpath(vim.o.packpath, "pack/*/*/" .. s[1], false, true)
@@ -38,13 +35,8 @@ for _, spec in ipairs(registry.specs(false)) do
   end
 end
 
--- Run every after-hook. The Supermaven engine is a network service; it is
--- excluded from this offline check and verified interactively.
-local online = { ["supermaven-nvim"] = true }
-vim.fn.mkdir(vim.fs.joinpath(home, "Documents", "obsidian vault"), "p")
-require("lz.n").trigger_load(vim.tbl_filter(function(name)
-  return not online[name]
-end, names))
+-- Run every after-hook.
+require("lz.n").trigger_load(names)
 vim.wait(200)
 assert(#errors == 0, "plugin hooks reported errors:\n" .. table.concat(errors, "\n"))
 
@@ -68,7 +60,6 @@ end
 
 -- Nothing may have been fetched or compiled into writable locations.
 for _, path in ipairs({
-  vim.fs.joinpath(home, ".supermaven"),
   vim.fs.joinpath(vim.fn.stdpath("data"), "lazy"),
   vim.fs.joinpath(vim.fn.stdpath("data"), "site", "parser"),
   vim.fs.joinpath(vim.fn.stdpath("cache"), "treesitter-manual-installs", "parser"),

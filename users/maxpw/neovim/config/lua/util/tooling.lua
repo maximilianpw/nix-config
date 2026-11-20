@@ -1,6 +1,6 @@
 -- Canonical config-file name lists for JS/TS tooling.
--- Shared by conform (formatting), nvim-lint (linting), and lsp/ server specs so
--- the "what files mark a prettier/biome/eslint/oxlint project" answer lives in one place.
+-- Shared by conform (formatting) and nvim-lint (linting) so the "what files mark
+-- a prettier/biome/oxlint project" answer lives in one place.
 
 local M = {}
 
@@ -29,22 +29,6 @@ M.prettier = {
 M.biome = {
   "biome.json",
   "biome.jsonc",
-}
-
-M.eslint = {
-  ".eslintrc",
-  ".eslintrc.js",
-  ".eslintrc.cjs",
-  ".eslintrc.mjs",
-  ".eslintrc.json",
-  ".eslintrc.yaml",
-  ".eslintrc.yml",
-  "eslint.config.js",
-  "eslint.config.mjs",
-  "eslint.config.cjs",
-  "eslint.config.ts",
-  "eslint.config.mts",
-  "eslint.config.cts",
 }
 
 M.oxlint = {

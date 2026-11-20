@@ -1,51 +1,35 @@
-# Nixvim editor packages and their behavioral checks.
+# The Nixvim editor package and its behavioral check.
 #
-# `nvim`, `nvim-stable` and `nvim-vscode` are what Home Manager installs on
-# migrated hosts (modules/home/neovim.nix). The terminal `nvim` runs the
-# Neovim development build; `nvim-stable` is the same configuration on the
-# release editor, kept as a fallback that shares the terminal editor's state.
-# VS Code stays on the release editor. The candidates differ only by
-# NVIM_APPNAME: they keep their own stdpath state so they can run beside an
-# unmigrated editor without touching its sessions, undo history or breakpoints.
+# `nvim` is what Home Manager installs (modules/home/neovim.nix): this
+# configuration on the Neovim development build.
 {
   inputs,
   system,
   toolPkgs,
 }: let
-  nightly = inputs.neovim-nightly-overlay.packages.${system}.default;
-
-  eval = profile: appName: editor:
-    inputs.nixvim.lib.evalNixvim {
-      inherit system;
-      modules = [
-        # Match the deliberate flake follows without relying on Nixvim's default.
-        {nixpkgs.source = inputs.nixpkgs-unstable;}
-        (import ./default.nix {inherit profile toolPkgs appName editor;})
-      ];
-    };
-
-  terminal = eval "terminal" null nightly;
-  terminalStable = eval "terminal" null null;
-  vscode = eval "vscode" null null;
+  terminal = inputs.nixvim.lib.evalNixvim {
+    inherit system;
+    modules = [
+      # Match the deliberate flake follows without relying on Nixvim's default.
+      {nixpkgs.source = inputs.nixpkgs-unstable;}
+      (import ./default.nix {
+        inherit toolPkgs;
+        editor = inputs.neovim-nightly-overlay.packages.${system}.default;
+      })
+    ];
+  };
   inherit (terminal._module.args) pkgs;
+in {
+  nvim = terminal.config.build.package;
 
-  # Another command name for an editor package; state still follows its
-  # NVIM_APPNAME, so a renamed editor shares the default profile.
-  rename = name: package:
-    pkgs.runCommandLocal name {meta.mainProgram = name;} ''
-      mkdir -p "$out/bin"
-      ln -s ${package}/bin/nvim "$out/bin/${name}"
-    '';
-
-  check = name: terminalEval:
-    pkgs.runCommandLocal name {
-      # git stands in for the user PATH: gitsigns and obsidian.nvim call it.
+  nvim-check =
+    pkgs.runCommandLocal "nvim-check" {
+      # git stands in for the user PATH: gitsigns calls it.
       nativeBuildInputs = [pkgs.bash pkgs.coreutils pkgs.findutils pkgs.gawk pkgs.gitMinimal pkgs.gnugrep pkgs.gnused];
-      NVIM_TERMINAL = "${terminalEval.config.build.package}/bin/nvim";
-      NVIM_VSCODE = "${vscode.config.build.package}/bin/nvim";
+      NVIM_TERMINAL = "${terminal.config.build.package}/bin/nvim";
       # The unwrapped editor matching NVIM_TERMINAL, for config-only tests and
       # Neovim's own defaults.
-      NVIM_PLAIN = "${terminalEval.config.package}/bin/nvim";
+      NVIM_PLAIN = "${terminal.config.package}/bin/nvim";
       NVIM_CONFIG_SOURCE = ./config;
       NVIM_TESTS = ./tests;
     } ''
@@ -63,15 +47,4 @@
       fi
       touch "$out"
     '';
-in {
-  nvim = terminal.config.build.package;
-  nvim-stable = rename "nvim-stable" terminalStable.config.build.package;
-  # vscode-neovim launches this by path; the distinct name lets it share a
-  # profile with the terminal editor.
-  nvim-vscode = rename "nvim-vscode" vscode.config.build.package;
-  nvim-candidate = (eval "terminal" "nvim-candidate" nightly).config.build.package;
-  nvim-vscode-candidate = (eval "vscode" "nvim-vscode-candidate" null).config.build.package;
-
-  nvim-candidate-check = check "nvim-candidate-check" terminal;
-  nvim-stable-check = check "nvim-stable-check" terminalStable;
 }

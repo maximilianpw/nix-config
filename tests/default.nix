@@ -76,8 +76,7 @@
     # Keep the parked Hyprland profile evaluable while kim is headless.
     eval-kim-desktop = desktopKim.config.system.build.toplevel;
     eval-cuno = self.nixosConfigurations.cuno.config.system.build.toplevel;
-    nvim-candidate = (nvim "x86_64-linux").nvim-candidate-check;
-    nvim-stable = (nvim "x86_64-linux").nvim-stable-check;
+    nvim = (nvim "x86_64-linux").nvim-check;
     hjem-lifecycle-regression = import ./hjem-lifecycle-regression.nix {
       inherit (inputs) hjem;
       pkgs = nixpkgs.legacyPackages.x86_64-linux;
@@ -225,8 +224,7 @@
       package = self.packages.aarch64-darwin.t3code;
     };
     eval-joyce = self.darwinConfigurations.joyce.system;
-    nvim-candidate = (nvim "aarch64-darwin").nvim-candidate-check;
-    nvim-stable = (nvim "aarch64-darwin").nvim-stable-check;
+    nvim = (nvim "aarch64-darwin").nvim-check;
     hjem-lifecycle-regression = import ./hjem-lifecycle-regression.nix {
       inherit (inputs) hjem;
       pkgs = nixpkgs.legacyPackages.aarch64-darwin;

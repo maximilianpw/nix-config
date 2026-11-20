@@ -1,5 +1,4 @@
--- Nix injects the packaged helper; fall back to the chezmoi-era location.
-local lazygit_nvim_edit_bin = vim.g.maxpw_lazygit_nvim_edit or vim.fn.expand("~/.local/bin/lazygit-nvim-edit")
+local lazygit_nvim_edit_bin = vim.g.maxpw_lazygit_nvim_edit or "lazygit-nvim-edit"
 local lazygit_nvim_edit = lazygit_nvim_edit_bin .. " -- {{filename}}"
 local lazygit_nvim_edit_at_line = lazygit_nvim_edit_bin .. " --line {{line}} -- {{filename}}"
 local lazygit_nvim_open_dir = lazygit_nvim_edit_bin .. " -- {{dir}}"
@@ -8,41 +7,16 @@ local spec = {
   "snacks.nvim",
   priority = 1000,
   lazy = false, -- Register dashboard hooks before the first UI event.
+  -- Listing a module enables it; git, gitbrowse, bufdelete, rename, scratch,
+  -- toggle and debug need no setup and work without an entry.
   opts = {
-    -- ═══════════════════════════════════════════════════════════════
-    -- 🎨 VISUAL & UI ENHANCEMENTS
-    -- ═══════════════════════════════════════════════════════════════
-
-    -- Visual indentation guides with scope highlighting
     indent = { enabled = true },
-    -- Enhanced input dialogs with better UX
     input = { enabled = true },
-    -- Beautiful notification system with animations
     notifier = { enabled = true },
-    -- Scope-aware operations and highlighting
     scope = { enabled = true },
-    -- Smooth scrolling animations
-    scroll = { enabled = false },
-    -- Advanced status column (disabled - set in options.lua)
-    statuscolumn = { enabled = false },
-    -- Quick scratch buffers for temporary notes
-    scratch = { enabled = true },
-
     picker = { enabled = true },
-
-    -- ═══════════════════════════════════════════════════════════════
-    -- 💻 TERMINAL & DEVELOPMENT TOOLS
-    -- ═══════════════════════════════════════════════════════════════
-
-    -- Repository browsing and remote Git operations
-    gitbrowse = { enabled = true },
-
-    -- Git blame and history integration
-    git = { enabled = true },
-
-    -- lazygit
+    words = { enabled = true },
     lazygit = {
-      enabled = true,
       config = {
         os = {
           editPreset = "",
@@ -53,39 +27,6 @@ local spec = {
         },
       },
     },
-
-    -- ═══════════════════════════════════════════════════════════════
-    -- ⚡ PRODUCTIVITY & WORKFLOW
-    -- ═══════════════════════════════════════════════════════════════
-
-    -- Feature toggles and quick settings
-    toggle = { enabled = true },
-
-    -- Debug tools and inspection utilities
-    debug = { enabled = true },
-
-    -- Buffer deletion without disrupting layout
-    bufdelete = { enabled = true },
-
-    -- Smart file/symbol renaming with LSP integration
-    rename = { enabled = true },
-
-    -- Large file handling (disabled - using consolidated config/bigfile.lua)
-    bigfile = { enabled = false },
-
-    -- Our treesitter setup owns early highlighting and checks the shared size
-    -- tiers; quickfile only recognizes Snacks' separate `bigfile` filetype.
-    quickfile = { enabled = false },
-
-    -- Word movement and selection enhancements with LSP references
-    words = { enabled = true },
-
-    -- File explorer integration (disabled in favor of neo-tree)
-    explorer = { enabled = false },
-
-    -- ═══════════════════════════════════════════════════════════════
-    -- 🏠 DASHBOARD CONFIGURATION
-    -- ═══════════════════════════════════════════════════════════════
     dashboard = {
       enabled = true,
       width = 80,
@@ -106,7 +47,6 @@ local spec = {
         { icon = " ", title = "Projects", section = "projects", indent = 2, padding = 1 },
       },
       preset = {
-        -- Dashboard quick action keys (using Snacks picker)
         keys = {
           {
             icon = " ",
@@ -138,13 +78,7 @@ local spec = {
       },
     },
   },
-  -- ═══════════════════════════════════════════════════════════════
-  -- ⌨️  COMPREHENSIVE KEYMAPS FOR ALL SNACKS FEATURES
-  -- ═══════════════════════════════════════════════════════════════
   keys = {
-    -- ────────────────────────────────────────────────────────────
-    -- 📋 NOTIFICATIONS & DEBUG
-    -- ────────────────────────────────────────────────────────────
     {
       "<leader>nn",
       function()
@@ -160,9 +94,6 @@ local spec = {
       desc = "Dismiss All Notifications",
     },
 
-    -- ────────────────────────────────────────────────────────────
-    -- 🌿 GIT INTEGRATION
-    -- ────────────────────────────────────────────────────────────
     {
       "<leader>gg",
       function()
@@ -206,9 +137,6 @@ local spec = {
       desc = "Git Browse (Open in Browser)",
     },
 
-    -- ────────────────────────────────────────────────────────────
-    -- ⚡ PRODUCTIVITY & WORKFLOW
-    -- ────────────────────────────────────────────────────────────
     {
       "<leader>bd",
       function()
@@ -253,16 +181,9 @@ local spec = {
     },
   },
   beforeAll = function()
-    -- ═══════════════════════════════════════════════════════════════
-    -- 🚀 INITIALIZATION & AUTO-SETUP
-    -- ═══════════════════════════════════════════════════════════════
-
     vim.api.nvim_create_autocmd("User", {
       pattern = "DeferredUIEnter",
       callback = function()
-        -- ────────────────────────────────────────────────────────────
-        -- 🎨 UI CUSTOMIZATION
-        -- ────────────────────────────────────────────────────────────
         local dashboard_blue = "#89B4FA"
         vim.api.nvim_set_hl(0, "SnacksDashboardHeader", {
           fg = dashboard_blue,

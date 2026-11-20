@@ -35,12 +35,6 @@
     "rev": "c0862d382a35b7b45757d8d151a6a634c09bf3ce",
     "hash": "sha256-c4tGHjLol18V5PaFIgRTK4hZKHBA7OZEr1wRXWroNGE="
   },
-  "grug-far.nvim": {
-    "owner": "MagicDuck",
-    "repo": "grug-far.nvim",
-    "rev": "91b7e58b6ffc6ddad5acb7a7c1df21257724449e",
-    "hash": "sha256-sSUaiGSMKE8UcTybt/zFZd5tOPjK8gXVxyI/LEgfnBk="
-  },
   "lazydev.nvim": {
     "owner": "folke",
     "repo": "lazydev.nvim",
@@ -65,30 +59,6 @@
     "rev": "760d9701953ad2b0277fe9776ba99bb011ecac2b",
     "hash": "sha256-b3A7m/eWDXRQBE20bsbbhRp063a1xRyyPAk4P4BjEXg="
   },
-  "neotest": {
-    "owner": "nvim-neotest",
-    "repo": "neotest",
-    "rev": "27bf921498043f7ecd821d6db68d05de244bbd02",
-    "hash": "sha256-BiU0OEN8kTbPbLr0f1ueHXFWwQN8djXlqqInFlV01rM="
-  },
-  "neotest-jest": {
-    "owner": "nvim-neotest",
-    "repo": "neotest-jest",
-    "rev": "0e7979d51301dfae5ef839d771bd28cf593fde3f",
-    "hash": "sha256-TaEYHfNOQIX+TWZZym+h6e5kYUZLH7NfeEcEpi3QCus="
-  },
-  "neotest-mocha": {
-    "owner": "adrigzr",
-    "repo": "neotest-mocha",
-    "rev": "e28317a93e48ed7901d8ddb1bd252b64220b2e2c",
-    "hash": "sha256-hVUYoyWT982RSFy/b/t8kzRk86BnPuqrCBMwmaRjHqs="
-  },
-  "neotest-vitest": {
-    "owner": "marilari88",
-    "repo": "neotest-vitest",
-    "rev": "b0c265743c877058068dbc40d104ea5d40e6b257",
-    "hash": "sha256-3BeHnwu+bpESfiyE/wAcJdX0afDt+dA+wFqX+wEf9yQ="
-  },
   "noice.nvim": {
     "owner": "folke",
     "repo": "noice.nvim",
@@ -101,24 +71,6 @@
     "rev": "10fc361835c856ba4233ef5ea135b919bf3dce97",
     "hash": "sha256-UJp9A5Qb38ie552wRdHAeA9vm5PFURumYP9wZ83OU7Y="
   },
-  "nvim-dap": {
-    "owner": "mfussenegger",
-    "repo": "nvim-dap",
-    "rev": "cfa2d58f4537aca6ca83e2de1a0d9f1491121264",
-    "hash": "sha256-9T6EL8mZ1rddDXBNvkh68jQSKK1bhi73IvyD6v464x8="
-  },
-  "nvim-dap-ui": {
-    "owner": "rcarriga",
-    "repo": "nvim-dap-ui",
-    "rev": "cc9dd33aade7f20bae414d0cba163bc60d4d4b43",
-    "hash": "sha256-za3/6W1J6aMvNZQq8ANCq+TGHKHJtSxR/C5t3/oL3DI="
-  },
-  "nvim-dap-virtual-text": {
-    "owner": "theHamsta",
-    "repo": "nvim-dap-virtual-text",
-    "rev": "fbdb48c2ed45f4a8293d0d483f7730d24467ccb6",
-    "hash": "sha256-8hsk+EwnvoHCNhb0dcL9e4hQg9I+t/5Cy9ZoZgcz4fU="
-  },
   "nvim-lint": {
     "owner": "mfussenegger",
     "repo": "nvim-lint",
@@ -130,12 +82,6 @@
     "repo": "nvim-lspconfig",
     "rev": "4648fd8ba5c678d7e2db75ae44ffac269bb589d8",
     "hash": "sha256-FywWiEGEuauWQzOONBLwxzc5cPfrMT/v2b6CTcYj7Nw="
-  },
-  "nvim-nio": {
-    "owner": "nvim-neotest",
-    "repo": "nvim-nio",
-    "rev": "edcc181a875301dd21840189aa2f2f9ad69fc172",
-    "hash": "sha256-7NWyTAF6cgB2weYRBmEtGnWlA+pn2A35wlLttOuLNN8="
   },
   "nvim-treesitter-context": {
     "owner": "nvim-treesitter",
@@ -155,12 +101,6 @@
     "rev": "0dc0cfb0c6858041174a53c7aa4adaf65e994b3c",
     "hash": "sha256-7tYeIZnT+ZkU/rIPIqkcMIn61tEqH4afCY+7EsnbzR4="
   },
-  "obsidian.nvim": {
-    "owner": "obsidian-nvim",
-    "repo": "obsidian.nvim",
-    "rev": "b5b6dae964aefdf3dd4eafa555068d9c82e6e23b",
-    "hash": "sha256-4SMzJ2fHUhS7sWajUL7WTAHDxGemgglY9oCPjs35HnY="
-  },
   "oil.nvim": {
     "owner": "stevearc",
     "repo": "oil.nvim",
@@ -172,12 +112,6 @@
     "repo": "package-info.nvim",
     "rev": "b86cf49efc3855dd94afb33304b278f6f122bf1a",
     "hash": "sha256-ajoRR1KZfRn0i/BdJTSSLudJfppYkAdVaOeojNItoa8="
-  },
-  "persistent-breakpoints.nvim": {
-    "owner": "Weissle",
-    "repo": "persistent-breakpoints.nvim",
-    "rev": "d1656221836207787b8a7969cc2dc72668c4742a",
-    "hash": "sha256-7ZWNRyVAbQuM/y3jFuZ5QfmvI+pT4Jmo5kW2HwjDS1Y="
   },
   "plenary.nvim": {
     "owner": "nvim-lua",
@@ -214,12 +148,6 @@
     "repo": "snacks.nvim",
     "rev": "882c996cf28183f4d63640de0b4c02ec886d01f2",
     "hash": "sha256-gU0XjCcnmZNwZ/erukA8miBiMKaSsSiInLtiv+OyEJI="
-  },
-  "supermaven-nvim": {
-    "owner": "supermaven-inc",
-    "repo": "supermaven-nvim",
-    "rev": "07d20fce48a5629686aefb0a7cd4b25e33947d50",
-    "hash": "sha256-1z3WKIiikQqoweReUyK5O8MWSRN5y95qcxM6qzlKMME="
   },
   "todo-comments.nvim": {
     "owner": "folke",

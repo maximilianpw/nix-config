@@ -4,10 +4,6 @@ local spec = {
   opts = {
     prompt = "❯ ",
     title = "Find Files",
-    debug = {
-      enabled = false,
-      show_scores = false,
-    },
   },
   lazy = false,
   keys = {

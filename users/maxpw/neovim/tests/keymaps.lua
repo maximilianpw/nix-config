@@ -8,12 +8,6 @@ local registry = require("config.plugins")
 local native = {
   { "n", "gx" },
   { "x", "gx" },
-  { "n", "gra" },
-  { "x", "gra" },
-  { "n", "gri" },
-  { "n", "grn" },
-  { "n", "grr" },
-  { "n", "grt" },
   { "x", "an" },
   { "x", "in" },
   { "o", "an" },
@@ -23,6 +17,8 @@ local native = {
   { "o", "al" },
   { "o", "il" },
   { "n", "Q" },
+  { "n", "[d" },
+  { "n", "]d" },
 }
 
 local function describe(mode, lhs)
@@ -46,11 +42,9 @@ assert(clean.code == 0, "could not read Neovim's default mappings: " .. clean.st
 local defaults = vim.json.decode(clean.stdout)
 
 local names = {}
-for _, spec in ipairs(registry.specs(false)) do
+for _, spec in ipairs(registry.specs()) do
   for _, s in ipairs(type(spec[1]) == "table" and spec or { spec }) do
-    if s[1] ~= "supermaven-nvim" then
-      names[#names + 1] = s[1]
-    end
+    names[#names + 1] = s[1]
   end
 end
 require("lz.n").trigger_load(names)
@@ -87,17 +81,24 @@ local owned = {
   { "i", "<Esc>", "Escape and end snippet" },
   { "s", "<Esc>", "Escape and end snippet" },
   -- Blink lists the chain in order, so this also pins Tab's priority.
-  { "i", "<Tab>", "blink.cmp: Snippet Forward, <Custom Fn>" },
+  { "i", "<Tab>", "blink.cmp: Snippet Forward" },
   { "i", "<CR>", "blink.cmp: Accept" },
   { "i", "<C-y>", "blink.cmp: Select And Accept" },
+  { "n", "<C-q>", "Clear multicursors" },
 }
-if vim.fn.has("nvim-0.13") == 1 then
-  owned[#owned + 1] = { "n", "<C-q>", "Clear multicursors" }
-end
 for _, key in ipairs(owned) do
   local got = describe(key[1], key[2])
   if got ~= key[3] then
     failures[#failures + 1] = string.format("%s %s: expected %q, got %s", key[1], key[2], key[3], vim.inspect(got))
+  end
+end
+
+-- `gr` (LSP references) must fire without waiting for a longer gr* mapping.
+for _, mode in ipairs({ "n", "x" }) do
+  for _, map in ipairs(vim.list_extend(vim.api.nvim_get_keymap(mode), vim.api.nvim_buf_get_keymap(0, mode))) do
+    if map.lhs:match("^gr.") then
+      failures[#failures + 1] = string.format("%s %s: shadows gr", mode, map.lhs)
+    end
   end
 end
 

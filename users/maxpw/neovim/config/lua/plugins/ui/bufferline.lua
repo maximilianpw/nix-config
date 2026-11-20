@@ -46,15 +46,6 @@ return {
           text_align = "left",
         },
       },
-      -- Simplified icon function without LazyVim dependency
-      get_element_icon = function(opts)
-        local devicons_ok, devicons = pcall(require, "nvim-web-devicons")
-        if devicons_ok then
-          local icon, hl = devicons.get_icon(opts.path, opts.extension, { default = true })
-          return icon, hl
-        end
-        return "", ""
-      end,
     },
   },
   after = function(plugin)

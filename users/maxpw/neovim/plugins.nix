@@ -1,7 +1,7 @@
 # Every Neovim plugin, keyed by the name lz.n loads it by (its pack directory).
 #
-# Pure-Lua plugins are built from the exact commits in plugin-pins.json (carried
-# over from the former lazy-lock.json; refresh with scripts/dev/nvim-plugin-pins.sh).
+# Pure-Lua plugins are built from the exact commits in plugin-pins.json (refresh
+# with scripts/dev/nvim-plugin-pins.sh).
 # Plugins with native code or generated grammars come from the pinned nixpkgs
 # package set instead, so Nix builds their libraries and parsers as one
 # compatible set rather than mixing a locked Lua revision with a different
@@ -42,15 +42,23 @@
     "cpp"
     "css"
     "diff"
+    "dockerfile"
+    "fish"
+    "git_rebase"
+    "gitcommit"
     "html"
     "javascript"
     "json"
     "lua"
     "luadoc"
+    "make"
     "markdown"
     "markdown_inline"
+    "nix"
+    "nu"
     "python"
     "query"
+    "regex"
     "rust"
     "toml"
     "tsx"
@@ -58,7 +66,6 @@
     "vim"
     "vimdoc"
     "yaml"
-    "zig"
   ];
 
   treesitterWithGrammars = vimPlugins.nvim-treesitter.withPlugins (

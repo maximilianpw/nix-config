@@ -6,7 +6,6 @@ local spec = {
     -- Performance optimizations
     max_file_length = 10000, -- Disable for files with more than 10k lines
     update_debounce = 200, -- Debounce git status updates
-    attach_to_untracked = false, -- Don't attach to untracked files
     watch_gitdir = {
       follow_files = false, -- Reduce file watcher overhead
     },

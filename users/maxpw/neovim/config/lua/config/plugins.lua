@@ -2,25 +2,17 @@
 -- users/maxpw/neovim/plugins.nix); this module only decides what loads, when.
 local M = {}
 
--- Editing primitives shared with VS Code. The reduced VS Code package ships only
--- these plugins, so anything added here must also be added to its Nix profile.
-M.shared = {
-  "plugins.editor.mini",
-  "plugins.editor.flash",
-  "plugins.editor.treesitter",
-  "plugins.editor.comments",
-}
-
-M.terminal = {
-  "plugins.ai.supermaven",
+M.modules = {
   "plugins.editor.blink",
+  "plugins.editor.comments",
   "plugins.editor.fff",
-  "plugins.editor.grug-far",
-  "plugins.editor.obsidian",
+  "plugins.editor.flash",
+  "plugins.editor.mini",
   "plugins.editor.oil",
   "plugins.editor.quicker",
   "plugins.editor.render-markdown",
   "plugins.editor.todo-comments",
+  "plugins.editor.treesitter",
   "plugins.editor.treesitter-context",
   "plugins.editor.vim-tmux-navigator",
   "plugins.editor.which-key",
@@ -33,8 +25,6 @@ M.terminal = {
   "plugins.lsp.typescript-extras",
   "plugins.style.autoformat",
   "plugins.style.lint",
-  "plugins.testing.debug",
-  "plugins.testing.neotest",
   "plugins.ui.bufferline",
   "plugins.ui.colorscheme",
   "plugins.ui.lualine",
@@ -43,24 +33,12 @@ M.terminal = {
   "plugins.ui.snacks",
 }
 
-function M.is_vscode()
-  return vim.g.vscode ~= nil or vim.g.maxpw_nvim_profile == "vscode"
-end
-
-function M.modules(vscode)
-  local modules = vim.list_slice(M.shared)
-  if not vscode then
-    vim.list_extend(modules, M.terminal)
-  end
-  return modules
-end
-
-function M.specs(vscode)
-  return vim.tbl_map(require, M.modules(vscode))
+function M.specs()
+  return vim.tbl_map(require, M.modules)
 end
 
 -- Add plugins that have no spec of their own (libraries and extensions that
--- lazy.nvim used to load as `dependencies`). Nix keeps them in pack/*/opt.
+-- other plugins need). Nix keeps them in pack/*/opt.
 function M.packadd(...)
   for _, name in ipairs({ ... }) do
     vim.cmd.packadd(name)
@@ -73,7 +51,7 @@ function M.trigger(...)
 end
 
 function M.setup()
-  require("lz.n").load(M.specs(M.is_vscode()))
+  require("lz.n").load(M.specs())
 end
 
 return M

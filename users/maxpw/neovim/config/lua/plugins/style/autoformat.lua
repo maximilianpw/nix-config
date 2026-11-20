@@ -3,7 +3,6 @@ local prettier_ft = {
   "javascriptreact",
   "typescript",
   "typescriptreact",
-  "vue",
   "css",
   "scss",
   "less",
@@ -26,7 +25,6 @@ local biome_ft = {
   javascriptreact = true,
   typescript = true,
   typescriptreact = true,
-  vue = true,
   css = true,
   json = true,
   jsonc = true,
@@ -72,12 +70,6 @@ local spec = {
   cmd = { "ConformInfo" },
   keys = {
     { "<leader>cf", format_buffer, mode = { "n", "v" }, desc = "Format buffer (Conform)" },
-    {
-      "<leader>cF",
-      format_buffer,
-      mode = { "n", "v" },
-      desc = "Format buffer (Conform)",
-    },
   },
   opts = function()
     local formatters_by_ft = {
@@ -92,7 +84,6 @@ local spec = {
       bash = { "shfmt" },
       zsh = { "shfmt" },
       toml = { "taplo" },
-      zig = { "zigfmt" },
     }
 
     for _, ft in ipairs(prettier_ft) do

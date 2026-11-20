@@ -12,11 +12,9 @@
     ln -s ${lib.getExe editor.nvim} "$out/bin/vim"
   '';
 in {
-  # The same derivations `checks.<system>.nvim-candidate` and `nvim-stable` test.
+  # The same derivation `checks.<system>.nvim` tests.
   home.packages = [
     editor.nvim
-    editor.nvim-stable
-    editor.nvim-vscode
     viAliases
     pkgs.lazygit-nvim-edit
   ];

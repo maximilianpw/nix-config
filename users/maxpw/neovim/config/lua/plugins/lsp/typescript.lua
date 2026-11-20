@@ -13,9 +13,6 @@ return {
       end
 
       local setup_opts = {
-        -- typescript-tools handles root_dir automatically
-        -- It looks for: tsconfig.json, jsconfig.json, package.json, .git
-        single_file_support = true,
         on_attach = function(client, bufnr)
           local ok, twoslash = pcall(require, "twoslash-queries")
           if ok then
@@ -24,18 +21,9 @@ return {
         end,
         -- Buffer-local semantic token policy is owned by config.bigfile.
         settings = {
-          separate_diagnostic_server = true,
-          publish_diagnostic_on = "insert_leave",
           expose_as_code_action = "all",
-          debounce_text_changes = 300, -- Debounce to reduce server load
           tsserver_file_preferences = {
             includeInlayParameterNameHints = "literals",
-            includeInlayParameterNameHintsWhenArgumentMatchesName = false,
-            includeInlayFunctionParameterTypeHints = false,
-            includeInlayVariableTypeHints = false,
-            includeInlayPropertyDeclarationTypeHints = false,
-            includeInlayFunctionLikeReturnTypeHints = false,
-            includeInlayEnumMemberValueHints = false,
           },
         },
       }

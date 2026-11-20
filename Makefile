@@ -81,7 +81,7 @@ update-fish-plugins: ## Refresh Fish plugin source revisions and hashes
 update-nvim-plugins: ## Move Neovim's pinned Lua plugins to upstream HEAD (replaces :Lazy update)
 	@$(UPDATE_AUTH) $(SCRIPT_DIR)/dev/nvim-plugin-pins.sh --all
 	@echo "Check the editor before rebuilding:"
-	@echo "  nix build .#checks.$$(nix eval --impure --raw --expr builtins.currentSystem).nvim-candidate .#checks.$$(nix eval --impure --raw --expr builtins.currentSystem).hjem-lifecycle-regression --no-link"
+	@echo "  nix build .#checks.$$(nix eval --impure --raw --expr builtins.currentSystem).nvim .#checks.$$(nix eval --impure --raw --expr builtins.currentSystem).hjem-lifecycle-regression --no-link"
 
 check-scripts: ## Run shell syntax, ShellCheck, and safety regression tests
 	@command -v shellcheck >/dev/null || { echo "shellcheck not on PATH; run inside 'nix develop'" >&2; exit 1; }

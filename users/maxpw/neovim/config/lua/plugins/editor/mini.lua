@@ -14,7 +14,7 @@ local spec = {
         inside_last = "iL",
       },
     })
-    -- Default prefixes take gr (LSP) and gx (open URL).
+    -- Default prefixes take gr (LSP references) and gx (open URL).
     require("mini.operators").setup({
       exchange = { prefix = "cx" },
       replace = { prefix = "cr" },
@@ -24,15 +24,10 @@ local spec = {
     require("mini.pairs").setup()
     require("mini.splitjoin").setup()
     require("mini.align").setup()
-
-    if vim.g.vscode then
-      return
-    end
-
     require("mini.trailspace").setup()
     require("mini.sessions").setup()
   end,
-  keys = vim.g.vscode and {} or {
+  keys = {
     {
       "<leader>qs",
       function()

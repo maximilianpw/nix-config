@@ -68,14 +68,9 @@ local spec = {
 
     local opts = {
       options = {
-        theme = "auto",
-        globalstatus = vim.o.laststatus == 3,
-        component_separators = { left = "", right = "" },
-        section_separators = { left = "", right = "" },
-        disabled_filetypes = { statusline = { "dashboard", "alpha", "ministarter", "snacks_dashboard" } },
+        disabled_filetypes = { statusline = { "snacks_dashboard" } },
       },
       sections = {
-        lualine_a = { "mode" },
         lualine_b = { "branch" },
         lualine_c = {
           { get_root, icon = "󰉋 ", color = { gui = "bold" } },
@@ -126,18 +121,6 @@ local spec = {
             end,
           },
           {
-            function()
-              local s = package.loaded["dap"] and require("dap").status() or ""
-              return s ~= "" and "  " .. s or ""
-            end,
-            cond = function()
-              return package.loaded["dap"] and require("dap").status() ~= ""
-            end,
-            color = function()
-              return { fg = get_hl_color("Debug", "#ff9e64") }
-            end,
-          },
-          {
             "diff",
             symbols = icons.git,
             source = function()
@@ -165,14 +148,6 @@ local spec = {
             end,
           },
         },
-      },
-      inactive_sections = {
-        lualine_a = {},
-        lualine_b = {},
-        lualine_c = { "filename" },
-        lualine_x = { "location" },
-        lualine_y = {},
-        lualine_z = {},
       },
     }
 

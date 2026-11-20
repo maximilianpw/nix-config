@@ -5,44 +5,15 @@ local spec = {
     require("config.plugins").packadd("friendly-snippets")
   end,
   opts = {
+    -- On top of the "default" preset.
     keymap = {
-      preset = "default",
-      ["<C-space>"] = { "show", "show_documentation", "hide_documentation" },
       ["<C-e>"] = { "hide" },
       -- With preselect off, accept only acts on an item chosen with <C-n>/<C-p>/arrows.
       ["<CR>"] = { "accept", "fallback" },
-      ["<C-y>"] = { "select_and_accept", "fallback" },
-      -- Tab never takes the menu: snippet navigation, then Supermaven, then indentation.
-      ["<Tab>"] = {
-        "snippet_forward",
-        function()
-          local ok, suggestion = pcall(require, "supermaven-nvim.completion_preview")
-          if ok and suggestion.has_suggestion() then
-            -- Undo the suggestion separately from the text typed before it.
-            vim.api.nvim_feedkeys(vim.keycode("<C-g>u"), "n", false)
-            -- Blink invokes keymap handlers while Neovim may still hold a text lock.
-            vim.schedule(suggestion.on_accept_suggestion)
-            return true
-          end
-        end,
-        "fallback",
-      },
-      ["<S-Tab>"] = { "snippet_backward", "fallback" },
-      ["<Up>"] = { "select_prev", "fallback" },
-      ["<Down>"] = { "select_next", "fallback" },
       ["<C-p>"] = { "select_prev", "fallback" },
       ["<C-n>"] = { "select_next", "fallback" },
-      ["<C-b>"] = { "scroll_documentation_up", "fallback" },
-      ["<C-f>"] = { "scroll_documentation_down", "fallback" },
-    },
-    appearance = {
-      use_nvim_cmp_as_default = false,
-      nerd_font_variant = "mono",
     },
     completion = {
-      accept = {
-        auto_brackets = { enabled = true },
-      },
       documentation = {
         auto_show = true,
         auto_show_delay_ms = 200,
@@ -51,14 +22,12 @@ local spec = {
       menu = {
         border = "rounded",
         draw = {
-          columns = { { "kind_icon" }, { "label", "label_description", gap = 1 } },
           treesitter = { "lsp" },
         },
       },
       list = {
         selection = { preselect = false, auto_insert = false },
       },
-      ghost_text = { enabled = false },
     },
     sources = {
       default = function()
@@ -81,7 +50,6 @@ local spec = {
         },
       },
     },
-    snippets = { preset = "default" },
     -- Nix builds the Rust matcher; never download a prebuilt binary, and fail
     -- visibly instead of silently falling back to the Lua implementation.
     fuzzy = {

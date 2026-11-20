@@ -66,7 +66,10 @@ return {
       }) do
         for key, query in pairs(mappings) do
           vim.keymap.set({ "n", "x", "o" }, key, function()
-            if not _G.is_bigfile(0, "max_ts") then
+            -- ]c/[c are Neovim's diff-change motions; keep them in diff windows.
+            if vim.wo.diff and (key == "]c" or key == "[c") and vim.fn.mode() == "n" then
+              vim.cmd.normal({ vim.v.count1 .. key, bang = true })
+            elseif not _G.is_bigfile(0, "max_ts") then
               require("nvim-treesitter-textobjects.move")[method](query, "textobjects")
             end
           end, { desc = method .. " " .. query })

@@ -7,7 +7,6 @@ return {
     "javascriptreact",
     "typescript",
     "typescriptreact",
-    "vue",
     "svelte",
     "php",
     "markdown",

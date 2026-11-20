@@ -4,7 +4,7 @@
 vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<CR>")
 
 -- vim.snippet sessions survive <Esc>, and a stale session would keep <Tab>
--- jumping back into the snippet instead of accepting AI text or indenting.
+-- jumping back into the snippet instead of indenting.
 vim.keymap.set({ "i", "s" }, "<Esc>", function()
   if vim.snippet.active() then
     vim.snippet.stop()
@@ -12,20 +12,26 @@ vim.keymap.set({ "i", "s" }, "<Esc>", function()
   return "<Esc>"
 end, { expr = true, desc = "Escape and end snippet" })
 
--- Native multicursors (0.13): the default <C-l> clears them, but <C-l> is tmux
+-- Native multicursors: the default <C-l> clears them, but <C-l> is tmux
 -- navigation here. Clearing the namespace is the documented alternative.
-if vim.fn.has("nvim-0.13") == 1 then
-  vim.keymap.set("n", "<C-q>", function()
-    vim.api.nvim_buf_clear_namespace(0, vim.api.nvim_create_namespace("nvim.multicursor"), 0, -1)
-  end, { desc = "Clear multicursors" })
+vim.keymap.set("n", "<C-q>", function()
+  vim.api.nvim_buf_clear_namespace(0, vim.api.nvim_create_namespace("nvim.multicursor"), 0, -1)
+end, { desc = "Clear multicursors" })
+
+-- Neovim's grr/grn/gra/... LSP defaults would make the `gr` references picker
+-- wait for 'timeoutlen'; their actions live under <leader>c and g instead.
+for _, mode in ipairs({ "n", "x" }) do
+  for _, map in ipairs(vim.api.nvim_get_keymap(mode)) do
+    if map.lhs:match("^gr.") then
+      vim.keymap.del(mode, map.lhs)
+    end
+  end
 end
 
-if not vim.g.vscode then
-  vim.keymap.set("n", "<leader>uu", function()
-    vim.cmd.packadd("nvim.undotree")
-    vim.cmd.Undotree()
-  end, { desc = "Undo Tree" })
-end
+vim.keymap.set("n", "<leader>uu", function()
+  vim.cmd.packadd("nvim.undotree")
+  vim.cmd.Undotree()
+end, { desc = "Undo Tree" })
 
 -- Exit terminal mode
 vim.keymap.set("t", "<Esc><Esc>", "<C-\\><C-n>", { desc = "Exit terminal mode" })
@@ -55,14 +61,6 @@ end, { desc = "Copy file path with line number/range" })
 -- Better buffer navigation
 vim.keymap.set("n", "<leader>bf", "<cmd>bfirst<cr>", { desc = "First buffer" })
 vim.keymap.set("n", "<leader>bL", "<cmd>blast<cr>", { desc = "Last buffer" })
-
--- Diagnostic navigation (vim.diagnostic.goto_prev/next are deprecated since 0.11)
-vim.keymap.set("n", "[d", function()
-  vim.diagnostic.jump({ count = -1, float = true })
-end, { desc = "Previous diagnostic" })
-vim.keymap.set("n", "]d", function()
-  vim.diagnostic.jump({ count = 1, float = true })
-end, { desc = "Next diagnostic" })
 
 -- Quickfix navigation
 vim.keymap.set("n", "[q", "<cmd>cprevious<cr>", { desc = "Previous quickfix" })

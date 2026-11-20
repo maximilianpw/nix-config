@@ -47,7 +47,13 @@ return {
         underline = true,
         update_in_insert = false,
         severity_sort = true,
-        jump = { float = true }, -- Show float when jumping to diagnostic
+        jump = {
+          on_jump = function(diagnostic, bufnr)
+            if diagnostic then
+              vim.diagnostic.open_float({ bufnr = bufnr, scope = "cursor", focus = false })
+            end
+          end,
+        },
       })
 
       -- Inject schemastore schemas into jsonls/yamlls. schemastore.nvim is a
@@ -70,8 +76,8 @@ return {
         })
       end
 
-      -- Enable all LSP servers (configs loaded from lsp/ directory)
-      -- Note: rust-analyzer is managed by rustaceanvim
+      -- Base configs come from nvim-lspconfig; after/lsp/<name>.lua overrides them.
+      -- rust-analyzer is managed by rustaceanvim.
       local servers = {
         "astro",
         "bashls",
@@ -84,10 +90,10 @@ return {
         "lua_ls",
         "nil_ls",
         "nushell",
+        "ruff",
         "tailwindcss",
         "taplo",
         "yamlls",
-        "zls",
       }
       vim.lsp.enable(servers)
 
@@ -101,9 +107,6 @@ return {
           end
 
           local bufnr = event.buf
-
-          -- Enable completion triggered by <c-x><c-o>
-          vim.bo[bufnr].omnifunc = "v:lua.vim.lsp.omnifunc"
 
           -- Keymaps
           local map = function(keys, func, desc, mode)
@@ -132,12 +135,9 @@ return {
           map("<leader>Q", vim.diagnostic.open_float, "Show line diagnostics")
           -- Formatting keys and policy are owned by plugins/style/autoformat.lua.
 
-          -- Inlay hints toggle
-          if vim.lsp.inlay_hint then
-            map("<leader>ci", function()
-              vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = bufnr }), { bufnr = bufnr })
-            end, "Toggle Inlay Hints")
-          end
+          map("<leader>ci", function()
+            vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = bufnr }), { bufnr = bufnr })
+          end, "Toggle Inlay Hints")
 
           -- Document highlighting of the symbol under the cursor is handled by
           -- snacks.nvim's `words` module (see plugins/ui/snacks.lua).

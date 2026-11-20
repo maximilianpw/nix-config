@@ -93,10 +93,6 @@ for _, name in ipairs({
   local bufnr = fixture("modern-" .. name, { [name] = "export default {}" }, "src/file.ts", "typescript")
   expect(names(bufnr, "typescript") == "prettierd,prettier", name .. " was not recognized")
 end
-local tooling = require("util.tooling")
-for _, name in ipairs({ "eslint.config.ts", "eslint.config.mts", "eslint.config.cts" }) do
-  expect(vim.tbl_contains(tooling.eslint, name), name .. " was not registered")
-end
 
 local c = fixture("c", {}, "main.c", "c")
 expect(opts.format_on_save(c).lsp_format == "never", "C enabled LSP fallback")

@@ -1,16 +1,15 @@
 #!/usr/bin/env bash
-# Behavioral checks for the Nixvim editor packages, run by the
-# `nvim-candidate` flake check. Everything happens under a disposable HOME; the
-# old chezmoi/lazy.nvim locations are seeded with files that fail if loaded.
+# Behavioral checks for the Nixvim editor package, run by the `nvim` flake
+# check. Everything happens under a disposable HOME; the old chezmoi/lazy.nvim
+# locations are seeded with files that fail if loaded.
 set -euo pipefail
 
 : "${NVIM_TERMINAL:?NVIM_TERMINAL must be set}"
-: "${NVIM_VSCODE:?NVIM_VSCODE must be set}"
 : "${NVIM_PLAIN:?NVIM_PLAIN must be set}"
 : "${NVIM_CONFIG_SOURCE:?NVIM_CONFIG_SOURCE must be set}"
 : "${NVIM_TESTS:?NVIM_TESTS must be set}"
 
-work="$(mktemp -d "${TMPDIR:-/tmp}/nvim-candidate-test.XXXXXX")"
+work="$(mktemp -d "${TMPDIR:-/tmp}/nvim-test.XXXXXX")"
 trap 'rm -rf "$work"' EXIT
 
 export HOME="$work/home"
@@ -27,13 +26,11 @@ poison() {
   mkdir -p "$(dirname "$1")"
   printf '%s\n' 'error("loaded legacy runtime file: " .. debug.getinfo(1, "S").source)' >"$1"
 }
-for app in nvim nvim-candidate nvim-vscode-candidate; do
-  poison "$XDG_CONFIG_HOME/$app/init.lua"
-  poison "$XDG_CONFIG_HOME/$app/plugin/legacy.lua"
-  poison "$XDG_CONFIG_HOME/$app/lsp/lua_ls.lua"
-  poison "$XDG_CONFIG_HOME/$app/lua/config/init.lua"
-  poison "$XDG_DATA_HOME/$app/site/plugin/legacy.lua"
-done
+poison "$XDG_CONFIG_HOME/nvim/init.lua"
+poison "$XDG_CONFIG_HOME/nvim/plugin/legacy.lua"
+poison "$XDG_CONFIG_HOME/nvim/lsp/lua_ls.lua"
+poison "$XDG_CONFIG_HOME/nvim/lua/config/init.lua"
+poison "$XDG_DATA_HOME/nvim/site/plugin/legacy.lua"
 
 failed=0
 pass() { printf 'ok   %s\n' "$1"; }
@@ -76,22 +73,20 @@ EOF
 check "all Lua files parse" "$NVIM_PLAIN" --clean -l "$syntax"
 
 echo "--- Config contracts (no plugins) ---"
-for suite in architecture bigfile formatting project-tools source registry; do
+for suite in architecture bigfile formatting source registry; do
   check "$suite" "$NVIM_PLAIN" --clean -l "$NVIM_TESTS/$suite.lua"
 done
 
 echo "--- LSP registration drift ---"
 enable_list="$(sed -n '/local servers = {/,/^      }/p' "$NVIM_CONFIG_SOURCE/lua/plugins/lsp/init.lua" | grep -o '"[a-z_]*"' | tr -d '"')"
-for file in "$NVIM_CONFIG_SOURCE"/lsp/*.lua; do
+for file in "$NVIM_CONFIG_SOURCE"/after/lsp/*.lua; do
   name="$(basename "$file" .lua)"
   if ! grep -qx "$name" <<<"$enable_list"; then
-    fail "lsp/$name.lua exists but '$name' is not in the vim.lsp.enable list"
+    fail "after/lsp/$name.lua exists but '$name' is not in the vim.lsp.enable list"
   fi
 done
-for name in $enable_list; do
-  [[ -f "$NVIM_CONFIG_SOURCE/lsp/$name.lua" ]] || fail "'$name' is enabled but lsp/$name.lua does not exist"
-done
-pass "lsp/ files and enable list agree"
+pass "after/lsp/ overrides are all enabled"
+export LSP_SERVERS="$enable_list"
 
 echo "--- Terminal package ---"
 if output="$("$NVIM_TERMINAL" --headless -c 'lua print("init ok")' -c 'qa' 2>&1)" && grep -q "init ok" <<<"$output"; then
@@ -124,28 +119,8 @@ check "package integrity" in_editor "$NVIM_TERMINAL" "$NVIM_TESTS/integrity.lua"
 check "completion provider contracts" in_editor "$NVIM_TERMINAL" "$NVIM_TESTS/completion.lua"
 check "plugin contracts" in_editor "$NVIM_TERMINAL" "$NVIM_TESTS/plugins.lua"
 check "key ownership" in_editor "$NVIM_TERMINAL" "$NVIM_TESTS/keymaps.lua"
+check "LSP configs resolve with overrides last" in_editor "$NVIM_TERMINAL" "$NVIM_TESTS/lsp.lua"
 check "dashboard without lazy.nvim" in_editor "$NVIM_TERMINAL" "$NVIM_TESTS/dashboard.lua"
-
-echo "--- VS Code package ---"
-# Stand-in for the vscode-neovim extension runtime, bootstrapped like the real one.
-runtime="$work/vscode-neovim/runtime"
-mkdir -p "$runtime/lua/vscode"
-cat >"$runtime/vscode-neovim.vim" <<'EOF'
-let g:vscode = 1
-let g:vscode_neovim_runtime = fnamemodify(resolve(expand('<sfile>:p')), ':h')
-lua vim.opt.rtp:prepend(vim.g.vscode_neovim_runtime)
-EOF
-cat >"$runtime/lua/vscode.lua" <<'EOF'
-_G.vscode_test_actions = {}
-return {
-  action = function(name)
-    table.insert(_G.vscode_test_actions, name)
-  end,
-}
-EOF
-printf '%s\n' 'return { from_extension_runtime = true }' >"$runtime/lua/vscode/internal.lua"
-check "VS Code package boundary" in_editor "$NVIM_VSCODE" "$NVIM_TESTS/vscode-plugins.lua" \
-  --cmd "execute 'source' fnameescape('$runtime/vscode-neovim.vim')"
 
 echo "--- Startup time (informational) ---"
 "$NVIM_TERMINAL" --headless --startuptime "$work/startup.log" -c 'qa' >/dev/null 2>&1 || true

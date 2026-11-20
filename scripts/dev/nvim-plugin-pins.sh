@@ -8,7 +8,7 @@
 #   scripts/dev/nvim-plugin-pins.sh NAME [REV]      pin NAME to REV (default: upstream HEAD)
 #   scripts/dev/nvim-plugin-pins.sh --all           move every pin to upstream HEAD
 #
-# Then run: nix build .#checks.$(nix eval --impure --raw --expr builtins.currentSystem).nvim-candidate
+# Then run: nix build .#checks.$(nix eval --impure --raw --expr builtins.currentSystem).nvim
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"

@@ -85,10 +85,9 @@ local function prepend_node_path(node_path)
   return node_path
 end
 
+-- Prefer the project's astro-ls, and give it a TypeScript SDK (project-local,
+-- else the global tsserver) plus a matching NODE_PATH.
 return {
-  _tooling = {
-    executables = { "astro-ls", "tsserver" },
-  },
   cmd = function(dispatchers, config)
     local cmd = "astro-ls"
     if (config or {}).root_dir then
@@ -106,11 +105,6 @@ return {
 
     return vim.lsp.rpc.start({ cmd, "--stdio" }, dispatchers, extra_spawn_params)
   end,
-  filetypes = { "astro" },
-  root_markers = { "package.json", "tsconfig.json", "jsconfig.json", ".git" },
-  init_options = {
-    typescript = {},
-  },
   before_init = function(_, config)
     ensure_tsdk(config)
   end,

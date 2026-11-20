@@ -29,7 +29,6 @@ return {
         dockerfile = { "hadolint" },
         terraform = { "tflint" },
         text = { "vale" },
-        java = { "checkstyle" },
         nix = { "nix" },
       }
 

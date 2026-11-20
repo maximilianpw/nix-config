@@ -43,7 +43,6 @@
 
     termguicolors = true;
 
-    # Completion menu for blink.cmp
     completeopt = "menu,menuone,noselect";
     pumheight = 15;
 
@@ -61,9 +60,6 @@
     foldmethod = "expr";
     foldexpr = "v:lua.vim.treesitter.foldexpr()";
     foldtext = "";
-
-    hlsearch = true;
-    incsearch = true;
 
     wildmode = "longest:full,full";
     wildignore = ["*.o" "*.obj" ".git" "node_modules" "*.pyc"];

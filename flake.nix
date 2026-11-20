@@ -111,7 +111,7 @@
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
-    # Neovim development (0.13-dev) editor for the terminal profile. Its own
+    # Neovim development (0.13-dev) editor that `nvim` wraps. Its own
     # nixpkgs is kept: following ours can break its Tree-sitter vendor hashes.
     # The nested neovim-src revision is what `nix flake update` advances.
     neovim-nightly-overlay.url = "github:nix-community/neovim-nightly-overlay";
@@ -148,7 +148,7 @@
         config.allowUnfree = true;
       };
 
-    # Nixvim editor packages; language tooling comes from the same stable
+    # Nixvim editor package; language tooling comes from the same stable
     # package set Home Manager uses.
     nvim = system:
       import ./users/maxpw/neovim/packages.nix {
@@ -199,7 +199,7 @@
     # these into `pkgs.*` for module consumption — this is additive.
     packages = let
       editorPackages = system: {
-        inherit (nvim system) nvim nvim-stable nvim-vscode nvim-candidate nvim-vscode-candidate;
+        inherit (nvim system) nvim;
         inherit (mkPkgs system) lazygit-nvim-edit;
       };
     in {
