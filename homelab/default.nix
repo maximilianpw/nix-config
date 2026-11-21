@@ -22,9 +22,8 @@
     ./paperless.nix
     ./portfolio-tracker.nix
     ./storage.nix
-    ./syncthing.nix
     ./tailscale-serve
-    ./uptime-kuma
+    ./uptime-kuma.nix
     ./vaultwarden.nix
   ];
 

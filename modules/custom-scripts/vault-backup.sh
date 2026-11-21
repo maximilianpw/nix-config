@@ -24,8 +24,7 @@ esac
 
 : "${VAULTWARDEN_URL:?vault-backup requires VAULTWARDEN_URL}"
 
-sync_root="${VAULT_SYNC_ROOT:-$HOME/Sync}"
-backup_dir="${VAULT_BACKUP_DIR:-$sync_root/Recovery/Vaultwarden}"
+backup_dir="${VAULT_BACKUP_DIR:-$HOME/Sync/Recovery/Vaultwarden}"
 vault_was_unlocked=false
 temporary_files=()
 
@@ -103,13 +102,6 @@ expect {
 }
 EOF
 }
-
-if [[ "$backup_dir" == "$sync_root" || "$backup_dir" == "$sync_root/"* ]]; then
-  if [[ ! -d "$sync_root/.stfolder" ]]; then
-    echo "error: $sync_root is not an active Syncthing folder (.stfolder is missing)" >&2
-    exit 1
-  fi
-fi
 
 umask 077
 mkdir -p -- "$backup_dir"
@@ -229,6 +221,6 @@ for index in "${!temporary_files[@]}"; do
   mv -- "${temporary_files[$index]}" "${final_files[$index]}"
 done
 
-printf 'Created encrypted Syncthing export:\n'
+printf 'Created encrypted vault export:\n'
 printf '  %s\n' "${final_files[@]}"
 printf '\nAttachments and Sends remain covered by the server-level Borg backup.\n'

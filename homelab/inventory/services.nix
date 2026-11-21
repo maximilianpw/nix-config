@@ -487,8 +487,7 @@
   jellyfin = {
     endpoint = {
       authorizationOwner = "application";
-      # Jellyfin also serves clients on Kim's physical LAN; the firewall limits
-      # this host-bound listener to the declared playback interface.
+      # Jellyfin listens on every interface; Kim's firewall admits it on none.
       bindScope = "host";
       exposure = "public";
       hostname = "jellyfin.maximilian.pw";
@@ -519,8 +518,7 @@
   plex = {
     endpoint = {
       authorizationOwner = "application";
-      # Plex also serves clients on Kim's physical LAN; the firewall limits
-      # this host-bound listener to the declared playback interface.
+      # Plex listens on every interface; Kim's firewall admits it on none.
       bindScope = "host";
       exposure = "public";
       hostname = "plex.maximilian.pw";
@@ -1036,38 +1034,6 @@
       icon = "tunarr.png";
       description = "Custom live channels from the media library";
       order = 75;
-    };
-  };
-
-  syncthing = {
-    endpoint = {
-      authorizationOwner = "tailscale";
-      exposure = "tailnet";
-      port = 19384;
-      monitorPath = "/rest/noauth/health";
-    };
-    state = {
-      paths = [
-        "/home/maxpw/.config/syncthing"
-        "/home/maxpw/Sync"
-      ];
-    };
-    operations.units = ["syncthing.service"];
-    recovery = {
-      versionPolicy = "restore-archived-version-first";
-      runbook = "docs/homelab-recovery.md#syncthing";
-      acceptance = ["identity-reviewed-before-one-peer-reconnect"];
-      secretOwners = [
-        "sops:syncthing-gui-password"
-        "mutable-state:/home/maxpw/.config/syncthing"
-      ];
-    };
-    presentation = {
-      group = "operations";
-      title = "Syncthing";
-      icon = "syncthing.png";
-      description = "File sync status";
-      order = 30;
     };
   };
 

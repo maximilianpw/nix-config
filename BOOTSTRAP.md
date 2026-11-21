@@ -116,7 +116,6 @@ successful rebuild:
 - [ ] Switch the repo remote to SSH:
       `git remote set-url origin git@github.com:maximilianpw/nix-config.git`
 - [ ] `sudo tailscale up` — join the tailnet (fleet/remote-dev relies on it)
-- [ ] Accept Syncthing device pairings from an existing machine (personal data)
 - [ ] Restore homelab data in the safe, version-matched order from
       [docs/homelab-recovery.md](docs/homelab-recovery.md); never extract over
       live service paths
@@ -162,7 +161,7 @@ successful rebuild:
    `nix.settings`.
 
 5. **Post-install**: create/upload a GitHub SSH key if needed, switch the repo
-   remote to SSH, start Tailscale, and pair Syncthing.
+   remote to SSH, and start Tailscale.
 
 ## Scenario 3: Existing host
 

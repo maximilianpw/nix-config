@@ -193,7 +193,7 @@ fi
 
 echo ""
 info "Bootstrap preparation complete. After the first rebuild, follow the"
-info "post-install checklist in BOOTSTRAP.md (1Password, Tailscale, Syncthing, git remote)."
+info "post-install checklist in BOOTSTRAP.md (1Password, Tailscale, git remote)."
 if [[ "$DRY_RUN" == "true" ]]; then
     info "[DRY-RUN] Would prompt for the initial rebuild"
     exit 0

@@ -20,7 +20,6 @@ _: {
     ../modules/himalaya/home.nix
     ../modules/home/darwin-apps.nix
     ../modules/home/fonts.nix
-    ../modules/home/syncthing.nix
     ../modules/home/vicinae.nix
     ../modules/rex/home.nix
   ];

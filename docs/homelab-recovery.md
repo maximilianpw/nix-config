@@ -70,7 +70,7 @@ sudo systemctl mask --runtime \
   container@qbt.service container@sab.service \
   qbittorrent-proxy.service qbittorrent-proxy.socket \
   sabnzbd-proxy.service sabnzbd-proxy.socket \
-  syncthing.service uptime-kuma.service vaultwarden.service \
+  uptime-kuma.service vaultwarden.service \
   docker-executor.service docker-kometa.service docker-maintainerr.service \
   docker-tdarr.service portfolio-tracker-api.service \
   portfolio-tracker-sync.service portfolio-tracker-sync.timer \
@@ -372,16 +372,6 @@ data directories. Confirm an existing history item decrypts, then synchronize
 a harmless new marker between two test clients before restoring production
 ingress. Preserve the pre-migration dump if upgrading afterward.
 
-### Syncthing
-
-Treat synchronized content and device identity separately. Keep networking or
-the service disabled while restoring `~/.config/syncthing` and selected data.
-Normally restore the original device certificate and key before reconnecting
-peers; otherwise deliberately remove the old device and enroll a replacement.
-Inspect folder paths, device IDs, and versioning first. Reconnect one trusted
-peer, verify override/send-receive policy, then reconnect the rest. Do not let
-an empty new device propagate deletions.
-
 ### Uptime Kuma
 
 Kuma uses systemd `DynamicUser`; `/var/lib/uptime-kuma` is only a compatibility
@@ -482,7 +472,7 @@ Prometheus targets, and backup/check age. Test intended and unauthorized access
 before unmasking Cloudflare or Tailscale Serve.
 
 Generate new tokens that portable exports intentionally omit. Do not rotate
-Vaultwarden RSA or Syncthing device identity accidentally.
+Vaultwarden RSA identity accidentally.
 
 ## 7. Finish and destroy staged plaintext
 

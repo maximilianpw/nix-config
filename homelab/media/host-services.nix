@@ -21,13 +21,6 @@
     usenetRoot
     ;
   physicalLanIpv4Cidr = "192.168.1.0/24";
-  plexIpv4FirewallRules = ''
-    iptables -w -A nixos-fw -i enp194s0 -p tcp --dport ${toString endpoints.plex.port} -j nixos-fw-accept
-    iptables -w -A nixos-fw -i enp194s0 -s ${physicalLanIpv4Cidr} -p udp --dport 32410 -j nixos-fw-accept
-    iptables -w -A nixos-fw -i enp194s0 -s ${physicalLanIpv4Cidr} -p udp --dport 32412 -j nixos-fw-accept
-    iptables -w -A nixos-fw -i enp194s0 -s ${physicalLanIpv4Cidr} -p udp --dport 32413 -j nixos-fw-accept
-    iptables -w -A nixos-fw -i enp194s0 -s ${physicalLanIpv4Cidr} -p udp --dport 32414 -j nixos-fw-accept
-  '';
   prowlarrReconcile = pkgs.writeShellApplication {
     name = "prowlarr-reconcile";
     runtimeInputs = [pkgs.coreutils pkgs.curl pkgs.gnused pkgs.jq];
@@ -176,6 +169,9 @@ in {
 
     plex = {
       enable = true;
+      # No firewall port: the first plex.tv account to reach an unclaimed
+      # server owns it, so claim it at 127.0.0.1:32400/web over an SSH tunnel
+      # before the public hostname serves it.
       openFirewall = false;
       # Kim's Radeon render node, same as Jellyfin. Plex's own hardware
       # transcoding toggle lives in its Settings UI (Plex Pass required) and
@@ -330,19 +326,12 @@ in {
     sockets = lib.mapAttrs mkContainerProxySocket downloadProxies;
   };
 
-  # Playback is available through Cloudflare and directly over IPv4 TCP 32400
-  # on the physical interface. Plex discovery remains restricted to Kim's IPv4
-  # LAN, and no Plex ports are admitted over IPv6 because Kim has globally
-  # routable IPv6 addresses. Claim the server from kim:32400/web before using
-  # the public hostname: the first plex.tv account to reach an unclaimed
-  # server owns it.
-  networking.firewall = {
-    interfaces.enp194s0 = {
-      allowedTCPPorts = [endpoints.jellyfin.port];
-      allowedUDPPorts = [7359];
-    };
-    extraCommands = plexIpv4FirewallRules;
-  };
+  # Plex apps on the home LAN connect to the server's LAN address directly;
+  # without it they fall back to plex.tv's bandwidth-capped relay. IPv4 and the
+  # LAN subnet only, because Kim's IPv6 addresses are globally routable.
+  networking.firewall.extraCommands = ''
+    iptables -w -A nixos-fw -i enp194s0 -s ${physicalLanIpv4Cidr} -p tcp --dport ${toString endpoints.plex.port} -j nixos-fw-accept
+  '';
 
   # Only the downloader veths are NATed to the physical uplink. Mullvad runs
   # inside each namespace, so it cannot replace Kim's routes or affect Tailscale.

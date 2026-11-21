@@ -18,6 +18,11 @@
   cliproxy = config.services.nginx.virtualHosts.${homelab.publicEndpoints.cliproxy.host};
   cliproxyPort = homelab.publicEndpoints.cliproxy.port;
   cliproxyBackend = (import ../modules/cliproxyapi/config.nix).baseUrl;
+  firewall = config.networking.firewall;
+  closedInterface = name: let
+    interface = firewall.interfaces.${name};
+  in
+    interface.allowedTCPPorts == [] && interface.allowedTCPPortRanges == [] && interface.allowedUDPPorts == [] && interface.allowedUDPPortRanges == [];
   nextcloudListen = config.services.nginx.virtualHosts.${homelab.publicEndpoints.nextcloud.host}.listen;
 in
   assert lib.assertMsg (publicNames == ["actual" "cliproxy" "executor" "homeassistant" "jellyfin" "leerr" "nextcloud" "plex" "seerr"])
@@ -144,17 +149,15 @@ in
     (!(builtins.elem "docker" config.users.users.forgejo-runner.extraGroups))
     (!(builtins.elem homelab.privateServices.forgejo.port config.networking.firewall.allowedTCPPorts))
   ];
-  assert expect.all "Syncthing must accept peers only on the LAN and tailnet and never request a router port forward" [
-    (!config.services.syncthing.openDefaultPorts)
-    (!config.services.syncthing.settings.options.natEnabled)
-    (!(builtins.elem 22000 config.networking.firewall.allowedTCPPorts))
-    (!(builtins.elem 22000 config.networking.firewall.allowedUDPPorts))
-    (!(builtins.elem 21027 config.networking.firewall.allowedUDPPorts))
-    (lib.all
-      (interface:
-        builtins.elem 22000 config.networking.firewall.interfaces.${interface}.allowedTCPPorts
-        && lib.all (port: builtins.elem port config.networking.firewall.interfaces.${interface}.allowedUDPPorts) [22000 21027])
-      ["enp194s0" "tailscale0"])
+  assert expect.all "Kim must admit only Tailscale's WireGuard port and LAN Plex outside the tailnet" [
+    (firewall.trustedInterfaces == ["lo"])
+    (firewall.allowedTCPPorts == [])
+    (firewall.allowedTCPPortRanges == [])
+    (firewall.allowedUDPPorts == [config.services.tailscale.port])
+    (firewall.allowedUDPPortRanges == [])
+    (lib.all closedInterface (lib.attrNames (removeAttrs firewall.interfaces ["tailscale0"])))
+    (builtins.length (lib.splitString "nixos-fw-accept" firewall.extraCommands) == 2)
+    (lib.hasInfix "-i enp194s0 -s 192.168.1.0/24 -p tcp --dport ${toString homelab.publicEndpoints.plex.port} -j nixos-fw-accept" firewall.extraCommands)
   ];
     pkgs.runCommand "homelab-ingress-regression" {} ''
       touch "$out"
