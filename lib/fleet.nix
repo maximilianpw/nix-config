@@ -63,6 +63,7 @@
     - Use `fleet ssh <host> [session] [--forward port]` for persistent remote tmux sessions and project ports.
     - Use `fleet shell <host>` for plain remote shells.
     - Use `fleet t3 <host>` for T3 Code port forwards when the host declares a T3 Code port.
+    - Use `fleet computer <host>` as an MCP server command to drive a GUI host's real desktop through Cua Driver. Register it only for interactive sessions, never for unattended agents.
     - Use `fleet forward list [local-port]` to inspect active SSH local forwards, then `fleet forward delete PID` to stop an unmanaged one. For managed ports, use `fleet tunnel pause PORT` instead: killing the SSH process only triggers a restart.
     - Use `fleet tunnel status`, `fleet tunnel pause PORT`, and `fleet tunnel resume PORT` for login-supervised localhost forwards on Darwin.
     - Use `fleet doctor HOST` to check SSH reachability, tunnel supervisor state, local port ownership, and whether the remote app is listening. A local listener is not end-to-end health.
