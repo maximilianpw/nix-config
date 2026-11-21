@@ -140,7 +140,7 @@ in
         .percentDisplayMode == "remaining"
       ' ${quotaFile}
 
-      # Fresh installation, then a writable config also owned by OpenCode/Herdr.
+      # Fresh installation, then a writable config also owned by OpenCode and other clients.
       cli="$XDG_CONFIG_HOME/opencode/cli.json"
       bash ${configureCli} ${cliDefaults} "$cli"
       jq -e '.attention == {notifications: true, sound: false} and .plugins == ["@slkiser/opencode-quota"]' "$cli"
@@ -150,7 +150,7 @@ in
         "session": {"thinking": "show"},
         "attention": {"sound": true, "volume": 0.3},
         "plugins": [
-          "./herdr-opencode",
+          "./other-client-plugin",
           {"package": "./custom", "options": {"enabled": true}},
           "@slkiser/opencode-quota",
           "-opencode.notifications"
@@ -163,7 +163,7 @@ in
         .theme.name == "catppuccin" and .session.thinking == "show" and
         .attention == {notifications: true, sound: false, volume: 0.3} and
         .plugins == [
-          "@slkiser/opencode-quota", "./herdr-opencode",
+          "@slkiser/opencode-quota", "./other-client-plugin",
           {package: "./custom", options: {enabled: true}}, "-opencode.notifications"
         ]
       ' "$cli"

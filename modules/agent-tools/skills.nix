@@ -20,7 +20,6 @@ in {
   cua-driver = "${pins.cua}/libs/cua-driver/rust/Skills/cua-driver";
   gui-automation = "${pins.cua}/skills/gui-automation";
   emilkowalski = from pins.emilkowalski-skills "skills" ["emil-design-eng"];
-  herdr = from pins.herdr "skills" ["herdr"];
   improve = "${pins.shadcn-improve}/skills/improve";
   jakubkrehel = from pins.jakubkrehel-skills "skills" ["better-ui"];
   mattpocock = from pins.mattpocock-skills "skills" [

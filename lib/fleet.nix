@@ -60,7 +60,7 @@
     ## Usage Rules
 
     - Use `fleet run <host> <command...>` for non-interactive remote checks.
-    - Use `fleet ssh <host> [session] [--forward port]` inside a local Herdr pane for persistent remote tmux sessions and project ports.
+    - Use `fleet ssh <host> [session] [--forward port]` for persistent remote tmux sessions and project ports.
     - Use `fleet shell <host>` for plain remote shells.
     - Use `fleet t3 <host>` for T3 Code port forwards when the host declares a T3 Code port.
     - Use `fleet forward list [local-port]` to inspect active SSH local forwards, then `fleet forward delete PID` to stop an unmanaged one. For managed ports, use `fleet tunnel pause PORT` instead: killing the SSH process only triggers a restart.

@@ -54,9 +54,6 @@ _: {
       "plex"
       "tldraw"
       "grok-bot"
-      # Upstream-signed build; llm-agents builds it from source with an ad-hoc
-      # signature, which resets macOS permission grants on every update.
-      "herdr-app"
     ];
 
     onActivation = {

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Apply Nix-owned CLI preferences without taking ownership of OpenCode's
-# writable cli.json or deleting plugins installed by Herdr and other clients.
+# writable cli.json or deleting plugins installed by other clients.
 set -euo pipefail
 
 if [[ $# != 2 ]]; then

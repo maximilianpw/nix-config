@@ -29,7 +29,7 @@ class SourcePinsTest(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
-        for name in [SCRIPT, "flake.nix", "overlays.nix", "packages/obsidian.nix", "packages/herdr-core.nix", "modules/shells/home.nix", "homelab/executor.nix", "homelab/media/companions.nix", "users/maxpw/files/editable/agents/claude/settings.json", "users/maxpw/files/editable/agents/opencode/cliproxyapi.json"]:
+        for name in [SCRIPT, "flake.nix", "overlays.nix", "packages/obsidian.nix", "modules/shells/home.nix", "homelab/executor.nix", "homelab/media/companions.nix", "users/maxpw/files/editable/agents/claude/settings.json", "users/maxpw/files/editable/agents/opencode/cliproxyapi.json"]:
             target = self.root / name
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(REPO / name, target)
@@ -245,23 +245,6 @@ sys.stdout.write(response)
         original = self.read("packages/obsidian.nix")
         self.assertIn("refusing downgrade", self.run_group("obsidian", success=False).stderr)
         self.assertEqual(original, self.read("packages/obsidian.nix"))
-
-    def prepare_herdr(self):
-        targets = {}
-        for target in ("macos-aarch64", "macos-x86_64", "linux-aarch64", "linux-x86_64"):
-            url = f"https://releases.herdr.dev/core/9.0.0/herdr-core-{target}.tar.gz"
-            targets[target] = {"url": url, "sha256": "ab" * 32}
-            self.prefetch(url)
-        self.fetch("https://releases.herdr.dev/core/latest.json", {"version": "9.0.0", "targets": targets})
-
-    def test_herdr_refreshes_all_artifacts_and_verifies_checksums(self):
-        self.prepare_herdr()
-        self.run_group("herdr-core")
-        updated = self.read("packages/herdr-core.nix")
-        self.assertEqual(updated.count(HASH), 4)
-        self.prefetch("https://releases.herdr.dev/core/9.0.0/herdr-core-linux-x86_64.tar.gz", {"hash": "sha256-" + base64.b64encode(bytes(32)).decode()})
-        self.assertIn("checksum mismatch", self.run_group("herdr-core", success=False).stderr)
-        self.assertEqual(updated, self.read("packages/herdr-core.nix"))
 
     def test_plex_updates_amd64_without_touching_cloudflared(self):
         version = "9.0.0.12345-abcdef"

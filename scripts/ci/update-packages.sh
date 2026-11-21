@@ -38,7 +38,7 @@ cd "$script_dir/../.."
 update_package() {
   local package=$1
   case $package in
-    obsidian|herdr-core|plex)
+    obsidian|plex)
       python3 scripts/dev/update-source-pins.py "$package"
       ;;
     cua-driver)

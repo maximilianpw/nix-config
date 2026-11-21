@@ -74,8 +74,6 @@ in {
     packages = [
       pkgs.cloudflared
       pkgs.cua-driver
-      pkgs.herdr-core
-      pkgs.herdr-jj
       pkgs.executor
       pkgs.skills
     ];
@@ -143,16 +141,6 @@ in {
     };
 
     file = {
-      # The App discovers core here before PATH. Replace installer binaries with
-      # store links so both it and shells use the Nix-owned, non-self-updating core.
-      ".local/bin/herdr-core" = {
-        source = "${pkgs.herdr-core}/bin/herdr-core";
-        force = true;
-      };
-      ".local/bin/hc" = {
-        source = "${pkgs.herdr-core}/bin/hc";
-        force = true;
-      };
       # Claude's CLAUDE.md imports the shared policy from here.
       ".config/agent-policy/AGENTS.md".source = source "shared/AGENTS.md";
     };

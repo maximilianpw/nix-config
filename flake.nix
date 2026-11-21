@@ -35,12 +35,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # Release-pinned Herdr plugin; Bun >= 1.3.14 and JJ >= 0.46 need unstable.
-    herdr-jj = {
-      url = "github:maximilianpw/herdr-jj/v0.1.1";
-      inputs.nixpkgs.follows = "nixpkgs-unstable";
-    };
-
     food-tracker-src = {
       url = "git+https://github.com/maximilianpw/food-tracker?rev=0f2f2f594d8681b3348d6488b47bb5515cf864b4";
       flake = false;
@@ -219,7 +213,7 @@
         editorPackages "x86_64-linux"
         // {
           inherit (pkgs) cloudflared plannotator;
-          inherit (pkgs) helium obsidian skills cliproxyapi cua-driver hunkdiff nix-update tunarr jellyfin jellyfin-web jellyfin-ffmpeg vite-plus t3code herdr-core herdr-jj;
+          inherit (pkgs) helium obsidian skills cliproxyapi cua-driver hunkdiff nix-update tunarr jellyfin jellyfin-web jellyfin-ffmpeg vite-plus t3code;
           inherit (inputs.jj-stack.packages.x86_64-linux) jj-stack;
         };
       aarch64-darwin = let
@@ -228,7 +222,7 @@
         editorPackages "aarch64-darwin"
         // {
           inherit (pkgs) cloudflared plannotator;
-          inherit (pkgs) cua-driver skills hunkdiff nix-update obsidian vite-plus t3code herdr-core herdr-jj;
+          inherit (pkgs) cua-driver skills hunkdiff nix-update obsidian vite-plus t3code;
           inherit (inputs.jj-stack.packages.aarch64-darwin) jj-stack;
         };
     };

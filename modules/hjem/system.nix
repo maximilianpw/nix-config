@@ -3,7 +3,7 @@
 # live) by Home Manager; each destination has exactly one owner.
 #
 # Hjem owns individual files, never whole directories: several of these apps
-# write state, logs or sockets beside their config (e.g. ~/.config/herdr-app).
+# write state, logs or sockets beside their config.
 # Handoff and hazards are described in tests/hjem-lifecycle-fixture.sh.
 {
   config,
@@ -47,14 +47,7 @@ in {
     files =
       lib.genAttrs paths (
         path:
-          {
-            # Preserve sibling paths after symlink resolution: Bun resolves the
-            # Herdr backend's relative imports and executable bridge in the store.
-            source =
-              if lib.hasPrefix ".config/herdr-app/" path
-              then "${managed + "/.config/herdr-app"}/${lib.removePrefix ".config/herdr-app/" path}"
-              else managed + "/${path}";
-          }
+          {source = managed + "/${path}";}
           // lib.optionalAttrs (isCopied path) {
             type = "copy";
             permissions = "644";

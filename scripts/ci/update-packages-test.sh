@@ -43,7 +43,6 @@ helium
 obsidian
 cua-driver
 tunarr
-herdr-core
 cloudflared
 plex
 EOF

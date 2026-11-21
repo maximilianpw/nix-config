@@ -34,7 +34,6 @@ inputs: [
     inherit (llm) opencode2;
     cliproxyapi = llm.cli-proxy-api;
     inherit (llm) grok;
-    herdr-jj = inputs.herdr-jj.packages.${prev.stdenv.hostPlatform.system}.default;
     inherit (llm) executor;
     amp-cli = llm.amp;
     inherit pi;
@@ -110,7 +109,6 @@ inputs: [
     t3code = final.callPackage ./packages/t3code.nix {};
     obsidian = final.callPackage ./packages/obsidian.nix {};
     cua-driver = final.callPackage ./packages/cua-driver.nix {};
-    herdr-core = final.callPackage ./packages/herdr-core.nix {};
     lazygit-nvim-edit = final.callPackage ./packages/lazygit-nvim-edit.nix {};
   })
 ]

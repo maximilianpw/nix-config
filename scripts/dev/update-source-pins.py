@@ -2,7 +2,6 @@
 """Refresh repository source pins without activating packages or containers."""
 
 import argparse
-import base64
 import hashlib
 import json
 import os
@@ -19,7 +18,6 @@ FLAKE_INPUTS = {
     "fleet": ("maximilianpw/fleet", "commit"),
     "loggle": ("maximilianpw/loggle", "release"),
     "linrex": ("maximilianpw/linrex", "release"),
-    "herdr-jj": ("maximilianpw/herdr-jj", "release"),
     "homelab-mcp": ("maximilianpw/homelab-mcp", "release"),
     "portfolio-tracker": ("maximilianpw/portfolio-tracker", "release"),
 }
@@ -235,28 +233,6 @@ def update_obsidian():
     print(f"obsidian: {version} (Linux and macOS)")
 
 
-def update_herdr_core():
-    path = ROOT / "packages/herdr-core.nix"
-    original = path.read_text()
-    release = fetch_json("https://releases.herdr.dev/core/latest.json")
-    version = require_match(r"\d+\.\d+\.\d+", release["version"], "Herdr Core version")
-    if stable_version(version) < stable_version(package_version(original)):
-        raise ValueError("Herdr Core release is older than current pin; refusing downgrade")
-    updated = replace_once(original, r'^(  version = ")[^"]+(";)', lambda m: m[1] + version + m[2])
-    for target in ("macos-aarch64", "macos-x86_64", "linux-aarch64", "linux-x86_64"):
-        url = f"https://releases.herdr.dev/core/{version}/herdr-core-{target}.tar.gz"
-        artifact = release["targets"][target]
-        if artifact["url"] != url:
-            raise ValueError(f"unexpected Herdr Core artifact URL for {target}")
-        expected = require_match(r"[0-9a-f]{64}", artifact["sha256"], "Herdr Core checksum")
-        hash_value = prefetch(url)
-        if hash_value != "sha256-" + base64.b64encode(bytes.fromhex(expected)).decode():
-            raise ValueError(f"Herdr Core checksum mismatch for {target}")
-        pattern = rf'(target = "{target}";\s*hash = ")[^"]+(";)'
-        updated = replace_once(updated, pattern, lambda m: m[1] + hash_value + m[2])
-    save(path, original, updated)
-    print(f"herdr-core: {version} (all four platforms)")
-
 
 def update_plex():
     path = ROOT / "overlays.nix"
@@ -285,7 +261,7 @@ def update_plex():
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("group", choices=["flake-inputs", "containers", "fish-plugins", "agent-plugins", "obsidian", "herdr-core", "plex"])
+    parser.add_argument("group", choices=["flake-inputs", "containers", "fish-plugins", "agent-plugins", "obsidian", "plex"])
     args = parser.parse_args()
     if args.group == "flake-inputs":
         tasks = [(name, lambda name=name: update_flake_input(name)) for name in FLAKE_INPUTS]
@@ -294,7 +270,7 @@ def main():
     elif args.group == "fish-plugins":
         tasks = [(name, lambda name=name: update_fish_plugin(name)) for name in FISH_PLUGINS]
     else:
-        tasks = [(args.group, {"agent-plugins": update_agent_plugins, "obsidian": update_obsidian, "herdr-core": update_herdr_core, "plex": update_plex}[args.group])]
+        tasks = [(args.group, {"agent-plugins": update_agent_plugins, "obsidian": update_obsidian, "plex": update_plex}[args.group])]
     failed = []
     for name, update in tasks:
         try:

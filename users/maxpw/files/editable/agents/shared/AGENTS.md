@@ -35,10 +35,9 @@ Route requested orchestration by session host, independently of the agent harnes
 
 - Honor an explicitly requested backend, subject to its availability and safety checks.
 - Otherwise, in a verified T3 session, use T3 orchestration. Launch requested separate conversations through T3 with explicit workspace binding; keep child tasks distinct from top-level threads.
-- Otherwise, when `HERDR_ENV=1`, use Herdr for requested agent, pane, tab, and workspace orchestration. The user need not name Herdr; load the `herdr` skill before acting.
 - Otherwise, use available native agent tools within their supported scope.
 
-Verify T3 through its orchestration tools; environment markers are hints, not proof, and credential values must stay private. A verified T3 session takes precedence over inherited Herdr markers. Environment detection selects the backend, not permission to spawn agents, change workspaces, or perform otherwise restricted actions.
+Verify T3 through its orchestration tools; environment markers are hints, not proof, and credential values must stay private. Environment detection selects the backend, not permission to spawn agents, change workspaces, or perform otherwise restricted actions.
 
 When choosing a model rather than using the workflow's default, consult `model-routing`. Honor explicit model requests; for Amp threads using Astra, prefer Amp's built-in high mode unless another mode is requested.
 

@@ -207,7 +207,7 @@ in {
       PI_CLAUDE_CODE_COMMAND = "${config.home.homeDirectory}/.local/bin/claude-direct";
     };
 
-    # cli.json is also written by OpenCode and Herdr. Merge the declared keys
+    # cli.json is also written by OpenCode and other clients. Merge the declared keys
     # during activation instead of replacing it with an immutable store symlink.
     activation.configureOpenCodeCli = lib.hm.dag.entryAfter ["writeBoundary"] ''
       run ${lib.getExe configureOpenCodeCli} ${opencodeCliDefaults} ${lib.escapeShellArg "${config.home.homeDirectory}/.config/opencode/cli.json"}

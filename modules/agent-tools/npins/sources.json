@@ -78,19 +78,6 @@
       "url": "https://github.com/emilkowalski/skills/archive/64eb3deb9a5fbfa041faf783e0bc3fd635872e9c.tar.gz",
       "hash": "sha256-zZnblPcn3vvekGH4YIHMOZ2XMA3sBngwhwLBnNFpD/E="
     },
-    "herdr": {
-      "type": "Git",
-      "repository": {
-        "type": "GitHub",
-        "owner": "herdrdev",
-        "repo": "herdr"
-      },
-      "branch": "master",
-      "submodules": false,
-      "revision": "e8d7d9705a7a2c89cef4dd42079379f05685af87",
-      "url": "https://github.com/herdrdev/herdr/archive/e8d7d9705a7a2c89cef4dd42079379f05685af87.tar.gz",
-      "hash": "sha256-x+DOzoMhorpWTf8yN29g2P6Ha+oSGbaZdV7soxdSmaY="
-    },
     "humanlayer-skills": {
       "type": "Git",
       "repository": {
