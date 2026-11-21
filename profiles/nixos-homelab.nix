@@ -17,9 +17,6 @@
   custom.cliproxyapi.server.enable = true;
 
   home-manager.sharedModules = [
-    ../modules/morning-report/home.nix
-    ../modules/rex/agent-skill.nix
-    ../modules/t3code/home.nix
     {
       custom = {
         cliproxyapi.endpoint = "local";

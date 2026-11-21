@@ -15,11 +15,13 @@
     ../../modules/home/git.nix
     ../../modules/home/gpg.nix
     ../../modules/home/jujutsu.nix
+    ../../modules/morning-report/home.nix
     ../../modules/home/neovim.nix
     ../../modules/home/plannotator.nix
     ../../modules/shells/home.nix
     ../../modules/sops/home.nix
     ../../modules/ssh/home.nix
+    ../../modules/t3code/home.nix
     ../../modules/home/terminal-tools.nix
     ../../modules/home/tmux.nix
   ];

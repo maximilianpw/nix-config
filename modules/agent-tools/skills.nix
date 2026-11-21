@@ -51,6 +51,10 @@ in {
     "plannotator-visual-explainer"
   ];
   planetscale = pins.planetscale-skills;
+  # The stub `rex skill setup` writes, kept byte for byte so `rex skill status`
+  # still reads it as current. It only defers to the installed rex command, so
+  # it needs replacing only when Rex changes the stub format.
+  rex = ../rex/agent-skill;
   show-me = "${pins.humanlayer-skills}/plugins/show-me/skills/show-me";
   typesafe-ai = "${pins.typesafe-ai-skills}/skills/typesafe-ai";
   unslop = "${pins.cursor-plugins}/harness/pstack/claude-code/skills/unslop";
