@@ -1,4 +1,4 @@
-.PHONY: help bootstrap rebuild rebuild-processes cleanup-rebuild check-scripts check-linux lint update update-all update-flake-inputs update-packages update-t3code update-nvim-plugins update-container-images update-fish-plugins update-agent-plugins build generations rollback gc wsl info
+.PHONY: help bootstrap rebuild rebuild-processes cleanup-rebuild check-scripts check-linux lint update update-all update-flake-inputs update-packages update-t3code update-nvim-plugins update-container-images update-fish-plugins update-agent-plugins update-skills build generations rollback gc wsl info
 
 # Default target
 .DEFAULT_GOAL := help
@@ -46,7 +46,7 @@ update: ## Update core flake inputs, T3 Code, and Neovim plugin pins
 
 update-all: ## Refresh every repo-managed runtime pin (no deployment)
 	@failed=""; \
-	for target in update-flake-inputs update-agent-plugins update-packages update-t3code update-nvim-plugins update-container-images update-fish-plugins; do \
+	for target in update-flake-inputs update-agent-plugins update-packages update-t3code update-nvim-plugins update-container-images update-fish-plugins update-skills; do \
 		echo "=== $$target ==="; \
 		$(MAKE) "$$target" PACKAGES= || failed="$$failed $$target"; \
 	done; \
@@ -74,6 +74,9 @@ update-container-images: ## Refresh homelab image digests without pulling into D
 
 update-agent-plugins: ## Match Plannotator agent-plugin pins to the locked CLI
 	@$(UPDATE_AUTH) python3 $(SCRIPT_DIR)/dev/update-source-pins.py agent-plugins
+
+update-skills: ## Move the pinned agent skill repositories to upstream HEAD
+	@$(UPDATE_AUTH) nix shell --inputs-from . nixpkgs#npins --command npins --lock-file modules/agent-tools/npins/sources.json update
 
 update-fish-plugins: ## Refresh Fish plugin source revisions and hashes
 	@$(UPDATE_AUTH) python3 $(SCRIPT_DIR)/dev/update-source-pins.py fish-plugins

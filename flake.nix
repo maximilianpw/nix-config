@@ -92,6 +92,12 @@
 
     llm-agents.url = "github:numtide/llm-agents.nix";
 
+    agent-tools = {
+      url = "github:maximilianpw/agent-tools";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.llm-agents.follows = "llm-agents";
+    };
+
     disko.url = "github:nix-community/disko";
     disko.inputs.nixpkgs.follows = "nixpkgs";
 
@@ -166,9 +172,13 @@
         src = ./.;
         hooks = {
           actionlint.enable = true;
-          alejandra.enable = true;
+          # npins generates modules/agent-tools/npins/default.nix.
+          alejandra = {
+            enable = true;
+            excludes = ["modules/agent-tools/npins/.*"];
+          };
           statix.enable = true;
-          statix.settings.ignore = ["machines/hardware"];
+          statix.settings.ignore = ["machines/hardware" "modules/agent-tools/npins"];
           deadnix = {
             enable = true;
             excludes = ["machines/hardware/.*"];

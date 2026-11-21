@@ -1,5 +1,28 @@
 {
   "nodes": {
+    "agent-tools": {
+      "inputs": {
+        "llm-agents": [
+          "llm-agents"
+        ],
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1795277404,
+        "narHash": "sha256-JXyqCC9hhoZfIXiCunUc0WWSRBKOTgoEYPrB2f2G++U=",
+        "owner": "maximilianpw",
+        "repo": "agent-tools",
+        "rev": "1ef49d5a335a8bd78984cfe26a86dcf4b4c326b5",
+        "type": "github"
+      },
+      "original": {
+        "owner": "maximilianpw",
+        "repo": "agent-tools",
+        "type": "github"
+      }
+    },
     "aquamarine": {
       "inputs": {
         "hyprutils": [
@@ -1327,6 +1350,7 @@
     },
     "root": {
       "inputs": {
+        "agent-tools": "agent-tools",
         "disko": "disko",
         "fenix": "fenix",
         "fleet": "fleet",

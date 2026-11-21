@@ -1,6 +1,7 @@
 {
   config,
   homeFiles,
+  inputs,
   isDarwin,
   isWSL,
   pkgs,
@@ -8,26 +9,74 @@
   ...
 }: let
   source = path: homeFiles.mkRepoSource config.home.homeDirectory "users/maxpw/files/editable/agents/${path}";
-  piConfigSource = path: homeFiles.mkHomeSource config.home.homeDirectory "pi-config/${path}";
   cuaDriverApp = "${pkgs.cua-driver}/Applications/CuaDriver.app";
 in {
+  imports = [inputs.agent-tools.homeModules.default];
+
+  agents = {
+    # The overlay's builds, not llm-agents' own: some are re-signed for macOS.
+    packageSet = pkgs;
+    defaults = {
+      instructions = source "shared/AGENTS.md";
+      skills.sources = import ./skills.nix;
+    };
+
+    amp = {
+      enable = true;
+      package = pkgs.amp-cli;
+      files."settings.json" = source "amp/settings.json";
+    };
+    claude-code = {
+      enable = true;
+      # Pulls the shared policy in with an @-import of ~/.config/agent-policy.
+      instructions = source "claude/CLAUDE.md";
+      files = {
+        "settings.json" = source "claude/settings.json";
+        "rules/pstack-models.md" = source "claude/rules/pstack-models.md";
+      };
+    };
+    codex = {
+      enable = true;
+      # Rendered at build time so the Codex-only part can be appended.
+      instructions = ../../users/maxpw/files/editable/agents/shared/AGENTS.md;
+      extraInstructions = builtins.readFile ../../users/maxpw/files/editable/agents/codex/AGENTS.md;
+    };
+    grok = {
+      enable = true;
+      files."config.toml" = {
+        source = source "grok/config.toml";
+        force = true;
+      };
+    };
+    opencode = {
+      enable = true;
+      # modules/cliproxyapi/home.nix provides the `opencode` command.
+      package = pkgs.opencode2;
+    };
+    pi = {
+      enable = true;
+      # Pi's configuration is its own repository, linked from the checkout so
+      # extension development does not need a rebuild.
+      configFrom = {
+        path = "~/pi-config";
+        # Pi keeps its model store under this name; the repository's copy
+        # would make Pi write into the checkout.
+        exclude = ["models-store.json"];
+      };
+    };
+  };
+
   # Hosts without system-level sops decrypt the key through Home Manager sops;
   # modules/agent-tools/nixos.nix covers the others.
   sops.secrets.linear-api-key = lib.mkIf (isDarwin || isWSL) {mode = "0400";};
 
   home = {
     packages = [
-      pkgs.claude-code
       pkgs.cloudflared
-      pkgs.codex
       pkgs.cua-driver
-      pkgs.opencode2
-      pkgs.grok
       pkgs.herdr-core
       pkgs.herdr-jj
       pkgs.executor
-      pkgs.amp-cli
-      pkgs.pi
       pkgs.skills
     ];
 
@@ -104,41 +153,8 @@ in {
         source = "${pkgs.herdr-core}/bin/hc";
         force = true;
       };
-
-      ".config/amp/settings.json".source = source "amp/settings.json";
-      ".codex/AGENTS.md".text =
-        builtins.readFile ../../users/maxpw/files/editable/agents/shared/AGENTS.md
-        + "\n"
-        + builtins.readFile ../../users/maxpw/files/editable/agents/codex/AGENTS.md;
+      # Claude's CLAUDE.md imports the shared policy from here.
       ".config/agent-policy/AGENTS.md".source = source "shared/AGENTS.md";
-      ".claude/CLAUDE.md".source = source "claude/CLAUDE.md";
-      ".config/opencode/AGENTS.md".source = source "shared/AGENTS.md";
-      ".pi/agent/AGENTS.md".source = source "shared/AGENTS.md";
-      ".claude/settings.json".source = source "claude/settings.json";
-      ".claude/rules/pstack-models.md".source = source "claude/rules/pstack-models.md";
-      ".grok/config.toml" = {
-        source = source "grok/config.toml";
-        force = true;
-      };
-
-      # Pi is maintained in a separate repository and linked out of the Nix
-      # store so extension development does not require a system rebuild.
-      ".pi/agent/settings.json".source = piConfigSource "settings.json";
-      ".pi/agent/models.json".source = piConfigSource "models.json";
-      ".pi/agent/mcp.json".source = piConfigSource "mcp.json";
-      ".pi/agent/cloudflare-deployment-allowlist.json".source = piConfigSource "cloudflare-deployment-allowlist.json";
-      ".pi/agent/extensions" = {
-        source = piConfigSource "extensions";
-        recursive = true;
-      };
-      ".pi/agent/prompts" = {
-        source = piConfigSource "prompts";
-        recursive = true;
-      };
-      ".pi/agent/themes" = {
-        source = piConfigSource "themes";
-        recursive = true;
-      };
     };
   };
 }

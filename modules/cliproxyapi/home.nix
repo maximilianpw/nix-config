@@ -193,6 +193,11 @@ in {
     description = "Which CLIProxyAPI the agent CLIs talk to: the loopback server on this host, or Kim's public endpoint.";
   };
 
+  config.agents.opencode.files = {
+    "opencode.json" = jsonFormat.generate "opencode.json" opencodeConfig;
+    "opencode-quota/quota-toast.json" = agentConfigDirectory + "/opencode/quota-toast.json";
+  };
+
   config.home = {
     sessionVariables = {
       CLIPROXYAPI_ROOT_URL = proxyBaseUrl;
@@ -219,8 +224,6 @@ in {
           };
         };
         ".grok-cliproxyapi/config.toml".text = grokProxyConfig;
-        ".config/opencode/opencode.json".source = jsonFormat.generate "opencode.json" opencodeConfig;
-        ".config/opencode/opencode-quota/quota-toast.json".source = agentConfigDirectory + "/opencode/quota-toast.json";
       }
       // lib.mapAttrs' (name: wrapper: lib.nameValuePair ".local/bin/${name}" (mkWrapper wrapper)) wrappers;
   };

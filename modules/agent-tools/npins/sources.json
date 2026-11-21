@@ -1,0 +1,200 @@
+{
+  "pins": {
+    "agent-skills": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "maximilianpw",
+        "repo": "agent-skills"
+      },
+      "branch": "main",
+      "submodules": false,
+      "revision": "ba17d03034510ae63ad6db5daa78b3e063c8758f",
+      "url": "https://github.com/maximilianpw/agent-skills/archive/ba17d03034510ae63ad6db5daa78b3e063c8758f.tar.gz",
+      "hash": "sha256-fJYwXx8FdOM+XtKD4Tm0PytHKLo6k240A2dmE945zeY="
+    },
+    "bro": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "backnotprop",
+        "repo": "bro"
+      },
+      "branch": "main",
+      "submodules": false,
+      "revision": "c2e2cc7e81c7a77f9525affb469a911a14b14b73",
+      "url": "https://github.com/backnotprop/bro/archive/c2e2cc7e81c7a77f9525affb469a911a14b14b73.tar.gz",
+      "hash": "sha256-eCndFloSfejNbnGLWtw/jnW4De6IFcOn8msjuUBUXV4="
+    },
+    "clerk-skills": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "clerk",
+        "repo": "skills"
+      },
+      "branch": "main",
+      "submodules": false,
+      "revision": "78092a74297dac3fb2c64efab3dbe86b581eaea8",
+      "url": "https://github.com/clerk/skills/archive/78092a74297dac3fb2c64efab3dbe86b581eaea8.tar.gz",
+      "hash": "sha256-0klFvpBY3nIsDU/k0b2fprkXeAAZKq6nUGyTkTX/Mw0="
+    },
+    "cua": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "trycua",
+        "repo": "cua"
+      },
+      "branch": "main",
+      "submodules": false,
+      "revision": "04d952f8c8336b1d2083b22c513a3fa9f662927e",
+      "url": "https://github.com/trycua/cua/archive/04d952f8c8336b1d2083b22c513a3fa9f662927e.tar.gz",
+      "hash": "sha256-dMMprToMrA02LyzUf065Bn2QUS1a/H051gFfIqGC4/4="
+    },
+    "cursor-plugins": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "cursor",
+        "repo": "plugins"
+      },
+      "branch": "main",
+      "submodules": false,
+      "revision": "792440e8a560a4a3f63748cdee70491ecd412982",
+      "url": "https://github.com/cursor/plugins/archive/792440e8a560a4a3f63748cdee70491ecd412982.tar.gz",
+      "hash": "sha256-Vc1sLJs2MLDlOJ5jVsVXfakHp8+VX0o74aXOrUH4aZ8="
+    },
+    "emilkowalski-skills": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "emilkowalski",
+        "repo": "skills"
+      },
+      "branch": "main",
+      "submodules": false,
+      "revision": "64eb3deb9a5fbfa041faf783e0bc3fd635872e9c",
+      "url": "https://github.com/emilkowalski/skills/archive/64eb3deb9a5fbfa041faf783e0bc3fd635872e9c.tar.gz",
+      "hash": "sha256-zZnblPcn3vvekGH4YIHMOZ2XMA3sBngwhwLBnNFpD/E="
+    },
+    "herdr": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "herdrdev",
+        "repo": "herdr"
+      },
+      "branch": "master",
+      "submodules": false,
+      "revision": "e8d7d9705a7a2c89cef4dd42079379f05685af87",
+      "url": "https://github.com/herdrdev/herdr/archive/e8d7d9705a7a2c89cef4dd42079379f05685af87.tar.gz",
+      "hash": "sha256-x+DOzoMhorpWTf8yN29g2P6Ha+oSGbaZdV7soxdSmaY="
+    },
+    "humanlayer-skills": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "humanlayer",
+        "repo": "skills"
+      },
+      "branch": "main",
+      "submodules": false,
+      "revision": "4d69d20f6e9b57b4fcf0d501ccfb1be961f0f329",
+      "url": "https://github.com/humanlayer/skills/archive/4d69d20f6e9b57b4fcf0d501ccfb1be961f0f329.tar.gz",
+      "hash": "sha256-ZuDObFjOFAahsvrxqDbL9FHrMVWx6Lnh5dttdsW+czo="
+    },
+    "jakubkrehel-skills": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "jakubkrehel",
+        "repo": "skills"
+      },
+      "branch": "main",
+      "submodules": false,
+      "revision": "672ae44ace6aaed65b86cbb1e2fd6fbea0e79578",
+      "url": "https://github.com/jakubkrehel/skills/archive/672ae44ace6aaed65b86cbb1e2fd6fbea0e79578.tar.gz",
+      "hash": "sha256-gKruv6vNgrpAaGCe9Vg2EWv4GfsQQi05Wp7zJ4MyRB8="
+    },
+    "mattpocock-skills": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "mattpocock",
+        "repo": "skills"
+      },
+      "branch": "main",
+      "submodules": false,
+      "revision": "abeeaf95660ba9e8b7c753eb38f441ca707a8823",
+      "url": "https://github.com/mattpocock/skills/archive/abeeaf95660ba9e8b7c753eb38f441ca707a8823.tar.gz",
+      "hash": "sha256-fc5+qmchp1IQ/rQP1olWKC1eC4VdYhaB7YYzC3+JBe0="
+    },
+    "planetscale-skills": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "planetscale",
+        "repo": "skills"
+      },
+      "branch": "main",
+      "submodules": false,
+      "revision": "999045cfbad79222f38a99599eb96bc736feabee",
+      "url": "https://github.com/planetscale/skills/archive/999045cfbad79222f38a99599eb96bc736feabee.tar.gz",
+      "hash": "sha256-0ZasA2tRcFxCI8TWe2NfbOnIt5YPoJ+fmkntj2OtZ3Y="
+    },
+    "plannotator": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "backnotprop",
+        "repo": "plannotator"
+      },
+      "branch": "main",
+      "submodules": false,
+      "revision": "5cf5177267aa96405fec56faa3e8426c12bd648b",
+      "url": "https://github.com/backnotprop/plannotator/archive/5cf5177267aa96405fec56faa3e8426c12bd648b.tar.gz",
+      "hash": "sha256-M3eTWMmdjE1nkx7QqkpJduFpt799DbfASiB5SJXqAqg="
+    },
+    "shadcn-improve": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "shadcn",
+        "repo": "improve"
+      },
+      "branch": "main",
+      "submodules": false,
+      "revision": "cac56e1ebd3c279aa9153616cfeac7b174ab90f9",
+      "url": "https://github.com/shadcn/improve/archive/cac56e1ebd3c279aa9153616cfeac7b174ab90f9.tar.gz",
+      "hash": "sha256-czQV2LzhVddiT6kz0Wf3z+hHqGBgl4Zh/qw6hN3qEQw="
+    },
+    "typesafe-ai-skills": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "typesafe-ai",
+        "repo": "skills"
+      },
+      "branch": "main",
+      "submodules": false,
+      "revision": "302eea662c54bca6730873fe245bec1d69ebc23d",
+      "url": "https://github.com/typesafe-ai/skills/archive/302eea662c54bca6730873fe245bec1d69ebc23d.tar.gz",
+      "hash": "sha256-aQ7HheEFLarcil4jYIKn/FUIVOnw1JCoh0dYXZHTJ0E="
+    },
+    "visual-explainer": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "nicobailon",
+        "repo": "visual-explainer"
+      },
+      "branch": "main",
+      "submodules": false,
+      "revision": "9d5f880b7e8e0a9a80c890b8e1bb6918b68481ad",
+      "url": "https://github.com/nicobailon/visual-explainer/archive/9d5f880b7e8e0a9a80c890b8e1bb6918b68481ad.tar.gz",
+      "hash": "sha256-oAod2Oc0wqlGjpbrbzlIq7RA5eeYsJMqHuzNqoRK0tU="
+    }
+  },
+  "version": 7
+}

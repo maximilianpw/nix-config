@@ -41,6 +41,9 @@ if [ "$*" = 'flake update' ]; then
 elif [ "$1" = shell ] && [ "$2" = --inputs-from ] && [ "$3" = . ] && [ "$4" = 'nixpkgs#skopeo' ] && [ "$5" = --command ]; then
   shift 5
   exec "$@"
+elif [ "$*" = 'shell --inputs-from . nixpkgs#npins --command npins --lock-file modules/agent-tools/npins/sources.json update' ]; then
+  printf 'skills\n' >>"$TEST_CALLS"
+  case " ${TEST_FAILURES:-} " in *' skills '*) exit 1 ;; esac
 else
   echo "unexpected nix command: $*" >&2
   exit 99
@@ -49,13 +52,13 @@ EOF
 chmod +x "$tmp/scripts/ci/update-packages.sh" "$tmp/scripts/dev/with-github-auth.sh" "$tmp/scripts/dev/nvim-plugin-pins.sh" "$tmp/bin/nix"
 export PATH="$tmp/bin:$PATH" TEST_CALLS="$tmp/calls"
 export PACKAGES=must-not-narrow-update-all
-printf '%s\n' flake-inputs flake-lock agent-plugins packages t3code nvim-plugins containers fish-plugins >"$tmp/expected"
+printf '%s\n' flake-inputs flake-lock agent-plugins packages t3code nvim-plugins containers fish-plugins skills >"$tmp/expected"
 
 make -C "$tmp" update-all PACKAGES=also-must-not-narrow >"$tmp/success.out" 2>"$tmp/success.err"
 diff -u "$tmp/expected" "$TEST_CALLS"
 grep -Fq 'All runtime pins refreshed.' "$tmp/success.out"
 
-for failure in flake-inputs flake-lock agent-plugins packages t3code nvim-plugins containers fish-plugins 'packages containers'; do
+for failure in flake-inputs flake-lock agent-plugins packages t3code nvim-plugins containers fish-plugins skills 'packages containers'; do
   : >"$TEST_CALLS"
   if TEST_FAILURES=$failure make -C "$tmp" update-all >"$tmp/failure.out" 2>"$tmp/failure.err"; then
     echo "update-all passed with a failed stage: $failure" >&2
