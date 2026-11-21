@@ -10,6 +10,7 @@ _: {
   custom.hyprland.enable = true;
 
   home-manager.sharedModules = [
+    ../modules/cua-driver/home.nix
     ../modules/himalaya/home.nix
     ../modules/home/fonts.nix
     ../modules/home/stylix.nix

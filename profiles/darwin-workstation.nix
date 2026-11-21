@@ -16,6 +16,7 @@ _: {
   ];
 
   home-manager.sharedModules = [
+    ../modules/cua-driver/home.nix
     ../modules/himalaya/home.nix
     ../modules/home/darwin-apps.nix
     ../modules/home/fonts.nix

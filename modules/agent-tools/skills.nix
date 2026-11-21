@@ -10,14 +10,14 @@ let
 in {
   mine = {
     path = pins.agent-skills;
-    # Maintains that repository; of no use anywhere else.
-    exclude = ["update-upstream-skills"];
+    # update-upstream-skills maintains that repository; cua-helium comes with
+    # modules/cua-driver/home.nix.
+    exclude = ["update-upstream-skills" "cua-helium"];
   };
 
   bro = from pins.bro "skills" ["bro"];
   clerk = from pins.clerk-skills "skills" ["clerk-webhooks"];
   cua = from pins.cua "libs/cua/skills" ["cua-sandboxes" "cua-spaces" "cua-volume"];
-  cua-driver = "${pins.cua}/libs/cua-driver/rust/Skills/cua-driver";
   gui-automation = "${pins.cua}/skills/gui-automation";
   emilkowalski = from pins.emilkowalski-skills "skills" ["emil-design-eng"];
   improve = "${pins.shadcn-improve}/skills/improve";
