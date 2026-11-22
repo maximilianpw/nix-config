@@ -60,3 +60,7 @@ plans/
 
 # Wrangler/Cloudflare CLI account cache.
 /.cloudflare/
+
+# Alchemy dependencies and per-operator state for homelab/cloudflare.
+/homelab/cloudflare/node_modules/
+/homelab/cloudflare/.alchemy/

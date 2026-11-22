@@ -6,6 +6,7 @@
   infrastructure = {
     cloudflare = rec {
       tunnelId = "5b712ae4-3ce4-4499-9cb7-a57cde1c571f";
+      zone = "maximilian.pw";
       unit = "cloudflared-tunnel-${tunnelId}.service";
       units = [unit];
     };
@@ -162,8 +163,17 @@
     ) (builtins.attrValues services);
   expectedDatabases = lib.unique (lib.filter (database: database != null) (map (service: service.state.database) (builtins.attrValues services)));
   infrastructureUnits = lib.concatMap (record: record.units) (builtins.attrValues infrastructure);
+  cloudflareDns = let
+    inherit (infrastructure.cloudflare) tunnelId zone;
+    hostnames = lib.sort lib.lessThan (map (endpoint: endpoint.host) (builtins.attrValues publicEndpoints));
+    outsideZone = builtins.filter (host: !lib.hasSuffix ".${zone}" host) hostnames;
+  in
+    assert lib.assertMsg (outsideZone == [])
+    "public homelab hostnames must belong to Cloudflare zone ${zone}: ${toString outsideZone}"; {
+      inherit hostnames tunnelId zone;
+    };
 in {
-  inherit infrastructure loopbackUrl monitoredOrigins privateHost privateServices privateUrl publicEndpoints publicServices services tailnetDomain;
+  inherit cloudflareDns infrastructure loopbackUrl monitoredOrigins privateHost privateServices privateUrl publicEndpoints publicServices services tailnetDomain;
 
   allowedHosts = host: "${host},localhost,127.0.0.1";
   endpoints = privateEndpoints;

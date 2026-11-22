@@ -28,7 +28,9 @@ Home Manager configuration, and Kim's homelab services.
   from the store (rebuild to apply); Home Manager links
   `users/maxpw/files/editable/` into the checkout (edits apply live);
   `pi-config` owns Pi resources (linked from `~/pi-config`, or from its pinned
-  input with Nix-built dependencies where that checkout is missing).
+  input with Nix-built dependencies where that checkout is missing);
+  Alchemy (`homelab/cloudflare/`) owns the public CNAMEs, read from
+  `lib.cloudflareDns`, while the tunnel and its routes stay in Nix.
   Do not give two systems the same destination.
 - Documentation is deliberately small: `README.md`, `BOOTSTRAP.md`,
   `secrets/README.md` and `docs/homelab-recovery.md`. Do not add docs, status
@@ -52,6 +54,8 @@ Choose checks for the affected behavior; these are not a checklist for every edi
 - Shell scripts: `make check-scripts`. A binary or value the Nix wrapper
   injects uses `: "${NAME:?NAME must be set}"` and tests set it; reserve
   `:=` for real operator-tunable defaults.
+- Alchemy stack: its `typecheck` and `test` scripts. Its `plan` reads the live
+  Cloudflare account and `deploy` changes it.
 - One regression: discover its check in `flake.nix`, then run
   `nix build .#checks.x86_64-linux.<name> --no-link`.
 - Broad or release-level work: `nix flake check` (full build checks).
