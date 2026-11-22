@@ -4,7 +4,7 @@
   ...
 }: let
   inherit (homelab.publicEndpoints) executor;
-  image = "ghcr.io/usefulsoftwareco/executor-selfhost@sha256:87313f708614d6cf5cb8e3593821a11c64f8eb907605081b16c1db611c449bd8";
+  image = "ghcr.io/usefulsoftwareco/executor-selfhost@sha256:03af5df187359b1cb762e5c338f4d509f6a8275a5b73e6d460e41025d48d0f52";
 in {
   custom.backup.applicationVersions.executor = image;
 

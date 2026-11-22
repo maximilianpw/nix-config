@@ -48,9 +48,9 @@
       },
       "branch": "main",
       "submodules": false,
-      "revision": "04d952f8c8336b1d2083b22c513a3fa9f662927e",
-      "url": "https://github.com/trycua/cua/archive/04d952f8c8336b1d2083b22c513a3fa9f662927e.tar.gz",
-      "hash": "sha256-dMMprToMrA02LyzUf065Bn2QUS1a/H051gFfIqGC4/4="
+      "revision": "04b60eafc3d278190e4b0e583e0e0d9ea8fb9c9a",
+      "url": "https://github.com/trycua/cua/archive/04b60eafc3d278190e4b0e583e0e0d9ea8fb9c9a.tar.gz",
+      "hash": "sha256-a3PQp9clF8MjxRkRN108Hy+OwdKqFHUFU8zVyWhxRaM="
     },
     "cursor-plugins": {
       "type": "Git",
@@ -61,9 +61,9 @@
       },
       "branch": "main",
       "submodules": false,
-      "revision": "792440e8a560a4a3f63748cdee70491ecd412982",
-      "url": "https://github.com/cursor/plugins/archive/792440e8a560a4a3f63748cdee70491ecd412982.tar.gz",
-      "hash": "sha256-Vc1sLJs2MLDlOJ5jVsVXfakHp8+VX0o74aXOrUH4aZ8="
+      "revision": "7a583913eb1b8d1a0ee76753d1a2cf072e7b54f9",
+      "url": "https://github.com/cursor/plugins/archive/7a583913eb1b8d1a0ee76753d1a2cf072e7b54f9.tar.gz",
+      "hash": "sha256-prQwn1as83NuoYIDee+ZJ2ETDVNoFbHNabSwzpy70mk="
     },
     "emilkowalski-skills": {
       "type": "Git",
@@ -139,9 +139,9 @@
       },
       "branch": "main",
       "submodules": false,
-      "revision": "5cf5177267aa96405fec56faa3e8426c12bd648b",
-      "url": "https://github.com/backnotprop/plannotator/archive/5cf5177267aa96405fec56faa3e8426c12bd648b.tar.gz",
-      "hash": "sha256-M3eTWMmdjE1nkx7QqkpJduFpt799DbfASiB5SJXqAqg="
+      "revision": "385919d3f5190ed3f9ec6bb896e15f6cf49c959d",
+      "url": "https://github.com/backnotprop/plannotator/archive/385919d3f5190ed3f9ec6bb896e15f6cf49c959d.tar.gz",
+      "hash": "sha256-YmRUD3WuVJNGAOzXhD9PsVVhqDdzeu+cUvSA1RfQHeg="
     },
     "shadcn-improve": {
       "type": "Git",

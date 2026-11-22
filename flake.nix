@@ -6,7 +6,7 @@
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
 
     # Nix packaging was added after v0.1.7; keep its Python 3.14 package set.
-    jj-stack.url = "github:bos/jj-stack/a8a76d0e4e1160afc6dc85db243ac0766c7e18fc";
+    jj-stack.url = "github:bos/jj-stack/d401f1b724943e35c4c59352ac7a294c8c28247f";
 
     vite-plus = {
       url = "github:ryoppippi/nix-vite-plus";
@@ -31,7 +31,7 @@
 
     # Own Linear TUI that opens a Rex session per issue; pinned to a release tag.
     linrex = {
-      url = "github:maximilianpw/linrex/v0.3.1";
+      url = "github:maximilianpw/linrex/v0.3.2";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
