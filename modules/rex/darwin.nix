@@ -6,7 +6,7 @@
 # import_catppuccin_macchiato action in init.lua fills.
 _: {
   system.defaults.CustomUserPreferences."com.superlogical.rex" = {
-    "Workspace.terminalFontName" = "JetBrainsMono Nerd Font";
+    "Workspace.terminalFontName" = "Maple Mono NF";
     "Workspace.terminalFontPointSize" = 14.5;
     "Workspace.terminalOptionKeyBehavior" = "leftActsAsAlt";
     "Workspace.appearance" = "system";
