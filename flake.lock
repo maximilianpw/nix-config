@@ -899,16 +899,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1795001285,
-        "narHash": "sha256-1vAfZaqq3ZGAE5O8DaxRxii3fQx4sKFtEfgu1aMg0DE=",
+        "lastModified": 1795388358,
+        "narHash": "sha256-dHHNi/J3oQvfYMrOfAbLqf/6Ay7STflAJbq5RX1iLZA=",
         "owner": "maximilianpw",
         "repo": "linrex",
-        "rev": "fab0786878310930cfc13ba0d2e96242d26b3fce",
+        "rev": "12be445032a73f1b9cb30203ba177121bbf83704",
         "type": "github"
       },
       "original": {
         "owner": "maximilianpw",
-        "ref": "v0.3.2",
+        "ref": "v0.3.3",
         "repo": "linrex",
         "type": "github"
       }

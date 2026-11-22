@@ -31,7 +31,7 @@
 
     # Own Linear TUI that opens a Rex session per issue; pinned to a release tag.
     linrex = {
-      url = "github:maximilianpw/linrex/v0.3.2";
+      url = "github:maximilianpw/linrex/v0.3.3";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
