@@ -61,7 +61,7 @@
 
     # Own Trade Republic tracker; consume its package and NixOS module.
     portfolio-tracker = {
-      url = "github:maximilianpw/portfolio-tracker/v0.2.0";
+      url = "github:maximilianpw/portfolio-tracker/v0.2.1";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 

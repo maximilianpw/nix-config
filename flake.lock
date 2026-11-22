@@ -1243,16 +1243,16 @@
         "rust-overlay": "rust-overlay"
       },
       "locked": {
-        "lastModified": 1792528030,
-        "narHash": "sha256-pB+QGFlCcnm8Lt67T1ce0OM1Ttq8yGPBmo24+fHuPKY=",
+        "lastModified": 1795387157,
+        "narHash": "sha256-c1KaTpDUF5yUbksCuys+D373TwUUPNOhf3j6YYC2hxI=",
         "owner": "maximilianpw",
         "repo": "portfolio-tracker",
-        "rev": "9511f619a23a44f5864df28d9d130231c111e9d5",
+        "rev": "83e8bae4158e8a75edb1e4be4ddb4f3ef24c86a1",
         "type": "github"
       },
       "original": {
         "owner": "maximilianpw",
-        "ref": "v0.2.0",
+        "ref": "v0.2.1",
         "repo": "portfolio-tracker",
         "type": "github"
       }
