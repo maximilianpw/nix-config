@@ -109,6 +109,7 @@ inputs: [
     t3code = final.callPackage ./packages/t3code.nix {};
     obsidian = final.callPackage ./packages/obsidian.nix {};
     cua-driver = final.callPackage ./packages/cua-driver.nix {};
+    pi-config = final.callPackage ./packages/pi-config.nix {src = inputs.pi-config;};
     lazygit-nvim-edit = final.callPackage ./packages/lazygit-nvim-edit.nix {};
   })
 ]

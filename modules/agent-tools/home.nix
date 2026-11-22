@@ -85,6 +85,7 @@ in {
       # extension development does not need a rebuild.
       configFrom = {
         path = "~/pi-config";
+        fallback = pkgs.pi-config;
         # Pi keeps its model store under this name; the repository's copy
         # would make Pi write into the checkout.
         exclude = ["models-store.json"];

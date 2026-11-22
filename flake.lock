@@ -10,11 +10,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1795353121,
-        "narHash": "sha256-aE22DlBQJuaY2u5Qtsmfy1Xbvq59A5vQtYs8pGB523Y=",
+        "lastModified": 1795366600,
+        "narHash": "sha256-JsGhDPo73Ktn0y8+T6HYj+1yxb2duvQHZjBGePYwA5o=",
         "owner": "maximilianpw",
         "repo": "agent-tools",
-        "rev": "987e54fa34dd0a2d82ad367301c83a9e8b9bbc1d",
+        "rev": "14f41438a4fda56bc7523a3ec7e7f7ef74e4eddb",
         "type": "github"
       },
       "original": {
@@ -1217,6 +1217,22 @@
         "type": "github"
       }
     },
+    "pi-config": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1795353133,
+        "narHash": "sha256-HsUArc3lbqtXIet8QEQHpQl5/9TpQWKOYvPdHVu/NKs=",
+        "owner": "maximilianpw",
+        "repo": "pi-config",
+        "rev": "6ab37e974646a45bbf096070256f91265500215d",
+        "type": "github"
+      },
+      "original": {
+        "owner": "maximilianpw",
+        "repo": "pi-config",
+        "type": "github"
+      }
+    },
     "portfolio-tracker": {
       "inputs": {
         "crane": "crane",
@@ -1305,6 +1321,7 @@
         "nixpkgs": "nixpkgs_5",
         "nixpkgs-unstable": "nixpkgs-unstable",
         "nixvim": "nixvim",
+        "pi-config": "pi-config",
         "portfolio-tracker": "portfolio-tracker",
         "rex": "rex",
         "sops-nix": "sops-nix",

@@ -61,6 +61,7 @@ update-flake-inputs: ## Refresh explicit flake release/commit pins and every loc
 	@status=0; \
 	$(UPDATE_AUTH) python3 $(SCRIPT_DIR)/dev/update-source-pins.py flake-inputs || status=1; \
 	$(UPDATE_AUTH) nix flake update || status=1; \
+	$(UPDATE_AUTH) bash packages/update-pi-config.sh || status=1; \
 	exit $$status
 
 update-packages: ## Refresh all custom packages, including cross-platform binary hashes

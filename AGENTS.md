@@ -27,7 +27,8 @@ Home Manager configuration, and Kim's homelab services.
   (`users/maxpw/neovim/`) owns Neovim; Hjem links `users/maxpw/files/managed/`
   from the store (rebuild to apply); Home Manager links
   `users/maxpw/files/editable/` into the checkout (edits apply live);
-  `pi-config` owns Pi resources.
+  `pi-config` owns Pi resources (linked from `~/pi-config`, or from its pinned
+  input with Nix-built dependencies where that checkout is missing).
   Do not give two systems the same destination.
 - Documentation is deliberately small: `README.md`, `BOOTSTRAP.md`,
   `secrets/README.md` and `docs/homelab-recovery.md`. Do not add docs, status

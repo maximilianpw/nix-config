@@ -65,6 +65,13 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Pi's configuration and extensions; linked from ~/pi-config where it is
+    # cloned, and from this pin everywhere else.
+    pi-config = {
+      url = "github:maximilianpw/pi-config";
+      flake = false;
+    };
+
     nix-darwin.url = "github:nix-darwin/nix-darwin/nix-darwin-26.05";
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
 
@@ -213,7 +220,7 @@
         editorPackages "x86_64-linux"
         // {
           inherit (pkgs) cloudflared plannotator;
-          inherit (pkgs) helium obsidian skills cliproxyapi cua-driver hunkdiff nix-update tunarr jellyfin jellyfin-web jellyfin-ffmpeg vite-plus t3code;
+          inherit (pkgs) helium obsidian skills cliproxyapi cua-driver hunkdiff nix-update pi-config tunarr jellyfin jellyfin-web jellyfin-ffmpeg vite-plus t3code;
           inherit (inputs.jj-stack.packages.x86_64-linux) jj-stack;
         };
       aarch64-darwin = let
@@ -222,7 +229,7 @@
         editorPackages "aarch64-darwin"
         // {
           inherit (pkgs) cloudflared plannotator;
-          inherit (pkgs) cua-driver skills hunkdiff nix-update obsidian vite-plus t3code;
+          inherit (pkgs) cua-driver skills hunkdiff nix-update obsidian pi-config vite-plus t3code;
           inherit (inputs.jj-stack.packages.aarch64-darwin) jj-stack;
         };
     };

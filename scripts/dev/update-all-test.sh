@@ -23,6 +23,11 @@ cat >"$tmp/scripts/ci/update-packages.sh" <<'EOF'
 printf 'packages\n' >>"$TEST_CALLS"
 case " ${TEST_FAILURES:-} " in *' packages '*) exit 1 ;; esac
 EOF
+cat >"$tmp/packages/update-pi-config.sh" <<'EOF'
+#!/bin/sh
+printf 'pi-config\n' >>"$TEST_CALLS"
+case " ${TEST_FAILURES:-} " in *' pi-config '*) exit 1 ;; esac
+EOF
 cat >"$tmp/scripts/dev/nvim-plugin-pins.sh" <<'EOF'
 #!/bin/sh
 [ "$*" = --all ] || exit 99
@@ -52,13 +57,13 @@ EOF
 chmod +x "$tmp/scripts/ci/update-packages.sh" "$tmp/scripts/dev/with-github-auth.sh" "$tmp/scripts/dev/nvim-plugin-pins.sh" "$tmp/bin/nix"
 export PATH="$tmp/bin:$PATH" TEST_CALLS="$tmp/calls"
 export PACKAGES=must-not-narrow-update-all
-printf '%s\n' flake-inputs flake-lock agent-plugins packages t3code nvim-plugins containers fish-plugins skills >"$tmp/expected"
+printf '%s\n' flake-inputs flake-lock pi-config agent-plugins packages t3code nvim-plugins containers fish-plugins skills >"$tmp/expected"
 
 make -C "$tmp" update-all PACKAGES=also-must-not-narrow >"$tmp/success.out" 2>"$tmp/success.err"
 diff -u "$tmp/expected" "$TEST_CALLS"
 grep -Fq 'All runtime pins refreshed.' "$tmp/success.out"
 
-for failure in flake-inputs flake-lock agent-plugins packages t3code nvim-plugins containers fish-plugins skills 'packages containers'; do
+for failure in flake-inputs flake-lock pi-config agent-plugins packages t3code nvim-plugins containers fish-plugins skills 'packages containers'; do
   : >"$TEST_CALLS"
   if TEST_FAILURES=$failure make -C "$tmp" update-all >"$tmp/failure.out" 2>"$tmp/failure.err"; then
     echo "update-all passed with a failed stage: $failure" >&2
