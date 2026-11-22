@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parents[2]
 # Commit-pinned projects track their default branch; release pins stay on stable tags.
 FLAKE_INPUTS = {
     "jj-stack": ("bos/jj-stack", "commit"),
-    "fleet": ("maximilianpw/fleet", "commit"),
+    "fleet": ("maximilianpw/fleet", "release"),
     "loggle": ("maximilianpw/loggle", "release"),
     "linrex": ("maximilianpw/linrex", "release"),
     "homelab-mcp": ("maximilianpw/homelab-mcp", "release"),

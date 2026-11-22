@@ -135,10 +135,10 @@ sys.stdout.write(response)
 
     def test_commit_without_flake_preserves_pin(self):
         self.prepare_inputs()
-        before = re.search(r'github:maximilianpw/fleet/[^\"]+', self.read("flake.nix"))[0]
-        self.flake_source(f"github:maximilianpw/fleet/{REVISION}", available=False)
+        before = re.search(r'github:bos/jj-stack/[^\"]+', self.read("flake.nix"))[0]
+        self.flake_source(f"github:bos/jj-stack/{REVISION}", available=False)
         result = self.run_group("flake-inputs", success=False)
-        self.assertIn("upstream commit for maximilianpw/fleet has no flake.nix", result.stderr)
+        self.assertIn("upstream commit for bos/jj-stack has no flake.nix", result.stderr)
         self.assertIn('"' + before + '"', self.read("flake.nix"))
 
     def test_flake_policies_and_branch_preservation(self):
@@ -157,12 +157,12 @@ sys.stdout.write(response)
 
     def test_input_failure_keeps_other_updates_and_exits_nonzero(self):
         self.prepare_inputs()
-        self.respond(["gh", "api", "repos/maximilianpw/fleet/commits/HEAD"], {"sha": 'invalid"; injected = true;'})
-        before = next(line for line in self.read("flake.nix").splitlines() if "github:maximilianpw/fleet/" in line)
+        self.respond(["gh", "api", "repos/bos/jj-stack/commits/HEAD"], {"sha": 'invalid"; injected = true;'})
+        before = next(line for line in self.read("flake.nix").splitlines() if "github:bos/jj-stack/" in line)
         result = self.run_group("flake-inputs", success=False)
         self.assertIn(before, self.read("flake.nix"))
         self.assertIn("portfolio-tracker/v9.10.0", self.read("flake.nix"))
-        self.assertIn("fleet", result.stderr)
+        self.assertIn("jj-stack", result.stderr)
 
     def prepare_containers(self, bad_platform=None):
         images = {}
