@@ -2,7 +2,8 @@
 # launch. Key names are preview internals (list them with
 # `strings "/Applications/Rex Beta.app/Contents/MacOS/Rex" | grep '^Workspace\.'`)
 # and a renamed key is silently ignored. darkThemeID is left to the app: it
-# names an entry in the app-written Workspace.customThemes blob.
+# names an entry in the app-written Workspace.customThemes blob, which the
+# import_catppuccin_macchiato action in init.lua fills.
 _: {
   system.defaults.CustomUserPreferences."com.superlogical.rex" = {
     "Workspace.terminalFontName" = "JetBrainsMono Nerd Font";
@@ -22,6 +23,8 @@ _: {
     "Workspace.showsProgramActivityDockBadge" = true;
     "Workspace.paneDensity" = "compact";
     "Workspace.inactivePaneFadeMode" = "both";
+    "Workspace.terminalPaddingColor" = "background";
+    "Workspace.usesPaneGlass" = false;
     # Lets `rex do` and `rex -C` run the app's client actions.
     "rex.client.remoteControl" = true;
     "rex.server.automatic-restart-enabled" = true;

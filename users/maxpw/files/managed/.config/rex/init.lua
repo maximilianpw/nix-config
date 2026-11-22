@@ -58,6 +58,7 @@ require("popups")
 require("projects")
 require("runs")
 require("kim")
+require("theme")
 
 -- cmd+g replaces the app's default Find Next shortcut.
 rex.bind("cmd+g", "lazygit_float")
