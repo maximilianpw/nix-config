@@ -141,7 +141,9 @@
           CLAUDE_CODE_MAX_TOOL_USE_CONCURRENCY = "3";
           ENABLE_TOOL_SEARCH = "false";
         };
-      args = ["--model" kimiModel "--effort" "max"];
+      # Without tool search every MCP tool schema is sent up front; the
+      # computer server's 61 tools alone are about 50k tokens.
+      args = ["--model" kimiModel "--effort" "max" "--disallowedTools" "mcp__computer"];
     };
     # Command-line overrides keep proxy routing declarative while leaving
     # ~/.codex/config.toml as Codex's writable persistence target.

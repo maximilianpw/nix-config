@@ -9,9 +9,9 @@
       },
       "branch": "main",
       "submodules": false,
-      "revision": "916ff9001b21c16a81ad2357fb8f93dd907a465b",
-      "url": "https://github.com/maximilianpw/agent-skills/archive/916ff9001b21c16a81ad2357fb8f93dd907a465b.tar.gz",
-      "hash": "sha256-wS3anVhHXlYqfCR1FG6AKC+Z/qb+1x3BlboddEmQA1Q="
+      "revision": "49431d32bb9951d45c6ea5f23801c1c411865137",
+      "url": "https://github.com/maximilianpw/agent-skills/archive/49431d32bb9951d45c6ea5f23801c1c411865137.tar.gz",
+      "hash": "sha256-+MSHMeDLQBuJB3HMjWcAwkyPoQMlprbiut86dB+FHQs="
     },
     "bro": {
       "type": "Git",
