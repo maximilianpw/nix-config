@@ -3,6 +3,9 @@
     # Nerd/symbols (terminal, waybar, icons)
     nerd-fonts.jetbrains-mono
     nerd-fonts.fira-code
+    nerd-fonts.commit-mono
+    nerd-fonts.monaspace
+    maple-mono.NF
     nerd-fonts.symbols-only
 
     # Non-nerd system stacks & coverage
