@@ -9,6 +9,15 @@
   ...
 }: let
   source = path: homeFiles.mkRepoSource config.home.homeDirectory "users/maxpw/files/editable/agents/${path}";
+
+  mcpServers = {
+    # Joyce's real desktop: Cua Driver there, reached over SSH from other hosts.
+    computer = {
+      command = "fleet";
+      args = ["computer" "joyce"];
+    };
+    executor.url = "https://executor.maximilian.pw/mcp";
+  };
 in {
   imports = [inputs.agent-tools.homeModules.default];
 
@@ -18,6 +27,7 @@ in {
     defaults = {
       instructions = source "shared/AGENTS.md";
       skills.sources = import ./skills.nix;
+      inherit mcpServers;
     };
 
     amp = {
@@ -54,6 +64,23 @@ in {
     };
     pi = {
       enable = true;
+      mcpServers = {
+        computer =
+          mcpServers.computer
+          // {
+            settings = {
+              timeout = 60;
+              # tool_search declares its tools when needed instead of every prompt carrying them.
+              exposure = "deferred";
+              description = "Inspect and operate native applications and browsers through Cua Driver, with screenshots, accessibility snapshots, exact-target input, and state verification.";
+            };
+          };
+        executor =
+          mcpServers.executor
+          // {
+            settings.description = "Remote executor MCP server; discover its current tool capabilities and instructions before use.";
+          };
+      };
       # Pi's configuration is its own repository, linked from the checkout so
       # extension development does not need a rebuild.
       configFrom = {

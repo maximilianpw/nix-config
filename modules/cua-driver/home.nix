@@ -1,21 +1,14 @@
 # Cua Driver drives a desktop session, so only desktop profiles import it.
+# Agents on every host reach it through the `computer` MCP server in
+# modules/agent-tools/home.nix.
 {
   isDarwin,
   lib,
   pkgs,
   ...
 }: let
-  pins = import ../agent-tools/npins;
   cuaDriverApp = "${pkgs.cua-driver}/Applications/CuaDriver.app";
 in {
-  agents.defaults.skills.sources = {
-    cua-driver = "${pins.cua}/libs/cua-driver/rust/Skills/cua-driver";
-    cua-helium = {
-      path = pins.agent-skills;
-      include = ["cua-helium"];
-    };
-  };
-
   home.packages = [pkgs.cua-driver];
 
   home.activation = lib.optionalAttrs isDarwin {
