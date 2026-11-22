@@ -1,4 +1,4 @@
-# Shell configurations - Fish (login and interactive), Bash (compatibility)
+# Shell configurations - Fish (login and interactive), Bash and Zsh (compatibility)
 {
   config,
   pkgs,
@@ -95,6 +95,27 @@ in {
       '';
     };
 
+    # Agent harnesses such as Claude Code run their commands through zsh.
+    zsh = {
+      enable = true;
+      # nixpkgs 26.05 moves the default dotDir to XDG; zsh reads ~/.zshrc.
+      dotDir = config.home.homeDirectory;
+      shellAliases = shellAliases // agentAliases;
+      history = {
+        size = 5000;
+        save = 5000;
+        ignoreAllDups = true;
+        ignoreSpace = true;
+        share = true;
+      };
+      completionInit = "autoload -Uz compinit && compinit -C -i";
+      initContent = ''
+        if [ -z "$DISABLE_ZOXIDE" ]; then
+          eval "$(zoxide init --cmd cd zsh)"
+        fi
+      '';
+    };
+
     carapace = {
       enable = true;
       enableFishIntegration = true;
@@ -103,6 +124,7 @@ in {
     zoxide = {
       enable = true;
       enableBashIntegration = false;
+      enableZshIntegration = false;
       options = ["--cmd cd"];
     };
 

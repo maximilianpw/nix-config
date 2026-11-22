@@ -1,5 +1,5 @@
 {
-  "displayName": "max",
+  "displayName": "Maximilian PINDER-WHITE",
   "inboxTool": false,
   "inboxReminder": false,
   "inboxTailscale": false,
@@ -10,7 +10,8 @@
     "diffIndicators": "bars",
     "overflow": "scroll",
     "lineBgIntensity": "subtle",
-    "lineDiffType": "word-alt"
+    "lineDiffType": "word-alt",
+    "powerUp": true
   },
   "prompts": {
     "review": {
@@ -19,12 +20,65 @@
   },
   "reviewAnalysis": {
     "semanticDiff": true,
-    "callFlow": false
+    "callFlow": true
   },
   "agentTool": true,
   "reviewDefaults": {
     "jj": {
       "defaultDiffType": "jj-line"
     }
-  }
+  },
+  "theme": {
+    "mode": "dark",
+    "light": "plannotator",
+    "dark": "plannotator"
+  },
+  "conventionalComments": true,
+  "conventionalLabels": [
+    {
+      "label": "suggestion",
+      "display": "suggestion",
+      "blocking": true
+    },
+    {
+      "label": "nitpick",
+      "display": "nit",
+      "blocking": true
+    },
+    {
+      "label": "question",
+      "display": "question",
+      "blocking": true
+    },
+    {
+      "label": "issue",
+      "display": "issue",
+      "blocking": true
+    },
+    {
+      "label": "praise",
+      "display": "praise",
+      "blocking": false
+    },
+    {
+      "label": "thought",
+      "display": "thought",
+      "blocking": false
+    },
+    {
+      "label": "note",
+      "display": "note",
+      "blocking": false
+    },
+    {
+      "label": "todo",
+      "display": "todo",
+      "blocking": true
+    },
+    {
+      "label": "chore",
+      "display": "chore",
+      "blocking": true
+    }
+  ]
 }
