@@ -2,13 +2,13 @@
 -- only be imported (modules/rex/darwin.nix). The app reads this path on its own
 -- machine: run the action from a session on Joyce's server.
 rex.action({
-  name = "import_catppuccin_macchiato",
-  title = "Import Catppuccin Macchiato Theme",
+  name = "import_catppuccin_mocha",
+  title = "Import Catppuccin Mocha Theme",
   category = "Appearance",
-  keywords = "theme catppuccin macchiato",
+  keywords = "theme catppuccin mocha",
   run = function()
     rex.client.queue("client.theme.import", {
-      path = os.getenv("HOME") .. "/.config/rex/themes/catppuccin-macchiato",
+      path = os.getenv("HOME") .. "/.config/rex/themes/catppuccin-mocha",
     })
   end,
 })

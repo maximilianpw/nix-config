@@ -3,7 +3,7 @@
 # `strings "/Applications/Rex Beta.app/Contents/MacOS/Rex" | grep '^Workspace\.'`)
 # and a renamed key is silently ignored. darkThemeID is left to the app: it
 # names an entry in the app-written Workspace.customThemes blob, which the
-# import_catppuccin_macchiato action in init.lua fills.
+# import_catppuccin_mocha action in theme.lua fills.
 _: {
   system.defaults.CustomUserPreferences."com.superlogical.rex" = {
     "Workspace.terminalFontName" = "Maple Mono NF";
