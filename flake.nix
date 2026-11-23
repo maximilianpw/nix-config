@@ -180,10 +180,11 @@
           };
           statix.enable = true;
           statix.settings.ignore = ["machines/hardware" "modules/agent-tools/npins"];
+          # bun2nix generates packages/workspaces/bun.nix.
           deadnix = {
             enable = true;
-            excludes = ["machines/hardware/.*"];
-            settings.exclude = ["machines/hardware"];
+            excludes = ["machines/hardware/.*" "packages/workspaces/bun\\.nix"];
+            settings.exclude = ["machines/hardware" "packages/workspaces/bun.nix"];
           };
         };
       };
@@ -220,7 +221,7 @@
         editorPackages "x86_64-linux"
         // {
           inherit (pkgs) cloudflared plannotator;
-          inherit (pkgs) helium obsidian skills cliproxyapi cua-driver hunkdiff nix-update pi-config tunarr jellyfin jellyfin-web jellyfin-ffmpeg vite-plus t3code;
+          inherit (pkgs) helium obsidian skills cliproxyapi cua-driver hunkdiff nix-update pi-config tunarr jellyfin jellyfin-web jellyfin-ffmpeg vite-plus t3code workspaces;
           inherit (inputs.jj-stack.packages.x86_64-linux) jj-stack;
         };
       aarch64-darwin = let
@@ -229,7 +230,7 @@
         editorPackages "aarch64-darwin"
         // {
           inherit (pkgs) cloudflared plannotator;
-          inherit (pkgs) cua-driver skills hunkdiff nix-update obsidian pi-config vite-plus t3code;
+          inherit (pkgs) cua-driver skills hunkdiff nix-update obsidian pi-config vite-plus t3code workspaces;
           inherit (inputs.jj-stack.packages.aarch64-darwin) jj-stack;
         };
     };

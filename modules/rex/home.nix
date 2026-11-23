@@ -2,12 +2,17 @@
   config,
   inputs,
   lib,
+  pkgs,
   ...
 }: {
   imports = [inputs.rex.homeManagerModules.default];
 
   # Rex Beta.app runs Joyce's server; this adds its CLI, terminfo and ssh guard.
   programs.rex.enable = true;
+
+  # The JJ/Git workspace picker behind the workspace_* and agents_fanout
+  # actions in ~/.config/rex/projects.lua.
+  home.packages = [pkgs.workspaces];
 
   # Rex delivers events only to a running `rex do` script, never to init.lua,
   # so labelling panes as they change directory needs this process. The app

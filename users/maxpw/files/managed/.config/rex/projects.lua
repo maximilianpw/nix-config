@@ -3,14 +3,6 @@ local panes = require("panes")
 local popups = require("popups")
 local prompts = require("prompts")
 
-local home = os.getenv("HOME") or ""
-local bridge = home .. "/.config/rex/herdr-bridge.sh"
-
--- herdr-jj journals every creation and archive per repository. Rex shares
--- Herdr's journal: with two, a workspace archived from one app could be
--- created again under the same name from the other.
-local jj_state = home .. "/.config/herdr-app/data/migrated/jj/state"
-
 -- A project's session is the one with a terminal in its directory. Labels
 -- can't identify it: agents rename their session after the task at hand.
 local function session_in(dir)
@@ -88,16 +80,11 @@ rex.action({
   end,
 })
 
-local function herdr_jj_argv(dir, ...)
-  local argv = { "herdr-jj", ... }
-  for _, arg in ipairs({ "--repo", dir, "--state-dir", jj_state }) do
-    argv[#argv + 1] = arg
-  end
-  return argv
-end
-
+-- `workspaces` (packages/workspaces) creates and lists JJ and Git checkouts
+-- and opens each one through project_open. It keeps its journals in
+-- ~/.local/state/workspaces.
 local function create_workspace(dir, name)
-  local result = commands.run(herdr_jj_argv(dir, "create", name, "--no-open"))
+  local result = commands.run({ "workspaces", "create", name, "--no-open", "--repo", dir })
   local reply = rex.json.decode(result.ok and result.stdout or result.stderr)
   if result.ok and reply and reply.ok then
     return reply.result.workspace
@@ -105,19 +92,16 @@ local function create_workspace(dir, name)
   return nil, reply and reply.error and reply.error.message or result.stderr
 end
 
--- herdr-jj's own picker runs in the popup and opens what it creates through
--- the bridge, which hands the checkout to project_open.
-local function workspace_action(name, title, entrypoint)
+-- The picker runs in a popup terminal; what it opens or creates comes back
+-- through `rex do project_open`.
+local function workspace_action(name, title, picker)
   rex.action({
     name = "workspace_" .. name,
     title = title,
     keywords = "jj git worktree",
     run = function(ctx)
       local dir = panes.focused_cwd(ctx)
-      local command = { "env", "HERDR_BIN_PATH=" .. bridge }
-      for _, arg in ipairs(herdr_jj_argv(dir, "pane", entrypoint)) do
-        command[#command + 1] = arg
-      end
+      local command = { "workspaces", "pick", picker, "--repo", dir }
       popups.open("workspace " .. name, { cwd = dir, command = command }, { 0.15, 0.15, 0.7, 0.7 })
     end,
   })

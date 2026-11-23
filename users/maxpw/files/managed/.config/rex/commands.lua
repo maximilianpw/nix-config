@@ -1,7 +1,7 @@
 local M = {}
 
 -- The server inherits launchd's bare PATH; everything these actions run
--- (zoxide, herdr-jj, rex, ssh) comes from the Nix profiles.
+-- (zoxide, workspaces, rex, ssh) comes from the Nix profiles.
 M.env = {
   PATH = "/etc/profiles/per-user/"
     .. (os.getenv("USER") or "")

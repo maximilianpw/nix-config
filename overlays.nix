@@ -111,5 +111,10 @@ inputs: [
     cua-driver = final.callPackage ./packages/cua-driver.nix {};
     pi-config = final.callPackage ./packages/pi-config.nix {src = inputs.pi-config;};
     lazygit-nvim-edit = final.callPackage ./packages/lazygit-nvim-edit.nix {};
+    # Stable Bun is older than the 1.3.14 the compiled CLI needs.
+    workspaces = final.callPackage ./packages/workspaces/package.nix {
+      inherit (unstable) bun;
+      inherit (inputs.llm-agents.packages.${prev.stdenv.hostPlatform.system}) bun2nix;
+    };
   })
 ]
