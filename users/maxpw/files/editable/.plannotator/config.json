@@ -4,7 +4,7 @@
   "inboxReminder": false,
   "inboxTailscale": false,
   "diffOptions": {
-    "diffStyle": "unified",
+    "diffStyle": "split",
     "defaultDiffType": "since-base",
     "hideWhitespace": false,
     "diffIndicators": "bars",
