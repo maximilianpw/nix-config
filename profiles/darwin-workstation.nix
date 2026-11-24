@@ -22,5 +22,6 @@ _: {
     ../modules/home/fonts.nix
     ../modules/home/vicinae.nix
     ../modules/rex/home.nix
+    ../modules/home/spaceman.nix
   ];
 }
