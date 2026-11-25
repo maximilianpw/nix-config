@@ -2,8 +2,14 @@
 
 if [[ $# -eq 0 ]]; then
   echo "usage: npmrc-token <command> [args...]" >&2
-  echo "runs a command with NODE_AUTH_TOKEN loaded from a local dotenv file" >&2
+  echo "runs a command with NODE_AUTH_TOKEN from the environment, or else a local dotenv file" >&2
   exit 2
+fi
+
+# An exported token (e.g. direnv's `gh auth token`) is fresher than any dotenv copy.
+if [[ -n "${NODE_AUTH_TOKEN:-}" ]]; then
+  echo "running $1 with NODE_AUTH_TOKEN from the environment" >&2
+  exec "$@"
 fi
 
 token=""
