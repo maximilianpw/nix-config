@@ -4,7 +4,7 @@
     ./amp-orb-provider
     ./atuin.nix
     ./backup
-    ./cloudflared.nix
+    ./cloudflare
     ./cliproxyapi.nix
     ./container-hygiene
     ./executor.nix

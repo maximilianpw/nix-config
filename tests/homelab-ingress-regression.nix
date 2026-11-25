@@ -29,6 +29,8 @@ in
   "Cloudflare ingress must expose the declared public application set";
   assert lib.assertMsg (ingressHosts == publicHosts)
   "Cloudflare ingress must derive exactly from the public service inventory";
+  assert lib.assertMsg (homelab.cloudflareDns.hostnames == ingressHosts)
+  "the Alchemy DNS stack must publish exactly the hostnames the tunnel routes";
   assert lib.assertMsg (lib.all ingressIsLoopback ingressHosts)
   "every public origin must use loopback and its exact public Host header";
   assert lib.assertMsg (tunnel.default == "http_status:404")

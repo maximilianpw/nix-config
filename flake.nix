@@ -191,6 +191,8 @@
   in {
     # Host outputs and fleet metadata derive from one typed, data-only source.
     lib.hosts = hosts;
+    # Read by the Alchemy stack in homelab/cloudflare so DNS follows the inventory.
+    lib.cloudflareDns = (import ./homelab/inventory {inherit lib;}).cloudflareDns;
     nixosConfigurations = lib.mapAttrs mkSystem nixosHosts;
     darwinConfigurations = lib.mapAttrs mkSystem darwinHosts;
 
@@ -255,6 +257,7 @@
             gh
             jq
             nodejs
+            pnpm
             python3
             rsync
             shellcheck
