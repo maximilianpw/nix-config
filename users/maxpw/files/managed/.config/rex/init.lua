@@ -58,6 +58,7 @@ require("popups")
 require("projects")
 require("runs")
 require("kim")
+require("vev")
 require("theme")
 
 -- cmd+g replaces the app's default Find Next shortcut.
@@ -86,6 +87,7 @@ local prefixed = {
   ["alt+k"] = { "kim_session" },
   k = { "kim_top" },
   d = { "kim_dev" },
+  v = { "vev_up" },
 }
 for key, binding in pairs(prefixed) do
   rex.bind("ctrl+space>" .. key, binding[1], binding[2])
