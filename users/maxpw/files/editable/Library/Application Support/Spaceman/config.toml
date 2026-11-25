@@ -2,10 +2,6 @@
 # equivalent. Its hotkeys are fixed on Option, so Hex dictates on Ctrl+Option.
 version = 1
 
-[settings]
-# Needs Spaceman >= 0.3.3; older builds use Sparkle and have no channels.
-update_channel = "dev"
-
 [[rules]]
 bundle_id = "com.mitchellh.ghostty"
 action = "route"
@@ -25,3 +21,24 @@ action = "float"
 [[rules]]
 bundle_id = "com.apple.systempreferences"
 action = "float"
+
+[[rules]]
+bundle_id = "com.tinyspeck.slackmacgap"
+action = "route"
+workspace = 3
+
+[[workspaces]]
+workspace = 1
+monitor = "secondary"
+
+[[workspaces]]
+workspace = 3
+monitor = "E8E80D21-07B8-40AC-90F2-51EBBF031279"
+
+[[workspaces]]
+workspace = 2
+monitor = "secondary"
+
+[[workspaces]]
+workspace = 6
+monitor = "main"
