@@ -28,6 +28,7 @@
   hostQbtContainerService = config.systemd.services."container@qbt";
   hostSabContainerService = config.systemd.services."container@sab";
   tunarrService = config.systemd.services.tunarr;
+  plexStopExecutable = builtins.head (lib.splitString " " config.systemd.services.plex.serviceConfig.ExecStop);
   mediaDirectories = [
     mediaRoot
     "${mediaRoot}/torrents"
@@ -257,6 +258,11 @@ in
     (builtins.elem "${mediaRoot}/torrents" config.systemd.services.plex.serviceConfig.InaccessiblePaths)
     (builtins.elem usenetRoot config.systemd.services.plex.serviceConfig.InaccessiblePaths)
   ];
+  assert expect.all "Plex must finish application shutdown before its bubblewrap wrapper is stopped" [
+    (config.systemd.services.plex.serviceConfig.Type == "simple")
+    (config.systemd.services.plex.serviceConfig.KillSignal == "SIGTERM")
+    (lib.hasSuffix " $MAINPID" (config.systemd.services.plex.serviceConfig.ExecStop or ""))
+  ];
   assert expect.all "internet-facing Plex must keep its sandbox: read-only OS, no capabilities, filtered syscalls" [
     (config.systemd.services.plex.serviceConfig.ProtectSystem == "strict")
     (config.systemd.services.plex.serviceConfig.StateDirectory == "plex")
@@ -443,6 +449,9 @@ in
       cp ${../homelab/media/tunarr-reconcile-settings.sh} homelab/media/tunarr-reconcile-settings.sh
       cp ${../homelab/media/tunarr-reconcile-settings-test.sh} homelab/media/tunarr-reconcile-settings-test.sh
       bash homelab/media/tunarr-reconcile-settings-test.sh
+      bash ${../homelab/media}/plex-stop-test.sh
+      ${plexStopExecutable}
+      grep -F -- 'plex-stop.sh' ${lib.escapeShellArg plexStopExecutable}
       # Exercise the configured ExecStartPre too, redirected to disposable state.
       # This catches regressions back to the upstream CLI that never exits.
       sed "s|export TUNARR_SETTINGS_FILE=.*|export TUNARR_SETTINGS_FILE=$PWD/settings.json|" \

@@ -26,6 +26,8 @@ expected=(
   immich-server.service
   jellyfin.service
   inactive.service
+  nix-daemon.service
+  user.slice
 )
 
 if [[ "$*" != "${expected[*]}" ]]; then
@@ -47,6 +49,12 @@ CPUUsageNSec=[not set]
 
 Id=jellyfin.service
 CPUUsageNSec=9000000000
+
+Id=nix-daemon.service
+CPUUsageNSec=24000000000
+
+Id=user.slice
+CPUUsageNSec=691000000000000
 METRICS
 EOF
 chmod +x "$fake_systemctl"
@@ -56,7 +64,9 @@ SYSTEMCTL_BIN="$fake_systemctl" \
   "$here/homelab-systemd-metrics.sh" \
   immich-server.service \
   jellyfin.service \
-  inactive.service
+  inactive.service \
+  nix-daemon.service \
+  user.slice
 
 metrics_file="$metrics_dir/homelab-systemd-resources.prom"
 expected_metrics="$test_root/expected.prom"
@@ -65,6 +75,8 @@ cat > "$expected_metrics" <<'EOF'
 # TYPE homelab_systemd_unit_cpu_seconds_total counter
 homelab_systemd_unit_cpu_seconds_total{unit="immich-server.service"} 1.234567890
 homelab_systemd_unit_cpu_seconds_total{unit="jellyfin.service"} 9.000000000
+homelab_systemd_unit_cpu_seconds_total{unit="nix-daemon.service"} 24.000000000
+homelab_systemd_unit_cpu_seconds_total{unit="user.slice"} 691000.000000000
 EOF
 
 cmp "$expected_metrics" "$metrics_file"
@@ -77,7 +89,9 @@ if FAIL_SYSTEMCTL=1 \
   "$here/homelab-systemd-metrics.sh" \
   immich-server.service \
   jellyfin.service \
-  inactive.service >/dev/null 2>&1; then
+  inactive.service \
+  nix-daemon.service \
+  user.slice >/dev/null 2>&1; then
   echo "collector unexpectedly accepted a failed systemctl query" >&2
   exit 1
 fi

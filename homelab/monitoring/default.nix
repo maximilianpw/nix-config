@@ -24,6 +24,9 @@
       "homelab-host-heartbeat.service"
       "homelab-host-heartbeat.timer"
     ];
+  # Attribute builds and interactive work without treating aggregate slices or
+  # the Nix daemon as application-health targets.
+  resourceSystemdUnits = importantSystemdUnits ++ ["nix-daemon.service" "user.slice"];
 
   escapeRegex = lib.replaceStrings ["."] ["[.]"];
   systemdUnitExpression = "^(${lib.concatMapStringsSep "|" escapeRegex importantSystemdUnits})$";
@@ -40,7 +43,7 @@
       export SYSTEMCTL_BIN=${lib.getExe' pkgs.systemd "systemctl"}
       export AWK_BIN=${lib.getExe pkgs.gawk}
       export HOMELAB_METRICS_DIR=${lib.escapeShellArg nodeExporterTextfileDirectory}
-      exec ${lib.getExe pkgs.bash} ${./homelab-systemd-metrics.sh} ${lib.escapeShellArgs importantSystemdUnits}
+      exec ${lib.getExe pkgs.bash} ${./homelab-systemd-metrics.sh} ${lib.escapeShellArgs resourceSystemdUnits}
     '';
   };
   storageKernelMetrics = pkgs.writeShellApplication {

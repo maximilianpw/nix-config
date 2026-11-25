@@ -138,7 +138,7 @@
       pkgs = nixpkgs.legacyPackages.x86_64-linux;
     };
     monitoring-regression = import ./monitoring-regression.nix {
-      config = self.nixosConfigurations.kim.config;
+      inherit (self.nixosConfigurations.kim) config extendModules;
       inherit lib;
       pkgs = nixpkgs.legacyPackages.x86_64-linux;
     };

@@ -21,6 +21,14 @@
     usenetRoot
     ;
   physicalLanIpv4Cidr = "192.168.1.0/24";
+  plexStop = pkgs.writeShellApplication {
+    name = "plex-stop";
+    text = ''
+      export PKILL_BIN=${lib.getExe' pkgs.procps "pkill"}
+      export TAIL_BIN=${lib.getExe' pkgs.coreutils "tail"}
+      exec ${lib.getExe pkgs.bash} ${./plex-stop.sh} "$@"
+    '';
+  };
   prowlarrReconcile = pkgs.writeShellApplication {
     name = "prowlarr-reconcile";
     runtimeInputs = [pkgs.coreutils pkgs.curl pkgs.gnused pkgs.jq];
@@ -291,6 +299,8 @@ in {
         # Its FHS wrapper runs under bubblewrap, which needs user and mount
         # namespaces and the mount syscalls.
         plex.serviceConfig = {
+          ExecStop = "${lib.getExe plexStop} $MAINPID";
+          KillSignal = lib.mkForce "SIGTERM";
           InaccessiblePaths =
             [
               "${mediaRoot}/torrents"

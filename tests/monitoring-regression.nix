@@ -1,5 +1,6 @@
 {
   config,
+  extendModules,
   lib,
   pkgs,
 }: let
@@ -16,7 +17,13 @@
   dashboard = builtins.fromJSON (builtins.readFile ../homelab/monitoring/grafana/kim-overview.json);
 
   escapeRegex = lib.replaceStrings ["."] ["[.]"];
-  expectedSystemdExpression = "^(${lib.concatMapStringsSep "|" escapeRegex homelab.importantSystemdUnits})$";
+  expectedImportantUnits =
+    homelab.importantSystemdUnits
+    ++ lib.optionals (config.homelab.monitoring.hostHeartbeatUrlFile != null) [
+      "homelab-host-heartbeat.service"
+      "homelab-host-heartbeat.timer"
+    ];
+  expectedSystemdExpression = "^(${lib.concatMapStringsSep "|" escapeRegex expectedImportantUnits})$";
   systemdIncludeFlag = "--systemd.collector.unit-include=${expectedSystemdExpression}";
   datasource = builtins.head grafana.provision.datasources.settings.datasources;
   provider = builtins.head grafana.provision.dashboards.settings.providers;
@@ -49,6 +56,20 @@
   quotaService = config.systemd.services.cliproxyapi-quota;
   nixDaemon = config.systemd.services.nix-daemon.serviceConfig;
   metricsDirectoryRule = config.systemd.tmpfiles.settings."10-homelab-metrics"."/var/lib/prometheus-node-exporter-text-files".d;
+  webhookFixturePath = "/run/secrets/test-alert-webhook";
+  heartbeatFixturePath = "/run/secrets/test-host-heartbeat";
+  externalMonitoring =
+    (extendModules {
+      modules = [
+        {
+          homelab.monitoring.alertWebhookUrlFile = lib.mkForce webhookFixturePath;
+          homelab.monitoring.hostHeartbeatUrlFile = lib.mkForce heartbeatFixturePath;
+        }
+      ];
+    }).config;
+  externalAlertmanager = externalMonitoring.services.prometheus.alertmanager;
+  externalHeartbeat = externalMonitoring.systemd.services.homelab-host-heartbeat;
+  externalHeartbeatTimer = externalMonitoring.systemd.timers.homelab-host-heartbeat;
   filesystemAlertTests = (pkgs.formats.yaml {}).generate "filesystem-alert-tests.yaml" {
     rule_files = prometheus.ruleFiles;
     evaluation_interval = "1m";
@@ -322,8 +343,35 @@ in
     alertmanager.enable
     (alertmanager.listenAddress == "127.0.0.1")
     (!alertmanager.openFirewall)
-    (alertmanager.configuration.route.receiver == "local-sink")
+    (alertmanager.configuration.route.receiver
+      == (
+        if config.homelab.monitoring.alertWebhookUrlFile == null
+        then "local-sink"
+        else "configured-webhook"
+      ))
     ((builtins.head (builtins.head prometheus.alertmanagers).static_configs).targets == ["127.0.0.1:${toString alertmanager.port}"])
+  ];
+  assert expect.all "Opt-in alert delivery must keep the webhook out of the store and schedule the external host heartbeat" [
+    (externalAlertmanager.configuration.route.receiver == "configured-webhook")
+    (externalAlertmanager.configuration.receivers
+      == [
+        {
+          name = "configured-webhook";
+          webhook_configs = [
+            {
+              url_file = "/run/credentials/alertmanager.service/homelab-alert-webhook-url";
+              send_resolved = true;
+            }
+          ];
+        }
+      ])
+    (externalMonitoring.systemd.services.alertmanager.serviceConfig.LoadCredential
+      == ["homelab-alert-webhook-url:${webhookFixturePath}"])
+    (externalHeartbeat.serviceConfig.Type == "oneshot")
+    (externalHeartbeatTimer.wantedBy == ["timers.target"])
+    (externalHeartbeatTimer.timerConfig.OnUnitActiveSec == "5m")
+    (lib.hasInfix "homelab-host-heartbeat[.]service" (lib.concatStringsSep " " externalMonitoring.services.prometheus.exporters.systemd.extraFlags))
+    (lib.hasInfix "homelab-host-heartbeat[.]timer" (lib.concatStringsSep " " externalMonitoring.services.prometheus.exporters.systemd.extraFlags))
   ];
   assert expect.all "Docker lifecycle auditing must remain report-only, scheduled, and visible to Prometheus" [
     (config.systemd.timers.homelab-container-audit.wantedBy == ["timers.target"])
@@ -466,9 +514,12 @@ in
       ${lib.getExe pkgs.bash} ${../homelab/monitoring}/homelab-storage-kernel-metrics-test.sh
       ${lib.getExe pkgs.bash} ${../homelab/monitoring}/homelab-public-ingress-check-test.sh
       ${lib.getExe pkgs.bash} ${../homelab/monitoring}/homelab-media-smart-check-test.sh
+      grep -F -- 'HOMELAB_HEALTHCHECK_URL_FILE=${heartbeatFixturePath}' ${lib.escapeShellArg externalHeartbeat.serviceConfig.ExecStart}
       grep -F -- 'homelab-storage-kernel-metrics.py' ${lib.escapeShellArg storageKernelMetricsService.serviceConfig.ExecStart}
       cmp ${lib.escapeShellArg homeDashboardPath} ${../homelab/monitoring/grafana/kim-overview.json}
       grep -F -- 'immich-server.service' ${lib.escapeShellArg systemdMetricsService.serviceConfig.ExecStart}
+      grep -F -- 'nix-daemon.service' ${lib.escapeShellArg systemdMetricsService.serviceConfig.ExecStart}
+      grep -F -- 'user.slice' ${lib.escapeShellArg systemdMetricsService.serviceConfig.ExecStart}
       # Narrow guards on the rendered artifacts: the probe wrapper pins the
       # loopback destination and the blackbox file gained no credential module.
       # cliproxyapi-readiness-probe-test.sh beside the probe covers its behavior.
