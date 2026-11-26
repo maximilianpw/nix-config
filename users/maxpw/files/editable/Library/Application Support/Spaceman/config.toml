@@ -1,0 +1,44 @@
+# Mirrors modules/hyprland/hypr/conf/windowrules.lua where Spaceman has an
+# equivalent. Its hotkeys are fixed on Option, so Hex dictates on Ctrl+Option.
+version = 1
+
+[[rules]]
+bundle_id = "com.mitchellh.ghostty"
+action = "route"
+workspace = 1
+
+# Hyprland routes Firefox here; Helium is the browser on macOS.
+[[rules]]
+bundle_id = "net.imput.helium"
+action = "route"
+workspace = 2
+
+[[rules]]
+bundle_id = "com.apple.calculator"
+action = "float"
+
+# Hyprland floats the network, Bluetooth and audio panels; on macOS they live here.
+[[rules]]
+bundle_id = "com.apple.systempreferences"
+action = "float"
+
+[[rules]]
+bundle_id = "com.tinyspeck.slackmacgap"
+action = "route"
+workspace = 3
+
+[[workspaces]]
+workspace = 1
+monitor = "secondary"
+
+[[workspaces]]
+workspace = 3
+monitor = "E8E80D21-07B8-40AC-90F2-51EBBF031279"
+
+[[workspaces]]
+workspace = 2
+monitor = "secondary"
+
+[[workspaces]]
+workspace = 6
+monitor = "main"

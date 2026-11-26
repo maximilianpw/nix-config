@@ -64,6 +64,9 @@ in {
     };
     pi = {
       enable = true;
+      # Pi saves /settings changes back to this file, so it links to the
+      # checkout, not the store; `git diff` shows them for review.
+      files."settings.json" = source "pi/settings.json";
       mcpServers = {
         computer =
           mcpServers.computer

@@ -17,10 +17,12 @@ _: {
 
   home-manager.sharedModules = [
     ../modules/cua-driver/home.nix
+    ../modules/home/aikido.nix
     ../modules/himalaya/home.nix
     ../modules/home/darwin-apps.nix
     ../modules/home/fonts.nix
     ../modules/home/vicinae.nix
     ../modules/rex/home.nix
+    ../modules/home/spaceman.nix
   ];
 }
