@@ -14,7 +14,7 @@
   "followUpMode": "all",
   "enableInstallTelemetry": false,
   "theme": "catppuccin-macchiato",
-  "lastChangelogVersion": "1.6.0",
+  "lastChangelogVersion": "1.6.1",
   "collapseChangelog": true,
   "enabledModels": [
     "cliproxyapi/gpt-6.1-sol",
