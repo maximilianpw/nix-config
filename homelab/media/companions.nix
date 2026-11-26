@@ -63,7 +63,7 @@
             name: TRaSH HD Bluray + WEB
   '';
   maintainerrImage = "ghcr.io/maintainerr/maintainerr@sha256:124b53cfec9c17dae03a69243b0a2e7b6de740150112b5210b784ce8fa0a2852";
-  tdarrImage = "ghcr.io/haveagitgat/tdarr@sha256:5d340a7a603a9d1f55904ebca481fff5bb6222e741b636f798106a12ffd1f2ba";
+  tdarrImage = "ghcr.io/haveagitgat/tdarr@sha256:98137b694eed678f14ebc5f1d594d87ff8086df5cbc04203a15a53d95fe518b7";
   kometaImage = "docker.io/kometateam/kometa@sha256:4e45d12ca8cb21b5a47a25917542dbb305fc0c76a366bc692ae9490da35d168d";
 in {
   custom.backup = {

@@ -6,7 +6,7 @@
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
 
     # Nix packaging was added after v0.1.7; keep its Python 3.14 package set.
-    jj-stack.url = "github:bos/jj-stack/d401f1b724943e35c4c59352ac7a294c8c28247f";
+    jj-stack.url = "github:bos/jj-stack/78a4f3e1d8091e680c654fc4701cc4c343525f4d";
 
     vite-plus = {
       url = "github:ryoppippi/nix-vite-plus";

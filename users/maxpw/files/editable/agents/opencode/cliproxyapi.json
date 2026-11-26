@@ -103,7 +103,7 @@
     }
   },
   "plugins": [
-    { "package": "@plannotator/opencode@0.29.1" },
+    { "package": "@plannotator/opencode@0.29.4" },
     "cc-safety-net",
     "@slkiser/opencode-quota"
   ],

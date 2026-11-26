@@ -22,9 +22,9 @@
       },
       "branch": "main",
       "submodules": false,
-      "revision": "c2e2cc7e81c7a77f9525affb469a911a14b14b73",
-      "url": "https://github.com/backnotprop/bro/archive/c2e2cc7e81c7a77f9525affb469a911a14b14b73.tar.gz",
-      "hash": "sha256-eCndFloSfejNbnGLWtw/jnW4De6IFcOn8msjuUBUXV4="
+      "revision": "08f40b4ba959d11ce7dcddd13aa2a6ab720be3a5",
+      "url": "https://github.com/backnotprop/bro/archive/08f40b4ba959d11ce7dcddd13aa2a6ab720be3a5.tar.gz",
+      "hash": "sha256-NYmtz7nCL9qnaluuOwC3tXWfKoT95zHWkXexkFkt5fQ="
     },
     "clerk-skills": {
       "type": "Git",
@@ -35,9 +35,9 @@
       },
       "branch": "main",
       "submodules": false,
-      "revision": "78092a74297dac3fb2c64efab3dbe86b581eaea8",
-      "url": "https://github.com/clerk/skills/archive/78092a74297dac3fb2c64efab3dbe86b581eaea8.tar.gz",
-      "hash": "sha256-0klFvpBY3nIsDU/k0b2fprkXeAAZKq6nUGyTkTX/Mw0="
+      "revision": "0a5a49e6fe3d57c34d307a17e0f711ccd63fb409",
+      "url": "https://github.com/clerk/skills/archive/0a5a49e6fe3d57c34d307a17e0f711ccd63fb409.tar.gz",
+      "hash": "sha256-AbgeBYFuKwiT5DM4BuZwkpgi41/9sPbnM+Xv2EAEkdw="
     },
     "cua": {
       "type": "Git",
@@ -48,9 +48,9 @@
       },
       "branch": "main",
       "submodules": false,
-      "revision": "04b60eafc3d278190e4b0e583e0e0d9ea8fb9c9a",
-      "url": "https://github.com/trycua/cua/archive/04b60eafc3d278190e4b0e583e0e0d9ea8fb9c9a.tar.gz",
-      "hash": "sha256-a3PQp9clF8MjxRkRN108Hy+OwdKqFHUFU8zVyWhxRaM="
+      "revision": "9193c447a4fdd3727cd00dc6d881f7430da56b17",
+      "url": "https://github.com/trycua/cua/archive/9193c447a4fdd3727cd00dc6d881f7430da56b17.tar.gz",
+      "hash": "sha256-pDNbIi+hgCJIWhDQuEgZUqekCt63Uvy6tH5yjcbfnv0="
     },
     "cursor-plugins": {
       "type": "Git",
@@ -61,9 +61,9 @@
       },
       "branch": "main",
       "submodules": false,
-      "revision": "7a583913eb1b8d1a0ee76753d1a2cf072e7b54f9",
-      "url": "https://github.com/cursor/plugins/archive/7a583913eb1b8d1a0ee76753d1a2cf072e7b54f9.tar.gz",
-      "hash": "sha256-prQwn1as83NuoYIDee+ZJ2ETDVNoFbHNabSwzpy70mk="
+      "revision": "b7b93c36be9bcc36a74db438e0fd385d660bc559",
+      "url": "https://github.com/cursor/plugins/archive/b7b93c36be9bcc36a74db438e0fd385d660bc559.tar.gz",
+      "hash": "sha256-hWAEifOG9l+73lmokGB8ZPB45i9t7WR0jGMJSv6bkB4="
     },
     "emilkowalski-skills": {
       "type": "Git",
@@ -113,9 +113,9 @@
       },
       "branch": "main",
       "submodules": false,
-      "revision": "abeeaf95660ba9e8b7c753eb38f441ca707a8823",
-      "url": "https://github.com/mattpocock/skills/archive/abeeaf95660ba9e8b7c753eb38f441ca707a8823.tar.gz",
-      "hash": "sha256-fc5+qmchp1IQ/rQP1olWKC1eC4VdYhaB7YYzC3+JBe0="
+      "revision": "6f7f7831a625f040a8e06a0e7954826b87ce775a",
+      "url": "https://github.com/mattpocock/skills/archive/6f7f7831a625f040a8e06a0e7954826b87ce775a.tar.gz",
+      "hash": "sha256-kM/OK6+kbTHzlN5d6wjL9hM80lolcSCoO8A1oRvEJEU="
     },
     "planetscale-skills": {
       "type": "Git",
@@ -139,9 +139,9 @@
       },
       "branch": "main",
       "submodules": false,
-      "revision": "385919d3f5190ed3f9ec6bb896e15f6cf49c959d",
-      "url": "https://github.com/backnotprop/plannotator/archive/385919d3f5190ed3f9ec6bb896e15f6cf49c959d.tar.gz",
-      "hash": "sha256-YmRUD3WuVJNGAOzXhD9PsVVhqDdzeu+cUvSA1RfQHeg="
+      "revision": "a29f0433d697b0a9daf120e6cb02ad444269c041",
+      "url": "https://github.com/backnotprop/plannotator/archive/a29f0433d697b0a9daf120e6cb02ad444269c041.tar.gz",
+      "hash": "sha256-75/ga4tmklmw6sWbwqgPVDzTQ3DucDpNlNB5CLAy0XQ="
     },
     "shadcn-improve": {
       "type": "Git",
@@ -178,9 +178,9 @@
       },
       "branch": "main",
       "submodules": false,
-      "revision": "9d5f880b7e8e0a9a80c890b8e1bb6918b68481ad",
-      "url": "https://github.com/nicobailon/visual-explainer/archive/9d5f880b7e8e0a9a80c890b8e1bb6918b68481ad.tar.gz",
-      "hash": "sha256-oAod2Oc0wqlGjpbrbzlIq7RA5eeYsJMqHuzNqoRK0tU="
+      "revision": "916b21212eac7ed002d00ef5dd12695099775521",
+      "url": "https://github.com/nicobailon/visual-explainer/archive/916b21212eac7ed002d00ef5dd12695099775521.tar.gz",
+      "hash": "sha256-spqliedOCmKq/RWPUN0AYKO+fATjmLcbOtd5bzBjNuM="
     }
   },
   "version": 7

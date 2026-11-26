@@ -32,8 +32,8 @@
   "gitsigns.nvim": {
     "owner": "lewis6991",
     "repo": "gitsigns.nvim",
-    "rev": "c0862d382a35b7b45757d8d151a6a634c09bf3ce",
-    "hash": "sha256-c4tGHjLol18V5PaFIgRTK4hZKHBA7OZEr1wRXWroNGE="
+    "rev": "166c03131e6a3528f692dd89f37668d991f17baa",
+    "hash": "sha256-tdGW+llx0ZpYWgf0wJANdT3qKeiCMWO03+REny67dKM="
   },
   "lazydev.nvim": {
     "owner": "folke",
@@ -80,8 +80,8 @@
   "nvim-lspconfig": {
     "owner": "neovim",
     "repo": "nvim-lspconfig",
-    "rev": "4648fd8ba5c678d7e2db75ae44ffac269bb589d8",
-    "hash": "sha256-FywWiEGEuauWQzOONBLwxzc5cPfrMT/v2b6CTcYj7Nw="
+    "rev": "76f4cafc49677a34dc8ad8142b773d78ab4a041e",
+    "hash": "sha256-LfBjsXCsgd76Ey6327+mfHMFch1Olmo1fCJN/YFoFys="
   },
   "nvim-treesitter-context": {
     "owner": "nvim-treesitter",
@@ -140,14 +140,14 @@
   "rustaceanvim": {
     "owner": "mrcjkb",
     "repo": "rustaceanvim",
-    "rev": "029d3ece8b4aee8807dee163919886f0399c6c17",
-    "hash": "sha256-nCDYGg7Zk+CiK7AJ0UjX5SLJ2TISW3xPx4ZD0aG6mGM="
+    "rev": "d2d04c81c36e2a7005f7794eea02a613dec575e8",
+    "hash": "sha256-iYT4xEKH/1/jYt6/QsXzeeEuf4dSlhNmDlKHg2cc9+c="
   },
   "schemastore.nvim": {
     "owner": "b0o",
     "repo": "SchemaStore.nvim",
-    "rev": "ffbe34a31de0cf696f688e7d9e226dc5b86b4323",
-    "hash": "sha256-X/tefvPG9g+kcTeHsbURVdtBJImJb64P4wNVRQtOVss="
+    "rev": "c01d3d7026af6347b03b05dc5972c072a7ed37af",
+    "hash": "sha256-fugV8ZtXbN/fSekdWJWxIVtGVDkiPNzQgnJSa6bjuXg="
   },
   "snacks.nvim": {
     "owner": "folke",
