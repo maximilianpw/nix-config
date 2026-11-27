@@ -6,6 +6,7 @@
 - For greenfield frontends, prefer StyleX, TypeScript, Bun, React, Clerk, Cloudflare, and TanStack.
 - For greenfield personal backends, prefer Effect and Drizzle; otherwise follow the repository.
 - Load `coding-standards` for non-trivial implementation, refactoring, or code review, and before adding type escapes or moving code. Read only its references matching the changed behavior and stack.
+- Browse with `terminal-browser` (Pi: its `browser` tool) for local dev servers, JavaScript-rendered pages, UI checks, and showing the user a page; with `cua-helium` for sites that need the user's signed-in profiles; with plain fetching to read public pages.
 
 ## Engineering judgment
 
@@ -36,6 +37,7 @@ Route requested orchestration by session host, independently of the agent harnes
 - Honor an explicitly requested backend, subject to its availability and safety checks.
 - Otherwise, in a verified T3 session, use T3 orchestration. Launch requested separate conversations through T3 with explicit workspace binding; keep child tasks distinct from top-level threads.
 - Otherwise, use available native agent tools within their supported scope.
+- Otherwise, in Pi, which has no subagent tool, run each delegate as its own read-only Pi in a Rex split: write the complete prompt to a file, then `rex run --split=right -b "$REX_BLOCK" --focus=false --wait -- sh -c 'cd <repo> && pi -p --no-session --tools read,ffgrep,fffind @<prompt file> | tee <report file>'`, and read the report. Run parallel delegates as separate `rex run` calls in the background and wait for each.
 
 Verify T3 through its orchestration tools; environment markers are hints, not proof, and credential values must stay private. Environment detection selects the backend, not permission to spawn agents, change workspaces, or perform otherwise restricted actions.
 

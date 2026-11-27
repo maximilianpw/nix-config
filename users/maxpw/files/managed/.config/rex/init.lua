@@ -59,6 +59,8 @@ require("projects")
 require("runs")
 require("kim")
 require("vev")
+-- Palette action "Transfer pi Session to Host…" (also /transfer in pi).
+require("transfer_pi_session")
 require("theme")
 
 -- cmd+g replaces the app's default Find Next shortcut.
