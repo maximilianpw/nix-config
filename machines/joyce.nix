@@ -30,6 +30,12 @@
       trusted-users = root max-vev
       extra-substituters = https://devenv.cachix.org https://maximilianpw.cachix.org https://cache.numtide.com
       extra-trusted-public-keys = devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw= maximilianpw.cachix.org-1:RgUBJCLYTHNEeg67Pht2cf6VGG2NQnyxmn6jTCU+TsA= niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g=
+      # Aikido Device Protection intercepts TLS with a local CA that only the
+      # keychain bundle Determinate generates contains. Fetchers that honour
+      # NIX_SSL_CERT_FILE (Go modules, fetchurl, git) would otherwise get the
+      # nixpkgs cacert bundle and fail with "certificate signed by unknown authority".
+      extra-experimental-features = configurable-impure-env
+      impure-env = NIX_SSL_CERT_FILE=/etc/nix/macos-keychain.crt
     '';
 
     # Determinate reads netrc tokens only from these sources; rex.netrc holds the
