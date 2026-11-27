@@ -2,11 +2,6 @@
 # equivalent. Its hotkeys are fixed on Option, so Hex dictates on Ctrl+Option.
 version = 1
 
-[[rules]]
-bundle_id = "com.mitchellh.ghostty"
-action = "route"
-workspace = 1
-
 # Hyprland routes Firefox here; Helium is the browser on macOS.
 [[rules]]
 bundle_id = "net.imput.helium"
@@ -27,18 +22,49 @@ bundle_id = "com.tinyspeck.slackmacgap"
 action = "route"
 workspace = 3
 
+[[rules]]
+bundle_id = "com.linear"
+action = "route"
+workspace = 4
+
+[[rules]]
+bundle_id = "app.legcord.Legcord"
+action = "route"
+workspace = 4
+
+[[rules]]
+bundle_id = "com.superlogical.rex"
+action = "route"
+workspace = 1
+
+[[rules]]
+bundle_id = "net.whatsapp.WhatsApp"
+action = "route"
+workspace = 5
+
+[[rules]]
+bundle_id = "com.fastmail.mac.Fastmail"
+action = "route"
+workspace = 5
+
+[[workspaces]]
+workspace = 2
+monitor = "E8E80D21-07B8-40AC-90F2-51EBBF031279"
+
+[[workspaces]]
+workspace = 6
+monitor = "E8E80D21-07B8-40AC-90F2-51EBBF031279"
+
 [[workspaces]]
 workspace = 1
 monitor = "secondary"
 
 [[workspaces]]
-workspace = 3
+workspace = 5
 monitor = "E8E80D21-07B8-40AC-90F2-51EBBF031279"
 
-[[workspaces]]
-workspace = 2
-monitor = "secondary"
-
-[[workspaces]]
-workspace = 6
-monitor = "main"
+[labs]
+scratchpad = true
+float_follows_display = true
+physical_displays = true
+activity = true
