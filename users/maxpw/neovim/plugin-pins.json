@@ -50,8 +50,8 @@
   "mini.nvim": {
     "owner": "nvim-mini",
     "repo": "mini.nvim",
-    "rev": "24cf4ad5840f0d092e3d8296b17eaf7026bf27f3",
-    "hash": "sha256-WX+h7Jd7U0pja16S4YjveQLUPcYw6Fr4LJ3+BjbAJ4w="
+    "rev": "39334e0f4dec24ef159945067e222318392a65c5",
+    "hash": "sha256-LxtJzGNB7jN03GyUjs/7PVx1umjqB/CD+gSbFs5npZo="
   },
   "neo-tree.nvim": {
     "owner": "nvim-neo-tree",
@@ -140,14 +140,14 @@
   "rustaceanvim": {
     "owner": "mrcjkb",
     "repo": "rustaceanvim",
-    "rev": "d2d04c81c36e2a7005f7794eea02a613dec575e8",
-    "hash": "sha256-iYT4xEKH/1/jYt6/QsXzeeEuf4dSlhNmDlKHg2cc9+c="
+    "rev": "280c3eceb0c37987fa72bbc3aa74665839480a6b",
+    "hash": "sha256-i7asBggqojRSCyQ9NUijAfIv6Ale9VNvulj8KVZnl4s="
   },
   "schemastore.nvim": {
     "owner": "b0o",
     "repo": "SchemaStore.nvim",
-    "rev": "c01d3d7026af6347b03b05dc5972c072a7ed37af",
-    "hash": "sha256-fugV8ZtXbN/fSekdWJWxIVtGVDkiPNzQgnJSa6bjuXg="
+    "rev": "56b010e943cce0ddd13fa062f447e66e072a6b16",
+    "hash": "sha256-I+o7j1wogEF1BhnW4w2ytYwW0695kO0XQN2FWdfsx8Y="
   },
   "snacks.nvim": {
     "owner": "folke",
