@@ -20,14 +20,24 @@
 
   # Bump after a bun.lock or recipe change: the build fails with the new hash.
   hashes = {
-    linux-x64 = "sha256-pkAfEP4/7KrUrrVVbXQLjgFnkJR1rZRj0kcmEsdQsuA=";
-    darwin-arm64 = "sha256-MP3YF0DVl8yLBYmvy7l8BYEOUZ61L32tU5i/tBgf/lo=";
+    linux-x64 = "sha256-lNvD8GxzAh3Z7akJ5NK/JH1WeXccqB3X3AEE/YETtEs=";
+    darwin-arm64 = "sha256-lNvD8GxzAh3Z7akJ5NK/JH1WeXccqB3X3AEE/YETtEs=";
   };
 
   buildPhase = ''
     runHook preBuild
 
     export HOME=$TMPDIR BUN_INSTALL_CACHE_DIR=$TMPDIR/bun-cache
+    # Bun trusts only its bundled roots, so a TLS-inspecting proxy (Aikido on
+    # joyce) fails with SELF_SIGNED_CERT_IN_CHAIN. Trust the bundle Nix uses
+    # for its own downloads: Determinate builds it from the macOS keychain,
+    # and Linux sandboxes bind-mount Nix's ssl-cert-file at the second path.
+    for ca in /etc/nix/macos-keychain.crt /etc/ssl/certs/ca-certificates.crt; do
+      if [ -r "$ca" ]; then
+        export NODE_EXTRA_CA_CERTS=$ca
+        break
+      fi
+    done
     cp "$src"/package.json "$src"/bun.lock .
     for manifest in "$src"/extensions/*/package.json; do
       workspace=extensions/$(basename "$(dirname "$manifest")")

@@ -26,7 +26,12 @@ in {
     packageSet = pkgs;
     defaults = {
       instructions = source "shared/AGENTS.md";
-      skills.sources = import ./skills.nix;
+      skills.sources =
+        import ./skills.nix
+        // {
+          # Ships with the CLI so the skill matches the installed version.
+          terminal-browser = "${pkgs.terminal-browser}/lib/terminal-browser/skills/default/terminal-browser";
+        };
       inherit mcpServers;
     };
 
@@ -105,6 +110,8 @@ in {
       pkgs.cloudflared
       pkgs.executor
       pkgs.skills
+      # Pi's `browser` tool (pi-config) runs it from PATH.
+      pkgs.terminal-browser
     ];
 
     sessionVariables = {

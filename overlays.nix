@@ -68,6 +68,7 @@ inputs: [
     inherit pi;
     plannotator = resignBunBinary plannotator "bin/plannotator";
     inherit (llm) skills;
+    inherit (llm) terminal-browser;
     hunkdiff = hunk;
   })
   (final: prev: let

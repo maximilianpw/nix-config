@@ -1220,11 +1220,11 @@
     "pi-config": {
       "flake": false,
       "locked": {
-        "lastModified": 1795524724,
-        "narHash": "sha256-RTgm47MFlef+IarEtSYWWBhfmLacTIfosufmUNK8LfE=",
+        "lastModified": 1795792291,
+        "narHash": "sha256-26ZnsbcxlERxDIxwrY1UaHAq3hFboXubltiKozhVG9M=",
         "owner": "maximilianpw",
         "repo": "pi-config",
-        "rev": "d80ce2c2982949d9abe56aee6537348e2ae1580b",
+        "rev": "fe4d603f4c65ffb475582cb86f8d0f3938d46aa0",
         "type": "github"
       },
       "original": {
